@@ -1798,13 +1798,12 @@ if Key = VK_PRIOR then begin //PAGE UP
     end
   else
     NextItem := GetNext(NextItem);
-  if NextItem = -1 then
-    // OXY: 2006-03-07 changed from
-    // NextItem := GetIdx(0);
-    // to
-    NextItem := GetNext(GetIdx(0));
-    // because when we are filtered, GetIdx(0) reports
-    // hidden item
+  if NextItem = -1 then begin
+    if IsMatched(GetIdx(0)) then
+      NextItem := GetIdx(0)
+    else
+      NextItem := GetNext(GetIdx(0));
+  end;
   if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
     //VertScrollBar.Position := NextItem;
     Selected := NextItem;
