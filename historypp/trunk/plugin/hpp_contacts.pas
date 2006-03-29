@@ -27,6 +27,7 @@ interface
 
 uses
   Windows, SysUtils,
+  Forms, Classes,
   m_globaldefs, m_api,
   hpp_global, hpp_miranda_mmi;
 
@@ -133,18 +134,22 @@ begin
   end;
 end;
 
+// OXY: 2006-03-30
+// Changed default RTL mode from SysLocale.MiddleEast to
+// Application.UseRightToLeftScrollBar because it's more correct and
+// doesn't bug on MY SYSTEM!
 function GetContactRTLMode(hContact: THandle; Proto: String = ''): boolean;
 var
   Temp: Byte;
 begin
   if Proto = '' then Proto := GetContactProto(hContact);
   if Proto = '' then
-    Result := SysLocale.MiddleEast
+    Result := Application.UseRightToLeftScrollBar
   else begin
     if hContact = 0 then
     Temp := DBGetContactSettingByte(hContact,PChar(Proto),'RTL',255);
     If Temp = 255 then
-      Temp := DBGetContactSettingWord(0,PChar(Proto),'RTL',byte(SysLocale.MiddleEast));
+      Temp := DBGetContactSettingWord(0,PChar(Proto),'RTL',byte(Application.UseRightToLeftScrollBar));
     Result := boolean(Temp);
   end;
 end;

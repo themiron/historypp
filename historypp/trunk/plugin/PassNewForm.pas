@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, m_GlobalDefs, m_api, PasswordEditControl;
+  StdCtrls, ExtCtrls, m_GlobalDefs, m_api, PasswordEditControl, hpp_forms;
 
 type
   TfmPassNew = class(TForm)
@@ -39,7 +39,7 @@ implementation
 
 procedure TfmPassNew.bnCancelClick(Sender: TObject);
 begin
-ModalResult := mrCancel;
+  ModalResult := mrCancel;
 end;
 
 procedure TfmPassNew.bnOKClick(Sender: TObject);
@@ -66,7 +66,9 @@ end;
 
 procedure TfmPassNew.FormCreate(Sender: TObject);
 begin
-TranslateForm;
+  TranslateForm;
+  DesktopFont := True;
+  MakeFontsParent(Self);
 end;
 
 end.

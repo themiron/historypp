@@ -35,8 +35,11 @@ uses
   m_globaldefs, m_api,
   hpp_global, hpp_contacts;
 
+// Miranda timestamp to TDateTime
+function TimestampToDateTime(Timestamp: DWord): TDateTime;
 function TimestampToString(Timestamp: DWord): WideString;
 function ReadEvent(hDBEvent: THandle; UseCP: Cardinal = CP_ACP): THistoryItem;
+function GetEventTimestamp(hDBEvent: THandle): DWord;
 //function MessageTypeToEventType(mt: TMessageTypes): Word;
 
 // general routine
@@ -57,6 +60,38 @@ function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal): WideStr
 
 implementation
 
+// OXY:
+// This routine UnixTimeToDate is taken from JclDateTime.pas
+// See JclDateTime.pas for copyright and license information
+// JclDateTime.pas is part of Project JEDI Code Library (JCL)
+// [http://www.delphi-jedi.org], [http://jcl.sourceforge.net]
+const
+  // 1970-01-01T00:00:00 in TDateTime
+  UnixTimeStart = 25569;
+  SecondsPerDay = 60* 24 * 60;
+function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;
+begin
+  Result:= UnixTimeStart + (UnixTime / SecondsPerDay);
+end;
+
+// Miranda timestamp to TDateTime
+function TimestampToDateTime(Timestamp: DWord): TDateTime;
+begin
+  Timestamp := PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOLOCAL,Timestamp,0);
+  Result := UnixTimeToDateTime(Timestamp);
+end;
+
+function GetEventTimestamp(hDBEvent: THandle): DWord;
+var
+  Event: TDBEventInfo;
+begin
+  ZeroMemory(@Event,SizeOf(Event));
+  Event.cbSize:=SizeOf(Event);
+  Event.cbBlob := 0;
+  PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,Integer(@Event));
+  Result := Event.timestamp;
+end;
+
 function TimestampToString(Timestamp: DWord): WideString;
 var
   strdatetime: array [0..64] of Char;
@@ -65,7 +100,7 @@ begin
   dbtts.cbDest := sizeof(strdatetime);
   dbtts.szDest := @strdatetime;
   dbtts.szFormat := 'd s';
-  PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOString,timestamp,Integer(@dbtts));
+  PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOSTRING,timestamp,Integer(@dbtts));
   Result := strdatetime;
 end;
 

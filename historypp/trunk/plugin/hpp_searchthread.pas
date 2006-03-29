@@ -38,7 +38,7 @@ interface
 
 uses
   Windows, SysUtils, Controls, Messages, HistoryGrid, Classes, m_GlobalDefs,
-  hpp_global, hpp_events, TntSysUtils;
+  hpp_global, hpp_events, TntSysUtils, m_api;
 
 
 const
@@ -51,11 +51,17 @@ type
 
   TSearchMethod = (smExact, smAnyWord, smAllWords);
 
+  TContactRec = record
+    hContact: THandle;
+    Timestamp: DWord;
+  end;
+
   TSearchThread = class(TThread)
   private
     Buffer: TDBArray;
     BufCount: Integer;
     FirstBatch: Boolean;
+    Contacts: array of TContactRec;
     CurContact: THandle;
     CurContactCP: Cardinal;
     CurProgress: Integer;
@@ -71,6 +77,7 @@ type
   protected
     function GetContactsCount: Integer;
     function GetItemsCount(hContact: THandle): Integer;
+    procedure BuildContactsList;
     procedure CalcMaxProgress;
     procedure IncProgress;
     procedure SetProgress(Progress: Integer);
@@ -82,7 +89,6 @@ type
     procedure Execute; override;
 
     procedure DoMessage(Message: DWord; wParam, lParam: DWord);
-
   public
     AllContacts, AllEvents: Integer;
 
@@ -112,12 +118,11 @@ function SearchTextExact(MessageText: WideString; SearchText: WideString): Boole
 function SearchTextAnyWord(MessageText: WideString; SearchWords: array of WideString): Boolean;
 function SearchTextAllWords(MessageText: WideString; SearchWords: array of WideString): Boolean;
 
+{$DEFINE SMARTSEARCH}
+
 implementation
 
 uses PassForm;
-
-{$I m_database.inc}
-{$I m_icq.inc}
 
 function SearchTextExact(MessageText: WideString; SearchText: WideString): Boolean;
 begin
@@ -148,6 +153,80 @@ end;
 
 { TSearchThread }
 
+procedure TSearchThread.BuildContactsList;
+var
+  hCont: THandle;
+
+  procedure AddContact(Cont: THandle);
+  var
+    hDB: THandle;
+    Event: TDBEventInfo;
+  begin
+    SetLength(Contacts,Length(Contacts)+1);
+    Contacts[High(Contacts)].hContact := Cont;
+    Contacts[High(Contacts)].Timestamp := 0;
+    hDB := PluginLink.CallService(MS_DB_EVENT_FINDLAST,Cont,0);
+    if hDB <> 0 then begin
+      Contacts[High(Contacts)].Timestamp := GetEventTimestamp(hDB);
+    end;
+  end;
+
+  // OXY:
+  // Modified version, original taken from JclAlgorithms.pas (QuickSort routine)
+  // See JclAlgorithms.pas for copyright and license information
+  // JclAlgorithms.pas is part of Project JEDI Code Library (JCL)
+  // [http://www.delphi-jedi.org], [http://jcl.sourceforge.net]
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P: Integer;
+    Rec: TContactRec;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while (Contacts[I].Timestamp - Contacts[P].Timestamp) < 0 do
+          Inc(I);
+        while (Contacts[J].Timestamp - Contacts[P].Timestamp) > 0 do
+          Dec(J);
+        if I <= J then
+        begin
+          Rec := Contacts[I];
+          Contacts[I] := Contacts[J];
+          Contacts[J] := Rec;
+          if P = I then
+            P := J
+          else
+          if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then
+        QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+
+begin
+    hCont := PluginLink.CallService(MS_DB_CONTACT_FINDFIRST,0,0);
+
+    while hCont <> 0 do begin
+      Inc(AllContacts);
+      // I hope I haven't messed this up by
+      // if yes, also fix the same in CalcMaxProgress
+      if SearchProtectedContacts or (not SearchProtectedContacts and (not IsUserProtected(hCont))) then
+        AddContact(hCont);
+      hCont := PluginLink.CallService(MS_DB_CONTACT_FINDNEXT,hCont,0);
+    end;
+
+    AddContact(hCont);
+
+    QuickSort(1,Length(Contacts)-1);
+end;
+
 procedure TSearchThread.CalcMaxProgress;
 var
   hCont: THandle;
@@ -175,8 +254,11 @@ begin
 end;
 
 destructor TSearchThread.Destroy;
+var
+  i: Integer;
 begin
   SetLength(SearchWords,0);
+  SetLength(Contacts,0);
   inherited;
 end;
 
@@ -188,6 +270,9 @@ end;
 procedure TSearchThread.Execute;
 var
   hCont: THandle;
+  {$IFDEF SMARTSEARCH}
+  i: Integer;
+  {$ENDIF}
 begin
   BufCount := 0;
   FirstBatch := True;
@@ -202,6 +287,7 @@ begin
     if SearchMethod in [smAnyWord, smAllWords] then
       GenerateSearchWords;
 
+    {$IFNDEF SMARTSEARCH}
     hCont := PluginLink.CallService(MS_DB_CONTACT_FINDFIRST,0,0);
     while hCont <> 0 do begin
       Inc(AllContacts);
@@ -212,6 +298,12 @@ begin
       hCont := PluginLink.CallService(MS_DB_CONTACT_FINDNEXT,hCont,0);
       end;
     SearchContact(hCont);
+    {$ELSE}
+    BuildContactsList;
+    for i := Length(Contacts) - 1 downto 0 do begin
+      SearchContact(Contacts[i].hContact);
+    end;
+    {$ENDIF}
   finally
     FSearchTime := GetTickCount - SearchStart;
     // only Post..., not Send... because we wait for this thread

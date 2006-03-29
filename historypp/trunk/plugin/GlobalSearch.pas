@@ -41,7 +41,7 @@ uses
   HistoryGrid,
   m_globaldefs, m_api,
   hpp_global, hpp_events, hpp_services, hpp_contacts,  hpp_database,  hpp_searchthread,
-  ImgList, PasswordEditControl, Buttons, TntButtons;
+  ImgList, PasswordEditControl, Buttons, TntButtons, Math, CommCtrl;
 
 const
   HM_EVENTDELETED = WM_APP + 100;
@@ -71,8 +71,6 @@ type
     edSearch: TtntEdit;
     bnSearch: TButton;
     paCommand: TPanel;
-    paHistory: TPanel;
-    hg: THistoryGrid;
     sb: TStatusBar;
     paProgress: TPanel;
     pb: TProgressBar;
@@ -102,17 +100,21 @@ type
     ReplyQuoted1: TMenuItem;
     SaveSelected1: TMenuItem;
     SaveDialog: TSaveDialog;
+    tiFilter: TTimer;
+    paHistory: TPanel;
+    hg: THistoryGrid;
     paFilter: TPanel;
-    Image1: TImage;
-    edFilter: TTntEdit;
+    imFilter: TImage;
     sbClearFilter: TTntSpeedButton;
+    edFilter: TTntEdit;
+    imFilterWait: TImage;
+    procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure tiFilterTimer(Sender: TObject);
     procedure sbClearFilterClick(Sender: TObject);
     procedure edPassKeyPress(Sender: TObject; var Key: Char);
-    procedure edFilterKeyPress(Sender: TObject; var Key: Char);
     procedure edSearchKeyPress(Sender: TObject; var Key: Char);
     procedure hgItemDelete(Sender: TObject; Index: Integer);
     procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
-    procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
     procedure SaveSelected1Click(Sender: TObject);
     procedure hgPopup(Sender: TObject);
     procedure ReplyQuoted1Click(Sender: TObject);
@@ -172,6 +174,12 @@ type
     ContactsFound: Integer;
     AllItems: Integer;
     AllContacts: Integer;
+    HotFilterString: WideString;
+    FilterIcon: THandle;
+    FilterIconStart: TIcon;
+    FilterIconEnd: TIcon;
+    FilterIconProgress: TIcon;
+    ilFilterHandle: THandle;
     procedure SMPrepare(var M: TMessage); message SM_PREPARE;
     procedure SMProgress(var M: TMessage); message SM_PROGRESS;
     procedure SMItemFound(var M: TMessage); message SM_ITEMFOUND; // OBSOLETE
@@ -195,6 +203,8 @@ type
 
     procedure SearchNext(Rev: Boolean; Warp: Boolean = True);
     procedure ReplyQuoted(Item: Integer);
+    procedure StartHotFilterTimer;
+    procedure EndHotFilterTimer;
   protected
     procedure LoadWindowPosition;
     procedure SaveWindowPosition;
@@ -230,7 +240,6 @@ uses hpp_options, PassForm, hpp_itemprocess, hpp_forms, hpp_messages,
 // thanks to Greg Chapman
 // http://groups.google.com/group/borland.public.delphi.objectpascal/browse_thread/thread/218a7511123851c3/5ada76e08038a75b%235ada76e08038a75b?sa=X&oi=groupsr&start=2&num=3
 procedure TfmGlobalSearch.AlignControls(Control: TControl; var ARect: TRect);
-{AlignControls is virtual}
 begin
   inherited;
   if paContacts.Width = 0 then
@@ -253,6 +262,16 @@ begin
 //  end;
   DesktopFont := True;
   MakeFontsParent(Self);
+
+
+  FilterIcon := LoadImage(hInstance,'historypp_hotfilter',IMAGE_ICON,0,0,0);
+  //FilterIcon := TIcon.Create;
+  //FilterIcon.LoadFromResourceName(hInstance,'historypp_hotfilter');
+  //ilFilter.AddIcon(FilterIcon);
+  //ilFilter.
+  //ilFilter.GetInstRes(hInstance,rtIcon,'historypp_hotfilter',0,[lrTransparent],0);
+  //ilFilter.GetInstRes(hInstance,rtIcon,'historypp_hotfilterstart',0,[lrTransparent],0);
+  //ilFilter.GetInstRes(hInstance,rtIcon,'historypp_hotfilterend',0,[lrTransparent],0);
 end;
 
 procedure TfmGlobalSearch.SMFinished(var M: TMessage);
@@ -328,8 +347,8 @@ begin
     History[OldSize + i].Proto := CurProto;
   end;
 
-  FreeMem(Buffer,SizeOf(Buffer));
-
+  FreeMem(Buffer,SizeOf(Buffer^));
+  
   if (lvContacts.Items.Count = 0) or (Integer(lvContacts.Items.Item[lvContacts.Items.Count-1].Data) <> CurContact) then begin
     if lvContacts.Items.Count = 0 then begin
     li := lvContacts.Items.Add;
@@ -340,8 +359,10 @@ begin
     li := lvContacts.Items.Add;
     if CurContact = 0 then
       li.Caption := 'System History'
-    else
+    else begin
       li.Caption := CurContactName;
+      Inc(ContactsFound);
+    end;
     li.ImageIndex := PluginLink.CallService(MS_CLIST_GETCONTACTICON,CurContact,0);
     //meTest.Lines.Add(CurContactName+' icon is '+IntToStr(PluginLink.CallService(MS_CLIST_GETCONTACTICON,CurContact,0)));
     li.Data := Pointer(CurContact);
@@ -375,7 +396,6 @@ procedure TfmGlobalSearch.SMNextContact(var M: TMessage);
 begin
   // wParam - hContact, lParam - 0
   CurContact := m.wParam;
-  if CurContact <> 0 then Inc(ContactsFound);
   if CurContact = 0 then CurProto := 'ICQ'
                     else CurProto := GetContactProto(CurContact);
   CurContactName := GetContactDisplayName(CurContact,CurProto,true);
@@ -425,37 +445,50 @@ begin
   sb.SimpleText := Format('Searching... %.0n items in %.0n contacts found',[Length(History)/1, ContactsFound/1]);
 end;
 
+procedure TfmGlobalSearch.StartHotFilterTimer;
+begin
+  if tiFilter.Interval = 0 then
+    EndHotFilterTimer
+  else begin
+    tiFilter.Enabled := False;
+    tiFilter.Enabled := True;
+    imFilter.Visible := False;
+    imFilterWait.Visible := True;
+  end;
+end;
+
+procedure TfmGlobalSearch.tiFilterTimer(Sender: TObject);
+begin
+  EndHotFilterTimer;
+end;
+
 procedure TfmGlobalSearch.edFilterChange(Sender: TObject);
 begin
-  hg.UpdateFilter;
+  StartHotFilterTimer;
 end;
 
 procedure TfmGlobalSearch.edFilterKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
-var
-  i: Integer;
 begin
-  inherited;
   if Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR] then begin
     SendMessage(hg.Handle,WM_KEYDOWN,Key,0);
     Key := 0;
   end;
+end;
+
+procedure TfmGlobalSearch.edFilterKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
   if Key = VK_RETURN then begin
-    //edFilter.Text := '';
     hg.SetFocus;
     key := 0;
   end;
 end;
 
-procedure TfmGlobalSearch.edFilterKeyPress(Sender: TObject; var Key: Char);
-begin
-if (key = Chr(VK_RETURN)) or (key = Chr(VK_TAB)) or (key = Chr(VK_ESCAPE)) then
-  key := #0;
-end;
-
 procedure TfmGlobalSearch.TntFormDestroy(Sender: TObject);
 begin
   fmGlobalSearch := nil;
+  FilterIconProgress.Free;
 end;
 
 procedure TfmGlobalSearch.TntFormMouseWheel(Sender: TObject; Shift: TShiftState;
@@ -463,8 +496,7 @@ procedure TfmGlobalSearch.TntFormMouseWheel(Sender: TObject; Shift: TShiftState;
 begin
   Handled := True;
   if Assigned(ControlAtPos(MousePos,False,True)) then
-    //if ControlAtPos(MousePos,False,True,True) is TListView then begin
-    if ControlAtPos(MousePos,False,True) is TListView then begin
+    if ControlAtPos(MousePos,False,True,True) is TListView then begin
       {$RANGECHECKS OFF}
       TListView(ControlAtPos(MousePos,False,True)).Perform(WM_MOUSEWHEEL,MakeLong(MK_CONTROL,WheelDelta),0);
       {$RANGECHECKS ON}
@@ -481,6 +513,7 @@ end;
 procedure TfmGlobalSearch.sbClearFilterClick(Sender: TObject);
 begin
   edFilter.Text := '';
+  EndHotFilterTimer;
   hg.SetFocus;
 end;
 
@@ -649,8 +682,8 @@ end;
 procedure TfmGlobalSearch.hgItemFilter(Sender: TObject; Index: Integer;
   var Show: Boolean);
 begin
-  if edFilter.Text = '' then exit;
-  if Pos(WideUpperCase(edFilter.Text),WideUpperCase(hg.Items[Index].Text)) = 0 then
+  if HotFilterString = '' then exit;
+  if Pos(WideUpperCase(HotFilterString),WideUpperCase(hg.Items[Index].Text)) = 0 then
     Show := False;
 end;
 
@@ -777,43 +810,6 @@ begin
   end;
 end;
 
-var
-  HtmlFilter: String = 'HTML file (*.html; *.htm)|*.html;*.htm';
-  XmlFilter: String = 'XML file (*.xml)|*.xml';
-  UnicodeFilter: String = 'Unicode text file (*.txt)|*.txt';
-  TextFilter: String = 'Text file (*.txt)|*.txt';
-  AllFilter: String = 'All files (*.*)|*.*';
-  HtmlDef: String = '.html';
-  XmlDef: String = '.xml';
-  TextDef: String = '.txt';
-
-procedure TfmGlobalSearch.PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
-begin
-  if AllFormats then begin
-    SaveDialog.Filter := HtmlFilter+'|'+XmlFilter+'|'+UnicodeFilter+'|'+TextFilter+'|'+AllFilter;
-    case SaveFormat of
-      sfHTML: SaveDialog.FilterIndex := 1;
-      sfXML: SaveDialog.FilterIndex := 2;
-      sfUnicode: SaveDialog.FilterIndex := 3;
-      sfText: SaveDialog.FilterIndex := 4;
-    end;
-  end else begin
-    case SaveFormat of
-      sfHTML: begin SaveDialog.Filter := HtmlFilter; SaveDialog.FilterIndex := 1; end;
-      sfXML:  begin SaveDialog.Filter := XmlFilter; SaveDialog.FilterIndex := 1; end;
-      sfUnicode: begin SaveDialog.Filter := UnicodeFilter+'|'+TextFilter; SaveDialog.FilterIndex := 1; end;
-      sfText: begin SaveDialog.Filter := UnicodeFilter+'|'+TextFilter; SaveDialog.FilterIndex := 2; end;
-    end;
-    SaveDialog.Filter := SaveDialog.Filter + '|' + AllFilter;
-  end;
-  case SaveFormat of
-    sfHTML: SaveDialog.DefaultExt := HtmlDef;
-    sfXML: SaveDialog.DefaultExt := XmlDef;
-    sfUnicode: SaveDialog.DefaultExt := TextDef;
-    sfText: SaveDialog.DefaultExt := TextDef;
-  end;
-end;
-
 procedure TfmGlobalSearch.SaveSelected1Click(Sender: TObject);
 var
   t: String;
@@ -876,6 +872,15 @@ procedure TfmGlobalSearch.edSearchKeyUp(Sender: TObject; var Key: Word;
 begin
   if (Key = VK_RETURN) and bnSearch.Enabled then
     bnSearch.Click;
+end;
+
+procedure TfmGlobalSearch.EndHotFilterTimer;
+begin
+  tiFilter.Enabled := False;
+  HotFilterString := edFilter.Text;
+  hg.UpdateFilter;
+  imFilter.Visible := True;
+  imFilterWait.Visible := False;
 end;
 
 procedure TfmGlobalSearch.bnCloseClick(Sender: TObject);
@@ -978,6 +983,18 @@ begin
   edSearch.SelectAll;
 
   bnSearch.Enabled := (edSearch.Text <> '');
+
+  //ilFilterHandle := ImageList_Create(16,16,ILC_COLOR32 or ILC_MASK,4,1);
+  //ImageList_AddIcon(ilFilterHandle,LoadIcon(hInstance,'historypp_hotfilter'));
+
+  //FilterIcon := TIcon.Create;
+  //FilterIcon.Handle := CopyIcon(hppicons[1].Handle);
+  //ilFilter.AddIcon(FilterIcon);
+  //ilFilter.ResInstLoad(hInstance,rtIcon,'historypp_search',0);
+  //RaiseLastWin32Error;
+  //ilFilter.GetIcon(0,imFilter.Picture.Icon);
+
+  //imFilter.Picture.Icon.Handle := ImageList_GetIcon(ilFilterHandle,0,ILD_NORMAL);
 end;
 
 function TfmGlobalSearch.GetSearchItem(GridIndex: Integer): TSearchItem;

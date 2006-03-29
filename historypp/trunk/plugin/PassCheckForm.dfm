@@ -158,13 +158,12 @@ object fmPassCheck: TfmPassCheck
     Width = 260
     Height = 2
   end
-  object edPass: TEdit
+  object edPass: TPasswordEdit
     Left = 77
     Top = 88
     Width = 193
     Height = 21
     MaxLength = 100
-    PasswordChar = '*'
     TabOrder = 0
     OnKeyPress = edPassKeyPress
   end
