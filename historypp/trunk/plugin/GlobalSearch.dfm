@@ -1,9 +1,9 @@
 object fmGlobalSearch: TfmGlobalSearch
   Left = 304
   Top = 135
-  Width = 559
-  Height = 552
   Caption = 'Global History Search'
+  ClientHeight = 525
+  ClientWidth = 551
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -35,6 +35,9 @@ object fmGlobalSearch: TfmGlobalSearch
       Top = 113
       Height = 306
       Visible = False
+      ExplicitLeft = 133
+      ExplicitTop = 127
+      ExplicitHeight = 220
     end
     object paSearch: TPanel
       Left = 2
@@ -132,7 +135,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Height = 31
       Align = alBottom
       BevelOuter = bvNone
-      TabOrder = 5
+      TabOrder = 4
       Visible = False
       DesignSize = (
         547
@@ -158,6 +161,105 @@ object fmGlobalSearch: TfmGlobalSearch
         Visible = False
       end
     end
+    object paProgress: TPanel
+      Left = 2
+      Top = 419
+      Width = 547
+      Height = 54
+      Align = alBottom
+      BevelInner = bvRaised
+      BevelOuter = bvLowered
+      TabOrder = 3
+      Visible = False
+      DesignSize = (
+        547
+        54)
+      object laProgress: TTntLabel
+        Left = 12
+        Top = 7
+        Width = 523
+        Height = 13
+        Alignment = taCenter
+        Anchors = [akLeft, akTop, akRight]
+        AutoSize = False
+        Caption = 'Searching contact "Unknown" (3 of 11)'
+        ExplicitWidth = 491
+      end
+      object pb: TProgressBar
+        Left = 12
+        Top = 29
+        Width = 523
+        Height = 16
+        Anchors = [akLeft, akRight, akBottom]
+        Position = 34
+        TabOrder = 0
+      end
+    end
+    object paPassword: TPanel
+      Left = 2
+      Top = 87
+      Width = 547
+      Height = 26
+      Align = alTop
+      BevelOuter = bvNone
+      TabOrder = 1
+      object laPass: TTntLabel
+        Left = 225
+        Top = 4
+        Width = 49
+        Height = 13
+        Caption = 'Password:'
+        Enabled = False
+      end
+      object edPass: TPasswordEdit
+        Left = 280
+        Top = 1
+        Width = 125
+        Height = 21
+        TabOrder = 1
+        OnKeyDown = edSearchKeyUp
+        OnKeyPress = edPassKeyPress
+      end
+      object cbPass: TTntCheckBox
+        Left = 4
+        Top = 4
+        Width = 205
+        Height = 17
+        Caption = 'Include password-protected contacts'
+        TabOrder = 0
+        OnClick = cbPassClick
+      end
+    end
+    object paContacts: TTntPanel
+      Left = 2
+      Top = 113
+      Width = 155
+      Height = 306
+      Align = alLeft
+      BevelOuter = bvNone
+      TabOrder = 2
+      Visible = False
+      object lvContacts: TTntListView
+        Left = 0
+        Top = 0
+        Width = 155
+        Height = 306
+        Align = alClient
+        Columns = <
+          item
+            Width = -1
+            WidthType = (
+              -1)
+          end>
+        ColumnClick = False
+        ReadOnly = True
+        ShowColumnHeaders = False
+        SmallImages = ilContacts
+        TabOrder = 0
+        ViewStyle = vsReport
+        OnSelectItem = lvContactsSelectItem
+      end
+    end
     object paHistory: TPanel
       Left = 160
       Top = 113
@@ -166,7 +268,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Align = alClient
       BevelOuter = bvNone
       BorderStyle = bsSingle
-      TabOrder = 3
+      TabOrder = 5
       object hg: THistoryGrid
         Left = 0
         Top = 0
@@ -215,7 +317,7 @@ object fmGlobalSearch: TfmGlobalSearch
         DesignSize = (
           385
           28)
-        object Image1: TImage
+        object imFilter: TImage
           Left = 6
           Top = 6
           Width = 16
@@ -301,6 +403,7 @@ object fmGlobalSearch: TfmGlobalSearch
             00000000000000000000000000000000000000000000000000000000FFF00000
             FFE00000FFC00000FF800000E0010000C003000080070000000F0000000F0000
             000F0000000F0000000F0000000F0000001F0000803F0000C07F0000}
+          Transparent = True
         end
         object sbClearFilter: TTntSpeedButton
           Left = 27
@@ -343,115 +446,106 @@ object fmGlobalSearch: TfmGlobalSearch
           ShowHint = True
           OnClick = sbClearFilterClick
         end
+        object imFilterWait: TImage
+          Left = 6
+          Top = 6
+          Width = 16
+          Height = 16
+          Picture.Data = {
+            055449636F6E0000010002001010000000000000680500002600000010100000
+            00000000680400008E0500002800000010000000200000000100080000000000
+            000100000000000000000000000000000000000000000000F4F4F400CCCCCC00
+            C4C4C400D4CCBC00CCC4BC00BCBCBC00B4B4B400BCB4AC00B4ACA400ACACAC00
+            ACA4A400A4A4A400BCBC94009C9C9C009494940094948C008C8C8C009C9C4400
+            A4A404009C9C04008C8C0400848404007C7C74007C7474007474740064646400
+            54544C004C4C4C004C4C44007C7C04006C6C04005C5C04005454040044440400
+            34343400242424003C3C04002C2C0400141414001C1C04000404040000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000000000000000000FCFCFC00000000262520202226262626
+            1D0000000000000D151414151616162800000000000000000F01FF0303030329
+            00000000000000000F01FF030303032900000000000000000F01FF0303030329
+            0000000000000000080B010206071C00000000000000000000080E0A061C0000
+            00000000000000000000000C2700000000000000000000000000181A1C100000
+            0000000000000000001B111A2319100000000000000000001711241A07231C00
+            00000000000000000F11010F030A0E2900000000000000000F01FF0303030329
+            0000000000000000190F0F0F0F0F0F2900000000000000121F13131E21212121
+            170000000000001616161616161616161D000000E0070000E00F0000F00F0000
+            F00F0000F00F0000F01F0000F83F0000FE7F0000FC3F0000F81F0000F01F0000
+            F00F0000F00F0000F00F0000E0070000E0070000280000001000000020000000
+            0100200000000000000400000000000000000000000000000000000000000000
+            00000000000000002F2F00FF3F3F00FF5D5D00FF5D5D00FF464600FF2F2F00FF
+            2F2F00FF2F2F00FF2F2F00FF000000A200000000000000000000000000000000
+            00000000000000008080003B8B8B00FF9D9D00FF9D9D00FF8F8F00FF808000FF
+            808000FF808000FF1D1D00FF0000002500000000000000000000000000000000
+            000000000000000000000000979797FFF1F1F1FFF9F9F9FFC0C0C0FFC0C0C0FF
+            C0C0C0FFC0C0C0FF000000FF0000000000000000000000000000000000000000
+            000000000000000000000000979797FFF1F1F1FFF9F9F9FFC0C0C0FFC0C0C0FF
+            C0C0C0FFC0C0C0FF000000FF0000000000000000000000000000000000000000
+            000000000000000000000000979797FFF1F1F1FFF9F9F9FFC0C0C0FFC0C0C0FF
+            C0C0C0FFC0C0C0FF000000FF0000000000000000000000000000000000000000
+            00000000000000000000000080808048A6A6A6F1F2F2F2FFCACACAFFBCBCBCFF
+            B6B6B6FF363636DA000000000000000000000000000000000000000000000000
+            00000000000000000000000000000000808080489D9D9DFFA9A9A9FFB9B9B9FF
+            363636DA00000022000000000000000000000000000000000000000000000000
+            000000000000000000000000000000000000000080808018A0A0A0FF121212FF
+            0000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000000000000000000000000000707076C606060FF4B4B4BFF
+            0000004800000000000000000000000000000000000000000000000000000000
+            00000000000000000000000000000000000000978A8A8AFF606060FF363636FF
+            727272F100000048000000000000000000000000000000000000000000000000
+            0000000000000000000000000E0E0E6C8A8A8AFF262626FF606060FFB0B0B0FF
+            363636FF4B4B4BFF000000180000000000000000000000000000000000000000
+            000000000000000000000000979797FF8F8F8FFFF0F0F0FF909090FFC0C0C0FF
+            AAAAAAFF9D9D9DFF000000FF0000000000000000000000000000000000000000
+            000000000000000000000000979797FFF1F1F1FFF9F9F9FFC0C0C0FFC0C0C0FF
+            C0C0C0FFC0C0C0FF000000FF0000000000000000000000000000000000000000
+            000000000000000000000000747474FF949494FF949494FF949494FF949494FF
+            949494FF949494FF000000FF0000000000000000000000000000000000000000
+            0000000000000000808000A26F6F00FFA2A200FFA2A200FF7A7A00FF515100FF
+            515100FF515100FF515100FF0000006700000000000000000000000000000000
+            0000000000000000808000FF808000FF808000FF808000FF808000FF808000FF
+            808000FF808000FF808000FF000000A2000000000000000000000000E0070000
+            E0070000F00F0000F00F0000F00F0000F01F0000F81F0000FC7F0000FC3F0000
+            F81F0000F00F0000F00F0000F00F0000F00F0000E0070000E0070000}
+          Transparent = True
+          Visible = False
+        end
         object edFilter: TTntEdit
-          Left = 51
+          Left = 56
           Top = 4
-          Width = 320
+          Width = 315
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
           OnChange = edFilterChange
-          OnKeyPress = edFilterKeyPress
-          OnKeyUp = edFilterKeyDown
+          OnKeyDown = edFilterKeyDown
+          OnKeyUp = edFilterKeyUp
         end
-      end
-    end
-    object paProgress: TPanel
-      Left = 2
-      Top = 419
-      Width = 547
-      Height = 54
-      Align = alBottom
-      BevelInner = bvRaised
-      BevelOuter = bvLowered
-      TabOrder = 4
-      Visible = False
-      DesignSize = (
-        547
-        54)
-      object laProgress: TTntLabel
-        Left = 12
-        Top = 7
-        Width = 523
-        Height = 13
-        Alignment = taCenter
-        Anchors = [akLeft, akTop, akRight]
-        AutoSize = False
-        Caption = 'Searching contact "Unknown" (3 of 11)'
-      end
-      object pb: TProgressBar
-        Left = 12
-        Top = 29
-        Width = 523
-        Height = 16
-        Anchors = [akLeft, akRight, akBottom]
-        Position = 34
-        TabOrder = 0
-      end
-    end
-    object paPassword: TPanel
-      Left = 2
-      Top = 87
-      Width = 547
-      Height = 26
-      Align = alTop
-      BevelOuter = bvNone
-      TabOrder = 1
-      object laPass: TTntLabel
-        Left = 225
-        Top = 4
-        Width = 49
-        Height = 13
-        Caption = 'Password:'
-        Enabled = False
-      end
-      object edPass: TPasswordEdit
-        Left = 280
-        Top = 1
-        Width = 125
-        Height = 21
-        TabOrder = 1
-        OnKeyDown = edSearchKeyUp
-        OnKeyPress = edPassKeyPress
-      end
-      object cbPass: TTntCheckBox
-        Left = 4
-        Top = 4
-        Width = 205
-        Height = 17
-        Caption = 'Include password-protected contacts'
-        TabOrder = 0
-        OnClick = cbPassClick
-      end
-    end
-    object paContacts: TTntPanel
-      Left = 2
-      Top = 113
-      Width = 155
-      Height = 306
-      Align = alLeft
-      BevelOuter = bvNone
-      TabOrder = 2
-      Visible = False
-      object lvContacts: TTntListView
-        Left = 0
-        Top = 0
-        Width = 155
-        Height = 306
-        Align = alClient
-        Columns = <
-          item
-            Width = -1
-            WidthType = (
-              -1)
-          end>
-        ColumnClick = False
-        ReadOnly = True
-        ShowColumnHeaders = False
-        SmallImages = ilContacts
-        TabOrder = 0
-        ViewStyle = vsReport
-        OnSelectItem = lvContactsSelectItem
       end
     end
   end
@@ -517,5 +611,12 @@ object fmGlobalSearch: TfmGlobalSearch
     Title = 'Save History'
     Left = 252
     Top = 176
+  end
+  object tiFilter: TTimer
+    Enabled = False
+    Interval = 300
+    OnTimer = tiFilterTimer
+    Left = 352
+    Top = 376
   end
 end

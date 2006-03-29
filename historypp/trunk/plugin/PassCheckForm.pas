@@ -4,12 +4,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, Checksum, ExtCtrls, m_GlobalDefs, m_api, hpp_forms;
+  StdCtrls, Checksum, ExtCtrls, m_GlobalDefs, m_api, hpp_forms,
+  PasswordEditControl;
 
 type
   TfmPassCheck = class(TForm)
     Label1: TLabel;
-    edPass: TEdit;
+    edPass: TPasswordEdit;
     bnOK: TButton;
     bnCancel: TButton;
     Image1: TImage;

@@ -51,7 +51,8 @@ uses
   hpp_global, hpp_database, hpp_messages, hpp_events, hpp_contacts, hpp_itemprocess,
   hpp_forms,
   clipbrd, {FileCtrl,} shellapi,
-  HistoryGrid, Checksum, WFindReplaceDialog, PasswordEditControl;
+  HistoryGrid, Checksum, WFindReplaceDialog, TntExtCtrls, hpp_sessionsthread, DateUtils,
+  ImgList, PasswordEditControl, TntStdCtrls, TntButtons;
 
 const
   HM_EVENTADDED = (WM_USER+10);
@@ -103,6 +104,7 @@ type
     N6: TMenuItem;
     Setpassword1: TMenuItem;
     paPassword: TPanel;
+    paSess: TPanel;
     laPass: TLabel;
     Image1: TImage;
     Label4: TLabel;
@@ -140,6 +142,17 @@ type
     ANSICodepage1: TMenuItem;
     SystemCodepage1: TMenuItem;
     N13: TMenuItem;
+    tvSess: TTntTreeView;
+    spSess: TTntSplitter;
+    ilSessions: TImageList;
+    Panel1: TPanel;
+    TntLabel1: TTntLabel;
+    sbCloseSess: TTntSpeedButton;
+    Button1: TButton;
+    procedure sbCloseSessClick(Sender: TObject);
+    procedure hgItemFilter(Sender: TObject; Index: Integer; var Show: Boolean);
+    procedure tvSessChange(Sender: TObject; Node: TTreeNode);
+    procedure Button1Click(Sender: TObject);
 
     procedure LoadHistory(Sender: TObject);
     procedure FindDialogFind(Sender: TObject);
@@ -216,6 +229,8 @@ type
     procedure UserDetails1Click(Sender: TObject);
     procedure CodepageChangeClick(Sender: TObject);
   private
+    StartTimestamp: DWord;
+    EndTimestamp: DWord;
     FhContact: THandle;
     hEventAddedHook:DWord;
     FPasswordMode: Boolean;
@@ -231,7 +246,6 @@ type
     procedure OnEventAdded(var Message: TMessage); message HM_EVENTADDED;
 
     procedure OpenDetails(Item: Integer);
-    procedure PrepareSaveDialog(SaveFormat: TSaveFormat; AllFormats: Boolean = False);
     procedure SetPasswordMode(const Value: Boolean);
     procedure ProcessPassword;
     procedure TranslateForm;
@@ -249,6 +263,8 @@ type
     HistoryLength:integer;
     Protocol: String;
     RecentFormat: TSaveFormat;
+    SessThread: TSessionsThread;
+    Sessions: TSessArray;
 
     procedure SearchNext(Rev: Boolean; Warp: Boolean = True);
     procedure DeleteHistoryItem(ItemIdx:Integer);
@@ -260,8 +276,13 @@ type
     procedure ApplyFilter(DoApply: boolean = true);
     procedure ReplyQuoted(Item: Integer);
     procedure OpenPassword;
+
+    procedure SMItemsFound(var M: TMessage); message SM_ITEMSFOUND;
+    procedure ShowSessions(Show: Boolean);
   protected
     procedure LoadPendingHeaders(rowidx: integer; count: integer);
+  published
+    procedure AlignControls(Control: TControl; var ARect: TRect); override;
   public
     property PasswordMode: Boolean read FPasswordMode write SetPasswordMode;
     property hContact: THandle read FhContact write SethContact;
@@ -270,6 +291,7 @@ type
 var
   HistoryFrm: THistoryFrm;
 
+procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
 function ParseUrlItem(Item: THistoryItem; out Url,Mes: WideString): Boolean;
 function ParseFileItem(Item: THistoryItem; out FileName,Mes: WideString): Boolean;
 //function GetItemFile(Item: THistoryItem; hContact: THandle): string;
@@ -454,6 +476,25 @@ begin
     end;
 end;
 
+(*
+This function gets only name of the file
+and tries to make it FAT-happy, so we trim out and
+":"-s, "\"-s and so on...
+*)
+function MakeFileName(FileName: String): String;
+begin
+  Result := FileName;
+  Result := StringReplace(Result,':','_',[rfReplaceAll]);
+  Result := StringReplace(Result,'\','_',[rfReplaceAll]);
+  Result := StringReplace(Result,'/','_',[rfReplaceAll]);
+  Result := StringReplace(Result,'*','_',[rfReplaceAll]);
+  Result := StringReplace(Result,'?','_',[rfReplaceAll]);
+  Result := StringReplace(Result,'"','''',[rfReplaceAll]);
+  Result := StringReplace(Result,'<',']',[rfReplaceAll]);
+  Result := StringReplace(Result,'>','[',[rfReplaceAll]);
+  Result := StringReplace(Result,'|','',[rfReplaceAll]);
+end;
+
 function MakeTextXMLed(Text: String): String;
 begin;
   Result := Text;
@@ -550,6 +591,8 @@ begin
   hg.InlineRichEdit.PopupMenu := pmGridInline;
   for i := 0 to pmOptions.Items.Count-1 do
     pmOptions.Items.Remove(pmOptions.Items[0]);
+
+  ShowSessions(False);
 end;
 
 procedure THistoryFrm.WMSysCommand(var Message: TWMSysCommand);
@@ -815,6 +858,7 @@ procedure THistoryFrm.FormDestroy(Sender: TObject);
 begin
   if Assigned(EventDetailFrom) then
     EventDetailFrom.Release;
+  SessThread.Free;
   Release
 end;
 
@@ -844,6 +888,12 @@ procedure THistoryFrm.FormShow(Sender: TObject);
 begin
   LoadPosition;
   ProcessPassword;
+
+  SessThread := TSessionsThread.Create(True);
+  SessThread.ParentHandle := Self.Handle;
+  SessThread.Contact := hContact;
+  SessThread.Priority := tpLower;
+  SessThread.Resume;
 end;
 
 procedure THistoryFrm.hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
@@ -968,12 +1018,20 @@ begin
   FindDialog.Execute;
 end;
 
+const
+  // 4 hours
+  TIME_DIFF = 4*(60*60);
+
+procedure THistoryFrm.Button1Click(Sender: TObject);
+begin
+  ShowSessions(not paSess.Visible);
+end;
+
 procedure THistoryFrm.hgDblClick(Sender: TObject);
 begin
   if hg.Selected = -1 then
     exit;
   hg.EditInline(hg.Selected);
-  //OpenDetails(hg.Selected);
 end;
 
 procedure THistoryFrm.SaveSelected1Click(Sender: TObject);
@@ -983,7 +1041,7 @@ var
 begin
   RecentFormat := TSaveFormat(GetDBInt(hppDBName,'ExportFormat',0));
   SaveFormat := RecentFormat;
-  PrepareSaveDialog(SaveFormat,True);
+  PrepareSaveDialog(SaveDialog,SaveFormat,True);
   t := Translate('Partial History [%s] - [%s]');
   t := Format(t,[WideToAnsiString(hg.ProfileName,CP_ACP),WideToAnsiString(hg.ContactName,CP_ACP)]);
   t := MakeFileName(t);
@@ -1005,6 +1063,11 @@ begin
   WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
 end;
 
+procedure THistoryFrm.sbCloseSessClick(Sender: TObject);
+begin
+  ShowSessions(False);
+end;
+
 procedure THistoryFrm.hgItemDelete(Sender: TObject; Index: Integer);
 var
   idx: Integer;
@@ -1018,6 +1081,21 @@ begin
   end;
   DeleteHistoryItem(idx);
   Application.ProcessMessages;
+end;
+
+procedure THistoryFrm.hgItemFilter(Sender: TObject; Index: Integer;
+  var Show: Boolean);
+begin
+  // if filter by sessions disabled, then exit
+  if StartTimestamp = 0 then exit;
+  //Show := False;
+  if hg.Items[Index].Time >= StartTimestamp then begin
+    if EndTimestamp = 0 then exit
+    else begin
+      if hg.Items[Index].Time < EndTimestamp then exit
+      else Show := False;
+    end;
+  end else Show := False;
 end;
 
 procedure THistoryFrm.Delete1Click(Sender: TObject);
@@ -1192,7 +1270,7 @@ procedure THistoryFrm.SaveasHTML1Click(Sender: TObject);
 var
   t: String;
 begin
-  PrepareSaveDialog(sfHtml);
+  PrepareSaveDialog(SaveDialog,sfHtml);
   t := Translate('Full History [%s] - [%s]');
   t := Format(t,[WideToAnsiString(hg.ProfileName,CP_ACP),WideToAnsiString(hg.ContactName,CP_ACP)]);
   t := MakeFileName(t);
@@ -1350,7 +1428,7 @@ var
   XmlDef: String = '.xml';
   TextDef: String = '.txt';
 
-procedure THistoryFrm.PrepareSaveDialog(SaveFormat: TSaveFormat; AllFormats: Boolean = False);
+procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
 begin
   if AllFormats then begin
     SaveDialog.Filter := HtmlFilter+'|'+XmlFilter+'|'+UnicodeFilter+'|'+TextFilter+'|'+AllFilter;
@@ -1381,7 +1459,7 @@ procedure THistoryFrm.SaveasXML1Click(Sender: TObject);
 var
   t: String;
 begin
-  PrepareSaveDialog(sfXML);
+  PrepareSaveDialog(SaveDialog,sfXML);
   t := Translate('Full History [%s] - [%s]');
   t := Format(t,[WideToAnsiString(hg.ProfileName,CP_ACP),WideToAnsiString(hg.ContactName,CP_ACP)]);
   t := MakeFileName(t);
@@ -1401,7 +1479,7 @@ var
 begin
   if hppOSUnicode then SaveFormat := sfUnicode
                   else SaveFormat := sfText;
-  PrepareSaveDialog(SaveFormat);
+  PrepareSaveDialog(SaveDialog,SaveFormat);
   t := Translate('Full History [%s] - [%s]');
   t := Format(t,[WideToAnsiString(hg.ProfileName,CP_ACP),WideToAnsiString(hg.ContactName,CP_ACP)]);
   t := MakeFileName(t);
@@ -1615,6 +1693,7 @@ hg.Visible := enb;
 paPassword.Enabled := not enb;
 paPassword.Visible := not enb;
 if value = true then begin
+  ShowSessions(False);
   paPassword.Left := (paGrid.ClientWidth-paPassword.Width) div 2;
   paPassword.Top := (paGrid.ClientHeight - paPassword.Height) div 2;
   //laPass.Caption := Format('You need password to access history for %s
@@ -1623,6 +1702,13 @@ if value = true then begin
 else begin
   hg.SetFocus;
   end;
+end;
+
+procedure THistoryFrm.ShowSessions(Show: Boolean);
+begin
+  paSess.Visible := Show;
+  spSess.Visible := Show;
+  spSess.Left := paSess.Left + paSess.Width + 1;
 end;
 
 procedure THistoryFrm.bnPassClick(Sender: TObject);
@@ -1739,6 +1825,25 @@ begin
 
   cbFilter.Left := Label1.Left+Label1.Width+8;
   cbSort.Left := paTop.Width-cbSort.Width-2;
+end;
+
+procedure THistoryFrm.tvSessChange(Sender: TObject; Node: TTreeNode);
+begin
+  if Node = nil then begin
+    StartTimestamp := 0;
+    EndTimestamp := 0;
+    hg.UpdateFilter;
+    exit;
+  end;
+
+  if Node.Level <> 2 then exit;
+
+  StartTimestamp := Sessions[DWord(Node.Data)][1];
+  EndTimestamp := 0;
+  if DWord(Node.Data) <= Length(Sessions)-2 then begin
+    EndTimestamp := Sessions[DWord(Node.Data)+1][1];
+  end;
+  hg.UpdateFilter;
 end;
 
 procedure THistoryFrm.CopyText1Click(Sender: TObject);
@@ -1901,6 +2006,16 @@ begin
   end;
 end;
 
+// fix for infamous splitter bug!
+// thanks to Greg Chapman
+// http://groups.google.com/group/borland.public.delphi.objectpascal/browse_thread/thread/218a7511123851c3/5ada76e08038a75b%235ada76e08038a75b?sa=X&oi=groupsr&start=2&num=3
+procedure THistoryFrm.AlignControls(Control: TControl; var ARect: TRect);
+begin
+  inherited;
+  if paSess.Width = 0 then
+    paSess.Left := spSess.Left;
+end;
+
 procedure THistoryFrm.pmPopup(Sender: TObject);
 begin
   LoadInOptions();
@@ -1949,6 +2064,57 @@ begin
   hg.Options.SmileysEnabled := val;
   SaveGridOptions;
   //(Sender as TMenuItem).Checked := val;
+end;
+
+procedure THistoryFrm.SMItemsFound(var M: TMessage);
+var
+  ti: TtntTreeNode;
+  i: Integer;
+  dt: TDateTime;
+  ts: DWord;
+  PrevYear,PrevMonth: Integer;
+  PrevYearNode, PrevMonthNode: TtntTreeNode;
+begin
+{$RANGECHECKS OFF}
+  // wParam - array of hDBEvent, lParam - array size
+  PrevYearNode := nil;
+  PrevMonthNode := nil;
+  Sessions := PSessArray(m.WParam)^;
+  tvSess.Items.BeginUpdate;
+  try
+    for i := 0 to Length(Sessions) - 1 do begin
+      ts := Sessions[i][1];
+      dt := TimestampToDateTime(ts);
+      if (PrevYearNode = nil) or (DWord(PrevYearNode.Data) <> YearOf(dt)) then begin
+        PrevYearNode := tvSess.Items.AddChild(nil,FormatDateTime('yyyy',dt));
+        PrevYearNode.Data := Pointer(YearOf(dt));
+        PrevYearNode.ImageIndex := -1;
+        PrevYearNode.SelectedIndex := PrevYearNode.ImageIndex;
+      end;
+      if (PrevMonthNode = nil) or (DWord(PrevMonthNode.Data) <> MonthOf(dt)) then begin
+        PrevMonthNode := tvSess.Items.AddChild(PrevYearNode,FormatDateTime('mmmm',dt));
+        PrevMonthNode.Data := Pointer(MonthOf(dt));
+        case MonthOf(dt) of
+          12,1..2: PrevMonthNode.ImageIndex := 3;
+          3..5: PrevMonthNode.ImageIndex := 4;
+          6..8: PrevMonthNode.ImageIndex := 1;
+          9..11: PrevMonthNode.ImageIndex := 2;
+        end;
+        PrevMonthNode.SelectedIndex := PrevMonthNode.ImageIndex;
+      end;
+      ti := tvSess.Items.AddChild(PrevMonthNode,FormatDateTime('d (h:nn)',dt));
+      ti.Data := Pointer(i);
+      ti.ImageIndex := 0;
+      ti.SelectedIndex := ti.ImageIndex;
+    end;
+    if PrevYearNode <> nil then begin
+      PrevYearNode.Expand(False);
+      PrevMonthNode.Expand(True);
+    end;
+  finally
+    tvSess.Items.EndUpdate;
+  end;
+{$RANGECHECKS ON}
 end;
 
 procedure THistoryFrm.BBCodesEnabled1Click(Sender: TObject);
