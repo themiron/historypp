@@ -56,11 +56,14 @@ type
     ssa: String;
     esa: String;
     cookie: TBBCookie;
+    ssha: String;
+    esha: String;
   end;
 
 
   function DoSupportSmileys(wParam, lParam: DWord): Integer; cdecl;
   function DoSupportBBCodes(wParam, lParam: DWord): Integer; cdecl;
+  function DoSupportBBCodesHTML(S: String): String; cdecl;
   // math module support is out of order
   function DoSupportMathModule(wParam, lParam: DWord): Integer; cdecl;
 
@@ -71,16 +74,16 @@ uses StrUtils;
 const
 
   bbCodes: array[0..9] of TBBCodeInfo = (
-    (ssw:'[b]';  esw:''; ssa:'[b]';  esa:''; cookie:BBS_BOLD_S),
-    (ssw:'[/b]'; esw:''; ssa:'[/b]'; esa:''; cookie:BBS_BOLD_E),
-    (ssw:'[i]';  esw:''; ssa:'[i]';  esa:''; cookie:BBS_ITALIC_S),
-    (ssw:'[/i]'; esw:''; ssa:'[/i]'; esa:''; cookie:BBS_ITALIC_E),
-    (ssw:'[u]';  esw:''; ssa:'[u]';  esa:''; cookie:BBS_UNDERLINE_S),
-    (ssw:'[/u]'; esw:''; ssa:'[/u]'; esa:''; cookie:BBS_UNDERLINE_E),
-    (ssw:'[s]';  esw:''; ssa:'[s]';  esa:''; cookie:BBS_STRIKEOUT_S),
-    (ssw:'[/s]'; esw:''; ssa:'[/s]'; esa:''; cookie:BBS_STRIKEOUT_E),
-    (ssw:'[color='; esw:']'; ssa:'[color='; esa:']'; cookie:BBS_COLOR_S),
-    (ssw:'[/color]'; esw:''; ssa:'[/color]'; esa:''; cookie:BBS_COLOR_E));
+    (ssw:'[b]';  esw:''; ssa:'[b]';  esa:''; cookie:BBS_BOLD_S;          ssha: '<b>'; esha:''),
+    (ssw:'[/b]'; esw:''; ssa:'[/b]'; esa:''; cookie:BBS_BOLD_E;          ssha: '</b>'; esha:''),
+    (ssw:'[i]';  esw:''; ssa:'[i]';  esa:''; cookie:BBS_ITALIC_S;        ssha: '<i>'; esha:''),
+    (ssw:'[/i]'; esw:''; ssa:'[/i]'; esa:''; cookie:BBS_ITALIC_E;        ssha: '</i>'; esha:''),
+    (ssw:'[u]';  esw:''; ssa:'[u]';  esa:''; cookie:BBS_UNDERLINE_S;     ssha: '<u>'; esha:''),
+    (ssw:'[/u]'; esw:''; ssa:'[/u]'; esa:''; cookie:BBS_UNDERLINE_E;     ssha: '</u>'; esha:''),
+    (ssw:'[s]';  esw:''; ssa:'[s]';  esa:''; cookie:BBS_STRIKEOUT_S;     ssha: '<s>'; esha:''),
+    (ssw:'[/s]'; esw:''; ssa:'[/s]'; esa:''; cookie:BBS_STRIKEOUT_E;     ssha: '</s>'; esha:''),
+    (ssw:'[color='; esw:']'; ssa:'[color='; esa:']'; cookie:BBS_COLOR_S; ssha: '<font color='; esha:'>'),
+    (ssw:'[/color]'; esw:''; ssa:'[/color]'; esa:''; cookie:BBS_COLOR_E; ssha: '</font>'; esha:''));
 
   rtf_ctable: array[0..7] of TRTFColorTable = (
     (szw:'red'; sza:'red'; col:$0000FF),
@@ -252,6 +255,29 @@ begin
     end;
   until not found;
   Result := 0;
+end;
+
+function DoSupportBBCodesHTML(S: String): String; cdecl;
+var
+  temp,temp1,temp2: String;
+  i,pos: integer;
+begin
+  temp := S;
+  for i := 0 to High(bbCodes) do begin
+    if bbCodes[i].esa = '' then
+      temp := StringReplace(temp,bbCodes[i].ssa,bbCodes[i].ssha,[rfReplaceAll,rfIgnoreCase])
+    else repeat
+      pos := AnsiPos(bbCodes[i].ssa,temp);
+      if pos > 0 then begin
+        temp1 := Copy(temp,1,pos-1);
+        temp2 := Copy(temp,pos,Length(temp)-pos+1);
+        temp2 := StringReplace(temp2,bbCodes[i].ssa,bbCodes[i].ssha,[rfIgnoreCase]);
+        temp2 := StringReplace(temp2,bbCodes[i].esa,bbCodes[i].esha,[rfIgnoreCase]);
+        temp := temp1+temp2;
+      end;
+    until pos = 0;
+  end;
+  Result := temp;
 end;
 
 function DoSupportMathModule(wParam{hRichEdit}, lParam{PItemRenderDetails}: DWord): Integer; cdecl;

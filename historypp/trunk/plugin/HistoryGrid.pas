@@ -513,20 +513,16 @@ end;
 
 function MakeTextHtmled(T: String): String;
 begin
-Result := t;
-// change & to &amp;
-Result := StringReplace(Result,'&','&amp;',[rfReplaceAll]);
-// of course change tag brackets
-Result := StringReplace(Result,'>','&gt;',[rfReplaceAll]);
-Result := StringReplace(Result,'<','&lt;',[rfReplaceAll]);
-// replace tabs also
-Result := StringReplace(Result,#9,' ',[rfReplaceAll]);
-// make line feeds
-Result := StringReplace(Result,#13#10,'<br>',[rfReplaceAll]);
-  try
-    Result := UrlHighlightHtml(Result);
-  except
-  end;
+  Result := t;
+  // change & to &amp;
+  Result := StringReplace(Result,'&','&amp;',[rfReplaceAll]);
+  // of course change tag brackets
+  Result := StringReplace(Result,'>','&gt;',[rfReplaceAll]);
+  Result := StringReplace(Result,'<','&lt;',[rfReplaceAll]);
+  // replace tabs also
+  Result := StringReplace(Result,#9,' ',[rfReplaceAll]);
+  // make line feeds
+  Result := StringReplace(Result,#13#10,'<br>',[rfReplaceAll]);
 end;
 
 function PointInRect(Pnt: TPoint; Rct: TRect): Boolean;
@@ -1634,7 +1630,8 @@ var
   cr,r: TRect;
   t: WideString;
 begin
-  t := AnsiToWideString(Text,CP_ACP);
+  //t := AnsiToWideString(Text,CP_ACP);
+  t := AnsiToWideString(Text,hppCodepage);
   Canvas.Font := Screen.MenuFont;
   Canvas.Brush.Color := clWindow;
   Canvas.Font.Color := clWindowText;
@@ -2868,10 +2865,10 @@ procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; C
     WriteString(Stream,#255#254);
     WriteWideString(Stream,'###'#13#10);
     if Caption = '' then
-      Caption := AnsiToWideString(TxtHistExport,CP_ACP);
+      Caption := AnsiToWideString(TxtHistExport,hppCodepage);
     WriteWideString(Stream,WideFormat('### %s'#13#10,[Caption]));
     WriteWideString(Stream,WideFormat('### %s - %s'#13#10,[ProfileName,ContactName]));
-    WriteWideString(Stream,AnsiToWideString(TxtGenHist1,CP_ACP)+#13#10);
+    WriteWideString(Stream,AnsiToWideString(TxtGenHist1,hppCodepage)+#13#10);
     WriteWideString(Stream,'###'#13#10#13#10);
   end;
 
@@ -2880,6 +2877,7 @@ procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; C
     WriteString(Stream,'###'#13#10);
     if Caption = '' then
       Caption := TxtHistExport;
+    // bug there if cp_acp <> user_codepage !!!
     WriteString(Stream,WideToAnsiString(WideFormat('### %s'#13#10,[Caption]),CP_ACP));
     WriteString(Stream,WideToAnsiString(WideFormat('### %s - %s'#13#10,[ProfileName,ContactName]),CP_ACP));
     WriteString(Stream,TxtGenHist1+#13#10);
@@ -2957,6 +2955,18 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
                                               else cnt := UTF8Encode(ProfileName);
     cnt := MakeTextHtmled(cnt+':');
     txt := MakeTextHtmled(UTF8Encode(FItems[Item].Text));
+    if Options.UnderlineURLEnabled then begin
+      try
+        txt := UrlHighlightHtml(txt);
+      except
+      end;
+    end;
+    if Options.BBCodesEnabled then begin
+      try
+        txt := DoSupportBBCodesHTML(txt);
+      except
+      end;
+    end;
     MesTypeToStyle(FItems[Item].MessageType,mes_id,type_id);
     WriteString(Stream,'<div class=mes id='+mes_id+'>'+#13#10);
     WriteString(Stream,#9+'<div class=nick id='+type_id+'>'+cnt+'</div>'+#13#10);
@@ -3003,6 +3013,7 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
   var
     date,cnt: String;
   begin
+    // bug there if cp_acp <> user codepage
     if mtIncoming in FItems[Item].MessageType then cnt := WideToAnsiString(ContactName,CP_ACP)
                                               else cnt := WideToAnsiString(ProfileName,CP_ACP);
     date := WideToAnsiString(GetTime(FItems[Item].Time),CP_ACP);
