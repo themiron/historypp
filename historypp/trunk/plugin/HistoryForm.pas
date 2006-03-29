@@ -578,7 +578,7 @@ begin
   end else begin
     filt := GetDBInt(hppDBName,'LastFilter',0);
   // if filter is System then set to all
-    if filt > 4 then filt := 0;
+    if filt >= cbFilter.Items.Count then filt := 0;
     cbFilter.ItemIndex := filt;
   end;
   cbSort.ItemIndex:=GetDBInt(hppDBName,'SortOrder',0);
@@ -927,6 +927,7 @@ begin
     2: fil := [mtMessage, mtOutgoing];
     3: fil := [mtFile, mtIncoming, mtOutgoing];
     4: fil := [mtUrl, mtIncoming, mtOutgoing];
+    5: fil := [mtStatus, mtIncoming, mtOutgoing];
     else
        fil := filOthers;
   end;

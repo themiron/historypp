@@ -354,7 +354,8 @@ object HistoryFrm: THistoryFrm
           'Incoming Messages'
           'Outgoing Messages'
           'Files'
-          'Urls')
+          'Urls'
+          'Status Changes')
       end
       object cbSort: TComboBox
         Left = 338
