@@ -1,13 +1,38 @@
 @echo off
 
-set UPXPATH="c:\program files\upx\upx.exe"
-set ZPATH="c:\program files\7-zip\7z.exe"
+set UPXLONGPATH="c:\program files\upx\upx.exe"
+set ZIPLONGPATH="c:\program files\7-zip\7z.exe"
+
+rem #
+rem # Find UPX
+rem #
+set UPXPATH="upx"
+%UPXPATH% -V > nul 2>&1
+if not errorlevel 1 goto haveupx
+set UPXPATH=%UPXLONGPATH%
+%UPXPATH% -V > nul 2>&1
+if not errorlevel 1 goto haveupx
+goto missupx
+:haveupx
+
+rem #
+rem # Find 7-zip
+rem #
+set ZPATH="7z.exe"
+%ZPATH% > nul 2>&1
+if not errorlevel 1 goto havezip
+set ZPATH=%ZIPLONGPATH%
+%ZPATH% > nul 2>&1
+if not errorlevel 1 goto havezip
+goto misszip
+:havezip
 
 :start
 FOR /F "TOKENS=1" %%A IN ('type relno.txt') DO SET VER=%%A
 if not exist relno.txt set VER=nover
 
-echo --------- Make History++ Distributive ---------
+echo:
+echo --------- Make History++ Distribution ---------
 echo:
 echo This script will make binary and source distributives
 echo of the current version. To change current version run
@@ -43,14 +68,17 @@ rem # we are now in cd ..
 
 cd build\src
 call build.bat
+if errorlevel 1 goto builderr
 
-%UPXPATH% --force --best --crp-ms=999999 --nrv2d historypp.dll
+%UPXPATH% --best --crp-ms=999999 --nrv2d --no-backup --overlay=copy --compress-exports=0 --compress-resources=0 --strip-relocs=0 historypp.dll
+if errorlevel 1 goto upxerr
 
 move historypp.dll ..
 
 cd ..
 
-%ZPATH% a -tzip -mx historypp-%VER%-bin.zip historypp.dll
+%ZPATH% a -y -tzip -mx historypp-%VER%-bin.zip historypp.dll
+if errorlevel 1 goto ziperr
 
 cd src
 
@@ -71,10 +99,49 @@ del /S /Q /F *.identcache
 del /S /Q /F *.map
 del /S /Q /F *.todo
 
-%ZPATH% a -tzip -r -mx ..\historypp-%VER%-src.zip *
+%ZPATH% a -y -tzip -r -mx ..\historypp-%VER%-src.zip *
+if errorlevel 1 goto ziperr
 
 cd ..
 rd /q/s src
 del historypp.dll
 
+goto end
+
+:missupx
+set ERR1=Can not find UPX in path and in default location
+set ERR2=See source to modify path
+goto error
+
+:misszip
+set ERR1=Can not find 7-ZIP in path and in default location
+set ERR2=See source to modify path
+goto error
+
+:upxerr
+set ERR1=Error occured while packing with UPX
+goto error
+
+:ziperr
+set ERR1=Error occured while making archive with 7-zip
+goto error
+
+:builderr
+set ERR1=Build failed
+goto error
+
+:error
+if "%ERR1%"=="" set ERR1="Unknown error"
+if "%ERR2%"=="" set ERR2="See output for error details"
+
+echo ###
+echo ### Error! Can not make distribution!
+echo ###
+echo ### %ERR1%
+echo ### %ERR2%
+echo ###
+pause
+exit
+
+:end
 pause
