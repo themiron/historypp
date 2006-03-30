@@ -81,6 +81,10 @@ cd ..
 if errorlevel 1 goto ziperr
 
 cd src
+rem # a bit of saftiness here
+if errorlevel 1 (
+  echo Error! Can not change dirs
+  exit )
 
 del /S /Q /F *.bak
 del /S /Q /F *.ddp
