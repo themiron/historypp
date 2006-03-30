@@ -2,6 +2,22 @@
 
 cd plugin
 
+brcc32 > nul 2>&1
+if errorlevel 2 (
+  echo ###
+  echo ### Error! Can not build!
+  echo ### Borland Resource Compiler [brcc32.exe] NOT FOUND!
+  echo ###
+  exit )
+dcc32 > nul 2>&1
+if errorlevel 1 (
+  echo ###
+  echo ### Error! Can not build!
+  echo ### Delphi Compiler [dcc32.exe] NOT FOUND!
+  echo ###
+  exit )
+
+
 brcc32 -fohpp_resource.res hpp_resource.rc
 brcc32 -fohpp_res_ver.res hpp_res_ver.rc
 
@@ -33,9 +49,10 @@ set DCUDIR="tmp"
 : Y  Symbol reference info
 set COMPDIR=-$A4 -$D- -$J+ -$L- -$O+ -$Q+ -$R- -$Y-
 
-md %OUTDIR%
-md %DCUDIR%
+md %OUTDIR% 2>nul
+md %DCUDIR% 2>nul
 dcc32 -B -CG -Q -W- -H- --no-config -U%INCDIR% -R%INCDIR% -I%INCDIR% -E%OUTDIR% -LE%DCUDIR% -LN%DCUDIR% -N0%DCUDIR% %COMPDIR% historypp.dpr
 rd /q /s %DCUDIR%
 
+:end
 cd ..
