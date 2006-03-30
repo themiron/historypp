@@ -14,7 +14,7 @@ echo    Release 1.5.1:          1.5.1.0
 echo    Version 1.5, build #12: 1.5.0.12
 echo    Alpha version:          1.5.0.0_alpha
 echo:
-echo Current release: %CURVER%
+echo Current release: %CURVER% (press [Enter] to use current release)
 echo:
 SET /P VA=[Enter release] 
 IF NOT "%VA%"=="" (

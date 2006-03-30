@@ -1,18 +1,24 @@
 @echo off
 
+set UPXPATH="c:\program files\upx\upx.exe"
+set ZPATH="c:\program files\7-zip\7z.exe"
+
 :start
 FOR /F "TOKENS=1" %%A IN ('type relno.txt') DO SET VER=%%A
 if not exist relno.txt set VER=nover
 
-echo ------- Make History++ release -------
+echo --------- Make History++ Distributive ---------
 echo:
-echo This script will make binary and source archives
+echo This script will make binary and source distributives
 echo of the current version. To change current version run
 echo setrelno.bat
 echo:
+echo Upx.exe path: %UPXPATH%
+echo 7-z.exe path:  %ZPATH%
+echo:
 echo Current release: %VER%
 echo:
-echo Following files will be made:
+echo Following files will be generated:
 echo    build\historypp-%VER%-bin.zip
 echo    build\historypp-%VER%-src.zip
 echo:
@@ -29,9 +35,6 @@ if "%ANS%"=="" exit
 echo Unknown command: "%ANS%"
 goto askproceed
 :proceed
-
-set UPXPATH="c:\program files\upx\upx"
-set ZPATH="c:\program files\7-zip\7z"
 
 rd /q/s ..\build
 
@@ -66,6 +69,7 @@ del /S /Q /F *.dof
 del /S /Q /F *.drc
 del /S /Q /F *.identcache
 del /S /Q /F *.map
+del /S /Q /F *.todo
 
 %ZPATH% a -tzip -r -mx ..\historypp-%VER%-src.zip *
 
