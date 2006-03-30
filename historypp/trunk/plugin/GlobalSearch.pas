@@ -519,7 +519,30 @@ end;
 
 procedure TfmGlobalSearch.TranslateForm;
 begin
-  {TODO: Translate form}
+  Caption := TranslateW(PWideChar(Caption));
+
+  Label1.Caption := Translate(PChar(Label1.Caption));
+  bnSearch.Caption := Translate(PChar(bnSearch.Caption));
+  bnAdvanced.Caption := Translate(PChar(bnAdvanced.Caption));
+  gbAdvanced.Caption := Translate(PChar(gbAdvanced.Caption));
+  rbAny.Caption := Translate(PChar(rbAny.Caption));
+  rbAll.Caption := Translate(PChar(rbAll.Caption));
+  rbExact.Caption := Translate(PChar(rbExact.Caption));
+
+  cbPass.Caption := TranslateW(PWideChar(cbPass.Caption));
+  laPass.Caption := TranslateW(PWideChar(laPass.Caption));
+  sbClearFilter.Hint := TranslateW(PWideChar(sbClearFilter.Hint));
+
+  hg.TxtFullLog := Translate(PChar(hg.txtFullLog));
+  hg.TxtGenHist1 := Translate(PChar(hg.txtGenHist1));
+  hg.TxtGenHist2 := Translate(PChar(hg.txtGenHist2));
+  hg.TxtHistExport := Translate(PChar(hg.TxtHistExport));
+  hg.TxtNoItems := Translate(PChar(hg.TxtNoItems));
+  hg.TxtNoSuch := Translate(PChar(hg.TxtNoSuch));
+  hg.TxtPartLog := Translate(PChar(hg.TxtPartLog));
+  hg.txtStartUp := Translate(PChar(hg.txtStartUp));
+
+  edPass.Left := laPass.Left + laPass.Width + 10;
 end;
 
 procedure TfmGlobalSearch.FilterOnContact(hContact: Integer);
