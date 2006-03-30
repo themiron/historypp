@@ -175,11 +175,6 @@ type
     AllItems: Integer;
     AllContacts: Integer;
     HotFilterString: WideString;
-    FilterIcon: THandle;
-    FilterIconStart: TIcon;
-    FilterIconEnd: TIcon;
-    FilterIconProgress: TIcon;
-    ilFilterHandle: THandle;
     procedure SMPrepare(var M: TMessage); message SM_PREPARE;
     procedure SMProgress(var M: TMessage); message SM_PROGRESS;
     procedure SMItemFound(var M: TMessage); message SM_ITEMFOUND; // OBSOLETE
@@ -262,16 +257,6 @@ begin
 //  end;
   DesktopFont := True;
   MakeFontsParent(Self);
-
-
-  FilterIcon := LoadImage(hInstance,'historypp_hotfilter',IMAGE_ICON,0,0,0);
-  //FilterIcon := TIcon.Create;
-  //FilterIcon.LoadFromResourceName(hInstance,'historypp_hotfilter');
-  //ilFilter.AddIcon(FilterIcon);
-  //ilFilter.
-  //ilFilter.GetInstRes(hInstance,rtIcon,'historypp_hotfilter',0,[lrTransparent],0);
-  //ilFilter.GetInstRes(hInstance,rtIcon,'historypp_hotfilterstart',0,[lrTransparent],0);
-  //ilFilter.GetInstRes(hInstance,rtIcon,'historypp_hotfilterend',0,[lrTransparent],0);
 end;
 
 procedure TfmGlobalSearch.SMFinished(var M: TMessage);
@@ -488,7 +473,6 @@ end;
 procedure TfmGlobalSearch.TntFormDestroy(Sender: TObject);
 begin
   fmGlobalSearch := nil;
-  FilterIconProgress.Free;
 end;
 
 procedure TfmGlobalSearch.TntFormMouseWheel(Sender: TObject; Shift: TShiftState;
