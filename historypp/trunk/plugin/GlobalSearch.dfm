@@ -204,15 +204,15 @@ object fmGlobalSearch: TfmGlobalSearch
       BevelOuter = bvNone
       TabOrder = 1
       object laPass: TTntLabel
-        Left = 225
-        Top = 4
-        Width = 49
+        Left = 221
+        Top = 5
+        Width = 54
         Height = 13
         Caption = 'Password:'
         Enabled = False
       end
       object edPass: TPasswordEdit
-        Left = 280
+        Left = 281
         Top = 1
         Width = 125
         Height = 21
@@ -223,7 +223,7 @@ object fmGlobalSearch: TfmGlobalSearch
       object cbPass: TTntCheckBox
         Left = 4
         Top = 4
-        Width = 205
+        Width = 215
         Height = 17
         Caption = 'Include password-protected contacts'
         TabOrder = 0

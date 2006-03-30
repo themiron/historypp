@@ -146,7 +146,7 @@ type
     spSess: TTntSplitter;
     ilSessions: TImageList;
     Panel1: TPanel;
-    TntLabel1: TTntLabel;
+    laSess: TTntLabel;
     sbCloseSess: TTntSpeedButton;
     Button1: TButton;
     procedure sbCloseSessClick(Sender: TObject);
@@ -1807,6 +1807,7 @@ begin
   bnPass.Caption := Translate(PChar(bnPass.Caption));
   laPass.Caption := Translate(PChar(laPass.Caption));
   Label4.Caption := Translate(PChar(Label4.Caption));
+  laSess.Caption := Translate(PChar(laSess.Caption));
 
   SaveDialog.Title := Translate('Save History');
 

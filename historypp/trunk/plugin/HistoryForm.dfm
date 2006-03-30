@@ -489,7 +489,7 @@ object HistoryFrm: THistoryFrm
         TabOrder = 1
         ExplicitTop = -1
         ExplicitWidth = 152
-        object TntLabel1: TTntLabel
+        object laSess: TTntLabel
           Left = 8
           Top = 4
           Width = 67
