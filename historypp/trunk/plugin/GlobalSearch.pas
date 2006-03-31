@@ -54,7 +54,7 @@ type
     public
       Proto: String;
       Codepage: Cardinal;
-      RTL: Boolean;
+      RTLMode: TRTLMode;
       Name: WideString;
       ProfileName: WideString;
       Handle: Integer;
@@ -243,7 +243,7 @@ begin
   ci.Codepage := GetContactCodePage(hContact,ci.Proto);
   ci.Name := GetContactDisplayName(ci.Handle,ci.Proto,true);
   ci.ProfileName := GetContactDisplayName(0,ci.Proto);
-  ci.RTL := GetContactRTLMode(ci.handle,ci.Proto);
+  ci.RTLMode := GetContactRTLModeTRTL(ci.handle,ci.Proto);
   ContactList.Add(ci);
   Result := ci;
 end;
@@ -679,6 +679,7 @@ procedure TfmGlobalSearch.hgItemData(Sender: TObject; Index: Integer;
 begin
   Item := ReadEvent(GetSearchItem(Index).hDBEvent,GetSearchItem(Index).Contact.Codepage);
   Item.Proto := GetSearchItem(Index).Contact.Proto;
+  Item.RTLMode := GetSearchItem(Index).Contact.RTLMode;
 end;
 
 procedure TfmGlobalSearch.hgItemDelete(Sender: TObject; Index: Integer);

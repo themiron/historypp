@@ -41,6 +41,8 @@ type
   TMessageTypes = set of TMessageType;
   PMessageTypes = ^TMessageTypes;
 
+  TRTLMode = (hppRTLDefault,hppRTLEnable,hppRTLDisable);
+
   PHistoryItem = ^THistoryItem;
   THistoryItem = record
     Time: DWord;
@@ -50,9 +52,8 @@ type
     Module: String;
     Proto: String;
     Text: WideString;
+    RTLMode: TRTLMode;
   end;
-
-  TRTLMode = (hppRTLDefault,hppRTLEnable,hppRTLDisable);
 
 const
 
