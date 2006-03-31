@@ -350,6 +350,7 @@ type
     procedure ApplyItemToRich(Item: Integer; RichEdit: TTntRichEdit = nil);
     function GetRichEditRect(Item: Integer): TRect;
     procedure HandleRichEditMouse(Message: DWord; X,Y: Integer);
+    procedure SetRichRTL(RTL: Boolean);
     {$ENDIF}
     procedure SetRTLMode(const Value: TRTLMode);
   protected
@@ -1411,6 +1412,15 @@ begin
   RichEdit.Font := textFont;
   RichEdit.DefAttributes.Color := FontColor;
   //RichEdit.Font.Color := FontColor;
+
+  if FItems[Item].RTLMode = hppRTLDefault then begin
+    if RTLMode = hppRTLDefault then
+      SetRichRTL(Options.RTLEnabled)
+    else
+      SetRichRTL(RTLMode = hppRTLEnable);
+  end
+  else
+    SetRichRTL(FItems[Item].RTLMode = hppRTLEnable);
 
   RichEdit.Text := FItems[Item].Text;
 
@@ -3083,6 +3093,26 @@ begin
   Update;
 end;
 
+procedure THistoryGrid.SetRichRTL(RTL: Boolean);
+var
+  pf: PARAFORMAT2;
+begin
+  // we use FRich.Tag here to save previous RTL state to prevent from
+  // reapplying same state, because SetRichRTL is called VERY OFTEN
+  // (from ApplyItemToRich)
+  if FRich.Tag = Integer(RTL) then exit;
+  pf.cbSize := SizeOf(pf);
+  pf.dwMask := PFM_RTLPARA;
+  if RTL then begin
+    pf.wReserved := PFE_RTLPARA;
+  end else begin
+    pf.wReserved := 0;
+  end;
+  FRich.Perform(EM_SETPARAFORMAT,0,integer(@pf));
+  FRichInline.Perform(EM_SETPARAFORMAT,0,integer(@pf));
+  FRich.Tag := Integer(RTL);
+end;
+
 (* Index to Position *)
 function THistoryGrid.GetIdx(Index: Integer): Integer;
 begin
@@ -3126,16 +3156,18 @@ begin
 
   //if Options.RTLEnabled then begin
   if (RTLMode = hppRTLEnable) or ((RTLMode = hppRTLDefault) and Options.RTLEnabled) then begin
-    pf.wReserved := PFE_RTLPARA;
+    SetRichRTL(True);
+    //pf.wReserved := PFE_RTLPARA;
     Canvas.TextFlags := Canvas.TextFlags or ETO_RTLREADING;
   end else begin
-    pf.wReserved := 0;
+    SetRichRTL(False);
+    //pf.wReserved := 0;
     Canvas.TextFlags := Canvas.TextFlags and not ETO_RTLREADING;
   end;
   //SendMessage(FRich.Handle,EM_SETPARAFORMAT,0,integer(@pf));
   //SendMessage(FRichInline.Handle,EM_SETPARAFORMAT,0,integer(@pf));
-  FRich.Perform(EM_SETPARAFORMAT,0,integer(@pf));
-  FRichInline.Perform(EM_SETPARAFORMAT,0,integer(@pf));
+  //FRich.Perform(EM_SETPARAFORMAT,0,integer(@pf));
+  //FRichInline.Perform(EM_SETPARAFORMAT,0,integer(@pf));
 
   Canvas.Font := Options.FontProfile;
   //ph := Canvas.TextHeight('Wy');
