@@ -29,14 +29,17 @@ uses
   Windows, SysUtils,
   Forms, Classes,
   m_globaldefs, m_api,
-  hpp_global, hpp_miranda_mmi;
+  hpp_global, hpp_miranda_mmi,
+  hpp_database;
 
 function GetContactDisplayName(hContact: THandle; Proto: String = ''; Contact: boolean = false): WideString;
 function GetContactProto(hContact: THandle): String;
 function GetContactID(hContact: THandle; Proto: String = ''; Contact: boolean = false): String;
 function GetContactCodePage(hContact: THandle; Proto: String = ''): Cardinal;
+function WriteContactCodePage(hContact: THandle; CodePage: Cardinal; Proto: String = ''): Boolean;
 function GetContactRTLMode(hContact: THandle; Proto: String = ''): boolean;
 function GetContactRTLModeTRTL(hContact: THandle; Proto: String = ''): TRTLMode;
+function WriteContactRTLMode(hContact: THandle; RTLMode: TRTLMode; Proto: String = ''): Boolean;
 
 implementation
 
@@ -122,15 +125,24 @@ begin
   end;
 end;
 
+function WriteContactCodePage(hContact: THandle; CodePage: Cardinal; Proto: String = ''): Boolean;
+begin
+  Result := False;
+  if Proto = '' then Proto := GetContactProto(hContact);
+  if Proto = '' then exit;
+  WriteDBWord(hContact,Proto,'AnsiCodePage',Codepage);
+  Result := True;
+end;
+
 function GetContactCodePage(hContact: THandle; Proto: String = ''): Cardinal;
 begin
   if Proto = '' then Proto := GetContactProto(hContact);
   if Proto = '' then
     Result := CP_ACP
   else begin
-    Result := DBGetContactSettingWord(hContact,PChar(Proto),'AnsiCodePage',MaxInt);
-    If Result = MaxInt then
-      Result := DBGetContactSettingWord(0,PChar(Proto),'AnsiCodePage',CP_ACP);
+    Result := GetDBWord(hContact,Proto,'AnsiCodePage',MaxWord);
+    If Result = MaxWord then
+      Result := GetDBWord(0,Proto,'AnsiCodePage',CP_ACP);
   end;
 end;
 
@@ -152,6 +164,21 @@ begin
       Temp := DBGetContactSettingWord(0,PChar(Proto),'RTL',byte(Application.UseRightToLeftScrollBar));
     Result := boolean(Temp);
   end;
+end;
+
+function WriteContactRTLMode(hContact: THandle; RTLMode: TRTLMode; Proto: String = ''): Boolean;
+begin
+  Result := False;
+  if Proto = '' then Proto := GetContactProto(hContact);
+  if Proto = '' then exit;
+
+  case RTLMode of
+    hppRTLDefault: DBDeleteContactSetting(hContact,PChar(Proto),'RTL');
+    hppRTLEnable: WriteDBBool(hContact,Proto,'RTL',True);
+    hppRTLDisable: WriteDBBool(hContact,Proto,'RTL',True);
+  end;
+
+  Result := True;
 end;
 
 function GetContactRTLModeTRTL(hContact: THandle; Proto: String = ''): TRTLMode;

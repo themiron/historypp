@@ -31,23 +31,33 @@ procedure SetSafetyMode(Safe: Boolean);
 
 function DBGetContactSettingString(hContact: THandle; const szModule: PChar; const szSetting: PChar; ErrorValue: PChar): PChar;
 
-function GetDBStr(const Module,Param: String; Default: String): String;
-function GetDBInt(const Module,Param: String; Default: Integer): Integer;
-function GetDBWord(const Module,Param: String; Default: Word): Word;
-function GetDBDWord(const Module,Param: String; Default: DWord): DWord;
-function GetDBByte(const Module,Param: String; Default: Byte): Byte;
-function GetDBBool(const Module,Param: String; Default: Boolean): Boolean;
+function GetDBStr(const Module,Param: String; Default: String): String; overload;
+function GetDBStr(const hContact: THandle; const Module,Param: String; Default: String): String; overload;
+function GetDBInt(const Module,Param: String; Default: Integer): Integer; overload;
+function GetDBInt(const hContact: THandle; const Module,Param: String; Default: Integer): Integer; overload;
+function GetDBWord(const Module,Param: String; Default: Word): Word; overload;
+function GetDBWord(const hContact: THandle; const Module,Param: String; Default: Word): Word; overload;
+function GetDBDWord(const Module,Param: String; Default: DWord): DWord; overload;
+function GetDBDWord(const hContact: THandle; const Module,Param: String; Default: DWord): DWord; overload;
+function GetDBByte(const Module,Param: String; Default: Byte): Byte; overload;
+function GetDBByte(const hContact: THandle; const Module,Param: String; Default: Byte): Byte; overload;
+function GetDBBool(const Module,Param: String; Default: Boolean): Boolean; overload;
+function GetDBBool(const hContact: THandle; const Module,Param: String; Default: Boolean): Boolean; overload;
 
-function WriteDBByte(const Module,Param: String; Value: Byte): Integer;
-function WriteDBWord(const Module,Param: String; Value: Word): Integer;
-function WriteDBDWord(const Module,Param: String; Value: DWord): Integer;
-function WriteDBInt(const Module,Param: String; Value: Integer): Integer;
-function WriteDBStr(const Module,Param: String; Value: String): Integer;
-function WriteDBBool(const Module,Param: String; Value: Boolean): Integer;
+function WriteDBByte(const Module,Param: String; Value: Byte): Integer; overload;
+function WriteDBByte(const hContact: THandle; const Module,Param: String; Value: Byte): Integer; overload;
+function WriteDBWord(const Module,Param: String; Value: Word): Integer; overload;
+function WriteDBWord(const hContact: THandle; const Module,Param: String; Value: Word): Integer; overload;
+function WriteDBDWord(const Module,Param: String; Value: DWord): Integer; overload;
+function WriteDBDWord(const hContact: THandle; const Module,Param: String; Value: DWord): Integer; overload;
+function WriteDBInt(const Module,Param: String; Value: Integer): Integer; overload;
+function WriteDBInt(const hContact: THandle; const Module,Param: String; Value: Integer): Integer; overload;
+function WriteDBStr(const Module,Param: String; Value: String): Integer; overload;
+function WriteDBStr(const hContact: THandle; const Module,Param: String; Value: String): Integer; overload;
+function WriteDBBool(const Module,Param: String; Value: Boolean): Integer; overload;
+function WriteDBBool(const hContact: THandle; const Module,Param: String; Value: Boolean): Integer; overload;
 
 implementation
-
-{$I m_database.inc}
 
 procedure SetSafetyMode(Safe: Boolean);
 begin
@@ -56,25 +66,50 @@ end;
 
 function WriteDBBool(const Module,Param: String; Value: Boolean): Integer;
 begin
-  Result := WriteDBByte(Module,Param,Byte(Value));
+  Result := WriteDBBool(0,Module,Param,Value);
+end;
+
+function WriteDBBool(const hContact: THandle; const Module,Param: String; Value: Boolean): Integer;
+begin
+  Result := WriteDBByte(hContact,Module,Param,Byte(Value));
 end;
 
 function WriteDBByte(const Module,Param: String; Value: Byte): Integer;
 begin
-  Result := DBWriteContactSettingByte(0,PChar(Module),PChar(Param),Value);
+  Result := WriteDBByte(0,Module,Param,Value);
+end;
+
+function WriteDBByte(const hContact: THandle; const Module,Param: String; Value: Byte): Integer;
+begin
+  Result := DBWriteContactSettingByte(hContact,PChar(Module), PChar(Param), Value);
 end;
 
 function WriteDBWord(const Module,Param: String; Value: Word): Integer;
 begin
-  Result := DBWriteContactSettingWord(0,PChar(Module),PChar(Param),Value);
+  Result := WriteDBWord(0,Module,Param,Value);
+end;
+
+function WriteDBWord(const hContact: THandle; const Module,Param: String; Value: Word): Integer;
+begin
+  Result := DBWriteContactSettingWord(hContact,PChar(Module),PChar(Param),Value);
 end;
 
 function WriteDBDWord(const Module,Param: String; Value: DWord): Integer;
 begin
-  Result := DBWriteContactSettingDWord(0,PChar(Module),PChar(Param),Value);
+  Result := WriteDBWord(0,Module,Param,Value);
+end;
+
+function WriteDBDWord(const hContact: THandle; const Module,Param: String; Value: DWord): Integer;
+begin
+  Result := DBWriteContactSettingDWord(hContact,PChar(Module),PChar(Param),Value);
 end;
 
 function WriteDBInt(const Module,Param: String; Value: Integer): Integer;
+begin
+  Result := WriteDBInt(0,Module,Param,Value);
+end;
+
+function WriteDBInt(const hContact: THandle; const Module,Param: String; Value: Integer): Integer;
 var
   cws: TDBCONTACTWRITESETTING;
 begin
@@ -82,35 +117,65 @@ begin
   cws.szSetting := PChar(Param);
   cws.value.type_ := DBVT_DWORD;
   cws.value.dVal := Value;
-  Result := PluginLink^.CallService(MS_DB_CONTACT_WRITESETTING, 0, lParam(@cws));
+  Result := PluginLink^.CallService(MS_DB_CONTACT_WRITESETTING, hContact, lParam(@cws));
 end;
 
 function WriteDBStr(const Module,Param: String; Value: String): Integer;
 begin
-  Result := DBWriteContactSettingString(0,PChar(Module),PChar(Param),PChar(Value));
+  Result := WriteDBStr(0,Module,Param,Value);
+end;
+
+function WriteDBStr(const hContact: THandle; const Module,Param: String; Value: String): Integer;
+begin
+  Result := DBWriteContactSettingString(hContact,PChar(Module),PChar(Param),PChar(Value));
 end;
 
 function GetDBBool(const Module,Param: String; Default: Boolean): Boolean;
 begin
-  Result := Boolean(GetDBByte(Module,Param,Byte(Default)));
+  Result := GetDBBool(0,Module,Param,Default);
+end;
+
+function GetDBBool(const hContact: THandle; const Module,Param: String; Default: Boolean): Boolean;
+begin
+  Result := Boolean(GetDBByte(hContact,Module,Param,Byte(Default)));
 end;
 
 function GetDBByte(const Module,Param: String; Default: Byte): Byte;
 begin
-  Result := DBGetContactSettingByte(0,PChar(Module),PChar(Param),Default);
+  Result := GetDBByte(0,Module,Param,Default);
+end;
+
+function GetDBByte(const hContact: THandle; const Module,Param: String; Default: Byte): Byte;
+begin
+  Result := DBGetContactSettingByte(hContact,PChar(Module),PChar(Param),Default);
 end;
 
 function GetDBWord(const Module,Param: String; Default: Word): Word;
 begin
-  Result := DBGetContactSettingWord(0,PChar(Module),PChar(Param),Default);
+  Result := GetDBWord(0,Module,Param,Default);
+end;
+
+function GetDBWord(const hContact: THandle; const Module,Param: String; Default: Word): Word;
+begin
+  Result := DBGetContactSettingWord(hContact,PChar(Module),PChar(Param),Default);
 end;
 
 function GetDBDWord(const Module,Param: String; Default: DWord): DWord;
 begin
-  Result := DBGetContactSettingDWord(0,PChar(Module),PChar(Param),Default);
+  Result := GetDBDWord(0,Module,Param,Default);
+end;
+
+function GetDBDWord(const hContact: THandle; const Module,Param: String; Default: DWord): DWord;
+begin
+  Result := DBGetContactSettingDWord(hContact,PChar(Module),PChar(Param),Default);
 end;
 
 function GetDBInt(const Module,Param: String; Default: Integer): Integer;
+begin
+  Result := GetDBInt(0,Module,Param,Default);
+end;
+
+function GetDBInt(const hContact: THandle; const Module,Param: String; Default: Integer): Integer;
 var
   cws:TDBCONTACTGETSETTING;
   dbv:TDBVariant;
@@ -120,7 +185,7 @@ begin
   cws.szModule:=PChar(Module);
   cws.szSetting:=PChar(Param);
   cws.pValue:=@dbv;
-  if PluginLink.CallService(MS_DB_CONTACT_GETSETTING,0,DWord(@cws))<>0 then
+  if PluginLink.CallService(MS_DB_CONTACT_GETSETTING,hContact,DWord(@cws))<>0 then
     Result:=default
   else
     Result:=dbv.dval;
@@ -128,7 +193,12 @@ end;
 
 function GetDBStr(const Module,Param: String; Default: String): String;
 begin
-  Result := DBGetContactSettingString(0,PChar(Module),PChar(Param),PChar(Default));
+  Result := GetDBStr(0,Module,Param,Default);
+end;
+
+function GetDBStr(const hContact: THandle; const Module,Param: String; Default: String): String;
+begin
+  Result := DBGetContactSettingString(hContact,PChar(Module),PChar(Param),PChar(Default));
 end;
 
 function DBGetContactSettingString(hContact: THandle; const szModule: PChar; const szSetting: PChar; ErrorValue: PChar): PChar;
