@@ -122,7 +122,7 @@ function SearchTextAllWords(MessageText: WideString; SearchWords: array of WideS
 
 implementation
 
-uses PassForm;
+uses hpp_contacts, PassForm;
 
 function SearchTextExact(MessageText: WideString; SearchText: WideString): Boolean;
 begin
@@ -354,7 +354,7 @@ procedure TSearchThread.SearchContact(Contact: THandle);
 var
   hDBEvent: THandle;
 begin
-  CurContactCP := CP_ACP;
+  CurContactCP := GetContactCodePage(Contact);
   CurContact := Contact;
   DoMessage(SM_NEXTCONTACT, Contact, GetContactsCount);
   hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDLAST,Contact,0);

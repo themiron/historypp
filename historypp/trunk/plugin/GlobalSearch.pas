@@ -41,7 +41,8 @@ uses
   HistoryGrid,
   m_globaldefs, m_api,
   hpp_global, hpp_events, hpp_services, hpp_contacts,  hpp_database,  hpp_searchthread,
-  ImgList, PasswordEditControl, Buttons, TntButtons, Math, CommCtrl;
+  ImgList, PasswordEditControl, Buttons, TntButtons, Math, CommCtrl,
+  Contnrs;
 
 const
   HM_EVENTDELETED = WM_APP + 100;
@@ -49,20 +50,20 @@ const
   HM_CONTACTICONCHANGED = WM_APP + 102;
 
 type
+  TContactInfo = class(TObject)
+    public
+      Proto: String;
+      Codepage: Cardinal;
+      RTL: Boolean;
+      Name: WideString;
+      ProfileName: WideString;
+      Handle: Integer;
+  end;
+
   TSearchItem = record
     hDBEvent: THandle;
-    hContact: THandle;
-    Proto: String;
-    ContactName: WideString;
-    ProfileName: WideString;
+    Contact: TContactInfo;
     end;
-
-  TContactInfo = class(TObject)
-    private
-      FHandle: Integer;
-    public
-      property Handle: Integer read FHandle write FHandle;
-  end;
 
   TfmGlobalSearch = class(TTntForm)
     Panel1: TPanel;
@@ -166,9 +167,6 @@ type
     History: array of TSearchItem;
     FilterHistory: array of Integer;
     CurContact: THandle;
-    CurContactName: WideString;
-    CurProfileName: WideString;
-    CurProto: String;
     st: TSearchThread;
     stime: DWord;
     ContactsFound: Integer;
@@ -177,7 +175,6 @@ type
     HotFilterString: WideString;
     procedure SMPrepare(var M: TMessage); message SM_PREPARE;
     procedure SMProgress(var M: TMessage); message SM_PROGRESS;
-    procedure SMItemFound(var M: TMessage); message SM_ITEMFOUND; // OBSOLETE
     procedure SMItemsFound(var M: TMessage); message SM_ITEMSFOUND;
     procedure SMNextContact(var M: TMessage); message SM_NEXTCONTACT;
     procedure SMFinished(var M: TMessage); message SM_FINISHED;
@@ -200,6 +197,11 @@ type
     procedure ReplyQuoted(Item: Integer);
     procedure StartHotFilterTimer;
     procedure EndHotFilterTimer;
+  private
+    LastAddedContact: TContactInfo;
+    ContactList: TObjectList;
+    function FindContact(hContact: Integer): TContactInfo;
+    function AddContact(hContact: Integer): TContactInfo;
   protected
     procedure LoadWindowPosition;
     procedure SaveWindowPosition;
@@ -231,6 +233,21 @@ uses hpp_options, PassForm, hpp_itemprocess, hpp_forms, hpp_messages,
 
 {$R *.DFM}
 
+function TfmGlobalSearch.AddContact(hContact: Integer): TContactInfo;
+var
+  ci: TContactInfo;
+begin
+  ci := TContactInfo.Create;
+  ci.Handle := hContact;
+  ci.Proto := GetContactProto(CurContact);
+  ci.Codepage := GetContactCodePage(hContact,ci.Proto);
+  ci.Name := GetContactDisplayName(ci.Handle,ci.Proto,true);
+  ci.ProfileName := GetContactDisplayName(0,ci.Proto);
+  ci.RTL := GetContactRTLMode(ci.handle,ci.Proto);
+  ContactList.Add(ci);
+  Result := ci;
+end;
+
 // fix for infamous splitter bug!
 // thanks to Greg Chapman
 // http://groups.google.com/group/borland.public.delphi.objectpascal/browse_thread/thread/218a7511123851c3/5ada76e08038a75b%235ada76e08038a75b?sa=X&oi=groupsr&start=2&num=3
@@ -257,6 +274,8 @@ begin
 //  end;
   DesktopFont := True;
   MakeFontsParent(Self);
+
+  ContactList := TObjectList.Create;
 end;
 
 procedure TfmGlobalSearch.SMFinished(var M: TMessage);
@@ -282,36 +301,6 @@ begin
   end;
 end;
 
-// OBSOLETE:
-procedure TfmGlobalSearch.SMItemFound(var M: TMessage);
-var
-  li: TtntListItem;
-begin
-  // wParam - hDBEvent, lParam - 0
-  SetLength(History,Length(History)+1);
-  History[High(History)].hDBEvent := m.wParam;
-  History[High(History)].hContact := CurContact;
-  History[High(History)].ContactName := CurContactName;
-  History[High(History)].ProfileName := CurProfileName;
-  History[High(History)].Proto := CurProto;
-
-  if (lvContacts.Items.Count = 0) or (Integer(lvContacts.Items.Item[lvContacts.Items.Count-1].Data) <> CurContact) then begin
-    li := lvContacts.Items.Add;
-    li.Caption := CurContactName;
-    li.Data := Pointer(CurContact);
-  end;
-
-  hg.Allocate(Length(History));
-
-  if hg.Count = 1 then begin
-    hg.Selected := 0;
-    hg.SetFocus;
-    end;
-
-  Application.ProcessMessages;
-
-end;
-
 procedure TfmGlobalSearch.SMItemsFound(var M: TMessage);
 var
   li: TtntListItem;
@@ -324,16 +313,23 @@ begin
   BufCount := Integer(m.LParam);
   OldSize := Length(History);
   SetLength(History,OldSize+BufCount);
+
+  if (LastAddedContact = nil) or (LastAddedContact.Handle <> CurContact) then begin
+    ci := AddContact(CurContact);
+    LastAddedContact := ci;
+  end;
+
   for i := 0 to BufCount - 1 do begin
     History[OldSize + i].hDBEvent := Buffer^[i];
-    History[OldSize + i].hContact := CurContact;
-    History[OldSize + i].ContactName := CurContactName;
-    History[OldSize + i].ProfileName := CurProfileName;
-    History[OldSize + i].Proto := CurProto;
+    History[OldSize + i].Contact := LastAddedContact;
+    //History[OldSize + i].hContact := CurContact;
+    //History[OldSize + i].ContactName := CurContactName;
+    //History[OldSize + i].ProfileName := CurProfileName;
+    //History[OldSize + i].Proto := CurProto;
   end;
 
   FreeMem(Buffer,SizeOf(Buffer^));
-  
+
   if (lvContacts.Items.Count = 0) or (Integer(lvContacts.Items.Item[lvContacts.Items.Count-1].Data) <> CurContact) then begin
     if lvContacts.Items.Count = 0 then begin
     li := lvContacts.Items.Add;
@@ -345,7 +341,8 @@ begin
     if CurContact = 0 then
       li.Caption := 'System History'
     else begin
-      li.Caption := CurContactName;
+      li.Caption := LastAddedContact.Name;
+      //li.Caption := CurContactName;
       Inc(ContactsFound);
     end;
     li.ImageIndex := PluginLink.CallService(MS_CLIST_GETCONTACTICON,CurContact,0);
@@ -378,15 +375,14 @@ begin
 end;
 
 procedure TfmGlobalSearch.SMNextContact(var M: TMessage);
+var
+  CurProto: String;
 begin
   // wParam - hContact, lParam - 0
   CurContact := m.wParam;
   if CurContact = 0 then CurProto := 'ICQ'
                     else CurProto := GetContactProto(CurContact);
-  CurContactName := GetContactDisplayName(CurContact,CurProto,true);
-  CurProfileName := GetContactDisplayName(0, CurProto);
-  laProgress.Caption := WideFormat(AnsiToWideString(Translate('Searching "%s"...'),hppCodepage),[CurContactName]);
-  //Application.ProcessMessages;
+  laProgress.Caption := WideFormat(AnsiToWideString(Translate('Searching "%s"...'),hppCodepage),[GetContactDisplayName(CurContact,CurProto,true)]);
 end;
 
 procedure TfmGlobalSearch.SMPrepare(var M: TMessage);
@@ -413,6 +409,8 @@ begin
   paFilter.Visible := False;
   //ShowContacts(False);
   lvContacts.Items.Clear;
+  ContactList.Clear;
+  LastAddedContact := nil;
 end;
 
 procedure TfmGlobalSearch.SMProgress(var M: TMessage);
@@ -473,6 +471,7 @@ end;
 procedure TfmGlobalSearch.TntFormDestroy(Sender: TObject);
 begin
   fmGlobalSearch := nil;
+  ContactList.Free;
 end;
 
 procedure TfmGlobalSearch.TntFormMouseWheel(Sender: TObject; Shift: TShiftState;
@@ -538,7 +537,7 @@ begin
   FContactFilter := hContact;
   SetLength(FilterHistory,0);
   for i := 0 to Length(History)-1 do begin
-    if History[i].hContact = hContact then begin
+    if History[i].Contact.Handle = hContact then begin
       SetLength(FilterHistory,Length(FilterHistory)+1);
       FilterHistory[High(FilterHistory)] := i;
     end;
@@ -550,6 +549,11 @@ begin
     // dirty hack: readjust scrollbars
     hg.Perform(WM_SIZE,SIZE_RESTORED,MakeLParam(hg.ClientWidth,hg.ClientHeight));
   end;
+end;
+
+function TfmGlobalSearch.FindContact(hContact: Integer): TContactInfo;
+begin
+
 end;
 
 function TfmGlobalSearch.FindHistoryItemByHandle(hDBEvent: THandle): Integer;
@@ -673,8 +677,8 @@ end;
 procedure TfmGlobalSearch.hgItemData(Sender: TObject; Index: Integer;
   var Item: THistoryItem);
 begin
-  Item := ReadEvent(GetSearchItem(Index).hDBEvent);
-  Item.Proto := GetSearchItem(Index).Proto;
+  Item := ReadEvent(GetSearchItem(Index).hDBEvent,GetSearchItem(Index).Contact.Codepage);
+  Item.Proto := GetSearchItem(Index).Contact.Proto;
 end;
 
 procedure TfmGlobalSearch.hgItemDelete(Sender: TObject; Index: Integer);
@@ -697,7 +701,7 @@ end;
 procedure TfmGlobalSearch.hgDblClick(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  PluginLink.CallService(MS_HPP_OPENHISTORYEVENT,GetSearchItem(hg.Selected).hDBEvent,GetSearchItem(hg.Selected).hContact);
+  PluginLink.CallService(MS_HPP_OPENHISTORYEVENT,GetSearchItem(hg.Selected).hDBEvent,GetSearchItem(hg.Selected).Contact.Handle);
 end;
 
 procedure TfmGlobalSearch.edSearchChange(Sender: TObject);
@@ -798,21 +802,21 @@ procedure TfmGlobalSearch.ReplyQuoted(Item: Integer);
 var
   Txt: WideString;
 begin
-  if GetSearchItem(Item).hContact = 0 then exit;
+  if GetSearchItem(Item).Contact.Handle = 0 then exit;
   if (item < 0) or (item > hg.Count-1) then exit;
   if mtIncoming in hg.Items[Item].MessageType then
-    Txt := GetSearchItem(Item).ContactName
+    Txt := GetSearchItem(Item).Contact.Name
   else
-    Txt := GetSearchItem(Item).ProfileName;
+    Txt := GetSearchItem(Item).Contact.ProfileName;
   Txt := Txt+', '+TimestampToString(hg.Items[item].Time)+' :';
   Txt := Txt+#13#10+QuoteText(hg.Items[item].Text);
-  SendMessageTo(GetSearchItem(Item).hContact,Txt);
+  SendMessageTo(GetSearchItem(Item).Contact.Handle,Txt);
 end;
 
 procedure TfmGlobalSearch.ReplyQuoted1Click(Sender: TObject);
 begin
   if hg.Selected <> -1 then begin
-    if GetSearchItem(hg.Selected).hContact = 0 then exit;
+    if GetSearchItem(hg.Selected).Contact.Handle = 0 then exit;
     ReplyQuoted(hg.Selected);
   end;
 end;
@@ -902,7 +906,7 @@ procedure TfmGlobalSearch.hgPopup(Sender: TObject);
 begin
   //SaveSelected1.Visible := False;
   if hg.Selected <> -1 then begin
-    if GetSearchItem(hg.Selected).hContact = 0 then begin
+    if GetSearchItem(hg.Selected).Contact.Handle = 0 then begin
       SendMessage1.Visible := False;
       ReplyQuoted1.Visible := False;
     end;
@@ -920,7 +924,7 @@ procedure TfmGlobalSearch.hgProcessRichText(Sender: TObject;
   Handle: Cardinal; Item: Integer);
 begin
   ZeroMemory(@ItemRenderDetails,SizeOf(ItemRenderDetails));
-  ItemRenderDetails.hContact := GetSearchItem(Item).hContact;
+  ItemRenderDetails.hContact := GetSearchItem(Item).Contact.Handle;
   ItemRenderDetails.hDBEvent := GetSearchItem(Item).hDBEvent;
   ItemRenderDetails.pProto := Pointer(hg.Items[Item].Proto);
   ItemRenderDetails.pModule := Pointer(hg.Items[Item].Module);
@@ -1085,15 +1089,14 @@ begin
  si := GetSearchItem(Index);
  if FFiltered then begin
    if mtIncoming in hg.Items[Index].MessageType then
-     Name := si.ContactName+':'
+     Name := si.Contact.Name+':'
    else
-     Name := si.ProfileName+':';
+     Name := si.Contact.ProfileName+':';
  end else begin
    if mtIncoming in hg.Items[Index].MessageType then
-     Name := 'From '+si.ContactName+':'
+     Name := 'From '+si.Contact.Name+':'
    else
-     Name := 'To '+si.ContactName+':';
-   //Name := WideFormat(AnsiToWideString(Translate('%s''s history'),hppCodepage),[si.ContactName]);
+     Name := 'To '+si.Contact.Name+':';
  end;
 end;
 
@@ -1198,8 +1201,8 @@ end;
 procedure TfmGlobalSearch.SendMessage1Click(Sender: TObject);
 begin
   if hg.Selected <> -1 then begin
-    if GetSearchItem(hg.Selected).hContact = 0 then exit;
-    if GetSearchItem(hg.Selected).hContact <> 0 then SendMessageTo(GetSearchItem(hg.Selected).hContact);
+    if GetSearchItem(hg.Selected).Contact.Handle = 0 then exit;
+    SendMessageTo(GetSearchItem(hg.Selected).Contact.Handle);
   end;
 end;
 
