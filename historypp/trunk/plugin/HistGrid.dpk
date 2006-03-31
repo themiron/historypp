@@ -31,9 +31,11 @@ requires
   vclx,
   {$IFDEF DELPHI_7}
   TntUnicodeVcl_R70;
+  {$ELSEIF DELPHI_6}
+  TntUnicodeVcl_R60;
   {$ELSE}
   TntUnicodeVcl_R90;
-  {$ENDIF}
+  {$IFEND}
 
 contains
   HistoryGrid in 'HistoryGrid.pas',
