@@ -206,7 +206,7 @@ object fmGlobalSearch: TfmGlobalSearch
       object laPass: TTntLabel
         Left = 221
         Top = 5
-        Width = 54
+        Width = 49
         Height = 13
         Caption = 'Password:'
         Enabled = False
@@ -536,9 +536,9 @@ object fmGlobalSearch: TfmGlobalSearch
           Visible = False
         end
         object edFilter: TTntEdit
-          Left = 56
+          Left = 52
           Top = 4
-          Width = 315
+          Width = 319
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
