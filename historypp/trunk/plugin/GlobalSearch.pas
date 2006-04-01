@@ -21,8 +21,8 @@
  [ Known Issues ]
 
  * When doing HotSearch, and then backspacing to empty search string
-   grid doesn't return to the first iteam HotSearch started from
-   unlike in HistoryForm. Probably shouldn'be done, because too much checking
+   grid doesn't return to the first item HotSearch started from
+   unlike in HistoryForm. Probably shouldn't be done, because too much checking
    to reset LastHotIdx should be done, considering how much filtering &
    sorting is performed.
 
@@ -223,13 +223,6 @@ implementation
 
 uses hpp_options, PassForm, hpp_itemprocess, hpp_forms, hpp_messages,
   HistoryForm;
-
-
-{$I m_langpack.inc}
-{$I m_database.inc}
-{$I m_icq.inc}
-{$I m_clist.inc}
-{$I m_historypp.inc}
 
 {$R *.DFM}
 
