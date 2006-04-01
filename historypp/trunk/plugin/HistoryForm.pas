@@ -847,7 +847,7 @@ begin
       end;
     end;
     {$IFDEF DEBUG}
-    OutPutDebugString(PChar('... pending headers from '+intToStr(startrowidx-1)+' to '+intToStr(tillRow)));
+    OutPutDebugString(PChar('... pending headers from '+intToStr(FromRow)+' to '+intToStr(tillRow)));
     {$ENDIF}
   finally
     Screen.Cursor:=crDefault;
