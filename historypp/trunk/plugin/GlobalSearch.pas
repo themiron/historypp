@@ -37,7 +37,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, ComCtrls, Menus,
-  TntForms, TntComCtrls, TntExtCtrls, TntStdCtrls,
+  TntForms, TntComCtrls, TntExtCtrls, TntStdCtrls, TntSysUtils,
   HistoryGrid,
   m_globaldefs, m_api,
   hpp_global, hpp_events, hpp_services, hpp_contacts,  hpp_database,  hpp_searchthread,
@@ -273,13 +273,13 @@ end;
 
 procedure TfmGlobalSearch.SMFinished(var M: TMessage);
 var
-  sbt: String;
+  sbt: WideString;
 begin
   stime := st.SearchTime;
   AllContacts := st.AllContacts;
   AllItems := st.AllEvents;
   // if change, change also in hg.State:
-  sbt := Format('%.0n items in %.0n contacts found. Searched for %.1f sec in %.0n items.',[Length(History)/1, ContactsFound/1, stime/1000, AllItems/1, AllContacts/1]);
+  sbt := WideFormat(TranslateWideString('%.0n items in %.0n contacts found. Searched for %.1f sec in %.0n items.'),[Length(History)/1, ContactsFound/1, stime/1000, AllItems/1, AllContacts/1]);
   st.WaitFor;
   st.Free;
   IsSearching := False;
@@ -326,13 +326,13 @@ begin
   if (lvContacts.Items.Count = 0) or (Integer(lvContacts.Items.Item[lvContacts.Items.Count-1].Data) <> CurContact) then begin
     if lvContacts.Items.Count = 0 then begin
     li := lvContacts.Items.Add;
-      li.Caption := 'All Results';
+      li.Caption := TranslateWideString('All Results');
       li.StateIndex := -1;
       li.Selected := True;
     end;
     li := lvContacts.Items.Add;
     if CurContact = 0 then
-      li.Caption := 'System History'
+      li.Caption := TranslateWideString('System History')
     else begin
       li.Caption := LastAddedContact.Name;
       //li.Caption := CurContactName;
@@ -394,9 +394,9 @@ begin
 
   bnSearch.Enabled := False;
 
-  sb.SimpleText := 'Searching... Please wait.';
+  sb.SimpleText := TranslateWideString('Searching... Please wait.');
   IsSearching := True;
-  laProgress.Caption := AnsiToWideString(Translate('Preparing search...'),hppCodepage);
+  laProgress.Caption := TranslateWideString('Preparing search...');
   pb.Position := 0;
   paProgress.Show;
   paFilter.Visible := False;
@@ -418,7 +418,7 @@ begin
   //Application.ProcessMessages;
 
   // if change, change also in hg.OnState
-  sb.SimpleText := Format('Searching... %.0n items in %.0n contacts found',[Length(History)/1, ContactsFound/1]);
+  sb.SimpleText := WideFormat(TranslateWideString('Searching... %.0n items in %.0n contacts found'),[Length(History)/1, ContactsFound/1]);
 end;
 
 procedure TfmGlobalSearch.StartHotFilterTimer;
@@ -584,8 +584,7 @@ begin
       exit;
     end;
     if not CheckPassword(edPass.Text) then begin
-      MessageBox(Handle, PChar(String(Translate('You have entered the wrong password.'))+
-      #10#13+String(Translate('Make sure you have CAPS LOCK turned off.'))),
+      MessageBox(Handle, PChar(String(Translate('You have entered the wrong password.'))),
       Translate('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
       edPass.SetFocus;
       edPass.SelectAll;
@@ -659,7 +658,7 @@ begin
     CanClose := False;
     CloseAfterThreadFinish := True;
     st.Terminate;
-    laProgress.Caption := 'Please wait while closing the window...';
+    laProgress.Caption := TranslateWideString('Please wait while closing the window...');
     laProgress.Font.Style := [fsBold];
     pb.Visible := False;
     //Application.ProcessMessages;
@@ -967,9 +966,7 @@ begin
   Icon.Handle := CopyIcon(hppIcons[1].handle);
 
   hg.Options := GridOptions;
-  hg.TxtStartup := Translate('Ready to search'#10#13#10#13'Click Search button to start');
-  HG.TxtNoItems := Translate('No items found');
-
+  hg.TxtStartup := Translate('Ready to search')+#10#13#10#13+Translate('Click Search button to start');
 
   PassMode := GetPassMode;
   cbPass.Enabled := (PassMode <> PASSMODE_PROTNONE);
@@ -1088,9 +1085,9 @@ begin
      Name := si.Contact.ProfileName+':';
  end else begin
    if mtIncoming in hg.Items[Index].MessageType then
-     Name := 'From '+si.Contact.Name+':'
+     Name := WideFormat('From %s:',[si.Contact.Name])
    else
-     Name := 'To '+si.Contact.Name+':';
+     Name := WideFormat('To %s:',[si.Contact.Name]);
  end;
 end;
 
@@ -1311,7 +1308,7 @@ end;
 procedure TfmGlobalSearch.hgState(Sender: TObject; State: TGridState);
 var
   Idle: Boolean;
-  t: String;
+  t: WideString;
 begin
   if csDestroying in ComponentState then
     exit;
@@ -1319,16 +1316,16 @@ begin
 
   case State of
     // if change, change also in SMFinished:
-    gsIdle:   t := Format('%.0n items in %.0n contacts found. Searched for %.1f sec in %.0n items.',[Length(History)/1, ContactsFound/1, stime/1000, AllItems/1, AllContacts/1]);
-    gsLoad:   t := Translate('Loading...');
-    gsSave:   t := Translate('Saving...');
-    gsSearch: t := Translate('Searching...');
-    gsDelete: t := Translate('Deleting...');
+    gsIdle:   t := WideFormat(TranslateWideString('%.0n items in %.0n contacts found. Searched for %.1f sec in %.0n items.'),[Length(History)/1, ContactsFound/1, stime/1000, AllItems/1, AllContacts/1]);
+    gsLoad:   t := TranslateWideString('Loading...');
+    gsSave:   t := TranslateWideString('Saving...');
+    gsSearch: t := TranslateWideString('Searching...');
+    gsDelete: t := TranslateWideString('Deleting...');
   end;
   if IsSearching then
     // if change, change also in SMProgress
-    sb.SimpleText := Format('Searching... %.0n items in %.0n contacts found',[Length(History)/1, ContactsFound/1]);
-  sb.SimpleText := AnsiToWideString(t,hppCodepage);
+    sb.SimpleText := WideFormat(TranslateWideString('Searching... %.0n items in %.0n contacts found'),[Length(History)/1, ContactsFound/1]);
+  sb.SimpleText := t;
 end;
 
 initialization
