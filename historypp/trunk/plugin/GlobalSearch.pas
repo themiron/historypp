@@ -509,6 +509,13 @@ begin
   laPass.Caption := TranslateW(PWideChar(laPass.Caption));
   sbClearFilter.Hint := TranslateW(PWideChar(sbClearFilter.Hint));
 
+  Open1.Caption := Translate(PChar(Open1.Caption));
+  SendMessage1.Caption := Translate(PChar(SendMessage1.Caption));
+  ReplyQuoted1.Caption := Translate(PChar(ReplyQuoted1.Caption));
+  Copy1.Caption := Translate(PChar(Copy1.Caption));
+  CopyText1.Caption := Translate(PChar(CopyText1.Caption));
+  SaveSelected1.Caption := Translate(PChar(SaveSelected1.Caption));
+
   hg.TxtFullLog := Translate(PChar(hg.txtFullLog));
   hg.TxtGenHist1 := Translate(PChar(hg.txtGenHist1));
   hg.TxtGenHist2 := Translate(PChar(hg.txtGenHist2));

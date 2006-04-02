@@ -1,0 +1,7 @@
+Password Check
+Enter password
+To access Password Protection options you need to enter password
+Password:
+
+You have entered the wrong password.
+History++ Password Protection

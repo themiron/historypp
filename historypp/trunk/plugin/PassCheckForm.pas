@@ -67,8 +67,7 @@ if CheckPassword(edPass.Text) then begin
   end
 else begin
   {DONE: sHure}
-  MessageBox(Handle, PChar(String(Translate('You have entered the wrong password.'))+
-  #10#13+String(Translate('Make sure you have CAPS LOCK turned off.'))),
+  MessageBox(Handle, PChar(String(Translate('You have entered the wrong password.'))),
   Translate('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
   end;
 end;
