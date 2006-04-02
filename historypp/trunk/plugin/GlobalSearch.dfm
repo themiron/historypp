@@ -561,17 +561,17 @@ object fmGlobalSearch: TfmGlobalSearch
     Left = 206
     Top = 266
     object Open1: TMenuItem
-      Caption = 'Show in context'
+      Caption = 'Sh&ow in context'
       ShortCut = 16397
       OnClick = hgDblClick
     end
     object SendMessage1: TMenuItem
-      Caption = 'Send Message'
+      Caption = 'Send &Message'
       ShortCut = 16461
       OnClick = SendMessage1Click
     end
     object ReplyQuoted1: TMenuItem
-      Caption = 'Reply Quoted'
+      Caption = 'Reply &Quoted'
       ShortCut = 16466
       OnClick = ReplyQuoted1Click
     end
@@ -580,12 +580,12 @@ object fmGlobalSearch: TfmGlobalSearch
       Visible = False
     end
     object Copy1: TMenuItem
-      Caption = 'Copy'
+      Caption = '&Copy'
       ShortCut = 16451
       Visible = False
     end
     object CopyText1: TMenuItem
-      Caption = 'Copy Text'
+      Caption = 'Copy &Text'
       ShortCut = 16468
       Visible = False
     end
@@ -594,7 +594,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Visible = False
     end
     object SaveSelected1: TMenuItem
-      Caption = 'Save Selected'
+      Caption = '&Save Selected...'
       ShortCut = 16467
       Visible = False
       OnClick = SaveSelected1Click

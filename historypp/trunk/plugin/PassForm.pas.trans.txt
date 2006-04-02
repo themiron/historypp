@@ -1,0 +1,12 @@
+History++ Password Protection
+Password Options
+Protect all contacts
+Protect only selected contacts
+Password...
+OK
+Cancel
+&Refresh List
+
+System History
+Password set
+Password not set
