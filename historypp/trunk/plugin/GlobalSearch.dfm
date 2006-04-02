@@ -278,7 +278,7 @@ object fmGlobalSearch: TfmGlobalSearch
         VertScrollBar.PageSize = 10
         MultiSelect = True
         TxtStartup = 'Starting up...'
-        TxtNoItems = 'No results  for this contact'
+        TxtNoItems = 'No items found'
         TxtNoSuch = 'No items for your current filter'
         TxtFullLog = 'Full History Log'
         TxtPartLog = 'Partial History Log'
