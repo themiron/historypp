@@ -1,0 +1,6 @@
+;;
+;; History++ plugin translation
+;; Part of {[VER]} distribution
+;; 
+;; Contact theMIROn (themiron@mail.ru), Art Fedorov (artemf@mail.ru)
+;; 
