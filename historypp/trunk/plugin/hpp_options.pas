@@ -59,8 +59,8 @@ type
 const
 
   hppIcons : array[0..1] of ThppIconsRec = (
-    (name:'historypp_contact'; desc:'Contact history'; i:0; Handle:0),
-    (name:'historypp_search'; desc:'History search'; i:1; Handle:0)
+    (name:'historypp_contact'; desc:'Contact history'; i:0; handle:0),
+    (name:'historypp_search'; desc:'History search'; i:1; handle:0)
   );
 
   hppFontItems: array[0..15] of ThppFontsRec = (
