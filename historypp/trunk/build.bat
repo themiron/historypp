@@ -33,16 +33,16 @@ set TRIES=0%TRIES%
 goto loop
 :exitloop
 
-:#
-:# Find Delphi Lib dir
-:#
+rem #
+rem # Find Delphi Lib dir
+rem #
 rem set DELPHILIB=c:\program files\borland\bds\4.0\lib;c:\program files\borland\delphi7\lib;c:\program files\borland\bds\2.0\lib;c:\program files\borland\bds\3.0\lib;c:\program files\borland\delphi6\lib
 set DELPHILIB=
-if exist "%D2006LIB%" set DELPHILIB=%D2006LIB%
-if exist "%D2005LIB%" set DELPHILIB=%D2005LIB%
-if exist "%D2xLIB%" set DELPHILIB=%D2xLIB%
-if exist "%D7LIB%" set DELPHILIB=%D7LIB%
 if exist "%D6LIB%" set DELPHILIB=%D6LIB%
+if exist "%D7LIB%" set DELPHILIB=%D7LIB%
+if exist "%D2xLIB%" set DELPHILIB=%D2xLIB%
+if exist "%D2005LIB%" set DELPHILIB=%D2005LIB%
+if exist "%D2006LIB%" set DELPHILIB=%D2006LIB%
 if "%DELPHILIB%"=="" goto nolib
 echo:
 echo * Delphi found at:

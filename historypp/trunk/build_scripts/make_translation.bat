@@ -8,12 +8,6 @@ call change_vars.bat r+ trans_header.txt hpp_t.txt
 
 cd ..\plugin
 
-rem echo ;;>%TRANS%
-rem echo ;; History++ plugin translation>> %TRANS%
-rem echo ;; For version %VER%>> %TRANS%
-rem echo ;; >>%TRANS%
-rem echo ;; Contact theMIROn (themiron@mail.ru), Art Fedorov (artemf@mail.ru)>>%TRANS%
-rem echo ;; >>%TRANS%
 FOR %%A IN (*.trans.txt) DO (
 echo:>>%TRANS%
 echo:>>%TRANS%
@@ -45,6 +39,8 @@ set SED=%UTILSPATH%\sed.exe
 move hpp_tmp.txt hpp_t.txt
 %SED% --text -f rem_doubles.sed hpp_t.txt > hpp_tmp.txt
 move hpp_tmp.txt hpp_t.txt
+
+rem if you don't want to enclose strings in [], then comment it
 %SED% --text -f enclose.sed hpp_t.txt > hpp_tmp.txt
 move hpp_tmp.txt hpp_t.txt
 
