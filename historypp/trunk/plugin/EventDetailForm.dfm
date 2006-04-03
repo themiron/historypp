@@ -1,6 +1,6 @@
 object EventDetailsFrm: TEventDetailsFrm
-  Left = 487
-  Top = 186
+  Left = 275
+  Top = 178
   Width = 466
   Height = 396
   Caption = 'Event Details'

@@ -65,7 +65,7 @@ set COMPDIR=-$A4 -$D- -$J+ -$L- -$O+ -$Q+ -$R- -$Y-
 
 md %OUTDIR% 2>nul
 md %DCUDIR% 2>nul
-dcc32 -B -CG -Q -W- -H- --no-config -U%INCDIR% -R%INCDIR% -I%INCDIR% -E%OUTDIR% -LE%DCUDIR% -LN%DCUDIR% -N0%DCUDIR% %COMPDIR% historypp.dpr
+dcc32 -B -CG -Q -W- -H- -U%INCDIR% -R%INCDIR% -I%INCDIR% -E%OUTDIR% -LE%DCUDIR% -LN%DCUDIR% -N0%DCUDIR% %COMPDIR% historypp.dpr
 if errorlevel 1 goto faildcc
 rd /q /s %DCUDIR%
 
