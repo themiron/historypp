@@ -45,10 +45,10 @@ goto loop
 
 set SED=%UTILSPATH%\sed.exe
 
-%SED% %SED_NOREPL% hpp_global.pas > hpp_global.pas.sed
+%SED% --text %SED_NOREPL% hpp_global.pas > hpp_global.pas.sed
 if errorlevel 0 move hpp_global.pas.sed hpp_global.pas
 
-%SED% %SED_NOREPL% %SED_REPL% hpp_res_ver.rc.txt > hpp_res_ver.rc.sed
+%SED% --text %SED_NOREPL% %SED_REPL% hpp_res_ver.rc.txt > hpp_res_ver.rc.sed
 if errorlevel 0 move hpp_res_ver.rc.sed hpp_res_ver.rc
 
 goto end
