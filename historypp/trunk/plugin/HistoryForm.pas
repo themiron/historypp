@@ -777,7 +777,7 @@ begin
       end;
     WindowList.Delete(WindowList.IndexOf(Self));
     //Windows.ShowCaret(Handle);
-    //Windows.ShowCursor(True); 
+    //Windows.ShowCursor(True);
   end;
   except
   end;
@@ -1302,8 +1302,8 @@ end;}
 procedure THistoryFrm.ApplyFilter(DoApply: boolean = true);
 begin
   cbSortChange(cbSort);
-  if DoApply then cbFilterChange(cbFilter)
-             else cbFilter.ItemIndex := 0;
+  if not DoApply then cbFilter.ItemIndex := 0;
+  cbFilterChange(cbFilter);
 end;
 
 procedure THistoryFrm.cbSortChange(Sender: TObject);
