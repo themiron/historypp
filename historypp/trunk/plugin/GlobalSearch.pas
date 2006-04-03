@@ -225,6 +225,7 @@ uses hpp_options, PassForm, hpp_itemprocess, hpp_forms, hpp_messages,
   HistoryForm;
 
 {$R *.DFM}
+{$I compilers.inc}
 
 function TfmGlobalSearch.AddContact(hContact: Integer): TContactInfo;
 var
@@ -348,8 +349,8 @@ begin
       FiltOldSize := Length(FilterHistory);
       for i := 0 to BufCount - 1 do
         FilterHistory[FiltOldSize+i] := OldSize + i;
+      hg.Allocate(Length(FilterHistory));
     end;
-    hg.Allocate(Length(FilterHistory));
   end
   else
     hg.Allocate(Length(History));
@@ -363,7 +364,7 @@ begin
 
   // dirty hack: readjust scrollbars
   hg.Perform(WM_SIZE,SIZE_RESTORED,MakeLParam(hg.ClientWidth,hg.ClientHeight));
-  hg.Repaint;
+  //hg.Repaint;
   //Application.ProcessMessages;
 end;
 
@@ -469,19 +470,26 @@ end;
 
 procedure TfmGlobalSearch.TntFormMouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+var
+  ctrl: TControl;
+  function CtrlAtPos(win: TWinControl): TControl;
+  begin
+    {$IFDEF COMPILER_10_UP}
+    Result := win.ControlAtPos(MousePos,False,True,False);
+    {$ELSE}
+    Result := win.ControlAtPos(MousePos,False,True);
+    {$ENDIF}
+  end;
 begin
   Handled := True;
-  if Assigned(ControlAtPos(MousePos,False,True)) then
-    //if ControlAtPos(MousePos,False,True,True) is TListView then begin
-    if ControlAtPos(MousePos,False,True) is TListView then begin
+  ctrl := CtrlAtPos(Panel1);
+  if Assigned(ctrl) then
+    if Ctrl.Name = 'paContacts' then begin
       {$RANGECHECKS OFF}
-      TListView(ControlAtPos(MousePos,False,True)).Perform(WM_MOUSEWHEEL,MakeLong(MK_CONTROL,WheelDelta),0);
+      TListView(ctrl).Perform(WM_MOUSEWHEEL,MakeLong(MK_CONTROL,WheelDelta),0);
       {$RANGECHECKS ON}
       exit;
     end;
-  (* we can get range check error (???) here
-  it looks that without range check it works ok
-  so turn it off *)
   {$RANGECHECKS OFF}
   hg.perform(WM_MOUSEWHEEL,MakeLong(MK_CONTROL,WheelDelta),0);
   {$RANGECHECKS ON}
@@ -546,9 +554,9 @@ begin
   hg.Allocate(0);
   hg.Allocate(Length(FilterHistory));
   if hg.Count > 0 then begin
-    hg.Selected := 0;
     // dirty hack: readjust scrollbars
     hg.Perform(WM_SIZE,SIZE_RESTORED,MakeLParam(hg.ClientWidth,hg.ClientHeight));
+    hg.Selected := 0;
   end;
 end;
 
