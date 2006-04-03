@@ -138,7 +138,7 @@ function GetContactCodePage(hContact: THandle; Proto: String = ''): Cardinal;
 begin
   if Proto = '' then Proto := GetContactProto(hContact);
   if Proto = '' then
-    Result := CP_ACP
+    Result := hppCodepage
   else begin
     Result := GetDBWord(hContact,Proto,'AnsiCodePage',MaxWord);
     If Result = MaxWord then
@@ -152,17 +152,17 @@ end;
 // doesn't bug on MY SYSTEM!
 function GetContactRTLMode(hContact: THandle; Proto: String = ''): boolean;
 var
-  Temp: Byte;
+  Temp: Word;
 begin
   if Proto = '' then Proto := GetContactProto(hContact);
   if Proto = '' then
     Result := Application.UseRightToLeftScrollBar
   else begin
     if hContact = 0 then
-    Temp := DBGetContactSettingByte(hContact,PChar(Proto),'RTL',255);
+    Temp := GetDBWord(hContact,Proto,'RTL',255);
     If Temp = 255 then
-      Temp := DBGetContactSettingWord(0,PChar(Proto),'RTL',byte(Application.UseRightToLeftScrollBar));
-    Result := boolean(Temp);
+      Temp := GetDBWord(0,Proto,'RTL',Word(Application.UseRightToLeftScrollBar));
+    Result := Boolean(Temp);
   end;
 end;
 
@@ -174,8 +174,8 @@ begin
 
   case RTLMode of
     hppRTLDefault: DBDeleteContactSetting(hContact,PChar(Proto),'RTL');
-    hppRTLEnable: WriteDBBool(hContact,Proto,'RTL',True);
-    hppRTLDisable: WriteDBBool(hContact,Proto,'RTL',False);
+    hppRTLEnable: WriteDBWord(hContact,Proto,'RTL',Word(True));
+    hppRTLDisable: WriteDBWord(hContact,Proto,'RTL',Word(False));
   end;
 
   Result := True;
@@ -189,7 +189,7 @@ begin
   if Proto = '' then
     Result := hppRTLDefault
   else begin
-    Temp := DBGetContactSettingByte(hContact,PChar(Proto),'RTL',255);
+    Temp := GetDBWord(hContact,Proto,'RTL',255);
     case Temp of
       0: Result := hppRTLDisable;
       1: Result := hppRTLEnable;
