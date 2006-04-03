@@ -33,7 +33,7 @@ unit hpp_global;
 interface
 
 uses
-  Windows,SysUtils,m_globaldefs;
+  Windows,SysUtils,m_globaldefs,m_api;
 
 type
 
@@ -85,6 +85,9 @@ var
 
 function AnsiToWideString(const S: AnsiString; CodePage: Cardinal): WideString;
 function WideToAnsiString(const WS: WideString; CodePage: Cardinal): AnsiString;
+function TranslateAnsiW(const S: AnsiString): WideString;
+function TranslateWideW(const WS: WideString): WideString;
+
 function MakeFileName(FileName: AnsiString): AnsiString;
 
 implementation
@@ -123,6 +126,19 @@ begin
     SetLength(Result, OutputLength);
     WideCharToMultiByte(CodePage, 0, PWideChar(WS), InputLength, PAnsiChar(Result), OutputLength, nil, nil);
   end;
+end;
+
+function TranslateAnsiW(const S: AnsiString): WideString;
+begin
+  Result := AnsiToWideString(Translate(PChar(S)),hppCodepage);
+end;
+
+function TranslateWideW(const WS: WideString): WideString;
+begin
+  if hppCoreUnicode then
+    Result := TranslateW(PWideChar(WS))
+  else
+    Result := AnsiToWideString(Translate(PChar(WideToAnsiString(WS,hppCodepage))),hppCodepage);
 end;
 
 (*
