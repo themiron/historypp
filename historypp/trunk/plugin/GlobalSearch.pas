@@ -225,7 +225,6 @@ uses hpp_options, PassForm, hpp_itemprocess, hpp_forms, hpp_messages,
   HistoryForm;
 
 {$R *.DFM}
-{$I compilers.inc}
 
 function TfmGlobalSearch.AddContact(hContact: Integer): TContactInfo;
 var
@@ -472,17 +471,9 @@ procedure TfmGlobalSearch.TntFormMouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 var
   ctrl: TControl;
-  function CtrlAtPos(win: TWinControl): TControl;
-  begin
-    {$IFDEF COMPILER_10_UP}
-    Result := win.ControlAtPos(MousePos,False,True,False);
-    {$ELSE}
-    Result := win.ControlAtPos(MousePos,False,True);
-    {$ENDIF}
-  end;
 begin
   Handled := True;
-  ctrl := CtrlAtPos(Panel1);
+  ctrl := Panel1.ControlAtPos(MousePos,False,True);
   if Assigned(ctrl) then
     if Ctrl.Name = 'paContacts' then begin
       {$RANGECHECKS OFF}
