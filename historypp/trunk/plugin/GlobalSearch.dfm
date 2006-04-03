@@ -1,9 +1,9 @@
 object fmGlobalSearch: TfmGlobalSearch
   Left = 304
   Top = 135
+  Width = 559
+  Height = 552
   Caption = 'Global History Search'
-  ClientHeight = 525
-  ClientWidth = 551
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -35,9 +35,6 @@ object fmGlobalSearch: TfmGlobalSearch
       Top = 113
       Height = 306
       Visible = False
-      ExplicitLeft = 133
-      ExplicitTop = 127
-      ExplicitHeight = 220
     end
     object paSearch: TPanel
       Left = 2
@@ -183,7 +180,6 @@ object fmGlobalSearch: TfmGlobalSearch
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
         Caption = 'Searching contact "Unknown" (3 of 11)'
-        ExplicitWidth = 491
       end
       object pb: TProgressBar
         Left = 12

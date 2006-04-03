@@ -1,13 +1,13 @@
 object HistoryFrm: THistoryFrm
-  Left = 284
-  Top = 165
+  Left = 306
+  Top = 211
+  Width = 500
+  Height = 400
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
-  ClientHeight = 373
-  ClientWidth = 492
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -117,15 +117,12 @@ object HistoryFrm: THistoryFrm
     BevelOuter = bvNone
     BorderWidth = 4
     TabOrder = 0
-    ExplicitLeft = 40
-    ExplicitTop = 8
     object spSess: TTntSplitter
       Left = 160
       Top = 35
       Height = 281
       AutoSnap = False
       MinSize = 100
-      ExplicitTop = 34
     end
     object paGrid: TPanel
       Left = 163
@@ -137,8 +134,6 @@ object HistoryFrm: THistoryFrm
       BorderStyle = bsSingle
       TabOrder = 0
       OnResize = paGridResize
-      ExplicitLeft = 7
-      ExplicitWidth = 481
       object hg: THistoryGrid
         Left = 0
         Top = 0
@@ -181,7 +176,6 @@ object HistoryFrm: THistoryFrm
         Font.Name = 'MS Shell Dlg'
         Font.Style = []
         Padding = 4
-        ExplicitWidth = 477
       end
       object paPassword: TPanel
         Left = 20
@@ -448,15 +442,14 @@ object HistoryFrm: THistoryFrm
         Layout = blGlyphRight
         Style = bsNew
       end
-      object Button1: TButton
+      object bnConversation: TButton
         Left = 277
         Top = 7
         Width = 96
         Height = 25
-        Caption = 'Show/Hide Conv'
+        Caption = 'Conversation log'
         TabOrder = 4
-        Visible = False
-        OnClick = Button1Click
+        OnClick = bnConversationClick
       end
     end
     object paSess: TPanel
@@ -487,8 +480,6 @@ object HistoryFrm: THistoryFrm
         Height = 21
         Align = alTop
         TabOrder = 1
-        ExplicitTop = -1
-        ExplicitWidth = 152
         object laSess: TTntLabel
           Left = 8
           Top = 4
