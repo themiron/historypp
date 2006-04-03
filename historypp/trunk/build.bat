@@ -3,23 +3,15 @@
 cd plugin
 
 brcc32 > nul 2>&1
-if errorlevel 2 (
-  echo ###
-  echo ### Error! Can not build!
-  echo ### Borland Resource Compiler [brcc32.exe] NOT FOUND!
-  echo ###
-  exit )
+if errorlevel 2 goto nobcc
 dcc32 > nul 2>&1
-if errorlevel 1 (
-  echo ###
-  echo ### Error! Can not build!
-  echo ### Delphi Compiler [dcc32.exe] NOT FOUND!
-  echo ###
-  exit )
+if errorlevel 1 goto nodcc
 
 
 brcc32 -fohpp_resource.res hpp_resource.rc
+if errorlevel 1 goto failbcc
 brcc32 -fohpp_res_ver.res hpp_res_ver.rc
+if errorlevel 1 goto failbcc
 
 rem #
 rem # Find tntControls path relatively to our current dir
@@ -52,7 +44,33 @@ set COMPDIR=-$A4 -$D- -$J+ -$L- -$O+ -$Q+ -$R- -$Y-
 md %OUTDIR% 2>nul
 md %DCUDIR% 2>nul
 dcc32 -B -CG -Q -W- -H- --no-config -U%INCDIR% -R%INCDIR% -I%INCDIR% -E%OUTDIR% -LE%DCUDIR% -LN%DCUDIR% -N0%DCUDIR% %COMPDIR% historypp.dpr
+if errorlevel 1 goto faildcc
 rd /q /s %DCUDIR%
+
+goto end
+
+:nodcc
+set ERRSTR=Delphi Compiler [dcc32.exe] NOT FOUND!
+goto error
+
+:nobcc
+set ERRSTR=Borland Resource Compiler [brcc32.exe] NOT FOUND!
+goto error
+
+:failbcc
+set ERRSTR=Borland resource compiler failed compiling the resources!
+goto error
+
+:faildcc
+set ERRSTR=Delphi Compiler failed building the plugin!
+goto error
+
+:error
+echo ###
+echo ### Error! Can not build!
+echo ### %ERRSTR%
+echo ###
+exit
 
 :end
 cd ..
