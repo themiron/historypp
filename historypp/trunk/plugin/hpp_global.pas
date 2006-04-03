@@ -65,8 +65,8 @@ const
   hppVerBuild   = {BUILD}99{/BUILD};
   hppVersion    = hppVerMajor shl 24 + hppVerMinor shl 16 + hppVerRelease shl 8 + hppVerBuild;
 
-  hppUpdateURL = 'http://slav.pp.ru/miranda/historypp.zip';
-  hppVersionURL = 'http://slav.pp.ru/miranda/historypp.html';
+  hppUpdateURL = 'http://slav.pp.ru/miranda/historypp';
+  hppVersionURL = 'http://slav.pp.ru/miranda/version';
 
   hppHomePageURL = hppVersionURL;
 
