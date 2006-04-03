@@ -148,11 +148,11 @@ type
     Panel1: TPanel;
     laSess: TTntLabel;
     sbCloseSess: TTntSpeedButton;
-    Button1: TButton;
+    bnConversation: TButton;
     procedure sbCloseSessClick(Sender: TObject);
     procedure hgItemFilter(Sender: TObject; Index: Integer; var Show: Boolean);
     procedure tvSessChange(Sender: TObject; Node: TTreeNode);
-    procedure Button1Click(Sender: TObject);
+    procedure bnConversationClick(Sender: TObject);
 
     procedure LoadHistory(Sender: TObject);
     procedure FindDialogFind(Sender: TObject);
@@ -661,7 +661,7 @@ begin
     begin
     //receive message from database
     AddHistoryItem(message.lParam);
-    sb.SimpleText := Format(Translate('%.0f items in history'),[HistoryLength/1]);
+    sb.SimpleText := WideFormat(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
     end;
 end;
 
@@ -787,7 +787,7 @@ procedure THistoryFrm.Load;
 begin
   if hContact = 0 then paTop.Visible := False;
   LoadHistory(Self);
-  sb.SimpleText := Format(Translate('%.0f items in history'),[HistoryLength/1]);
+  sb.SimpleText := WideFormat(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
   HookEventAdded;
 end;
 
@@ -881,7 +881,7 @@ begin
   SetLength(history,HistoryLength);
   History[HistoryLength-1] := hDBEvent;
   hg.AddItem;
-  sb.SimpleText := Format(Translate('%.0f items in history'),[HistoryLength/1]);
+  sb.SimpleText := WideFormat(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
 end;
 
 procedure THistoryFrm.FormShow(Sender: TObject);
@@ -1008,7 +1008,7 @@ begin
 
   if not Found then t := HotString
                else t := Text;
-  sb.SimpleText := WideFormat(AnsiToWideString(Translate('HotSearch: %s (F3 to find next)'),hppCodepage),[t]);
+  sb.SimpleText := WideFormat(TranslateWideW('HotSearch: %s (F3 to find next)'),[t]);
   //if Found then HotString := Text;
 end;
 
@@ -1022,7 +1022,7 @@ const
   // 4 hours
   TIME_DIFF = 4*(60*60);
 
-procedure THistoryFrm.Button1Click(Sender: TObject);
+procedure THistoryFrm.bnConversationClick(Sender: TObject);
 begin
   ShowSessions(not paSess.Visible);
 end;
@@ -1230,7 +1230,7 @@ end;
 procedure THistoryFrm.hgState(Sender: TObject; State: TGridState);
 var
   Idle: Boolean;
-  t: String;
+  t: WideString;
 begin
   if csDestroying in ComponentState then
     exit;
@@ -1240,14 +1240,14 @@ begin
   bnDelete.Enabled := Idle and not PasswordMode;
   bbAddit.Enabled := Idle; // bnAddit don't gets disabled on PassMode
   case State of
-    gsIdle:   t :=  Format(Translate('%.0f items in history'),[HistoryLength/1]);
-    gsLoad:   t := Translate('Loading...');
-    gsSave:   t := Translate('Saving...');
-    gsSearch: t := Translate('Searching...');
-    gsDelete: t := Translate('Deleting...');
+    gsIdle:   t :=  Format(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
+    gsLoad:   t := TranslateWideW('Loading...');
+    gsSave:   t := TranslateWideW('Saving...');
+    gsSearch: t := TranslateWideW('Searching...');
+    gsDelete: t := TranslateWideW('Deleting...');
   end;
   if PasswordMode then
-    t := Translate('Enter password');
+    t := TranslateWideW('Enter password');
   sb.SimpleText := AnsiToWideString(t,hppCodepage);
 end;
 
@@ -1803,11 +1803,12 @@ begin
   bnDelete.Caption := Translate(PChar(bnDelete.Caption));
   bbAddit.Caption := Translate(PChar(bbAddit.Caption));
   bnClose.Caption := Translate(PChar(bnClose.Caption));
+  bnConversation.Caption := Translate(PChar(bnConversation.Caption));
 
   bnPass.Caption := Translate(PChar(bnPass.Caption));
   laPass.Caption := Translate(PChar(laPass.Caption));
   Label4.Caption := Translate(PChar(Label4.Caption));
-  laSess.Caption := Translate(PChar(laSess.Caption));
+  laSess.Caption := TranslateWideW(laSess.Caption);
 
   SaveDialog.Title := Translate('Save History');
 
