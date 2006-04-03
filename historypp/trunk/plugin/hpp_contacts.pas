@@ -175,7 +175,7 @@ begin
   case RTLMode of
     hppRTLDefault: DBDeleteContactSetting(hContact,PChar(Proto),'RTL');
     hppRTLEnable: WriteDBBool(hContact,Proto,'RTL',True);
-    hppRTLDisable: WriteDBBool(hContact,Proto,'RTL',True);
+    hppRTLDisable: WriteDBBool(hContact,Proto,'RTL',False);
   end;
 
   Result := True;
