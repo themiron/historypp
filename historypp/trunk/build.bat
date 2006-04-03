@@ -1,5 +1,11 @@
 @echo off
 
+set D6LIB=c:\program files\borland\delphi6\lib
+set D7LIB=c:\program files\borland\delphi7\lib
+set D2xLIB=c:\program files\borland\bds\2.0\lib
+set D2005LIB=c:\program files\borland\bds\3.0\lib
+set D2006LIB=c:\program files\borland\bds\4.0\lib
+
 cd plugin
 
 brcc32 > nul 2>&1
@@ -27,7 +33,23 @@ set TRIES=0%TRIES%
 goto loop
 :exitloop
 
-set DELPHILIB=c:\program files\borland\bds\4.0\lib;c:\program files\borland\delphi7\lib;c:\program files\borland\bds\2.0\lib;c:\program files\borland\bds\3.0\lib
+:#
+:# Find Delphi Lib dir
+:#
+rem set DELPHILIB=c:\program files\borland\bds\4.0\lib;c:\program files\borland\delphi7\lib;c:\program files\borland\bds\2.0\lib;c:\program files\borland\bds\3.0\lib;c:\program files\borland\delphi6\lib
+set DELPHILIB=
+if exist "%D2006LIB%" set DELPHILIB=%D2006LIB%
+if exist "%D2005LIB%" set DELPHILIB=%D2005LIB%
+if exist "%D2xLIB%" set DELPHILIB=%D2xLIB%
+if exist "%D7LIB%" set DELPHILIB=%D7LIB%
+if exist "%D6LIB%" set DELPHILIB=%D6LIB%
+if "%DELPHILIB%"=="" goto nolib
+echo:
+echo * Delphi found at:
+echo * %DELPHILIB%
+echo * Building project...
+echo:
+
 set INCDIR="%DELPHILIB%;%TNTPATH%;..\inc;"
 set OUTDIR=".."
 set DCUDIR="tmp"
@@ -55,6 +77,10 @@ goto error
 
 :nobcc
 set ERRSTR=Borland Resource Compiler [brcc32.exe] NOT FOUND!
+goto error
+
+:nolib
+set ERRSTR=Can not find Delphi Lib directory. See source file.
 goto error
 
 :failbcc
