@@ -53,7 +53,8 @@ uses
   PassCheckForm in 'PassCheckForm.pas' {fmPassCheck},
   GlobalSearch in 'GlobalSearch.pas' {fmGlobalSearch},
   hpp_searchthread in 'hpp_searchthread.pas',
-  hpp_miranda_mmi in 'hpp_miranda_mmi.pas';
+  hpp_miranda_mmi in 'hpp_miranda_mmi.pas',
+  hpp_bookmarks in 'hpp_bookmarks.pas';
 
 var
   hookModulesLoad,
