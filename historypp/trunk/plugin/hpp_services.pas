@@ -97,13 +97,13 @@ begin
     wHistory.hg.Options := GridOptions;
     wHistory.hContact := hContact;
     wHistory.Load;
-    wHistory.ApplyFilter(index = -1);
     if index <> -1 then wHistory.hg.Selected := index;
     wHistory.Show;
+    wHistory.ApplyFilter(index = -1);
   end else begin
-    wHistory.ApplyFilter(index = -1);
     if index <> -1 then wHistory.hg.Selected := index;
     wHistory.Show;
+    wHistory.ApplyFilter(index = -1);
   end;
   Result := wHistory;
 end;
