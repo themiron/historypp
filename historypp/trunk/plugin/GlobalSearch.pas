@@ -472,7 +472,8 @@ procedure TfmGlobalSearch.TntFormMouseWheel(Sender: TObject; Shift: TShiftState;
 begin
   Handled := True;
   if Assigned(ControlAtPos(MousePos,False,True)) then
-    if ControlAtPos(MousePos,False,True,True) is TListView then begin
+    //if ControlAtPos(MousePos,False,True,True) is TListView then begin
+    if ControlAtPos(MousePos,False,True) is TListView then begin
       {$RANGECHECKS OFF}
       TListView(ControlAtPos(MousePos,False,True)).Perform(WM_MOUSEWHEEL,MakeLong(MK_CONTROL,WheelDelta),0);
       {$RANGECHECKS ON}
