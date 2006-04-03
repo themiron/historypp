@@ -2,6 +2,7 @@
 ;; History++ plugin translation
 ;; Part of {[VER]} distribution
 ;; 
-;; http://addons.miranda-im.org
-;; Authors: theMIROn (themiron@mail.ru), Art Fedorov (artemf@mail.ru)
+;; Project: http://slav.pp.ru/miranda
+;; SVN: http://opensvn.csie.org/historypp/
+;; Trac: https://opensvn.csie.org/traccgi/historypp/trac.cgi/
 ;; 
