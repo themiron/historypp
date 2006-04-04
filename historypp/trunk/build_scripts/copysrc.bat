@@ -3,7 +3,7 @@
 cd ..
 
 md build
-rd /q/s build\src
+rd /q/s build\src 2>nul
 md build\src
 
 rem #

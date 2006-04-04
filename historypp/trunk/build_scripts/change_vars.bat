@@ -11,12 +11,19 @@ if ""%DEST%""=="""" set DEST=%2
 
 FOR /F "TOKENS=1" %%A IN ('type relno.txt') DO SET VER=%%A
 if not exist relno.txt goto nover
-FOR /F "TOKENS=1,2,3,4,5 delims=._" %%A IN ("%VER%") DO (
+
+FOR /F "TOKENS=1* delims=_" %%A IN ("%VER%") DO (
+  set FIRST=%%A
+  set TEXT=%%B
+)
+
+FOR /F "TOKENS=1,2,3,4,5 delims=._" %%A IN ("%FIRST%") DO (
   set MAJOR=%%A
   set MINOR=%%B
   set SUBVER=%%C
   set BUILDNO=%%D
-  set TEXT=%%E)
+)
+
 set VERNO=%MAJOR%.%MINOR%.%SUBVER%.%BUILDNO%
 if not "%TEXT%"=="" set VER=%VERNO% %TEXT%
 
