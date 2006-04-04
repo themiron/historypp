@@ -289,8 +289,9 @@ var
   tr: TextRange;
   //fte: TFindTextEx;
   fte: TFindTextExW;
-  r: Integer;
+  //r: Integer;
 begin
+  Result := 1;
   exit;
   pc := PChar(PluginLink.CallService(MATH_GET_STARTDELIMITER,0,0));
   sd := AnsiToWideString(pc,CP_ACP);
