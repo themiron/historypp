@@ -55,7 +55,8 @@ uses
   ImgList, PasswordEditControl, TntStdCtrls, TntButtons;
 
 const
-  HM_EVENTADDED = (WM_USER+10);
+  HM_EVENTADDED = WM_USER+10;
+  HM_EVENTDELETED = WM_APP + 100;
 
 type
 
@@ -159,7 +160,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
     procedure WMSysCommand(var Message: TWMSysCommand); message WM_SYSCOMMAND;
-    procedure FormHide(Sender: TObject);
+    //procedure FormHide(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -232,7 +233,7 @@ type
     StartTimestamp: DWord;
     EndTimestamp: DWord;
     FhContact: THandle;
-    hEventAddedHook:DWord;
+    hHookEventAdded,hHookEventDeleted: THandle;
     FPasswordMode: Boolean;
     UserCodepage: Cardinal;
 
@@ -241,9 +242,11 @@ type
     procedure LoadPosition;
     procedure SavePosition;
 
-    procedure HookEventAdded;
-    procedure UnhookEventAdded;
-    procedure OnEventAdded(var Message: TMessage); message HM_EVENTADDED;
+    procedure HMEventAdded(var Message: TMessage); message HM_EVENTADDED;
+    procedure HMEventDeleted(var Message: TMessage); message HM_EVENTDELETED;
+
+    procedure HookEvents;
+    procedure UnhookEvents;
 
     procedure OpenDetails(Item: Integer);
     procedure SetPasswordMode(const Value: Boolean);
@@ -636,32 +639,30 @@ begin
   WriteDBInt(hppDBName,'SortOrder',cbSort.ItemIndex);
 end;
 
-procedure THistoryFrm.FormHide(Sender: TObject);
-begin
-
-  UnhookEventAdded;
-  SavePosition;
-end;
-
-procedure THistoryFrm.HookEventAdded;
-begin
-  hEventAddedHook:=PluginLink.HookEventMessage(ME_DB_EVENT_ADDED,Self.Handle,HM_EVENTADDED);
-end;
-
-procedure THistoryFrm.UnhookEventAdded;
-begin
-  PluginLink.UnhookEvent(hEventAddedHook);
-end;
-
-procedure THistoryFrm.OnEventAdded(var Message: TMessage);
+procedure THistoryFrm.HMEventAdded(var Message: TMessage);
 //new message added to history (wparam=hcontact, lparam=hdbevent)
 begin
   //if for this contact
-  if dword(message.wParam)=hContact then
-    begin
+  if dword(message.wParam)=hContact then begin
     //receive message from database
     AddHistoryItem(message.lParam);
     sb.SimpleText := WideFormat(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
+  end;
+end;
+
+procedure THistoryFrm.HMEventDeleted(var Message: TMessage);
+var
+  i: Integer;
+begin
+  {wParam - hContact; lParam - hDBEvent}
+  if (dword(message.wParam)=hContact) and (hg.State <> gsDelete) then
+    for i := 0 to hg.Count - 1 do begin
+      if (History[GridIndexToHistory(i)] = Message.lParam) then begin
+        hg.Delete(i);
+        DeleteHistoryItem(i);
+        sb.SimpleText := WideFormat(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
+        exit;
+      end;
     end;
 end;
 
@@ -779,6 +780,8 @@ begin
     //Windows.ShowCaret(Handle);
     //Windows.ShowCursor(True);
   end;
+  UnhookEvents;;
+  SavePosition;
   except
   end;
 end;
@@ -788,7 +791,7 @@ begin
   if hContact = 0 then paTop.Visible := False;
   LoadHistory(Self);
   sb.SimpleText := WideFormat(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
-  HookEventAdded;
+  //HookEventAdded;
 end;
 
 procedure THistoryFrm.LoadPendingHeaders(rowidx: integer; count: integer);
@@ -859,7 +862,7 @@ begin
   if Assigned(EventDetailFrom) then
     EventDetailFrom.Release;
   SessThread.Free;
-  Release
+  Release;
 end;
 
 procedure THistoryFrm.DeleteHistoryItem(ItemIdx: Integer);
@@ -884,10 +887,24 @@ begin
   sb.SimpleText := WideFormat(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
 end;
 
+procedure THistoryFrm.HookEvents;
+begin
+  hHookEventAdded:=PluginLink.HookEventMessage(ME_DB_EVENT_ADDED,Self.Handle,HM_EVENTADDED);
+  hHookEventDeleted := PluginLink.HookEventMessage(ME_DB_EVENT_DELETED,Self.Handle,HM_EVENTDELETED);
+end;
+
+procedure THistoryFrm.UnhookEvents;
+begin
+  PluginLink.UnhookEvent(hHookEventAdded);
+  PluginLink.UnhookEvent(hHookEventDeleted);
+end;
+
 procedure THistoryFrm.FormShow(Sender: TObject);
 begin
   LoadPosition;
   ProcessPassword;
+
+  HookEvents;
 
   SessThread := TSessionsThread.Create(True);
   SessThread.ParentHandle := Self.Handle;
