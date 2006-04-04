@@ -572,9 +572,12 @@ end;
 procedure TfmGlobalSearch.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
+  try
   Action := caFree;
   SaveWindowPosition;
   UnhookEvents;
+  except
+  end;
 end;
 
 procedure TfmGlobalSearch.bnSearchClick(Sender: TObject);
