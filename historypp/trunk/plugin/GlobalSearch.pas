@@ -42,7 +42,7 @@ uses
   m_globaldefs, m_api,
   hpp_global, hpp_events, hpp_services, hpp_contacts,  hpp_database,  hpp_searchthread,
   ImgList, PasswordEditControl, Buttons, TntButtons, Math, CommCtrl,
-  Contnrs;
+  Contnrs, TntMenus;
 
 const
   HM_EVENTDELETED = WM_APP + 100;
@@ -66,45 +66,45 @@ type
     end;
 
   TfmGlobalSearch = class(TTntForm)
-    Panel1: TPanel;
-    paSearch: TPanel;
-    Label1: TLabel;
+    Panel1: TtntPanel;
+    paSearch: TtntPanel;
+    Label1: TtntLabel;
     edSearch: TtntEdit;
-    bnSearch: TButton;
-    paCommand: TPanel;
-    sb: TStatusBar;
-    paProgress: TPanel;
+    bnSearch: TtntButton;
+    paCommand: TtntPanel;
+    sb: TtntStatusBar;
+    paProgress: TtntPanel;
     pb: TProgressBar;
     laProgress: TTntLabel;
-    bnClose: TButton;
-    pmGrid: TPopupMenu;
-    Open1: TMenuItem;
-    Copy1: TMenuItem;
-    CopyText1: TMenuItem;
-    N1: TMenuItem;
-    N2: TMenuItem;
-    Button2: TButton;
-    bnAdvanced: TButton;
-    gbAdvanced: TGroupBox;
-    rbAny: TRadioButton;
-    rbAll: TRadioButton;
-    rbExact: TRadioButton;
+    bnClose: TtntButton;
+    pmGrid: TtntPopupMenu;
+    Open1: TtntMenuItem;
+    Copy1: TtntMenuItem;
+    CopyText1: TtntMenuItem;
+    N1: TtntMenuItem;
+    N2: TtntMenuItem;
+    Button2: TtntButton;
+    bnAdvanced: TtntButton;
+    gbAdvanced: TtntGroupBox;
+    rbAny: TtntRadioButton;
+    rbAll: TtntRadioButton;
+    rbExact: TtntRadioButton;
     spContacts: TTntSplitter;
-    paPassword: TPanel;
+    paPassword: TtntPanel;
     edPass: TPasswordEdit;
     cbPass: TTntCheckBox;
     laPass: TTntLabel;
     ilContacts: TImageList;
     paContacts: TTntPanel;
     lvContacts: TTntListView;
-    SendMessage1: TMenuItem;
-    ReplyQuoted1: TMenuItem;
-    SaveSelected1: TMenuItem;
+    SendMessage1: TtntMenuItem;
+    ReplyQuoted1: TtntMenuItem;
+    SaveSelected1: TtntMenuItem;
     SaveDialog: TSaveDialog;
     tiFilter: TTimer;
-    paHistory: TPanel;
+    paHistory: TtntPanel;
     hg: THistoryGrid;
-    paFilter: TPanel;
+    paFilter: TtntPanel;
     imFilter: TImage;
     sbClearFilter: TTntSpeedButton;
     edFilter: TTntEdit;
@@ -279,7 +279,7 @@ begin
   AllContacts := st.AllContacts;
   AllItems := st.AllEvents;
   // if change, change also in hg.State:
-  sbt := WideFormat(TranslateWideString('%.0n items in %.0n contacts found. Searched for %.1f sec in %.0n items.'),[Length(History)/1, ContactsFound/1, stime/1000, AllItems/1, AllContacts/1]);
+  sbt := WideFormat(TranslateWideW('%.0n items in %.0n contacts found. Searched for %.1f sec in %.0n items.'),[Length(History)/1, ContactsFound/1, stime/1000, AllItems/1, AllContacts/1]);
   st.WaitFor;
   st.Free;
   IsSearching := False;
@@ -326,13 +326,13 @@ begin
   if (lvContacts.Items.Count = 0) or (Integer(lvContacts.Items.Item[lvContacts.Items.Count-1].Data) <> CurContact) then begin
     if lvContacts.Items.Count = 0 then begin
     li := lvContacts.Items.Add;
-      li.Caption := TranslateWideString('All Results');
+      li.Caption := TranslateWideW('All Results');
       li.StateIndex := -1;
       li.Selected := True;
     end;
     li := lvContacts.Items.Add;
     if CurContact = 0 then
-      li.Caption := TranslateWideString('System History')
+      li.Caption := TranslateWideW('System History')
     else begin
       li.Caption := LastAddedContact.Name;
       //li.Caption := CurContactName;
@@ -375,7 +375,7 @@ begin
   CurContact := m.wParam;
   if CurContact = 0 then CurProto := 'ICQ'
                     else CurProto := GetContactProto(CurContact);
-  laProgress.Caption := WideFormat(AnsiToWideString(Translate('Searching "%s"...'),hppCodepage),[GetContactDisplayName(CurContact,CurProto,true)]);
+  laProgress.Caption := WideFormat(TranslateWideW('Searching "%s"...'),[GetContactDisplayName(CurContact,CurProto,true)]);
 end;
 
 procedure TfmGlobalSearch.SMPrepare(var M: TMessage);
@@ -394,9 +394,9 @@ begin
 
   bnSearch.Enabled := False;
 
-  sb.SimpleText := TranslateWideString('Searching... Please wait.');
+  sb.SimpleText := TranslateWideW('Searching... Please wait.');
   IsSearching := True;
-  laProgress.Caption := TranslateWideString('Preparing search...');
+  laProgress.Caption := TranslateWideW('Preparing search...');
   pb.Position := 0;
   paProgress.Show;
   paFilter.Visible := False;
@@ -418,7 +418,7 @@ begin
   //Application.ProcessMessages;
 
   // if change, change also in hg.OnState
-  sb.SimpleText := WideFormat(TranslateWideString('Searching... %.0n items in %.0n contacts found'),[Length(History)/1, ContactsFound/1]);
+  sb.SimpleText := WideFormat(TranslateWideW('Searching... %.0n items in %.0n contacts found'),[Length(History)/1, ContactsFound/1]);
 end;
 
 procedure TfmGlobalSearch.StartHotFilterTimer;
@@ -495,26 +495,26 @@ end;
 
 procedure TfmGlobalSearch.TranslateForm;
 begin
-  Caption := TranslateW(PWideChar(Caption));
+  Caption := TranslateWideW(Caption);
 
-  Label1.Caption := Translate(PChar(Label1.Caption));
-  bnSearch.Caption := Translate(PChar(bnSearch.Caption));
-  bnAdvanced.Caption := Translate(PChar(bnAdvanced.Caption));
-  gbAdvanced.Caption := Translate(PChar(gbAdvanced.Caption));
-  rbAny.Caption := Translate(PChar(rbAny.Caption));
-  rbAll.Caption := Translate(PChar(rbAll.Caption));
-  rbExact.Caption := Translate(PChar(rbExact.Caption));
+  Label1.Caption := TranslateWideW(Label1.Caption);
+  bnSearch.Caption := TranslateWideW(bnSearch.Caption);
+  bnAdvanced.Caption := TranslateWideW(bnAdvanced.Caption);
+  gbAdvanced.Caption := TranslateWideW(gbAdvanced.Caption);
+  rbAny.Caption := TranslateWideW(rbAny.Caption);
+  rbAll.Caption := TranslateWideW(rbAll.Caption);
+  rbExact.Caption := TranslateWideW(rbExact.Caption);
 
-  cbPass.Caption := TranslateW(PWideChar(cbPass.Caption));
-  laPass.Caption := TranslateW(PWideChar(laPass.Caption));
-  sbClearFilter.Hint := TranslateW(PWideChar(sbClearFilter.Hint));
+  cbPass.Caption := TranslateWideW(cbPass.Caption);
+  laPass.Caption := TranslateWideW(laPass.Caption);
+  sbClearFilter.Hint := TranslateWideW(sbClearFilter.Hint);
 
-  Open1.Caption := Translate(PChar(Open1.Caption));
-  SendMessage1.Caption := Translate(PChar(SendMessage1.Caption));
-  ReplyQuoted1.Caption := Translate(PChar(ReplyQuoted1.Caption));
-  Copy1.Caption := Translate(PChar(Copy1.Caption));
-  CopyText1.Caption := Translate(PChar(CopyText1.Caption));
-  SaveSelected1.Caption := Translate(PChar(SaveSelected1.Caption));
+  Open1.Caption := TranslateWideW(Open1.Caption);
+  SendMessage1.Caption := TranslateWideW(SendMessage1.Caption);
+  ReplyQuoted1.Caption := TranslateWideW(ReplyQuoted1.Caption);
+  Copy1.Caption := TranslateWideW(Copy1.Caption);
+  CopyText1.Caption := TranslateWideW(CopyText1.Caption);
+  SaveSelected1.Caption := TranslateWideW(SaveSelected1.Caption);
 
   hg.TxtFullLog := Translate(PChar(hg.txtFullLog));
   hg.TxtGenHist1 := Translate(PChar(hg.txtGenHist1));
@@ -587,15 +587,15 @@ begin
     raise Exception.Create('Enter text to search');
   if edPass.Enabled then begin
     if edPass.Text = '' then begin
-      MessageBox(Handle, PChar(String(Translate('Enter the history password to search.'))),
-      Translate('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
+      HppMessageBox(Handle,TranslateWideW('Enter the history password to search.'),
+        TranslateWideW('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
       edPass.SetFocus;
       edPass.SelectAll;
       exit;
     end;
     if not CheckPassword(edPass.Text) then begin
-      MessageBox(Handle, PChar(String(Translate('You have entered the wrong password.'))),
-      Translate('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
+      HppMessageBox(Handle,TranslateWideW('You have entered the wrong password.'),
+        TranslateWideW('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
       edPass.SetFocus;
       edPass.SelectAll;
       exit;
@@ -668,7 +668,7 @@ begin
     CanClose := False;
     CloseAfterThreadFinish := True;
     st.Terminate;
-    laProgress.Caption := TranslateWideString('Please wait while closing the window...');
+    laProgress.Caption := TranslateWideW('Please wait while closing the window...');
     laProgress.Font.Style := [fsBold];
     pb.Visible := False;
     //Application.ProcessMessages;
@@ -826,16 +826,16 @@ end;
 
 procedure TfmGlobalSearch.SaveSelected1Click(Sender: TObject);
 var
-  t: String;
+  t,t1: String;
   SaveFormat: TSaveFormat;
   RecentFormat: TSaveFormat;
 begin
   RecentFormat := TSaveFormat(GetDBInt(hppDBName,'ExportFormat',0));
   SaveFormat := RecentFormat;
   PrepareSaveDialog(SaveDialog,SaveFormat,True);
-  t := Translate('Partial History [%s] - [%s]');
-  t := Format(t,[WideToAnsiString(hg.ProfileName,CP_ACP),WideToAnsiString(hg.ContactName,CP_ACP)]);
-  t := MakeFileName(t);
+  t1 := TranslateWideW('Partial History [%s] - [%s]');
+  t1 := WideFormat(t1,[hg.ProfileName,hg.ContactName]);
+  t := MakeFileName(WideToAnsiString(t1,hppCodepage));
   SaveDialog.FileName := t;
   if not SaveDialog.Execute then exit;
   case SaveDialog.FilterIndex of
@@ -1137,9 +1137,9 @@ begin
     gbAdvanced.Hide;
     end;
   if gbAdvanced.Visible then
-    bnAdvanced.Caption := Translate('Advanced <<')
+    bnAdvanced.Caption := TranslateWideW('Advanced <<')
   else
-    bnAdvanced.Caption := Translate('Advanced >>');
+    bnAdvanced.Caption := TranslateWideW('Advanced >>');
 end;
 
 
@@ -1159,7 +1159,6 @@ end;
 procedure TfmGlobalSearch.SearchNext(Rev: Boolean; Warp: Boolean = True);
 var
   stext: WideString;
-  t,tCap: string;
   res: Integer;
   mcase,down: Boolean;
   WndHandle: HWND;
@@ -1173,28 +1172,22 @@ begin
   if res <> -1 then begin
     // found
     hg.Selected := res;
-    t := Translate('HotSearch: %s (F3 to find next)');
-    sb.SimpleText := WideFormat(AnsiToWideString(t,hppCodepage),[stext]);
+    sb.SimpleText := WideFormat(TranslateWideW('HotSearch: %s (F3 to find next)'),[stext]);
   end else begin
     WndHandle := Handle;
-    tCap := Translate('History++ Search');
     // not found
     if Warp and (down = not hg.Reversed) then begin
       // do warp?
-      if MessageBox(WndHandle, PChar(String(Translate('You have reached the end of the history.'))+
-      #10#13+String(Translate('Do you want to continue searching at the beginning?'))),
-      PChar(tCap), MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = ID_YES then
-        SearchNext(Rev,False);
+      if hppMessageBox(WndHandle,TranslateWideW('You have reached the end of the history.')+
+        #10#13+TranslateWideW('Do you want to continue searching at the beginning?'),
+        TranslateWideW('History++ Search'),
+        MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = ID_YES then
+          SearchNext(Rev,False);
     end else begin
       // not warped
       hgState(Self,gsIdle);
-      t := Translate('"%s" not found');
-      if hppOSUnicode then
-        MessageBoxW(WndHandle, PWideChar(WideFormat(AnsiToWideString(t,hppCodepage),[stext])),
-        PWideChar(AnsiToWideString(tCap,hppCodepage)), MB_OK or MB_DEFBUTTON1 or 0)
-      else
-        MessageBox(WndHandle, PChar(Format(t,[stext])),
-        PChar(tCap), MB_OK or MB_DEFBUTTON1 or 0);
+      hppMessageBox(WndHandle,WideFormat('"%s" not found',[stext]),
+        TranslateWideW('History++ Search'),MB_OK or MB_DEFBUTTON1 or 0);
     end;
   end;
 end;
@@ -1262,28 +1255,16 @@ procedure TfmGlobalSearch.hgSearchFinished(Sender: TObject; Text: WideString;
 var
   t: WideString;
 begin
-  //if LastSearch <> lsHotSearch then
-  //  LastHotIdx := hg.Selected;
-  //LastSearch := lsHotSearch;
   if Text = '' then begin
-    //if (LastHotIdx <> -1) and (HotString <> '') then
-    //  hg.Selected := LastHotIdx;
-    //LastSearch := lsNone;
     HotString := Text;
     hgState(Self,gsIdle);
     exit;
   end;
   HotString := Text;
-  {
-  if Found then t := 'Search: "'+Text+'" (Ctrl+Enter to search again)'
-  else t := 'Search: "'+Text+'" (not found)';
-  sb.SimpleText := t;
-  }
 
   if not Found then t := HotString
                else t := Text;
-  sb.SimpleText := WideFormat(AnsiToWideString(Translate('HotSearch: %s (F3 to find next)'),hppCodepage),[t]);
-  //if Found then HotString := Text;
+  sb.SimpleText := WideFormat(TranslateWideW('HotSearch: %s (F3 to find next)'),[t]);
 end;
 
 procedure TfmGlobalSearch.hgSearchItem(Sender: TObject; Item, ID: Integer;
@@ -1326,15 +1307,15 @@ begin
 
   case State of
     // if change, change also in SMFinished:
-    gsIdle:   t := WideFormat(TranslateWideString('%.0n items in %.0n contacts found. Searched for %.1f sec in %.0n items.'),[Length(History)/1, ContactsFound/1, stime/1000, AllItems/1, AllContacts/1]);
-    gsLoad:   t := TranslateWideString('Loading...');
-    gsSave:   t := TranslateWideString('Saving...');
-    gsSearch: t := TranslateWideString('Searching...');
-    gsDelete: t := TranslateWideString('Deleting...');
+    gsIdle:   t := WideFormat(TranslateWideW('%.0n items in %.0n contacts found. Searched for %.1f sec in %.0n items.'),[Length(History)/1, ContactsFound/1, stime/1000, AllItems/1, AllContacts/1]);
+    gsLoad:   t := TranslateWideW('Loading...');
+    gsSave:   t := TranslateWideW('Saving...');
+    gsSearch: t := TranslateWideW('Searching...');
+    gsDelete: t := TranslateWideW('Deleting...');
   end;
   if IsSearching then
     // if change, change also in SMProgress
-    sb.SimpleText := WideFormat(TranslateWideString('Searching... %.0n items in %.0n contacts found'),[Length(History)/1, ContactsFound/1]);
+    sb.SimpleText := WideFormat(TranslateWideW('Searching... %.0n items in %.0n contacts found'),[Length(History)/1, ContactsFound/1]);
   sb.SimpleText := t;
 end;
 

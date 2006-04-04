@@ -21,7 +21,7 @@ object fmGlobalSearch: TfmGlobalSearch
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object Panel1: TPanel
+  object Panel1: TTntPanel
     Left = 0
     Top = 0
     Width = 551
@@ -36,7 +36,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Height = 306
       Visible = False
     end
-    object paSearch: TPanel
+    object paSearch: TTntPanel
       Left = 2
       Top = 2
       Width = 547
@@ -47,7 +47,7 @@ object fmGlobalSearch: TfmGlobalSearch
       DesignSize = (
         547
         85)
-      object Label1: TLabel
+      object Label1: TTntLabel
         Left = 4
         Top = 8
         Width = 49
@@ -68,7 +68,7 @@ object fmGlobalSearch: TfmGlobalSearch
         OnKeyDown = edSearchKeyUp
         OnKeyPress = edSearchKeyPress
       end
-      object bnSearch: TButton
+      object bnSearch: TTntButton
         Left = 354
         Top = 3
         Width = 89
@@ -79,7 +79,7 @@ object fmGlobalSearch: TfmGlobalSearch
         TabOrder = 1
         OnClick = bnSearchClick
       end
-      object bnAdvanced: TButton
+      object bnAdvanced: TTntButton
         Left = 446
         Top = 3
         Width = 101
@@ -89,7 +89,7 @@ object fmGlobalSearch: TfmGlobalSearch
         TabOrder = 2
         OnClick = bnAdvancedClick
       end
-      object gbAdvanced: TGroupBox
+      object gbAdvanced: TTntGroupBox
         Left = 2
         Top = 31
         Width = 543
@@ -97,7 +97,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Advanced Search Options'
         TabOrder = 3
-        object rbAny: TRadioButton
+        object rbAny: TTntRadioButton
           Left = 10
           Top = 21
           Width = 155
@@ -107,7 +107,7 @@ object fmGlobalSearch: TfmGlobalSearch
           TabOrder = 0
           TabStop = True
         end
-        object rbAll: TRadioButton
+        object rbAll: TTntRadioButton
           Left = 171
           Top = 21
           Width = 156
@@ -115,7 +115,7 @@ object fmGlobalSearch: TfmGlobalSearch
           Caption = 'Search all words'
           TabOrder = 1
         end
-        object rbExact: TRadioButton
+        object rbExact: TTntRadioButton
           Left = 328
           Top = 21
           Width = 163
@@ -125,7 +125,7 @@ object fmGlobalSearch: TfmGlobalSearch
         end
       end
     end
-    object paCommand: TPanel
+    object paCommand: TTntPanel
       Left = 2
       Top = 473
       Width = 547
@@ -137,7 +137,7 @@ object fmGlobalSearch: TfmGlobalSearch
       DesignSize = (
         547
         31)
-      object bnClose: TButton
+      object bnClose: TTntButton
         Left = 464
         Top = 6
         Width = 83
@@ -148,7 +148,7 @@ object fmGlobalSearch: TfmGlobalSearch
         TabOrder = 0
         OnClick = bnCloseClick
       end
-      object Button2: TButton
+      object Button2: TTntButton
         Left = 0
         Top = 6
         Width = 81
@@ -158,7 +158,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Visible = False
       end
     end
-    object paProgress: TPanel
+    object paProgress: TTntPanel
       Left = 2
       Top = 419
       Width = 547
@@ -191,7 +191,7 @@ object fmGlobalSearch: TfmGlobalSearch
         TabOrder = 0
       end
     end
-    object paPassword: TPanel
+    object paPassword: TTntPanel
       Left = 2
       Top = 87
       Width = 547
@@ -256,7 +256,7 @@ object fmGlobalSearch: TfmGlobalSearch
         OnSelectItem = lvContactsSelectItem
       end
     end
-    object paHistory: TPanel
+    object paHistory: TTntPanel
       Left = 160
       Top = 113
       Width = 389
@@ -302,7 +302,7 @@ object fmGlobalSearch: TfmGlobalSearch
         TabStop = True
         Padding = 4
       end
-      object paFilter: TPanel
+      object paFilter: TTntPanel
         Left = 0
         Top = 274
         Width = 385
@@ -545,7 +545,7 @@ object fmGlobalSearch: TfmGlobalSearch
       end
     end
   end
-  object sb: TStatusBar
+  object sb: TTntStatusBar
     Left = 0
     Top = 506
     Width = 551
@@ -553,43 +553,43 @@ object fmGlobalSearch: TfmGlobalSearch
     Panels = <>
     SimplePanel = True
   end
-  object pmGrid: TPopupMenu
+  object pmGrid: TTntPopupMenu
     Left = 206
     Top = 266
-    object Open1: TMenuItem
+    object Open1: TTntMenuItem
       Caption = 'Sh&ow in context'
       ShortCut = 16397
       OnClick = hgDblClick
     end
-    object SendMessage1: TMenuItem
+    object SendMessage1: TTntMenuItem
       Caption = 'Send &Message'
       ShortCut = 16461
       OnClick = SendMessage1Click
     end
-    object ReplyQuoted1: TMenuItem
+    object ReplyQuoted1: TTntMenuItem
       Caption = 'Reply &Quoted'
       ShortCut = 16466
       OnClick = ReplyQuoted1Click
     end
-    object N2: TMenuItem
+    object N2: TTntMenuItem
       Caption = '-'
       Visible = False
     end
-    object Copy1: TMenuItem
+    object Copy1: TTntMenuItem
       Caption = '&Copy'
       ShortCut = 16451
       Visible = False
     end
-    object CopyText1: TMenuItem
+    object CopyText1: TTntMenuItem
       Caption = 'Copy &Text'
       ShortCut = 16468
       Visible = False
     end
-    object N1: TMenuItem
+    object N1: TTntMenuItem
       Caption = '-'
       Visible = False
     end
-    object SaveSelected1: TMenuItem
+    object SaveSelected1: TTntMenuItem
       Caption = '&Save Selected...'
       ShortCut = 16467
       Visible = False
