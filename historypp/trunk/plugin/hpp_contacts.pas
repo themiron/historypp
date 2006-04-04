@@ -64,7 +64,7 @@ begin
     Result := AnsiToWideString(Translate('Server'),hppCodepage)
   else begin
     if Proto = '' then Proto := GetContactProto(hContact);
-    if Proto = '' then Result := AnsiToWideString(Translate('''(Unknown Contact)'''),hppCodepage)
+    if Proto = '' then Result := TranslateWideW('''(Unknown Contact)''')
     else begin
       ci.cbSize := SizeOf(ci);
       ci.hContact := hContact;
@@ -91,7 +91,7 @@ begin
         end;
       end else
         Result := GetContactID(hContact,Proto);
-      if Result = '' then Result := AnsiToWideString(Translate(@Proto[1]),hppCodepage);
+      if Result = '' then Result := TranslateAnsiW(Proto);
     end;
   end;
 end;
@@ -130,7 +130,10 @@ begin
   Result := False;
   if Proto = '' then Proto := GetContactProto(hContact);
   if Proto = '' then exit;
-  WriteDBWord(hContact,Proto,'AnsiCodePage',Codepage);
+  if CodePage = 0 then
+    DBDeleteContactSetting(hContact,PChar(Proto),'AnsiCodePage')
+  else
+    WriteDBWord(hContact,Proto,'AnsiCodePage',Codepage);
   Result := True;
 end;
 
@@ -159,9 +162,9 @@ begin
     Result := Application.UseRightToLeftScrollBar
   else begin
     if hContact = 0 then
-    Temp := GetDBWord(hContact,Proto,'RTL',255);
+    Temp := GetDBByte(hContact,Proto,'RTL',255);
     If Temp = 255 then
-      Temp := GetDBWord(0,Proto,'RTL',Word(Application.UseRightToLeftScrollBar));
+      Temp := GetDBByte(0,Proto,'RTL',Byte(Application.UseRightToLeftScrollBar));
     Result := Boolean(Temp);
   end;
 end;
@@ -171,13 +174,11 @@ begin
   Result := False;
   if Proto = '' then Proto := GetContactProto(hContact);
   if Proto = '' then exit;
-
   case RTLMode of
     hppRTLDefault: DBDeleteContactSetting(hContact,PChar(Proto),'RTL');
-    hppRTLEnable: WriteDBWord(hContact,Proto,'RTL',Word(True));
-    hppRTLDisable: WriteDBWord(hContact,Proto,'RTL',Word(False));
+    hppRTLEnable: WriteDBByte(hContact,Proto,'RTL',Byte(True));
+    hppRTLDisable: WriteDBByte(hContact,Proto,'RTL',Byte(False));
   end;
-
   Result := True;
 end;
 
@@ -189,7 +190,7 @@ begin
   if Proto = '' then
     Result := hppRTLDefault
   else begin
-    Temp := GetDBWord(hContact,Proto,'RTL',255);
+    Temp := GetDBByte(hContact,Proto,'RTL',255);
     case Temp of
       0: Result := hppRTLDisable;
       1: Result := hppRTLEnable;
