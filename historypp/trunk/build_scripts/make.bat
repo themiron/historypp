@@ -61,7 +61,7 @@ echo Unknown command: "%ANS%"
 goto askproceed
 :proceed
 
-rd /q/s ..\build
+rd /q/s ..\build 2>nul
 
 call copysrc.bat
 rem # we are now in cd ..
