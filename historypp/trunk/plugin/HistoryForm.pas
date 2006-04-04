@@ -2045,17 +2045,13 @@ end;
 
 procedure THistoryFrm.ContactRTLmode1Click(Sender: TObject);
 begin
-  if RTLDefault2.Checked then begin
-    hg.RTLMode := hppRTLDefault;
-    DBDeleteContactSetting(hContact,PChar(Protocol),'RTL');
-  end else
-    if RTLEnabled2.Checked then begin
-      hg.RTLMode := hppRTLEnable;
-      DBWriteContactSettingByte(hContact,PChar(Protocol),'RTL',byte(true));
-    end else begin
-      hg.RTLMode := hppRTLDisable;
-      DBWriteContactSettingByte(hContact,PChar(Protocol),'RTL',byte(false));
-    end;
+  if RTLDefault2.Checked then
+    hg.RTLMode := hppRTLDefault
+  else begin
+    if RTLEnabled2.Checked then hg.RTLMode := hppRTLEnable
+                           else hg.RTLMode := hppRTLDisable;
+  end;
+  WriteContactRTLMode(hContact,hg.RTLMode,Protocol);
 end;
 
 procedure THistoryFrm.SmileysEnabled1Click(Sender: TObject);
@@ -2208,11 +2204,7 @@ var
   val: Cardinal;
 begin
   val := (Sender as TMenuItem).Tag;
-  if val = 0 then begin
-    DBDeleteContactSetting(hContact,PChar(Protocol),'AnsiCodePage');
-    val := CP_ACP;
-  end else
-    DBWriteContactSettingWord(hContact,PChar(Protocol),'AnsiCodePage',val);
+  WriteContactCodePage(hContact,val,Protocol);
   UserCodepage := val;
 end;
 
