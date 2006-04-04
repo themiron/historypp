@@ -308,4 +308,8 @@ begin
   // decreasing ref count to oleaut32.dll as said
   // in plugins doc
   FreeLibrary(GetModuleHandle('oleaut32.dll'));
+
+  {$IFDEF REPORT_LEAKS}
+  ReportMemoryLeaksOnShutdown := True;
+  {$ENDIF}
 end.
