@@ -117,6 +117,7 @@ begin
   PluginLink.UnhookEvent(HookModulesLoad);
   PluginLink.UnhookEvent(HookSettingsChanged);
   PluginLink.UnhookEvent(HookIconChanged);
+  PluginLink.UnhookEvent(HookIcon2Changed);
   //PluginLink.UnhookEvent(HookContactChanged);
   PluginLink.UnhookEvent(HookContactDelete);
   PluginLink.UnhookEvent(HookFSChanged);
