@@ -646,7 +646,7 @@ begin
   if dword(message.wParam)=hContact then begin
     //receive message from database
     AddHistoryItem(message.lParam);
-    sb.SimpleText := WideFormat(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
+    hgState(hg,hg.State);
   end;
 end;
 
@@ -660,7 +660,7 @@ begin
       if (History[GridIndexToHistory(i)] = Message.lParam) then begin
         hg.Delete(i);
         DeleteHistoryItem(i);
-        sb.SimpleText := WideFormat(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
+        hgState(hg,hg.State);
         exit;
       end;
     end;
@@ -790,7 +790,7 @@ procedure THistoryFrm.Load;
 begin
   if hContact = 0 then paTop.Visible := False;
   LoadHistory(Self);
-  sb.SimpleText := WideFormat(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
+  //sb.SimpleText := WideFormat(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
   //HookEventAdded;
 end;
 
@@ -881,10 +881,9 @@ procedure THistoryFrm.AddHistoryItem(hDBEvent:THandle);
 //slow
 begin
   Inc(HistoryLength);
-  SetLength(history,HistoryLength);
+  SetLength(History,HistoryLength);
   History[HistoryLength-1] := hDBEvent;
   hg.AddItem;
-  sb.SimpleText := WideFormat(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
 end;
 
 procedure THistoryFrm.HookEvents;
@@ -1265,7 +1264,8 @@ begin
   end;
   if PasswordMode then
     t := TranslateWideW('Enter password');
-  sb.SimpleText := AnsiToWideString(t,hppCodepage);
+  //sb.SimpleText := AnsiToWideString(t,hppCodepage);
+  sb.SimpleText := t;
 end;
 
 procedure THistoryFrm.DeleteAll1Click(Sender: TObject);
