@@ -2813,9 +2813,10 @@ begin
   end;
   BarAdjusted := False;
   AdjustScrollBar;
-  if IsVisible(0) then begin
+  // or window in background isn't repainted. weired
+  //if IsVisible(0) then begin
     Invalidate;
-  end;
+  //end;
 end;
 
 procedure THistoryGrid.WMMouseWheel(var Message: TWMMouseWheel);
