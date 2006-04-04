@@ -102,7 +102,8 @@ begin
     wHistory.ApplyFilter(index = -1);
   end else begin
     if index <> -1 then wHistory.hg.Selected := index;
-    wHistory.Show;
+    //wHistory.Show; to avoid multiple hooks
+    wHistory.BringToFront;
     wHistory.ApplyFilter(index = -1);
   end;
   Result := wHistory;
