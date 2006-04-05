@@ -5,27 +5,17 @@ Reply &Quoted
 <<
 >>
 Content
-Panel1
-EText
-Panel7
 From
 Nick:
 ID:
-chk49
-15847961
 More...
-Panel8
 To
 Nick:
 ID:
-chk49
-15847961
 More...
 Event Info
 Type:
 Date/Time:
-Message
-2000-03-01 12:24:43
 ;; Text found in ..\plugin\EventDetailForm.pas:
 Message
 URL

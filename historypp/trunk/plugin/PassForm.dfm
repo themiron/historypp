@@ -126,7 +126,7 @@ object fmPass: TfmPass
     Width = 174
     Height = 25
     AutoSize = False
-    Caption = 'Password not set'
+    Caption = '-'
     Layout = tlCenter
     WordWrap = True
   end
@@ -178,9 +178,7 @@ object fmPass: TfmPass
     Checkboxes = True
     Columns = <
       item
-        Width = -2
-        WidthType = (
-          -2)
+        Width = 276
       end>
     ReadOnly = True
     RowSelect = True

@@ -153,7 +153,8 @@ procedure TfmPass.FillList;
   li := lvCList.Items.Add;
   if Contact = 0 then begin
     Capt := GetContactDisplayName(Contact,'ICQ');
-    Capt := AnsiToWideString(Translate('System History'),CP_ACP)+' ('+Capt+')';
+    Capt := TranslateWideW('System History')+
+      ' ('+Capt+')';
   end else
     Capt := GetContactDisplayName(Contact);
   li.Caption := Capt;

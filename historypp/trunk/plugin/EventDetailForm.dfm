@@ -1,9 +1,9 @@
 object EventDetailsFrm: TEventDetailsFrm
   Left = 275
   Top = 178
-  Width = 466
-  Height = 396
   Caption = 'Event Details'
+  ClientHeight = 369
+  ClientWidth = 458
   Color = clBtnFace
   Constraints.MinHeight = 340
   Constraints.MinWidth = 466
@@ -187,7 +187,6 @@ object EventDetailsFrm: TEventDetailsFrm
         Align = alClient
         BevelOuter = bvNone
         BorderWidth = 4
-        Caption = 'Panel1'
         TabOrder = 0
         object EText: TTntMemo
           Left = 4
@@ -197,8 +196,6 @@ object EventDetailsFrm: TEventDetailsFrm
           Align = alClient
           BiDiMode = bdRightToLeft
           Color = clBtnFace
-          Lines.Strings = (
-            'EText')
           ParentBiDiMode = False
           ReadOnly = True
           ScrollBars = ssVertical
@@ -225,7 +222,6 @@ object EventDetailsFrm: TEventDetailsFrm
       Align = alLeft
       BevelOuter = bvNone
       BorderWidth = 2
-      Caption = 'Panel7'
       TabOrder = 0
       object GroupBox2: TGroupBox
         Left = 2
@@ -252,18 +248,6 @@ object EventDetailsFrm: TEventDetailsFrm
           Height = 13
           Caption = 'ID:'
         end
-        object EFromNick: TTntEdit
-          Left = 56
-          Top = 16
-          Width = 163
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          BorderStyle = bsNone
-          Color = clBtnFace
-          ReadOnly = True
-          TabOrder = 0
-          Text = 'chk49'
-        end
         object EFromUIN: TEdit
           Left = 56
           Top = 36
@@ -273,8 +257,18 @@ object EventDetailsFrm: TEventDetailsFrm
           BorderStyle = bsNone
           Color = clBtnFace
           ReadOnly = True
-          TabOrder = 1
-          Text = '15847961'
+          TabOrder = 0
+        end
+        object EFromNick: TTntEdit
+          Left = 56
+          Top = 16
+          Width = 163
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BorderStyle = bsNone
+          Color = clBtnFace
+          ReadOnly = True
+          TabOrder = 2
         end
         object EFromMore: TButton
           Left = 162
@@ -283,7 +277,7 @@ object EventDetailsFrm: TEventDetailsFrm
           Height = 17
           Anchors = [akTop, akRight]
           Caption = 'More...'
-          TabOrder = 2
+          TabOrder = 1
           OnClick = EFromMoreClick
         end
       end
@@ -296,7 +290,6 @@ object EventDetailsFrm: TEventDetailsFrm
       Align = alClient
       BevelOuter = bvNone
       BorderWidth = 2
-      Caption = 'Panel8'
       TabOrder = 1
       object GroupBox3: TGroupBox
         Left = 2
@@ -333,7 +326,6 @@ object EventDetailsFrm: TEventDetailsFrm
           Color = clBtnFace
           ReadOnly = True
           TabOrder = 0
-          Text = 'chk49'
         end
         object EToUIN: TEdit
           Left = 56
@@ -345,7 +337,6 @@ object EventDetailsFrm: TEventDetailsFrm
           Color = clBtnFace
           ReadOnly = True
           TabOrder = 1
-          Text = '15847961'
         end
         object EToMore: TButton
           Left = 162
@@ -405,7 +396,6 @@ object EventDetailsFrm: TEventDetailsFrm
         Color = clBtnFace
         ReadOnly = True
         TabOrder = 0
-        Text = 'Message'
       end
       object EDateTime: TTntEdit
         Left = 80
@@ -417,7 +407,6 @@ object EventDetailsFrm: TEventDetailsFrm
         Color = clBtnFace
         ReadOnly = True
         TabOrder = 1
-        Text = '2000-03-01 12:24:43'
       end
     end
   end
