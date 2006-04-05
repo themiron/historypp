@@ -469,6 +469,7 @@ object HistoryFrm: THistoryFrm
         BorderStyle = bsNone
         Images = ilSessions
         Indent = 19
+        ReadOnly = True
         TabOrder = 0
         OnChange = tvSessChange
       end
