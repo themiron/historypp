@@ -153,7 +153,7 @@ begin
   BytePos:=0;
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Url,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Desc,BytePos);
-  Result := WideFormat(AnsiToWideString(Translate('URL: %s'),hppCodepage),[AnsiToWideString(url+#13#10+desc,UseCP)]);
+  Result := WideFormat(TranslateWideW('URL: %s'),[AnsiToWideString(url+#13#10+desc,UseCP)]);
 end;
 
 function GetEventTextForFile(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
@@ -166,9 +166,9 @@ begin
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Filename,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Desc,BytePos);
   if (EventInfo.Flags and DBEF_SENT)>0 then
-    Result := AnsiToWideString(Translate('Outgoing file transfer: %s'),hppCodepage)
+    Result := TranslateWideW('Outgoing file transfer: %s')
   else
-    Result := AnsiToWideString(Translate('Incoming file transfer: %s'),hppCodepage);
+    Result := TranslateWideW('Incoming file transfer: %s');
   Result := WideFormat(Result,[AnsiToWideString(FileName+#13#10+Desc,UseCP)]);
 end;
 
@@ -206,7 +206,7 @@ begin
     ReasonW := ReasonUTF
   else
     ReasonW := ReasonACP;
-  Result := WideFormat(AnsiToWideString(Translate('Authorisation request by %s (%s%d): %s'),hppCodepage),
+  Result := WideFormat(TranslateWideW('Authorisation request by %s (%s%d): %s'),
             [NickW,AnsiToWideString(Name+Email,hppCodepage),uin,ReasonW]);
 end;
 
@@ -236,7 +236,7 @@ begin
   if Name <> '' then Name:=Name + ', ';
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
   if Email <> '' then Email := Email + ', ';
-  Result := WideFormat(AnsiToWideString(Translate('You were added by %s (%s%d)'),hppCodepage),
+  Result := WideFormat(TranslateWideW('You were added by %s (%s%d)'),
             [NickW,AnsiToWideString(Name+Email,hppCodepage),uin]);
 end;
 
@@ -260,9 +260,9 @@ begin
     Contacts := Contacts + ')';
   end;
   if (EventInfo.Flags and DBEF_SENT)>0 then
-    Result := AnsiToWideString(Translate('Outgoing contacts: %s'),hppCodepage)
+    Result := TranslateWideW('Outgoing contacts: %s')
   else
-    Result := AnsiToWideString(Translate('Incoming contacts: %s'),hppCodepage);
+    Result := TranslateWideW('Incoming contacts: %s');
   Result := WideFormat(Result ,[AnsiToWideString(Contacts,UseCP)]);
 end;
 
@@ -278,7 +278,7 @@ end;
 
 function GetEventTextForStatusChange(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
 begin
-  Result := WideFormat(AnsiToWideString(Translate('Status change: %s'),hppCodePage),[GetEventTextForMessage(EventInfo,UseCP)]);
+  Result := WideFormat(TranslateWideW('Status change: %s'),[GetEventTextForMessage(EventInfo,UseCP)]);
 end;
 
 function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
