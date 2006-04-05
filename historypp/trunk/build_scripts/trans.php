@@ -8,8 +8,12 @@
 $detailed_file = false;
 $ignore_menuitems = true;
 
+// empty captions and captions consiting from
+// whitespace, -, \, /, <, >, _ are skipped
+$skip_empty_captions = '/^[\s\-\<\>\/\_]*$/';
+
 if (count($argv) < 2) {
-  print "Wrong params\r\n"; 
+  print "Wrong params\r\n";
   exit;
 }
 
@@ -65,7 +69,7 @@ function parse_object() {
   while(false == (preg_match('/\s*end$/',rtrim($lines[$lineid])))) {
     $lines[$lineid] = rtrim($lines[$lineid]);
     if (preg_match('/^(\s)*object (.*): (.*)$/',$lines[$lineid],$matches)) {
-      if ($ignore_menuitems && ($matches[3] == "TMenuItem")) {
+      if ($ignore_menuitems && (($matches[3] == "TMenuItem")||($matches[3] == "TTntMenuItem"))) {
         $no_add = true;
         parse_object();
         $no_add = false;
@@ -156,7 +160,7 @@ $filename_d = $file_to_parse.'.trans-details.txt';
 $strings[] = ";; Text found in $file_to_parse.dfm:";
 $strings_d[] = ";; Text found in $file_to_parse.dfm:";
 foreach($dfm_str as $i => $str){
-  if (!preg_match('/^[\s\-]?$/',$str)) {
+  if (!preg_match($skip_empty_captions,$str)) {
       $strings[] = $str;
       $strings_d[] = "$str ($dfm_prop[$i])";
     }
@@ -231,7 +235,7 @@ foreach($dfm_prop as $i => $prop) {
   $found = false;
 
   if ($dfm_noadd[$i]) { continue; }
-  if (preg_match('/^[\s\-]?$/',$dfm_str[$i])) { continue; }
+  if (preg_match($skip_empty_captions,$dfm_str[$i])) { continue; }
 
   foreach($pas_prop as $n => $value) {
     if (strcasecmp($prop,$value) == 0) {
