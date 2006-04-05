@@ -1,6 +1,5 @@
 ;; Text found in ..\plugin\PassForm.dfm:
 History++ Password Protection
-Password not set
 Password Options
 Protect all contacts
 Protect only selected contacts
@@ -9,6 +8,6 @@ Cancel
 OK
 &Refresh List
 ;; Text found in ..\plugin\PassForm.pas:
-System History'),CP_ACP)+' ('+Capt+
+System History
 Password not set
 Password set
