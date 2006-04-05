@@ -36,6 +36,7 @@ uses
   Classes,
   m_globaldefs,
   m_api,
+  tntSystem,
   hpp_global in 'hpp_global.pas',
   hpp_contacts in 'hpp_contacts.pas',
   hpp_database in 'hpp_database.pas',
@@ -308,6 +309,8 @@ begin
   // decreasing ref count to oleaut32.dll as said
   // in plugins doc
   FreeLibrary(GetModuleHandle('oleaut32.dll'));
+
+  TntSystem.InstallTntSystemUpdates;
 
   {$IFDEF REPORT_LEAKS}
   ReportMemoryLeaksOnShutdown := True;
