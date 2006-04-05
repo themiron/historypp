@@ -104,8 +104,9 @@ begin
     wHistory.ApplyFilter(index = -1);
   end else begin
     if index <> -1 then wHistory.hg.Selected := index;
-    //wHistory.Show; to avoid multiple hooks
-    wHistory.BringToFront;
+    // restore even if minimized
+    // and we ain't have no double hooks
+    ShowWindow(wHistory.Handle,SW_SHOWNORMAL);
     wHistory.ApplyFilter(index = -1);
   end;
   Result := wHistory;
@@ -134,7 +135,7 @@ begin
     fmGlobalSearch := TfmGlobalSearch.Create(nil);
     fmGlobalSearch.Show;
   end;
-  fmGlobalSearch.BringToFront;
+  ShowWindow(fmGlobalSearch.Handle,SW_SHOWNORMAL);
   Result := 0;
 end;
 
