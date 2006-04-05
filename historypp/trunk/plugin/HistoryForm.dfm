@@ -479,6 +479,9 @@ object HistoryFrm: THistoryFrm
         Height = 21
         Align = alTop
         TabOrder = 1
+        DesignSize = (
+          154
+          21)
         object laSess: TTntLabel
           Left = 8
           Top = 4
@@ -491,6 +494,7 @@ object HistoryFrm: THistoryFrm
           Top = 2
           Width = 18
           Height = 17
+          Anchors = [akTop, akRight]
           Flat = True
           Glyph.Data = {
             BE000000424DBE0000000000000076000000280000000A000000090000000100

@@ -236,6 +236,7 @@ type
     FPasswordMode: Boolean;
     UserCodepage: Cardinal;
     SavedLinkUrl: String;
+    ShowSessionsAfterPassword: Boolean;
 
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo);message WM_GetMinMaxInfo;
     //procedure WMSize(var Message: TWMSize); message WM_SIZE;
@@ -631,6 +632,8 @@ begin
     cbFilter.ItemIndex := filt;
   end;
   cbSort.ItemIndex:=GetDBInt(hppDBName,'SortOrder',0);
+  ShowSessionsAfterPassword := GetDBBool(hppDBName,'ShowSessions',False);
+  paSess.Width := GetDBInt(hppDBName,'SessionsWidth',150);
 end;
 
 procedure THistoryFrm.SavePosition;
@@ -640,6 +643,11 @@ begin
   if hContact <> 0 then
     WriteDBInt(hppDBName,'LastFilter',cbFilter.ItemIndex);
   WriteDBInt(hppDBName,'SortOrder',cbSort.ItemIndex);
+  if (hContact <> 0) and (not PasswordMode) then begin
+     WriteDBBool(hppDBName,'ShowSessions',paSess.Visible);
+     if paSess.Visible then
+        WriteDBInt(hppDBName,'SessionsWidth',paSess.Width);
+  end;
 end;
 
 procedure THistoryFrm.HMEventAdded(var Message: TMessage);
@@ -905,7 +913,8 @@ procedure THistoryFrm.FormShow(Sender: TObject);
 begin
   LoadPosition;
   ProcessPassword;
-
+  if not PasswordMode then ShowSessions(ShowSessionsAfterPassword);
+  
   HookEvents;
 
   SessThread := TSessionsThread.Create(True);
@@ -1725,12 +1734,14 @@ if value = true then begin
   edPass.SetFocus;
   end
 else begin
+  ShowSessions(ShowSessionsAfterPassword);
   hg.SetFocus;
   end;
 end;
 
 procedure THistoryFrm.ShowSessions(Show: Boolean);
 begin
+  if hContact = 0 then Show := False;
   paSess.Visible := Show;
   spSess.Visible := Show;
   spSess.Left := paSess.Left + paSess.Width + 1;
