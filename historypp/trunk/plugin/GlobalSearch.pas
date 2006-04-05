@@ -68,7 +68,7 @@ type
   TfmGlobalSearch = class(TTntForm)
     Panel1: TtntPanel;
     paSearch: TtntPanel;
-    Label1: TtntLabel;
+    laSearch: TTntLabel;
     edSearch: TtntEdit;
     bnSearch: TtntButton;
     sb: TtntStatusBar;
@@ -275,7 +275,7 @@ begin
   AllContacts := st.AllContacts;
   AllItems := st.AllEvents;
   // if change, change also in hg.State:
-  sbt := WideFormat(TranslateWideW('%.0n items in %.0n contacts found. Searched for %.1f sec in %.0n items.'),[Length(History)/1, ContactsFound/1, stime/1000, AllItems/1, AllContacts/1]);
+  sbt := Tnt_WideFormat(TranslateWideW('%.0n items in %d contacts found. Searched for %.2f sec in %.0n items.'),[Length(History)/1, ContactsFound, stime/1000, AllItems/1]);
   st.WaitFor;
   st.Free;
   IsSearching := False;
@@ -414,7 +414,7 @@ begin
   //Application.ProcessMessages;
 
   // if change, change also in hg.OnState
-  sb.SimpleText := WideFormat(TranslateWideW('Searching... %.0n items in %.0n contacts found'),[Length(History)/1, ContactsFound/1]);
+  sb.SimpleText := Tnt_WideFormat(TranslateWideW('Searching... %.0n items in %d contacts found'),[Length(History)/1, ContactsFound]);
 end;
 
 procedure TfmGlobalSearch.StartHotFilterTimer;
@@ -493,7 +493,7 @@ procedure TfmGlobalSearch.TranslateForm;
 begin
   Caption := TranslateWideW(Caption);
 
-  Label1.Caption := TranslateWideW(Label1.Caption);
+  laSearch.Caption := TranslateWideW(laSearch.Caption);
   bnSearch.Caption := TranslateWideW(bnSearch.Caption);
   bnAdvanced.Caption := TranslateWideW(bnAdvanced.Caption);
   gbAdvanced.Caption := TranslateWideW(gbAdvanced.Caption);
@@ -523,7 +523,12 @@ begin
   hg.TxtPartLog := Translate(PChar(hg.TxtPartLog));
   hg.txtStartUp := Translate(PChar(hg.txtStartUp));
 
-  edPass.Left := laPass.Left + laPass.Width + 10;
+  edSearch.Left := laSearch.Left + laSearch.Width + 5;
+  edSearch.Width := bnSearch.Left - edSearch.Left - 5;
+  laPass.Left := edPass.Left - laPass.Width - 5;
+
+
+  //edPass.Left := laPass.Left + laPass.Width + 10;
 end;
 
 procedure TfmGlobalSearch.FilterOnContact(hContact: Integer);
@@ -1301,7 +1306,7 @@ begin
 
   case State of
     // if change, change also in SMFinished:
-    gsIdle:   t := WideFormat(TranslateWideW('%.0n items in %.0n contacts found. Searched for %.1f sec in %.0n items.'),[Length(History)/1, ContactsFound/1, stime/1000, AllItems/1, AllContacts/1]);
+    gsIdle:   t := Tnt_WideFormat(TranslateWideW('%.0n items in %d contacts found. Searched for %.2f sec in %.0n items.'),[Length(History)/1, ContactsFound, stime/1000, AllItems/1]);
     gsLoad:   t := TranslateWideW('Loading...');
     gsSave:   t := TranslateWideW('Saving...');
     gsSearch: t := TranslateWideW('Searching...');
@@ -1309,8 +1314,9 @@ begin
   end;
   if IsSearching then
     // if change, change also in SMProgress
-    sb.SimpleText := WideFormat(TranslateWideW('Searching... %.0n items in %.0n contacts found'),[Length(History)/1, ContactsFound/1]);
-  sb.SimpleText := t;
+    sb.SimpleText := Tnt_WideFormat(TranslateWideW('Searching... %.0n items in %d contacts found'),[Length(History)/1, ContactsFound])
+  else
+    sb.SimpleText := t;
 end;
 
 initialization

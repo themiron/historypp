@@ -155,7 +155,7 @@ constructor TVertScrollBar.Create(AControl: TScrollingWinControl; AKind: TScroll
 begin
   inherited Create;
   {$IFDEF PAGE_SIZE}
-  FPageSize := 10;
+  FPageSize := 20;
   {$ENDIF}
   FControl := AControl;
   FKind := AKind;

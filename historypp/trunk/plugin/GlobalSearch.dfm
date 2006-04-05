@@ -1,9 +1,9 @@
 object fmGlobalSearch: TfmGlobalSearch
-  Left = 304
-  Top = 135
+  Left = 220
+  Top = 99
+  Width = 559
+  Height = 552
   Caption = 'Global History Search'
-  ClientHeight = 525
-  ClientWidth = 551
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -35,7 +35,6 @@ object fmGlobalSearch: TfmGlobalSearch
       Top = 113
       Height = 337
       Visible = False
-      ExplicitHeight = 306
     end
     object paSearch: TTntPanel
       Left = 2
@@ -48,7 +47,7 @@ object fmGlobalSearch: TfmGlobalSearch
       DesignSize = (
         547
         85)
-      object Label1: TTntLabel
+      object laSearch: TTntLabel
         Left = 4
         Top = 8
         Width = 49
@@ -136,7 +135,6 @@ object fmGlobalSearch: TfmGlobalSearch
       BevelOuter = bvLowered
       TabOrder = 3
       Visible = False
-      ExplicitTop = 419
       DesignSize = (
         547
         54)
@@ -168,19 +166,24 @@ object fmGlobalSearch: TfmGlobalSearch
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 1
+      DesignSize = (
+        547
+        26)
       object laPass: TTntLabel
-        Left = 221
+        Left = 369
         Top = 5
         Width = 49
         Height = 13
+        Anchors = [akTop, akRight]
         Caption = 'Password:'
         Enabled = False
       end
       object edPass: TPasswordEdit
-        Left = 281
+        Left = 421
         Top = 1
         Width = 125
         Height = 21
+        Anchors = [akTop, akRight]
         TabOrder = 1
         OnKeyDown = edSearchKeyUp
         OnKeyPress = edPassKeyPress
@@ -188,7 +191,7 @@ object fmGlobalSearch: TfmGlobalSearch
       object cbPass: TTntCheckBox
         Left = 4
         Top = 4
-        Width = 215
+        Width = 273
         Height = 17
         Caption = 'Include password-protected contacts'
         TabOrder = 0
@@ -204,7 +207,6 @@ object fmGlobalSearch: TfmGlobalSearch
       BevelOuter = bvNone
       TabOrder = 2
       Visible = False
-      ExplicitHeight = 306
       object lvContacts: TTntListView
         Left = 0
         Top = 0
@@ -224,7 +226,6 @@ object fmGlobalSearch: TfmGlobalSearch
         TabOrder = 0
         ViewStyle = vsReport
         OnSelectItem = lvContactsSelectItem
-        ExplicitHeight = 306
       end
     end
     object paHistory: TTntPanel
@@ -236,14 +237,13 @@ object fmGlobalSearch: TfmGlobalSearch
       BevelOuter = bvNone
       BorderStyle = bsSingle
       TabOrder = 4
-      ExplicitHeight = 306
       object hg: THistoryGrid
         Left = 0
         Top = 0
         Width = 385
         Height = 305
         VertScrollBar.Increment = 1
-        VertScrollBar.PageSize = 10
+        VertScrollBar.PageSize = 20
         MultiSelect = True
         TxtStartup = 'Starting up...'
         TxtNoItems = 'No items found'
@@ -273,7 +273,6 @@ object fmGlobalSearch: TfmGlobalSearch
         Align = alClient
         TabStop = True
         Padding = 4
-        ExplicitHeight = 274
       end
       object paFilter: TTntPanel
         Left = 0
@@ -283,7 +282,6 @@ object fmGlobalSearch: TfmGlobalSearch
         Align = alBottom
         BevelOuter = bvNone
         TabOrder = 2
-        ExplicitTop = 274
         DesignSize = (
           385
           28)
