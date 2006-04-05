@@ -1742,9 +1742,17 @@ end;
 procedure THistoryFrm.ShowSessions(Show: Boolean);
 begin
   if hContact = 0 then Show := False;
+
   paSess.Visible := Show;
   spSess.Visible := Show;
   spSess.Left := paSess.Left + paSess.Width + 1;
+
+  if Show = False then begin
+     StartTimestamp := 0;
+     EndTimestamp := 0;
+     hg.UpdateFilter;
+  end;
+
 end;
 
 procedure THistoryFrm.bnPassClick(Sender: TObject);
