@@ -1,13 +1,13 @@
 object HistoryFrm: THistoryFrm
-  Left = 306
-  Top = 211
+  Left = 260
+  Top = 143
+  Width = 500
+  Height = 400
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
-  ClientHeight = 373
-  ClientWidth = 492
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -139,7 +139,7 @@ object HistoryFrm: THistoryFrm
         Width = 321
         Height = 277
         VertScrollBar.Increment = 1
-        VertScrollBar.PageSize = 10
+        VertScrollBar.PageSize = 20
         MultiSelect = True
         TxtStartup = 'Starting up...'
         TxtNoItems = 'History is empty'
@@ -185,7 +185,7 @@ object HistoryFrm: THistoryFrm
         Enabled = False
         TabOrder = 2
         Visible = False
-        object laPass: TLabel
+        object laPass: TTntLabel
           Left = 54
           Top = 7
           Width = 236
@@ -299,7 +299,7 @@ object HistoryFrm: THistoryFrm
             C0C0}
           Transparent = True
         end
-        object Label4: TLabel
+        object laPass2: TTntLabel
           Left = 10
           Top = 60
           Width = 49
@@ -316,7 +316,7 @@ object HistoryFrm: THistoryFrm
           OnKeyPress = edPassKeyPress
           OnKeyUp = edPassKeyUp
         end
-        object bnPass: TButton
+        object bnPass: TTntButton
           Left = 208
           Top = 82
           Width = 83
@@ -339,7 +339,7 @@ object HistoryFrm: THistoryFrm
       DesignSize = (
         484
         31)
-      object Label1: TLabel
+      object laFilter: TTntLabel
         Left = 2
         Top = 7
         Width = 27
@@ -347,7 +347,7 @@ object HistoryFrm: THistoryFrm
         Caption = 'Show'
         FocusControl = cbFilter
       end
-      object cbFilter: TComboBox
+      object cbFilter: TTntComboBox
         Left = 40
         Top = 3
         Width = 145
@@ -364,7 +364,7 @@ object HistoryFrm: THistoryFrm
           'Urls'
           'Status Changes')
       end
-      object cbSort: TComboBox
+      object cbSort: TTntComboBox
         Left = 338
         Top = 3
         Width = 145
@@ -397,7 +397,7 @@ object HistoryFrm: THistoryFrm
         BevelOuter = bvNone
         Caption = ' '
         TabOrder = 3
-        object bnClose: TButton
+        object bnClose: TTntButton
           Left = 80
           Top = 7
           Width = 75
@@ -408,7 +408,7 @@ object HistoryFrm: THistoryFrm
           OnClick = bnCloseClick
         end
       end
-      object bnSearch: TButton
+      object bnSearch: TTntButton
         Left = 0
         Top = 7
         Width = 75
@@ -417,7 +417,7 @@ object HistoryFrm: THistoryFrm
         TabOrder = 0
         OnClick = bnSearchClick
       end
-      object bnDelete: TButton
+      object bnDelete: TTntButton
         Left = 78
         Top = 7
         Width = 75
@@ -426,7 +426,7 @@ object HistoryFrm: THistoryFrm
         TabOrder = 1
         OnClick = bnDeleteClick
       end
-      object bbAddit: TBitBtn
+      object bbAddit: TTntBitBtn
         Left = 164
         Top = 7
         Width = 107
@@ -441,7 +441,7 @@ object HistoryFrm: THistoryFrm
         Layout = blGlyphRight
         Style = bsNew
       end
-      object bnConversation: TButton
+      object bnConversation: TTntButton
         Left = 277
         Top = 7
         Width = 96
@@ -520,209 +520,193 @@ object HistoryFrm: THistoryFrm
     Left = 44
     Top = 168
   end
-  object pmGrid: TPopupMenu
+  object pmGrid: TTntPopupMenu
     OnPopup = pmPopup
     Left = 84
     Top = 261
-    object Details1: TMenuItem
+    object Details1: TTntMenuItem
       Caption = '&Open'
       ShortCut = 16397
       OnClick = Details1Click
     end
-    object N8: TMenuItem
+    object N8: TTntMenuItem
       Caption = '-'
     end
-    object SendMessage1: TMenuItem
+    object SendMessage1: TTntMenuItem
       Caption = 'Send &Message'
       ShortCut = 16461
       OnClick = SendMessage1Click
     end
-    object ReplyQuoted1: TMenuItem
+    object ReplyQuoted1: TTntMenuItem
       Caption = 'Reply &Quoted'
       ShortCut = 16466
       OnClick = ReplyQuoted1Click
     end
-    object UserDetails1: TMenuItem
+    object UserDetails1: TTntMenuItem
       Caption = 'User &Details'
       ShortCut = 16457
       OnClick = UserDetails1Click
     end
-    object N12: TMenuItem
+    object N12: TTntMenuItem
       Caption = '-'
     end
-    object Copy1: TMenuItem
+    object Copy1: TTntMenuItem
       Caption = '&Copy'
       ShortCut = 16451
       OnClick = Copy1Click
     end
-    object CopyText1: TMenuItem
+    object CopyText1: TTntMenuItem
       Caption = 'Copy &Text'
       ShortCut = 16468
       OnClick = CopyText1Click
     end
-    object Delete1: TMenuItem
+    object Delete1: TTntMenuItem
       Caption = '&Delete'
       ShortCut = 46
       OnClick = Delete1Click
     end
-    object N2: TMenuItem
+    object N2: TTntMenuItem
       Caption = '-'
     end
-    object SaveSelected1: TMenuItem
+    object SaveSelected1: TTntMenuItem
       Caption = '&Save Selected...'
       OnClick = SaveSelected1Click
     end
-    object N13: TMenuItem
+    object N13: TTntMenuItem
       Caption = '-'
     end
   end
-  object pmAdd: TPopupMenu
+  object pmAdd: TTntPopupMenu
     OnPopup = pmPopup
     Left = 16
     Top = 256
-    object N7: TMenuItem
+    object N7: TTntMenuItem
       Caption = '-'
       GroupIndex = 1
     end
-    object SaveasHTML1: TMenuItem
+    object SaveasHTML1: TTntMenuItem
       Caption = 'Save All as &HTML...'
       GroupIndex = 1
       OnClick = SaveasHTML1Click
     end
-    object SaveasXML1: TMenuItem
+    object SaveasXML1: TTntMenuItem
       Caption = 'Save All as &XML...'
       GroupIndex = 1
       OnClick = SaveasXML1Click
     end
-    object SaveasText1: TMenuItem
+    object SaveasText1: TTntMenuItem
       Caption = 'Save All as &Text...'
       GroupIndex = 1
       OnClick = SaveasText1Click
     end
-    object N4: TMenuItem
+    object N4: TTntMenuItem
       Caption = '-'
       GroupIndex = 1
     end
-    object DeleteAll1: TMenuItem
+    object DeleteAll1: TTntMenuItem
       Caption = '&Delete All'
       GroupIndex = 1
       OnClick = DeleteAll1Click
     end
-    object N6: TMenuItem
+    object N6: TTntMenuItem
       Caption = '-'
       GroupIndex = 1
     end
-    object Setpassword1: TMenuItem
+    object Setpassword1: TTntMenuItem
       Caption = '&Password Protection...'
       GroupIndex = 1
       OnClick = Setpassword1Click
     end
   end
-  object pmLink: TPopupMenu
+  object pmLink: TTntPopupMenu
     Left = 116
     Top = 262
-    object Open1: TMenuItem
+    object Open1: TTntMenuItem
       Caption = 'Open &Link'
       Default = True
-      OnClick = Open1Click
+      OnClick = OpenLink1Click
     end
-    object OpeninNewWindow1: TMenuItem
+    object OpeninNewWindow1: TTntMenuItem
       Caption = 'Open Link in New &Window'
-      OnClick = OpeninNewWindow1Click
+      OnClick = OpenLinkInNewWindow1Click
     end
-    object N1: TMenuItem
+    object N1: TTntMenuItem
       Caption = '-'
     end
-    object Copy2: TMenuItem
+    object Copy2: TTntMenuItem
       Caption = '&Copy'
-      OnClick = Copy2Click
-    end
-    object LinkUrl1: TMenuItem
-      Tag = 101
-      Caption = 'LinkUrl'
-      Visible = False
+      OnClick = CopyLink1Click
     end
   end
-  object pmFile: TPopupMenu
+  object pmFile: TTntPopupMenu
     Left = 50
     Top = 259
-    object OpenFile2: TMenuItem
+    object OpenFile2: TTntMenuItem
       Caption = 'Open &File'
-      OnClick = OpenFile2Click
+      OnClick = OpenFile1Click
     end
-    object OpenFileFolder2: TMenuItem
+    object OpenFileFolder2: TTntMenuItem
       Caption = 'Open File Fo&lder'
-      OnClick = OpenFileFolder2Click
+      OnClick = OpenFileFolder1Click
     end
-    object N5: TMenuItem
+    object N5: TTntMenuItem
       Caption = '-'
     end
-    object CopyFile1: TMenuItem
+    object CopyFile1: TTntMenuItem
       Caption = '&Copy'
-      OnClick = CopyFile1Click
-    end
-    object FileLink1: TMenuItem
-      Tag = 101
-      Caption = 'File Link'
-      Visible = False
-    end
-    object FileLink2: TMenuItem
-      Tag = 101
-      Caption = 'FileLink'
-      Visible = False
     end
   end
-  object pmOptions: TPopupMenu
+  object pmOptions: TTntPopupMenu
     Left = 148
     Top = 263
-    object Options1: TMenuItem
+    object Options1: TTntMenuItem
       Tag = 222
       Caption = '&Options'
-      object IconsEnabled1: TMenuItem
+      object IconsEnabled1: TTntMenuItem
         Caption = 'Show event icons'
         Checked = True
         OnClick = IconsEnabled1Click
       end
-      object N3: TMenuItem
+      object N3: TTntMenuItem
         Caption = '-'
       end
-      object SmileysEnabled1: TMenuItem
+      object SmileysEnabled1: TTntMenuItem
         Caption = 'Enable smiley support'
         Checked = True
         OnClick = SmileysEnabled1Click
       end
-      object BBCodesEnabled1: TMenuItem
+      object BBCodesEnabled1: TTntMenuItem
         Caption = 'Enable BBCodes support'
         Checked = True
         OnClick = BBCodesEnabled1Click
       end
-      object MathModuleEnabled1: TMenuItem
+      object MathModuleEnabled1: TTntMenuItem
         Caption = 'Enable MathModule support'
         Enabled = False
         OnClick = MathModuleEnabled1Click
       end
-      object N9: TMenuItem
+      object N9: TTntMenuItem
         Caption = '-'
       end
-      object RTLEnabled1: TMenuItem
+      object RTLEnabled1: TTntMenuItem
         Caption = 'Use RTL by default'
         OnClick = RTLEnabled1Click
       end
-      object N11: TMenuItem
+      object N11: TTntMenuItem
         Caption = '-'
       end
-      object FindURLs1: TMenuItem
+      object FindURLs1: TTntMenuItem
         Caption = 'Find URLs in messages'
         Checked = True
         OnClick = FindURLs1Click
       end
-      object UnderlineURLs1: TMenuItem
+      object UnderlineURLs1: TTntMenuItem
         Caption = 'Underline URLs'
         Checked = True
         OnClick = UnderlineURLs1Click
       end
     end
-    object ANSICodepage1: TMenuItem
+    object ANSICodepage1: TTntMenuItem
       Caption = 'ANSI Encoding'
       object SystemCodepage1: TMenuItem
         AutoCheck = True
@@ -732,7 +716,7 @@ object HistoryFrm: THistoryFrm
         OnClick = CodepageChangeClick
       end
     end
-    object ContactRTLmode1: TMenuItem
+    object ContactRTLmode1: TTntMenuItem
       Caption = 'Text direction'
       object RTLDefault2: TMenuItem
         AutoCheck = True
@@ -755,26 +739,26 @@ object HistoryFrm: THistoryFrm
       end
     end
   end
-  object pmGridInline: TPopupMenu
+  object pmGridInline: TTntPopupMenu
     OnPopup = pmGridInlinePopup
     Left = 180
     Top = 263
-    object CopyInline: TMenuItem
+    object CopyInline: TTntMenuItem
       Caption = 'Copy'
       OnClick = CopyInlineClick
     end
-    object CopyAllInline: TMenuItem
+    object CopyAllInline: TTntMenuItem
       Caption = 'Copy all'
       OnClick = CopyAllInlineClick
     end
-    object SelectAllInline: TMenuItem
+    object SelectAllInline: TTntMenuItem
       Caption = 'Select all'
       OnClick = SelectAllInlineClick
     end
-    object N10: TMenuItem
+    object N10: TTntMenuItem
       Caption = '-'
     end
-    object CancelInline1: TMenuItem
+    object CancelInline1: TTntMenuItem
       Caption = 'Cancel'
       OnClick = CancelInline1Click
     end
