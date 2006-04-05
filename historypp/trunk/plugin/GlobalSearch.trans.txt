@@ -8,9 +8,6 @@ Advanced Search Options
 Search any word
 Search all words
 Search exact phrase
-Close
-Save
-Searching contact "Unknown" (3 of 11)
 Password:
 Include password-protected contacts
 Starting up...
@@ -43,7 +40,8 @@ You have entered the wrong password.
 History++ Password Protection
 Please wait while closing the window...
 Partial History [%s] - [%s]
-Ready to search')+#10#13#10#13+Translate('Click Search button to start
+Ready to search
+Click Search button to start
 Advanced <<
 Advanced >>
 HotSearch: %s (F3 to find next)

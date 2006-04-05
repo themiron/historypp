@@ -71,19 +71,16 @@ type
     Label1: TtntLabel;
     edSearch: TtntEdit;
     bnSearch: TtntButton;
-    paCommand: TtntPanel;
     sb: TtntStatusBar;
     paProgress: TtntPanel;
     pb: TProgressBar;
     laProgress: TTntLabel;
-    bnClose: TtntButton;
     pmGrid: TtntPopupMenu;
     Open1: TtntMenuItem;
     Copy1: TtntMenuItem;
     CopyText1: TtntMenuItem;
     N1: TtntMenuItem;
     N2: TtntMenuItem;
-    Button2: TtntButton;
     bnAdvanced: TtntButton;
     gbAdvanced: TtntGroupBox;
     rbAny: TtntRadioButton;
@@ -146,7 +143,6 @@ type
     procedure hgDblClick(Sender: TObject);
     procedure edSearchEnter(Sender: TObject);
     procedure edSearchKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure bnCloseClick(Sender: TObject);
     procedure hgProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
     procedure FormShow(Sender: TObject);
     procedure hgKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -508,6 +504,8 @@ begin
   cbPass.Caption := TranslateWideW(cbPass.Caption);
   laPass.Caption := TranslateWideW(laPass.Caption);
   sbClearFilter.Hint := TranslateWideW(sbClearFilter.Hint);
+
+  SaveDialog.Title := Translate(PAnsiChar(SaveDialog.Title));
 
   Open1.Caption := TranslateWideW(Open1.Caption);
   SendMessage1.Caption := TranslateWideW(SendMessage1.Caption);
@@ -897,11 +895,6 @@ begin
   imFilterWait.Visible := False;
 end;
 
-procedure TfmGlobalSearch.bnCloseClick(Sender: TObject);
-begin
-  close;
-end;
-
 var
   ItemRenderDetails: TItemRenderDetails;
 
@@ -976,7 +969,8 @@ begin
   Icon.Handle := CopyIcon(hppIcons[1].handle);
 
   hg.Options := GridOptions;
-  hg.TxtStartup := Translate('Ready to search')+#10#13#10#13+Translate('Click Search button to start');
+  hg.TxtStartup := Translate('Ready to search')+
+    #10#13#10#13+Translate('Click Search button to start');
 
   PassMode := GetPassMode;
   cbPass.Enabled := (PassMode <> PASSMODE_PROTNONE);

@@ -1,19 +1,11 @@
 We have errors!
 
-************ NOT TRANSLATED ***************
-Form properties not translated in .pas file
-See translate_guide.txt for what it can mean and how to fix it
-********************************************
-
-SaveDialog.Title
-
 ************ NOT FOUND IN DFM **************
 Some properites in the code were not found in DFM,
 so they were not added to the strings list
 See translate_guide.txt for for how to make me find them
 ********************************************
 
-mi.Items[i].Caption
 HtmlFilter
 XmlFilter
 UnicodeFilter

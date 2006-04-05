@@ -1791,7 +1791,7 @@ var
   begin
     for i := 0 to mi.Count-1 do
       if mi.Items[i].Caption <> '-' then begin
-        mi.Items[i].Caption := Translate(PChar(mi.Items[i].Caption));
+        mi.Items[i].Caption := Translate(PChar(mi.Items[i].Caption{TRANSLATE-IGNORE}));
         if mi.Items[i].Count > 0 then TranslateMenu(mi.Items[i]);
       end;
   end;
@@ -1827,7 +1827,7 @@ begin
   Label4.Caption := Translate(PChar(Label4.Caption));
   laSess.Caption := TranslateWideW(laSess.Caption);
 
-  SaveDialog.Title := Translate('Save History');
+  SaveDialog.Title := Translate(PAnsiChar(SaveDialog.Title));
 
   TranslateMenu(pmOptions.Items);
   TranslateMenu(pmAdd.Items);
