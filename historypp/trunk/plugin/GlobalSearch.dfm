@@ -33,8 +33,9 @@ object fmGlobalSearch: TfmGlobalSearch
     object spContacts: TTntSplitter
       Left = 157
       Top = 113
-      Height = 306
+      Height = 337
       Visible = False
+      ExplicitHeight = 306
     end
     object paSearch: TTntPanel
       Left = 2
@@ -125,42 +126,9 @@ object fmGlobalSearch: TfmGlobalSearch
         end
       end
     end
-    object paCommand: TTntPanel
-      Left = 2
-      Top = 473
-      Width = 547
-      Height = 31
-      Align = alBottom
-      BevelOuter = bvNone
-      TabOrder = 4
-      Visible = False
-      DesignSize = (
-        547
-        31)
-      object bnClose: TTntButton
-        Left = 464
-        Top = 6
-        Width = 83
-        Height = 25
-        Anchors = [akTop, akRight]
-        Cancel = True
-        Caption = 'Close'
-        TabOrder = 0
-        OnClick = bnCloseClick
-      end
-      object Button2: TTntButton
-        Left = 0
-        Top = 6
-        Width = 81
-        Height = 25
-        Caption = 'Save'
-        TabOrder = 1
-        Visible = False
-      end
-    end
     object paProgress: TTntPanel
       Left = 2
-      Top = 419
+      Top = 450
       Width = 547
       Height = 54
       Align = alBottom
@@ -168,6 +136,7 @@ object fmGlobalSearch: TfmGlobalSearch
       BevelOuter = bvLowered
       TabOrder = 3
       Visible = False
+      ExplicitTop = 419
       DesignSize = (
         547
         54)
@@ -179,7 +148,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Alignment = taCenter
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
-        Caption = 'Searching contact "Unknown" (3 of 11)'
+        Caption = '-'
       end
       object pb: TProgressBar
         Left = 12
@@ -230,16 +199,17 @@ object fmGlobalSearch: TfmGlobalSearch
       Left = 2
       Top = 113
       Width = 155
-      Height = 306
+      Height = 337
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 2
       Visible = False
+      ExplicitHeight = 306
       object lvContacts: TTntListView
         Left = 0
         Top = 0
         Width = 155
-        Height = 306
+        Height = 337
         Align = alClient
         Columns = <
           item
@@ -254,22 +224,24 @@ object fmGlobalSearch: TfmGlobalSearch
         TabOrder = 0
         ViewStyle = vsReport
         OnSelectItem = lvContactsSelectItem
+        ExplicitHeight = 306
       end
     end
     object paHistory: TTntPanel
       Left = 160
       Top = 113
       Width = 389
-      Height = 306
+      Height = 337
       Align = alClient
       BevelOuter = bvNone
       BorderStyle = bsSingle
-      TabOrder = 5
+      TabOrder = 4
+      ExplicitHeight = 306
       object hg: THistoryGrid
         Left = 0
         Top = 0
         Width = 385
-        Height = 274
+        Height = 305
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 10
         MultiSelect = True
@@ -301,15 +273,17 @@ object fmGlobalSearch: TfmGlobalSearch
         Align = alClient
         TabStop = True
         Padding = 4
+        ExplicitHeight = 274
       end
       object paFilter: TTntPanel
         Left = 0
-        Top = 274
+        Top = 305
         Width = 385
         Height = 28
         Align = alBottom
         BevelOuter = bvNone
         TabOrder = 2
+        ExplicitTop = 274
         DesignSize = (
           385
           28)

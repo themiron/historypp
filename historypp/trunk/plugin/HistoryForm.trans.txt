@@ -97,4 +97,3 @@ Full History [%s] - [%s]
 You have entered the wrong password.
 Make sure you have CAPS LOCK turned off.
 History++ Password Protection
-Save History
