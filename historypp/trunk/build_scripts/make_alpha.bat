@@ -29,6 +29,7 @@ goto misszip
 
 :start
 FOR /F "TOKENS=1" %%A IN ('date /t') DO SET VER=alpha-%%A
+FOR /F "TOKENS=1,2 delims=:" %%A IN ('time /t') DO SET VER=%VER%-%%A.%%B
 
 echo:
 echo --------- Make History++ Distribution ---------
