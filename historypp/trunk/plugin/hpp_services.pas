@@ -67,8 +67,10 @@ end;
 
 procedure CloseGlobalSearchWindow;
 begin
-  if Assigned(fmGlobalSearch) then
+  if Assigned(fmGlobalSearch) then begin
     fmGlobalSearch.Close;
+    //fmGlobalSearch.Free;
+  end;
 end;
 
 function FindContactWindow(hContact: THandle): THistoryFrm;
