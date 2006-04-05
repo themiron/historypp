@@ -418,7 +418,7 @@ end;
 Removes some glitches when copying non-latin
 letters to clipboard on NT systems
 *)
-procedure CopyToClip(s: WideString; Handle: Hwnd);
+procedure CopyToClip(s: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
 
 function StrAllocW(Size: Cardinal): PWideChar;
 begin
@@ -439,44 +439,40 @@ begin
 end;
 
 var
-  WData: THandle;
-  AData: THandle;
+  WData, AData: THandle;
   WDataPtr: PWideChar;
   ADataPtr: PAnsiChar;
-  c: PChar;
-  size: Integer;
-
+  ASize,WSize: Integer;
+  a: AnsiString;
 begin
-  size := Length(s)*2+2;
+  ASize := Length(s)+1;
+  WSize := ASize*2;
   OpenClipboard(Handle);
   try
     EmptyClipboard;
-    WData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, size);
-    AData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, Length(s)+1);
+    AData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, ASize);
+    WData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, WSize);
     try
-      WDataPtr := GlobalLock(WData);
       ADataPtr := GlobalLock(AData);
-      GetMem(c,Length(s)+1);
-      //MultiByteToWideChar(CP_ACP,MB_PRECOMPOSED,PChar(s),-1,wc,size);
-      WideCharToMultiByte(CP_ACP,MB_PRECOMPOSED,PWideChar(s),-1,c,Length(s)+1,nil,nil);
+      WDataPtr := GlobalLock(WData);
+      a := WideToAnsiString(S,CodePage);
       try
-        Move(s[1],WDataPtr^,size);
-        Move(c^,ADataPtr^,Length(S)+1);
-        SetClipboardData(CF_UNICODETEXT, WData);
+        Move(a[1],ADataPtr^,ASize);
+        Move(s[1],WDataPtr^,WSize);
         SetClipboardData(CF_TEXT,AData);
+        SetClipboardData(CF_UNICODETEXT, WData);
       finally
-        GlobalUnlock(WData);
         GlobalUnlock(AData);
-        end;
-    except
-      GlobalFree(WData);
-      GlobalFree(AData);
-      raise;
+        GlobalUnlock(WData);
       end;
+    except
+      GlobalFree(AData);
+      GlobalFree(WData);
+    raise;
+    end;
   finally
     CloseClipBoard;
-    FreeMem(c);
-    end;
+  end;
 end;
 
 (*
@@ -1187,7 +1183,7 @@ begin
       for i := hg.SelCount-1 downto 0 do t := t+GetItemText(hg.SelItems[i]) + #13#10;
     t := TrimRight(t);
   end;
-  CopyToClip(t,Handle);
+  CopyToClip(t,Handle,UserCodepage);
 end;
 
 procedure THistoryFrm.Details1Click(Sender: TObject);
@@ -1654,7 +1650,7 @@ procedure THistoryFrm.CopyLink1Click(Sender: TObject);
 begin
   //if LinkUrl1.Caption = '' then exit;
   if SavedLinkUrl = '' then exit;
-  CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Handle);
+  CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Handle,CP_ACP);
 end;
 
 // no file operations
@@ -1890,7 +1886,7 @@ begin
       for i := hg.SelCount-1 downto 0 do t := t+GetItemText(hg.SelItems[i]) + #13#10 + #13#10;
     t := TrimRight(t);
   end;
-  CopyToClip(t,Handle);
+  CopyToClip(t,Handle,UserCodepage);
 end;
 
 procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
@@ -2185,13 +2181,13 @@ end;
 
 procedure THistoryFrm.CopyInlineClick(Sender: TObject);
 begin
-  CopyToClip(hg.InlineRichEdit.SelText,Handle);
+  CopyToClip(hg.InlineRichEdit.SelText,Handle,UserCodepage);
 end;
 
 
 procedure THistoryFrm.CopyAllInlineClick(Sender: TObject);
 begin
-  CopyToClip(hg.InlineRichEdit.Text,Handle);
+  CopyToClip(hg.InlineRichEdit.Text,Handle,UserCodepage);
 end;
 
 procedure THistoryFrm.SelectAllInlineClick(Sender: TObject);
