@@ -1256,7 +1256,7 @@ begin
   bnDelete.Enabled := Idle and not PasswordMode;
   bbAddit.Enabled := Idle; // bnAddit don't gets disabled on PassMode
   case State of
-    gsIdle:   t := Tnt_WideFormat(TranslateWideW('%.0n items in history'),[HistoryLength/1]);
+    gsIdle:   t := WideFormat(TranslateWideW('%.0n items in history'),[HistoryLength/1]);
     gsLoad:   t := TranslateWideW('Loading...');
     gsSave:   t := TranslateWideW('Saving...');
     gsSearch: t := TranslateWideW('Searching...');
