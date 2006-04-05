@@ -1,9 +1,0 @@
-New Password
-Enter new password
-Pay attention to CAPS LOCK button state
-Password:
-Confirm:
-Leave this fields blank to disable password
-
-Password and Confirm fields should be similar
-Error

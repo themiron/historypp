@@ -6,7 +6,15 @@ set TRANS=..\build_scripts\hpp_t.txt
 
 call change_vars.bat r+ trans_header.txt hpp_t.txt
 
+echo Running PHP to grab all translations...
+
+FOR %%A IN (..\plugin\*.dfm) DO (
+  \php\php -q -d html_errors=false trans.php %%A
+)
+
 cd ..\plugin
+
+echo Putting them together...
 
 FOR %%A IN (*.trans.txt) DO (
 echo:>>%TRANS%
@@ -33,6 +41,8 @@ set TRIES=0%TRIES%
 goto loop
 :exitloop
 
+echo Transforming them with SED...
+
 set SED=%UTILSPATH%\sed.exe
 
 %SED% --text -f rem_dupes.sed hpp_t.txt > hpp_tmp.txt
@@ -45,3 +55,5 @@ rem if you don't want to enclose strings in [], then comment it
 move hpp_tmp.txt hpp_t.txt
 
 move hpp_t.txt hpp_trans.txt
+
+echo Done!

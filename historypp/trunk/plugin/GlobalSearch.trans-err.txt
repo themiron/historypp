@@ -1,0 +1,20 @@
+We have errors!
+
+************ NOT TRANSLATED ***************
+Form properties not translated in .pas file
+See translate_guide.txt for what it can mean and how to fix it
+********************************************
+
+edSearch.Text
+bnClose.Caption
+Button2.Caption
+laProgress.Caption
+SaveDialog.Title
+
+********************************************
+Other errors. Explanation see below.
+********************************************
+
+* This string from ..\plugin\GlobalSearch.pas(978) looks suspicius:
+* (generally, it's a good rule not to put anything on the line after translate function call)
+Ready to search')+#10#13#10#13+Translate('Click Search button to start

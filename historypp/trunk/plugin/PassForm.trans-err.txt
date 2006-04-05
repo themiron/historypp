@@ -1,0 +1,16 @@
+We have errors!
+
+************ NOT TRANSLATED ***************
+Form properties not translated in .pas file
+See translate_guide.txt for what it can mean and how to fix it
+********************************************
+
+laPassState.Caption
+
+********************************************
+Other errors. Explanation see below.
+********************************************
+
+* This string from ..\plugin\PassForm.pas(155) looks suspicius:
+* (generally, it's a good rule not to put anything on the line after translate function call)
+System History'),CP_ACP)+' ('+Capt+
