@@ -439,7 +439,8 @@ begin
 end;
 
 var
-  WData, AData: THandle;
+  WData, AData, LData: THandle;
+  LDataPtr: PCardinal;
   WDataPtr: PWideChar;
   ADataPtr: PAnsiChar;
   ASize,WSize: Integer;
@@ -450,24 +451,30 @@ begin
   OpenClipboard(Handle);
   try
     EmptyClipboard;
-    AData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, ASize);
     WData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, WSize);
+    AData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, ASize);
+    LData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, SizeOf(Cardinal));
     try
-      ADataPtr := GlobalLock(AData);
       WDataPtr := GlobalLock(WData);
+      ADataPtr := GlobalLock(AData);
+      LDataPtr := GlobalLock(LData);
       a := WideToAnsiString(S,CodePage);
       try
-        Move(a[1],ADataPtr^,ASize);
         Move(s[1],WDataPtr^,WSize);
-        SetClipboardData(CF_TEXT,AData);
+        Move(a[1],ADataPtr^,ASize);
+        LDataPtr^ := CodePage;
         SetClipboardData(CF_UNICODETEXT, WData);
+        SetClipboardData(CF_TEXT, AData);
+        SetClipboardData(CF_LOCALE, LData);
       finally
-        GlobalUnlock(AData);
         GlobalUnlock(WData);
+        GlobalUnlock(AData);
+        GlobalUnlock(LData);
       end;
     except
-      GlobalFree(AData);
       GlobalFree(WData);
+      GlobalFree(AData);
+      GlobalFree(LData);
     raise;
     end;
   finally
