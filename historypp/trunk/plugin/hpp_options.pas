@@ -53,7 +53,7 @@ type
 
   TCodePage = record
     cp: Cardinal;
-    name: String;
+    name: WideString;
   end;
 
 const

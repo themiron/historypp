@@ -52,7 +52,7 @@ uses
   hpp_forms,
   clipbrd, {FileCtrl,} shellapi,
   HistoryGrid, Checksum, WFindReplaceDialog, TntExtCtrls, hpp_sessionsthread, DateUtils,
-  ImgList, PasswordEditControl, TntStdCtrls, TntButtons;
+  ImgList, PasswordEditControl, TntStdCtrls, TntButtons, TntMenus;
 
 const
   HM_EVENTADDED = WM_USER+10;
@@ -65,91 +65,90 @@ type
   THistoryFrm = class(TTntForm)
     FindDialog: TWFindDialog;
     SaveDialog: TSaveDialog;
-    pmGrid: TPopupMenu;
-    Details1: TMenuItem;
-    Copy1: TMenuItem;
-    Delete1: TMenuItem;
-    SaveSelected1: TMenuItem;
-    pmAdd: TPopupMenu;
-    DeleteAll1: TMenuItem;
-    SaveasHTML1: TMenuItem;
-    SaveasXML1: TMenuItem;
+    pmGrid: TTntPopupMenu;
+    pmAdd: TTntPopupMenu;
     paClient: TPanel;
     paGrid: TPanel;
     hg: THistoryGrid;
     paTop: TPanel;
-    Label1: TLabel;
-    cbFilter: TComboBox;
+    laFilter: TTntLabel;
+    cbFilter: TTntComboBox;
     paBottom: TPanel;
     paClose: TPanel;
-    bnClose: TButton;
-    bnSearch: TButton;
-    bnDelete: TButton;
-    bbAddit: TBitBtn;
+    bnClose: TTntButton;
+    bnSearch: TTntButton;
+    bnDelete: TTntButton;
+    bbAddit: TTntBitBtn;
     sb: TTntStatusBar;
-    cbSort: TComboBox;
-    SaveasText1: TMenuItem;
-    pmLink: TPopupMenu;
-    Open1: TMenuItem;
-    OpeninNewWindow1: TMenuItem;
-    N1: TMenuItem;
-    Copy2: TMenuItem;
-    LinkUrl1: TMenuItem;
-    pmFile: TPopupMenu;
-    OpenFile2: TMenuItem;
-    OpenFileFolder2: TMenuItem;
-    N5: TMenuItem;
-    CopyFile1: TMenuItem;
-    FileLink1: TMenuItem;
-    FileLink2: TMenuItem;
-    N6: TMenuItem;
-    Setpassword1: TMenuItem;
+    cbSort: TTntComboBox;
+    pmLink: TTntPopupMenu;
+    pmFile: TTntPopupMenu;
     paPassword: TPanel;
     paSess: TPanel;
-    laPass: TLabel;
+    laPass: TTntLabel;
     Image1: TImage;
-    Label4: TLabel;
+    laPass2: TTntLabel;
     edPass: TPasswordEdit;
-    bnPass: TButton;
-    CopyText1: TMenuItem;
-    N7: TMenuItem;
-    pmOptions: TPopupMenu;
-    IconsEnabled1: TMenuItem;
-    N9: TMenuItem;
-    SmileysEnabled1: TMenuItem;
-    BBCodesEnabled1: TMenuItem;
-    MathModuleEnabled1: TMenuItem;
-    N11: TMenuItem;
-    UnderlineURLs1: TMenuItem;
-    N8: TMenuItem;
-    Options1: TMenuItem;
-    FindURLs1: TMenuItem;
-    RTLEnabled1: TMenuItem;
+    bnPass: TTntButton;
+    pmOptions: TTntPopupMenu;
     RTLEnabled2: TMenuItem;
     RTLDisabled2: TMenuItem;
-    ContactRTLmode1: TMenuItem;
     RTLDefault2: TMenuItem;
-    N3: TMenuItem;
-    pmGridInline: TPopupMenu;
-    CopyInline: TMenuItem;
-    CopyAllInline: TMenuItem;
-    SelectAllInline: TMenuItem;
-    N10: TMenuItem;
-    CancelInline1: TMenuItem;
-    N12: TMenuItem;
-    UserDetails1: TMenuItem;
-    SendMessage1: TMenuItem;
-    ReplyQuoted1: TMenuItem;
-    ANSICodepage1: TMenuItem;
+    pmGridInline: TTntPopupMenu;
     SystemCodepage1: TMenuItem;
-    N13: TMenuItem;
     tvSess: TTntTreeView;
     spSess: TTntSplitter;
     ilSessions: TImageList;
     Panel1: TPanel;
     laSess: TTntLabel;
     sbCloseSess: TTntSpeedButton;
-    bnConversation: TButton;
+    bnConversation: TTntButton;
+    Setpassword1: TTntMenuItem;
+    N6: TTntMenuItem;
+    DeleteAll1: TTntMenuItem;
+    N4: TTntMenuItem;
+    SaveasText1: TTntMenuItem;
+    SaveasXML1: TTntMenuItem;
+    SaveasHTML1: TTntMenuItem;
+    N7: TTntMenuItem;
+    CopyFile1: TTntMenuItem;
+    N5: TTntMenuItem;
+    OpenFileFolder2: TTntMenuItem;
+    OpenFile2: TTntMenuItem;
+    N13: TTntMenuItem;
+    SaveSelected1: TTntMenuItem;
+    N2: TTntMenuItem;
+    Delete1: TTntMenuItem;
+    CopyText1: TTntMenuItem;
+    Copy1: TTntMenuItem;
+    N12: TTntMenuItem;
+    UserDetails1: TTntMenuItem;
+    ReplyQuoted1: TTntMenuItem;
+    SendMessage1: TTntMenuItem;
+    N8: TTntMenuItem;
+    Details1: TTntMenuItem;
+    CancelInline1: TTntMenuItem;
+    N10: TTntMenuItem;
+    SelectAllInline: TTntMenuItem;
+    CopyAllInline: TTntMenuItem;
+    CopyInline: TTntMenuItem;
+    Copy2: TTntMenuItem;
+    N1: TTntMenuItem;
+    OpeninNewWindow1: TTntMenuItem;
+    Open1: TTntMenuItem;
+    UnderlineURLs1: TTntMenuItem;
+    FindURLs1: TTntMenuItem;
+    N11: TTntMenuItem;
+    RTLEnabled1: TTntMenuItem;
+    N9: TTntMenuItem;
+    MathModuleEnabled1: TTntMenuItem;
+    BBCodesEnabled1: TTntMenuItem;
+    SmileysEnabled1: TTntMenuItem;
+    N3: TTntMenuItem;
+    IconsEnabled1: TTntMenuItem;
+    ContactRTLmode1: TTntMenuItem;
+    ANSICodepage1: TTntMenuItem;
+    Options1: TTntMenuItem;
     procedure sbCloseSessClick(Sender: TObject);
     procedure hgItemFilter(Sender: TObject; Index: Integer; var Show: Boolean);
     procedure tvSessChange(Sender: TObject; Node: TTreeNode);
@@ -193,12 +192,12 @@ type
     procedure hgXMLData(Sender: TObject; Index: Integer; var Item: TXMLItem);
     procedure OpenFile1Click(Sender: TObject);
     procedure OpenFileFolder1Click(Sender: TObject);
-    procedure Open1Click(Sender: TObject);
-    procedure OpeninNewWindow1Click(Sender: TObject);
-    procedure Copy2Click(Sender: TObject);
-    procedure OpenFile2Click(Sender: TObject);
-    procedure OpenFileFolder2Click(Sender: TObject);
-    procedure CopyFile1Click(Sender: TObject);
+    procedure OpenLink1Click(Sender: TObject);
+    procedure OpenLinkInNewWindow1Click(Sender: TObject);
+    procedure CopyLink1Click(Sender: TObject);
+    //procedure OpenFile2Click(Sender: TObject);
+    //procedure OpenFileFolder2Click(Sender: TObject);
+    //procedure CopyFile1Click(Sender: TObject);
     procedure bnPassClick(Sender: TObject);
     procedure paGridResize(Sender: TObject);
     procedure edPassKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -236,6 +235,7 @@ type
     hHookEventAdded,hHookEventDeleted: THandle;
     FPasswordMode: Boolean;
     UserCodepage: Cardinal;
+    SavedLinkUrl: String;
 
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo);message WM_GetMinMaxInfo;
     //procedure WMSize(var Message: TWMSize); message WM_SIZE;
@@ -1256,7 +1256,7 @@ begin
   bnDelete.Enabled := Idle and not PasswordMode;
   bbAddit.Enabled := Idle; // bnAddit don't gets disabled on PassMode
   case State of
-    gsIdle:   t :=  Format(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
+    gsIdle:   t := Tnt_WideFormat(TranslateWideW('%.0n items in history'),[HistoryLength/1]);
     gsLoad:   t := TranslateWideW('Loading...');
     gsSave:   t := TranslateWideW('Saving...');
     gsSearch: t := TranslateWideW('Searching...');
@@ -1273,7 +1273,7 @@ begin
   if Windows.MessageBox(Handle,
     PChar(Format(Translate('Do you really want to delete ALL items (%.0f) for this contact?')+
     #10#13+''+#10#13+Translate('Note: It can take several minutes for large history.'),
-    [hg.Count/1])), Translate('Delete All'), MB_YESNO or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) = IDNO then exit;
+    [hg.Count])), Translate('Delete All'), MB_YESNO or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) = IDNO then exit;
 
   SetSafetyMode(False);
   try
@@ -1606,7 +1606,7 @@ begin
     Item.Protocol := '&UNK;'
   else
     Item.Protocol := MakeTextXMLed(Item.Protocol);
-    
+
   if Item.ID = '' then
     Item.ID := '&UNK;'
   else
@@ -1617,8 +1617,8 @@ procedure THistoryFrm.OpenFile1Click(Sender: TObject);
 var
   FileName: string;
 begin
-//  FileName := GetItemFile(hg.Items[hg.Selected],hContact);
-//  ShellExecute(0,nil,PChar(FileName),nil,PChar(ExtractFileDir(FileName)),SW_SHOWDEFAULT);
+  //FileName := GetItemFile(hg.Items[hg.Selected],hContact);
+  //ShellExecute(0,nil,PChar(FileName),nil,PChar(ExtractFileDir(FileName)),SW_SHOWDEFAULT);
 end;
 
 procedure THistoryFrm.OpenFileFolder1Click(Sender: TObject);
@@ -1630,48 +1630,53 @@ begin
 //  ShellExecute(0,nil,PChar(FileName),nil,PChar(FileName),SW_SHOWDEFAULT);
 end;
 
-procedure THistoryFrm.Open1Click(Sender: TObject);
+procedure THistoryFrm.OpenLink1Click(Sender: TObject);
 var
   bNewWindow: Integer;
 begin
-  if LinkUrl1.Caption = '' then exit;
+  //if LinkUrl1.Caption = '' then exit;
+  if SavedLinkUrl = '' then exit;
   bNewWindow := 0; // no, use existing window
-  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(LinkUrl1.Caption)));
+  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(@SavedLinkUrl[1])));
 end;
 
-procedure THistoryFrm.OpeninNewWindow1Click(Sender: TObject);
+procedure THistoryFrm.OpenLinkInNewWindow1Click(Sender: TObject);
 var
   bNewWindow: Integer;
 begin
-  if LinkUrl1.Caption = '' then exit;
+  //if LinkUrl1.Caption = '' then exit;
+  if SavedLinkUrl = '' then exit;
   bNewWindow := 1; // use new window
-  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(LinkUrl1.Caption)));
+  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(@SavedLinkUrl[1])));
 end;
 
-procedure THistoryFrm.Copy2Click(Sender: TObject);
+procedure THistoryFrm.CopyLink1Click(Sender: TObject);
 begin
-  if LinkUrl1.Caption = '' then exit;
-  CopyToClip(LinkUrl1.Caption,Handle);
+  //if LinkUrl1.Caption = '' then exit;
+  if SavedLinkUrl = '' then exit;
+  CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Handle);
 end;
 
-procedure THistoryFrm.OpenFile2Click(Sender: TObject);
+// no file operations
+{procedure THistoryFrm.OpenFile2Click(Sender: TObject);
 begin
 ShellExecute(0,nil,PChar(FileLink1.Caption),nil,PChar(ExtractFileDir(FileLink1.Caption)),SW_SHOWDEFAULT);
-end;
+end;}
 
-procedure THistoryFrm.OpenFileFolder2Click(Sender: TObject);
+// no file operations
+{procedure THistoryFrm.OpenFileFolder2Click(Sender: TObject);
 var
 tmp1: String;
 begin
 tmp1 := ExtractFileDir(FileLink1.Caption);
 ShellExecute(0,nil,PChar(tmp1),nil,PChar(tmp1),SW_SHOWDEFAULT);
-end;
+end;}
 
-procedure THistoryFrm.CopyFile1Click(Sender: TObject);
+{procedure THistoryFrm.CopyFile1Click(Sender: TObject);
 begin
   if FileLink2.Caption = '' then exit;
   CopyToClip(FileLink2.Caption,Handle);
-end;
+end;}
 
 {procedure THistoryFrm.OpenOptions;
 begin
@@ -1694,7 +1699,7 @@ enb: Boolean;
 begin
 FPasswordMode := Value;
 enb := not Value;
-Label1.Enabled := enb;
+laFilter.Enabled := enb;
 cbFilter.Enabled := enb;
 //label2.Enabled := enb;
 cbSort.Enabled := enb;
@@ -1791,13 +1796,13 @@ var
   begin
     for i := 0 to mi.Count-1 do
       if mi.Items[i].Caption <> '-' then begin
-        mi.Items[i].Caption := Translate(PChar(mi.Items[i].Caption{TRANSLATE-IGNORE}));
+        mi.Items[i].Caption := TranslateWideW(mi.Items[i].Caption{TRANSLATE-IGNORE});
         if mi.Items[i].Count > 0 then TranslateMenu(mi.Items[i]);
       end;
   end;
 
 begin
-  Caption := TranslateW(PWideChar(Caption));
+  Caption := TranslateWideW(Caption);
 
   hg.TxtFullLog := Translate(PChar(hg.txtFullLog));
   hg.TxtGenHist1 := Translate(PChar(hg.txtGenHist1));
@@ -1808,23 +1813,23 @@ begin
   hg.TxtPartLog := Translate(PChar(hg.TxtPartLog));
   hg.txtStartUp := Translate(PChar(hg.txtStartUp));
 
-  Label1.Caption := Translate(PChar(label1.Caption));
+  laFilter.Caption := TranslateWideW(laFilter.Caption);
 
   for i := 0 to cbFilter.Items.Count-1 do
-    cbFilter.Items[i] := Translate(PChar(cbFilter.Items[i]));
+    cbFilter.Items[i] := TranslateWideW(cbFilter.Items[i]);
 
   for i := 0 to cbSort.Items.Count-1 do
-    cbSort.Items[i] := Translate(PChar(cbSort.Items[i]));
+    cbSort.Items[i] := TranslateWideW(cbSort.Items[i]);
 
-  bnSearch.Caption := Translate(PChar(bnSearch.Caption));
-  bnDelete.Caption := Translate(PChar(bnDelete.Caption));
-  bbAddit.Caption := Translate(PChar(bbAddit.Caption));
-  bnClose.Caption := Translate(PChar(bnClose.Caption));
-  bnConversation.Caption := Translate(PChar(bnConversation.Caption));
+  bnSearch.Caption := TranslateWideW(bnSearch.Caption);
+  bnDelete.Caption := TranslateWideW(bnDelete.Caption);
+  bbAddit.Caption := TranslateWideW(bbAddit.Caption);
+  bnClose.Caption := TranslateWideW(bnClose.Caption);
+  bnConversation.Caption := TranslateWideW(bnConversation.Caption);
 
-  bnPass.Caption := Translate(PChar(bnPass.Caption));
-  laPass.Caption := Translate(PChar(laPass.Caption));
-  Label4.Caption := Translate(PChar(Label4.Caption));
+  bnPass.Caption := TranslateWideW(bnPass.Caption);
+  laPass.Caption := TranslateWideW(laPass.Caption);
+  laPass2.Caption := TranslateWideW(laPass2.Caption);
   laSess.Caption := TranslateWideW(laSess.Caption);
 
   SaveDialog.Title := Translate(PAnsiChar(SaveDialog.Title));
@@ -1842,8 +1847,8 @@ begin
   TextFilter := Translate(PChar(TextFilter));
   AllFilter := Translate(PChar(AllFilter));
 
-  cbFilter.Left := Label1.Left+Label1.Width+8;
-  cbSort.Left := paTop.Width-cbSort.Width-2;
+  cbFilter.Left := laFilter.Left + laFilter.Width + 5;
+  cbSort.Left := paTop.Width - cbSort.Width - 2;
 end;
 
 procedure THistoryFrm.tvSessChange(Sender: TObject; Node: TTreeNode);
@@ -1892,14 +1897,15 @@ procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
 var
   bNewWindow: Integer;
 begin
-//  if LinkUrl1.Caption = '' then exit;
+  // if LinkUrl1.Caption = '' then exit;
   bNewWindow := 0; // no, use existing window
   PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(Url)));
 end;
 
 procedure THistoryFrm.hgUrlPopup(Sender: TObject; Item: Integer; Url: String);
 begin
-  LinkUrl1.Caption := Url;
+  //LinkUrl1.Caption := AnsiToWideString(Url,CP_ACP);
+  SavedLinkUrl := Url;
   pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
 end;
 
