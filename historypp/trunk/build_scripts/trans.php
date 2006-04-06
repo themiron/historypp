@@ -5,11 +5,13 @@
  *
  */
 
+
 $detailed_file = false;
 $ignore_menuitems = true;
 
+
 // empty captions and captions consiting from
-// whitespace, -, \, /, <, >, _ are skipped
+// whitespace, -, /, <, >, _ are skipped
 $skip_empty_captions = '/^[\s\-\<\>\/\_]*$/';
 
 if (count($argv) < 2) {
@@ -18,6 +20,7 @@ if (count($argv) < 2) {
 }
 
 $file_to_parse = $argv[1];
+//$file_to_parse = '..\plugin\HistoryForm.pas';
 
 if (preg_match('/(.*)\.dfm$/',$file_to_parse,$matches)) {
   $file_to_parse = $matches[1];
@@ -119,11 +122,21 @@ $pas_str = array();
 $pas_prop = array();
 $pas_str_line = array();
 $pas_prop_line = array();
+$pas_var = array();
+$pas_var_line = array();
+$pas_var_str = array();
 
 function add_str($str,$line){
   global $pas_str,$pas_str_line;
   $pas_str[] = $str;
   $pas_str_line[] = $line;
+}
+
+function add_var($name,$str,$line){
+  global $pas_var,$pas_var_str,$pas_var_line;
+  $pas_var[] = $name;
+  $pas_var_str[] = $str;
+  $pas_var_line[] = $line;
 }
 
 function add_prop($prop,$line){
@@ -149,7 +162,35 @@ foreach($lines as $i => $line) {
   if (preg_match_all('/Translate(W|WideW|AnsiW)?\((.*)\)/i',$line,$matches)) {
     foreach($matches[2] as $match) { add_prop($match,$i); }
   }
+  $pattern = "/([\w\d]+)\s*\:\s*[\w\d]+\s*\=\s*\'(.*)\';$/is";
+  if (preg_match($pattern,$line,$matches)) {
+    add_var($matches[1],$matches[2],$line);
+  }
+
 }
+
+// delete properties which are actually vars
+
+foreach($pas_var as $i => $var){
+  $found = false;
+  $var = strtolower($var);
+  foreach($pas_prop as $n => $prop) {
+    $prop = strtolower($prop);
+    if ($var == $prop) {
+      unset($pas_prop[$n]);
+      unset($pas_prop_line[$n]);
+      $found = true;
+      break;
+    }
+  }
+  if (!$found) {
+    unset($pas_var[$i]);
+    unset($pas_var_str[$i]);
+    unset($pas_var_line[$i]);
+  }
+}
+
+// write strings to file
 
 $strings = array();
 $strings_d = array();
@@ -157,20 +198,33 @@ $strings_d = array();
 $filename = $file_to_parse.'.trans.txt';
 $filename_d = $file_to_parse.'.trans-details.txt';
 
-$strings[] = ";; Text found in $file_to_parse.dfm:";
-$strings_d[] = ";; Text found in $file_to_parse.dfm:";
-foreach($dfm_str as $i => $str){
-  if (!preg_match($skip_empty_captions,$str)) {
-      $strings[] = $str;
-      $strings_d[] = "$str ($dfm_prop[$i])";
+if (count($dfm_str) > 0) {
+  $strings[] = ";; Text found in $file_to_parse.dfm:";
+  $strings_d[] = ";; Text found in $file_to_parse.dfm:";
+  foreach($dfm_str as $i => $str){
+    if (!preg_match($skip_empty_captions,$str)) {
+        $strings[] = $str;
+        $strings_d[] = "$str ($dfm_prop[$i])";
     }
+  }
 }
 
-$strings[] = ";; Text found in $file_to_parse.pas:";
-$strings_d[] = ";; Text found in $file_to_parse.pas:";
-foreach($pas_str as $i => $str){
-  $strings[] = $str;
-  $strings_d[] = "$str (line # $pas_str_line[$i])";
+if (count($pas_str) > 0) {
+  $strings[] = ";; Text found in $file_to_parse.pas:";
+  $strings_d[] = ";; Text found in $file_to_parse.pas:";
+  foreach($pas_str as $i => $str){
+    $strings[] = $str;
+    $strings_d[] = "$str (line # $pas_str_line[$i])";
+  }
+}
+
+if (count($pas_var_str) > 0) {
+  $strings[] = ";; Text from variables in $file_to_parse.pas:";
+  $strings_d[] = ";; Text from variables in $file_to_parse.pas:";
+  foreach($pas_var_str as $i => $str){
+    $strings[] = $str;
+    $strings_d[] = "$str (line # $pas_var_line[$i])";
+  }
 }
 
 if (count($strings) > 0) {
