@@ -2,11 +2,11 @@
 
 set TRANSNAME=hpp_translate.txt
 
-del /Q ..\plugin\trans\*.* > nul 2>&1
+del /Q ..\trans\*.* > nul 2>&1
 
 set TRANS=hpp_t.txt
 
-call change_vars.bat r+ trans_header.txt ..\plugin\trans\hpp_t.txt
+call change_vars.bat r+ trans_header.txt ..\trans\hpp_t.txt
 
 echo Running PHP to grab all translations...
 
@@ -16,11 +16,11 @@ FOR %%A IN (..\plugin\*.dfm) DO (
 
 cd ..\plugin
 
-move *.trans.txt trans\ > nul 2>&1
-move *.trans-err.txt trans\ > nul 2>&1
-move *.trans-detailed.txt trans\ > nul 2>&1
+move *.trans.txt ..\trans\ > nul 2>&1
+move *.trans-err.txt ..\trans\ > nul 2>&1
+move *.trans-detailed.txt ..\trans\ > nul 2>&1
 
-cd trans
+cd ..\trans
 
 echo Putting them together...
 
@@ -33,7 +33,7 @@ echo:>>%TRANS%
 rem echo ;;>> %TRANS%
 type %%A >> %TRANS%
 )
-cd ..\..\build_scripts
+cd ..\build_scripts
 
 rem #
 rem # Find Utils path relatively to our current dir
@@ -53,20 +53,20 @@ echo Transforming them with SED...
 
 set SED=%UTILSPATH%\sed.exe
 
-%SED% --text -f rem_dupes.sed ..\plugin\trans\hpp_t.txt > ..\plugin\trans\hpp_tmp.txt
-move ..\plugin\trans\hpp_tmp.txt ..\plugin\trans\hpp_t.txt
-%SED% --text -f rem_doubles.sed ..\plugin\trans\hpp_t.txt > ..\plugin\trans\hpp_tmp.txt
-move ..\plugin\trans\hpp_tmp.txt ..\plugin\trans\hpp_t.txt
+%SED% --text -f rem_dupes.sed ..\trans\hpp_t.txt > ..\trans\hpp_tmp.txt
+move ..\trans\hpp_tmp.txt ..\trans\hpp_t.txt
+%SED% --text -f rem_doubles.sed ..\trans\hpp_t.txt > ..\trans\hpp_tmp.txt
+move ..\trans\hpp_tmp.txt ..\trans\hpp_t.txt
 
 rem if you don't want to enclose strings in [], then comment it
-%SED% --text -f enclose.sed ..\plugin\trans\hpp_t.txt > ..\plugin\trans\hpp_tmp.txt
-move ..\plugin\trans\hpp_tmp.txt ..\plugin\trans\hpp_t.txt
+%SED% --text -f enclose.sed ..\trans\hpp_t.txt > ..\trans\hpp_tmp.txt
+move ..\trans\hpp_tmp.txt ..\trans\hpp_t.txt
 
-move ..\plugin\trans\hpp_t.txt ..\plugin\trans\%TRANSNAME%
+move ..\trans\hpp_t.txt ..\trans\%TRANSNAME%
 
 echo Done!
 
-if exist ..\plugin\trans\*.trans-err.txt goto trans_have_errors
+if exist ..\trans\*.trans-err.txt goto trans_have_errors
 
 goto end
 
@@ -77,7 +77,7 @@ echo ## Warning! Translation tool found errors!
 echo ##
 echo:
 echo List of files with errors:
-dir /B ..\plugin\trans\*.trans-err.txt
+dir /B ..\trans\*.trans-err.txt
 echo:
 pause
 goto end
