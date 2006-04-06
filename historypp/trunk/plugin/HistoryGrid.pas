@@ -225,6 +225,7 @@ type
 
   TRichItem = record
     Rich: TTntRichEdit;
+    Bitmap: TBitmap;
     Height: Integer;
     GridItem: Integer;
   end;
@@ -232,6 +233,7 @@ type
 
   TRichCache = class(TList)
   private
+    LogX,LogY: Integer;
     GridItems: array of Integer;
     Grid: THistoryGrid;
     FRichHeight: Integer;
@@ -240,6 +242,7 @@ type
 
     function FindGridItem(GridItem: Integer): Integer;
     procedure ApplyItemToRich(Item: PRichItem);
+    procedure PaintRichToBitmap(Item: PRichItem);
 
     procedure OnRichResize(Sender: TObject; Rect: TRect);
   protected
@@ -260,6 +263,7 @@ type
     function RequestItem(GridItem: Integer): PRichItem;
     function CalcItemHeight(GridItem: Integer): Integer;
     function GetItemRich(GridItem: Integer): TTntRichedit;
+    function GetItemRichBitmap(GridItem: Integer): TBitmap;
   end;
 
   THistoryGrid = class(TScrollingWinControl)
@@ -1199,7 +1203,7 @@ begin
 
   ApplyItemToRich(Index);
   //if Sel then ApplyItemToRich(Index,FRichSelected);
-
+  {
   LogX := GetDeviceCaps(Canvas.Handle, LOGPIXELSX);
   LogY := GetDeviceCaps(Canvas.Handle, LOGPIXELSY);
 
@@ -1235,9 +1239,11 @@ begin
 
   //SendMessage(FRich.Handle, EM_FORMATRANGE, 1, Longint(@Range));
   FRich.Perform(EM_FORMATRANGE, 1, Longint(@Range));
-  BitBlt(Canvas.Handle,Itemrect.Left,ItemRect.Top,RichBMP.Width,RichBMP.Height,
+  }
+  RichBMP := FRichCache.GetItemRichBitmap(Index);
+  BitBlt(Canvas.Handle,ItemRect.Left,ItemRect.Top,RichBMP.Width,RichBMP.Height,
     RichBMP.Canvas.Handle,0,0,SRCCOPY);
-  RichBMP.Free;
+  //RichBMP.Free;
 
   // Free cached information
   //SendMessage(FRich.Handle, EM_FORMATRANGE, 0,0);
@@ -4119,6 +4125,7 @@ begin
 
   for i := 0 to Count - 1 do begin
     New(RichItem);
+    RichItem.Bitmap := TBitmap.Create;
     RichItem^.Height := -1;
     RichItem^.GridItem := -1;
     RichItem^.Rich := TTntRichEdit.Create(nil);
@@ -4145,6 +4152,7 @@ var
 begin
   for i := 0 to Count - 1 do begin
     FreeAndNil(Items[i].Rich);
+    FreeAndNil(Items[i].Bitmap);
     Dispose(Items[i]);
   end;
   SetCount(0);
@@ -4178,6 +4186,15 @@ begin
   Result := Item.Rich;
 end;
 
+function TRichCache.GetItemRichBitmap(GridItem: Integer): TBitmap;
+var
+  Item: PRichItem;
+begin
+  Item := RequestItem(GridItem);
+  Assert(Item <> nil);
+  Result := Item.Bitmap;
+end;
+
 procedure TRichCache.Insert(Index: Integer; Item: PRichItem);
 begin
   inherited Insert(Index, Item);
@@ -4186,6 +4203,40 @@ end;
 procedure TRichCache.OnRichResize(Sender: TObject; Rect: TRect);
 begin
   FRichHeight := Rect.Bottom - Rect.Top;
+end;
+
+procedure TRichCache.PaintRichToBitmap(Item: PRichItem);
+var
+  rc: TRect;
+  BkColor: TCOLORREF;
+  Range: TFormatRange;
+begin
+  rc := Rect(0,0,Item.Bitmap.Width,Item.Bitmap.Height);
+
+  // because RichEdit sometimes paints smaller image
+  // than it said when calculating height, we need
+  // to fill the background
+  BkColor := Item.Rich.Perform(EM_SETBKGNDCOLOR, 0,0);
+  Item.Rich.Perform(EM_SETBKGNDCOLOR, 0, BkColor);
+  Item.Bitmap.Canvas.Brush.Color := BkColor;
+  Item.Bitmap.Canvas.FillRect(rc);
+
+  LogX := GetDeviceCaps(Item.Bitmap.Canvas.Handle, LOGPIXELSX);
+  LogY := GetDeviceCaps(Item.Bitmap.Canvas.Handle, LOGPIXELSY);
+
+  rc.Left := rc.left * 1440 div LogX;
+  rc.Top := rc.Top * 1440 div LogY;
+  rc.Right := rc.Right * 1440 div LogX;
+  rc.Bottom := rc.Bottom * 1440 div LogY;
+
+  Range.hdc := Item.Bitmap.Canvas.Handle;
+  Range.hdcTarget := Item.Bitmap.Canvas.Handle;
+  Range.rc := rc;
+  Range.rcPage := rc;
+  Range.chrg.cpMin := 0;
+  Range.chrg.cpMax := -1;
+
+  Item.Rich.Perform(EM_FORMATRANGE, 1, Longint(@Range));
 end;
 
 function TRichCache.Remove(Item: PRichItem): Integer;
@@ -4212,6 +4263,8 @@ begin
   if Result.Height = -1 then begin
     ApplyItemToRich(Result);
     Result.Height := FRichHeight;
+    Result.Bitmap.Height := FRichHeight;
+    PaintRichToBitmap(Result);
   end;
   Move(idx,0);
 end;
@@ -4266,6 +4319,7 @@ begin
     re_mask := Items[i].Rich.Perform(EM_GETEVENTMASK, 0, 0);
     Items[i].Rich.Perform(EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
     Items[i].Rich.Perform(EM_AUTOURLDETECT, DWord(True), 0);
+    Items[i].Rich.Perform(EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
   end;
 end;
 
@@ -4281,6 +4335,7 @@ begin
   for i := 0 to Count - 1 do begin
     //Items[i].Rich.Clear;
     Items[i].Rich.Width := NewWidth;
+    Items[i].Bitmap.Width := NewWidth;
     Items[i].Height := -1;
   end;
 end;
