@@ -1954,15 +1954,6 @@ begin
   else
     ItemRenderDetails.bHistoryWindow := IRDHW_CONTACTHISTORY;
 
-  if hg.Options.SmileysEnabled then
-    DoSupportSmileys(Handle,Integer(@ItemRenderDetails));
-
-  if hg.Options.BBCodesEnabled then
-    DoSupportBBCodes(Handle,Integer(@ItemRenderDetails));
-    
-  //if hg.Options.MathModuleEnabled then
-    //DoSupportMathModule(Handle,Integer(@ItemRenderDetails));
-
   PluginLink.NotifyEventHooks(hHppRichEditItemProcess,Handle,Integer(@ItemRenderDetails));
 end;
 
