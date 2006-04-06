@@ -310,6 +310,10 @@ begin
   Next := FParentForm.hg.GetNext(Item);
   NextBtn.Enabled := (Next <> -1);
   PrevBtn.Enabled := (Prev <> -1);
+  if ParentForm.hg.GetItemRTL(FItem) then
+    EText.BiDiMode := bdRightToLeft
+  else
+    EText.BiDiMode := bdLeftToRight;
   if FParentForm.hg.selected <> Item then
     FParentForm.hg.Selected := Item;
 end;

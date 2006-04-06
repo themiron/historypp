@@ -194,7 +194,7 @@ object EventDetailsFrm: TEventDetailsFrm
           Width = 438
           Height = 161
           Align = alClient
-          BiDiMode = bdRightToLeft
+          BiDiMode = bdLeftToRight
           Color = clBtnFace
           ParentBiDiMode = False
           ReadOnly = True
