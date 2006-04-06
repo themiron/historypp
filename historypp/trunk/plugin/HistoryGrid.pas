@@ -226,6 +226,7 @@ type
   TRichItem = record
     Rich: TTntRichEdit;
     Bitmap: TBitmap;
+    BitmapDrawn: Boolean;
     Height: Integer;
     GridItem: Integer;
   end;
@@ -4191,6 +4192,8 @@ var
   Item: PRichItem;
 begin
   Item := RequestItem(GridItem);
+  if not Item.BitmapDrawn then
+    PaintRichToBitmap(Item);
   Assert(Item <> nil);
   Result := Item.Bitmap;
 end;
@@ -4211,6 +4214,8 @@ var
   BkColor: TCOLORREF;
   Range: TFormatRange;
 begin
+  OutputDebugString(PChar('Painted bitmap ['+IntToStr(item.bitmap.Height)+'] for rich '+Item.Rich.Name));
+  Item.Bitmap.Height := Item.Height;
   rc := Rect(0,0,Item.Bitmap.Width,Item.Bitmap.Height);
 
   // because RichEdit sometimes paints smaller image
@@ -4237,6 +4242,7 @@ begin
   Range.chrg.cpMax := -1;
 
   Item.Rich.Perform(EM_FORMATRANGE, 1, Longint(@Range));
+  Item.BitmapDrawn := True;
 end;
 
 function TRichCache.Remove(Item: PRichItem): Integer;
@@ -4263,8 +4269,8 @@ begin
   if Result.Height = -1 then begin
     ApplyItemToRich(Result);
     Result.Height := FRichHeight;
-    Result.Bitmap.Height := FRichHeight;
-    PaintRichToBitmap(Result);
+    Result.BitmapDrawn := False;
+   // PaintRichToBitmap(Result);
   end;
   Move(idx,0);
 end;
