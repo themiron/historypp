@@ -801,8 +801,6 @@ procedure THistoryFrm.Load;
 begin
   if hContact = 0 then paTop.Visible := False;
   LoadHistory(Self);
-  //sb.SimpleText := WideFormat(TranslateWideW('%.0f items in history'),[HistoryLength/1]);
-  //HookEventAdded;
 end;
 
 procedure THistoryFrm.LoadPendingHeaders(rowidx: integer; count: integer);
