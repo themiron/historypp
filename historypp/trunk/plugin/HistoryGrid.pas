@@ -992,8 +992,8 @@ begin
   if Message.ScrollCode in [SB_LINEUP,SB_LINEDOWN,SB_PAGEDOWN,SB_PAGEUP] then begin
     Message.Result := 0;
     case Message.ScrollCode of
-      SB_LINEDOWN: ScrollGridBy(18);
-      SB_LINEUP: ScrollGridBy(-18);
+      SB_LINEDOWN: ScrollGridBy(5*13);
+      SB_LINEUP: ScrollGridBy(-5*13);
       SB_PAGEDOWN: ScrollGridBy(ClientHeight);
       SB_PAGEUP: ScrollGridBy(-ClientHeight);
     end;
@@ -1105,6 +1105,7 @@ var
   Range: TFormatRange;
   {ENDIF}
   RTL: Boolean;
+  RichBMP: TBitmap;
 
 begin
   {$IFDEF DEBUG}
@@ -1201,14 +1202,22 @@ begin
 
   LogX := GetDeviceCaps(Canvas.Handle, LOGPIXELSX);
   LogY := GetDeviceCaps(Canvas.Handle, LOGPIXELSY);
-  rc := ItemRect;
+
+  // fixed bug with scrolling by pixels
+  // it's richedit who decides that it wants to draw anywhere he wants
+  // and not where we told him
+  RichBMP := TBitmap.Create;
+  RichBMP.Width := ItemRect.Right - ItemRect.Left;
+  RichBMP.Height := ItemRect.Bottom - ItemRect.Top;
+  rc := RichBMP.Canvas.ClipRect;
+  //rc := ItemRect;
   rc.Left := rc.left * 1440 div LogX;
   rc.Top := rc.Top * 1440 div LogY;
   rc.Right := rc.Right * 1440 div LogX;
   rc.Bottom := rc.Bottom * 1440 div LogY;
 
-  Range.hdc := Canvas.Handle;
-  Range.hdcTarget := Canvas.Handle;
+  Range.hdc := RichBMP.Canvas.Handle;
+  Range.hdcTarget := RichBMP.Canvas.Handle;
   Range.rc := rc;
   Range.rcPage := rc;
   Range.chrg.cpMin := 0;
@@ -1226,6 +1235,9 @@ begin
 
   //SendMessage(FRich.Handle, EM_FORMATRANGE, 1, Longint(@Range));
   FRich.Perform(EM_FORMATRANGE, 1, Longint(@Range));
+  BitBlt(Canvas.Handle,Itemrect.Left,ItemRect.Top,RichBMP.Width,RichBMP.Height,
+    RichBMP.Canvas.Handle,0,0,SRCCOPY);
+  RichBMP.Free;
 
   // Free cached information
   //SendMessage(FRich.Handle, EM_FORMATRANGE, 0,0);
@@ -2531,7 +2543,6 @@ begin
         ScrollWindow(Handle,0,-Offset,nil,nil);
         UpdateWindow(Handle);
       end;
-      //Repaint;
       break;
     end;
     Inc(SumHeight,FItems[idx].Height);
@@ -2546,10 +2557,8 @@ begin
         VertScrollBar.Position := 0;
       TopItemOffset := Offset - SumHeight;
       if Update then begin
-        // why ScrollWindow always gives error
         ScrollWindow(Handle,0,-Offset,nil,nil);
         UpdateWindow(Handle);
-        //Repaint;
       end;
       break;
     end;
@@ -2904,7 +2913,7 @@ end;
 
 procedure THistoryGrid.WMMouseWheel(var Message: TWMMouseWheel);
 var
-  off: Integer;
+  i,off: Integer;
   code: DWord;
 begin
   off := -(Message.WheelDelta div WHEEL_DELTA);
