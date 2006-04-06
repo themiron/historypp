@@ -36,6 +36,7 @@ uses
 
 var
   hHppRichEditItemProcess,
+  hAllHistoryRichEditProcess,
   hHppGetVersion,
   hHppShowGlobalSearch,
   hHppOpenHistoryEvent: THandle;
@@ -49,10 +50,27 @@ var
   function FindContactWindow(hContact: THandle): THistoryFrm;
   function OpenContactHistory(hContact: THandle; index: integer = -1): THistoryFrm;
 
+  function AllHistoryRichEditProcess(wParam, lParam: DWord): Integer; cdecl;
+
 implementation
 
 uses
-  {Dialogs, }GlobalSearch, hpp_global;
+  {Dialogs, }GlobalSearch, hpp_global, hpp_itemprocess;
+
+// our own processing of RichEdit for all history windows
+function AllHistoryRichEditProcess(wParam{hRichEdit}, lParam{PItemRenderDetails}: DWord): Integer; cdecl;
+begin
+  if GridOptions.SmileysEnabled then
+    DoSupportSmileys(wParam,lParam);
+
+  if GridOptions.BBCodesEnabled then
+    DoSupportBBCodes(wParam,lParam);
+
+  if GridOptions.MathModuleEnabled then
+    DoSupportMathModule(wParam,lParam);
+    
+  Result := 0;
+end;
 
 procedure CloseHistoryWindows;
 var
@@ -185,10 +203,12 @@ begin
   hHppShowGlobalSearch := PluginLink.CreateServiceFunction(MS_HPP_SHOWGLOBALSEARCH,HppShowGlobalSearch);
   hHppOpenHistoryEvent := PluginLink.CreateServiceFunction(MS_HPP_OPENHISTORYEVENT,HppOpenHistoryEvent);
   hHppRichEditItemProcess := PluginLink.CreateHookableEvent(ME_HPP_RICHEDIT_ITEMPROCESS);
+  hAllHistoryRichEditProcess := PluginLink.HookEvent(ME_HPP_RICHEDIT_ITEMPROCESS,AllHistoryRichEditProcess);
 end;
 
 procedure hppUnregisterServices;
 begin
+  PluginLink.UnhookEvent(hAllHistoryRichEditProcess);
   PluginLink.DestroyServiceFunction(hHppGetVersion);
   PluginLink.DestroyServiceFunction(hHppShowGlobalSearch);
   PluginLink.DestroyServiceFunction(hHppOpenHistoryEvent);
