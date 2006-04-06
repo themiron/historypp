@@ -26,7 +26,7 @@ Copy &Text
 &Save Selected...
 Save History
 ;; Text found in ..\plugin\GlobalSearch.pas:
-%.0n items in %d contacts found. Searched for %.2f sec in %.0n items.
+%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.
 All Results
 System History
 Searching "%s"...
@@ -49,7 +49,7 @@ Do you want to continue searching at the beginning?
 History++ Search
 History++ Search
 HotSearch: %s (F3 to find next)
-%.0n items in %d contacts found. Searched for %.2f sec in %.0n items.
+%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.
 Loading...
 Saving...
 Searching...

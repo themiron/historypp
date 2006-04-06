@@ -278,7 +278,7 @@ begin
   AllContacts := st.AllContacts;
   AllItems := st.AllEvents;
   // if change, change also in hg.State:
-  sbt := WideFormat(TranslateWideW('%.0n items in %d contacts found. Searched for %.2f sec in %.0n items.'),[Length(History)/1, ContactsFound, stime/1000, AllItems/1]);
+  sbt := WideFormat(TranslateWideW('%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.'),[Length(History)/1, ContactsFound, stime/1000, AllItems/1]);
   st.WaitFor;
   st.Free;
   IsSearching := False;
@@ -1309,7 +1309,7 @@ begin
 
   case State of
     // if change, change also in SMFinished:
-    gsIdle:   t := WideFormat(TranslateWideW('%.0n items in %d contacts found. Searched for %.2f sec in %.0n items.'),[Length(History)/1, ContactsFound, stime/1000, AllItems/1]);
+    gsIdle:   t := WideFormat(TranslateWideW('%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.'),[Length(History)/1, ContactsFound, stime/1000, AllItems/1]);
     gsLoad:   t := TranslateWideW('Loading...');
     gsSave:   t := TranslateWideW('Saving...');
     gsSearch: t := TranslateWideW('Searching...');
