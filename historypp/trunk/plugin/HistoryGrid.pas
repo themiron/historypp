@@ -396,7 +396,6 @@ type
     procedure SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit);
     {$ENDIF}
     procedure SetRTLMode(const Value: TRTLMode);
-    function GetItemRTL(Item: Integer): Boolean;
   protected
     procedure CreateWindowHandle(const Params: TCreateParams); override;
     procedure CreateParams(var Params: TCreateParams); override;
@@ -471,6 +470,7 @@ type
     property RTLMode: TRTLMode read FRTLMode write SetRTLMode;
 
     procedure CalcAllHeight;
+    function GetItemRTL(Item: Integer): Boolean;
   published
     property MultiSelect: Boolean read FMultiSelect write SetMultiSelect;
 
