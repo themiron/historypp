@@ -65,11 +65,12 @@ type
   function DoSupportBBCodes(wParam, lParam: DWord): Integer; cdecl;
   function DoSupportBBCodesHTML(S: String): String; cdecl;
   // math module support is out of order
+  //function DoSupportMathModule(wParam, lParam: DWord): Integer; cdecl;
   function DoSupportMathModule(wParam, lParam: DWord): Integer; cdecl;
 
 implementation
 
-uses StrUtils;
+uses StrUtils, m_MathModule;
 
 const
 
@@ -282,6 +283,19 @@ end;
 
 function DoSupportMathModule(wParam{hRichEdit}, lParam{PItemRenderDetails}: DWord): Integer; cdecl;
 var
+  mrei: TMathRicheditInfo;
+  res: DWord;
+begin
+  mrei.hwndRichEditControl := wParam;
+  mrei.sel := nil;
+  mrei.disableredraw := Integer(True);
+  res := PluginLink.CallService(MATH_RTF_REPLACE_FORMULAE,0,DWord(@mrei));
+  res := 0;
+end;
+
+{$IFDEF DISABLED}
+function DoSupportMathModule(wParam{hRichEdit}, lParam{PItemRenderDetails}: DWord): Integer; cdecl;
+var
   pc: PChar;
   //cont,sd,ed: String;
   cont,sd,ed: WideString;
@@ -331,5 +345,6 @@ begin
     like SmileyAdd and TextFormat have. So we'll
     let the author write this part of the sample :) }
 end;
+{$ENDIF}
 
 end.
