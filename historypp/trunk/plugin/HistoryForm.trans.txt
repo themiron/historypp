@@ -43,12 +43,9 @@ Save All as &Text...
 Open &Link
 Open Link in New &Window
 &Copy
-LinkUrl
 Open &File
 Open File Fo&lder
 &Copy
-File Link
-FileLink
 &Options
 Show event icons
 Enable smiley support
@@ -69,14 +66,13 @@ Select all
 Cancel
 ;; Text found in ..\plugin\HistoryForm.pas:
 System History
-%.0f items in history
 HotSearch: %s (F3 to find next)
 Partial History [%s] - [%s]
 Do you really want to delete selected items (%.0f)?
 Delete Selected
 Do you really want to delete selected item?
 Delete
-%.0f items in history
+%.0n items in history
 Loading...
 Saving...
 Searching...
@@ -97,3 +93,9 @@ Full History [%s] - [%s]
 You have entered the wrong password.
 Make sure you have CAPS LOCK turned off.
 History++ Password Protection
+;; Text from variables in ..\plugin\HistoryForm.pas:
+HTML file (*.html; *.htm)|*.html;*.htm
+XML file (*.xml)|*.xml
+Unicode text file (*.txt)|*.txt
+Text file (*.txt)|*.txt
+All files (*.*)|*.*
