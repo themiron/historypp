@@ -1097,9 +1097,9 @@ begin
      Name := si.Contact.ProfileName+':';
  end else begin
    if mtIncoming in hg.Items[Index].MessageType then
-     Name := WideFormat('From %s:',[si.Contact.Name])
+     Name := WideFormat(TranslateWideW('From %s:'),[si.Contact.Name])
    else
-     Name := WideFormat('To %s:',[si.Contact.Name]);
+     Name := WideFormat(TranslateWideW('To %s:'),[si.Contact.Name]);
  end;
 end;
 
