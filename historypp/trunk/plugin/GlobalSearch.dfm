@@ -62,7 +62,6 @@ object fmGlobalSearch: TfmGlobalSearch
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 0
-        Text = 'http:'
         OnChange = edSearchChange
         OnEnter = edSearchEnter
         OnKeyDown = edSearchKeyUp

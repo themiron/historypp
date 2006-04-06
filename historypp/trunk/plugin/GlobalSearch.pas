@@ -215,6 +215,9 @@ type
 var
   fmGlobalSearch: TfmGlobalSearch;
 
+const
+  DEFAULT_SEARCH_TEXT = 'http: ftp: www. ftp.';
+
 implementation
 
 uses hpp_options, PassForm, hpp_itemprocess, hpp_forms, hpp_messages,
@@ -756,7 +759,7 @@ begin
     rbAny.Checked := True;
   end;
 
-  edSearch.Text := AnsiToWideString(GetDBStr(hppDBName,'GlobalSearchWindow.LastSearch',''),hppCodepage);
+  edSearch.Text := AnsiToWideString(GetDBStr(hppDBName,'GlobalSearchWindow.LastSearch',DEFAULT_SEARCH_TEXT),hppCodepage);
 end;
 
 procedure TfmGlobalSearch.lvContactsSelectItem(Sender: TObject; Item: TListItem;
