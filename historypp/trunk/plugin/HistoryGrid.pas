@@ -60,14 +60,10 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   TntSysUtils,TntWindows, TntControls,TntGraphics, TntComCtrls, Menus, StdCtrls,
   Math, mmsystem,
-  hpp_global, hpp_contacts, hpp_itemprocess, m_api
-  {$IFDEF CUST_SB}
-  ,VertSB
-  {$ENDIF}
-  {$IFDEF RENDER_RICH}
-  ,RichEdit, ShellAPI
-  {$ENDIF}
-  ;
+  hpp_global, hpp_contacts, hpp_itemprocess, m_api,
+  Contnrs,
+  VertSB,
+  RichEdit, ShellAPI;
 
 type
   TMouseMoveKey = (mmkControl,mmkLButton,mmkMButton,mmkRButton,mmkShift);
@@ -226,6 +222,46 @@ type
     property FindURLEnabled: Boolean read FFindURLEnabled write SetFindURLEnabled;
   end;
 
+
+  TRichItem = record
+    Rich: TTntRichEdit;
+    Height: Integer;
+    GridItem: Integer;
+  end;
+  PRichItem = ^TRichItem;
+
+  TRichCache = class(TList)
+  private
+    GridItems: array of Integer;
+    Grid: THistoryGrid;
+    FRichHeight: Integer;
+    function GetItem(Index: Integer): PRichItem;
+    procedure SetItem(Index: Integer; const Value: PRichItem);
+
+    function FindGridItem(GridItem: Integer): Integer;
+    procedure ApplyItemToRich(Item: PRichItem);
+
+    procedure OnRichResize(Sender: TObject; Rect: TRect);
+  protected
+    function Add(Item: PRichItem): Integer;
+    function Remove(Item: PRichItem): Integer;
+    procedure Insert(Index: Integer; Item: PRichItem);
+    property Items[Index: Integer]: PRichItem read GetItem write SetItem; default;
+  public
+    constructor Create(AGrid: THistoryGrid); overload;
+    destructor Destroy;
+
+    procedure ResetAllItems;
+    procedure ResetItems(GridItems: array of Integer);
+    procedure ResetItem(GridItem: Integer);
+    procedure SetWidth(NewWidth: Integer);
+    procedure SetHandles;
+
+    function RequestItem(GridItem: Integer): PRichItem;
+    function CalcItemHeight(GridItem: Integer): Integer;
+    function GetItemRich(GridItem: Integer): TTntRichedit;
+  end;
+
   THistoryGrid = class(TScrollingWinControl)
   private
     CHeaderHeight, PHeaderheight: Integer;
@@ -280,6 +316,7 @@ type
     FVertScrollBar: TVertScrollBar;
     {$ENDIF}
     {$IFDEF RENDER_RICH}
+    FRichCache: TRichCache;
     FOnUrlClick: TUrlEvent;
     FOnUrlPopup: TUrlEvent;
     FRich: TTntRichEdit;
@@ -356,9 +393,10 @@ type
     procedure ApplyItemToRich(Item: Integer; RichEdit: TTntRichEdit = nil);
     function GetRichEditRect(Item: Integer): TRect;
     procedure HandleRichEditMouse(Message: DWord; X,Y: Integer);
-    procedure SetRichRTL(RTL: Boolean);
+    procedure SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit);
     {$ENDIF}
     procedure SetRTLMode(const Value: TRTLMode);
+    function GetItemRTL(Item: Integer): Boolean;
   protected
     procedure CreateWindowHandle(const Params: TCreateParams); override;
     procedure CreateParams(var Params: TCreateParams); override;
@@ -577,15 +615,20 @@ constructor THistoryGrid.Create(AOwner: TComponent);
 begin
   inherited;
   {$IFDEF RENDER_RICH}
+  FRichCache := TRichCache.Create(Self);
+
+  {tmp
   FRich := TTntRichEdit.Create(Self);
+  FRich.Name := 'OrgFRich';
   FRich.Visible := False;
   // just a dirty hack to workaround problem with
   // SmileyAdd making richedit visible all the time
   FRich.Height := 1000;
   FRich.Top := -1001;
   // </hack>
-  { Don't give him grid as parent, or we'll have
-  wierd problems with scroll bar }
+
+  // Don't give him grid as parent, or we'll have
+  // wierd problems with scroll bar
   FRich.Parent := nil;
   // on 9x wrong sizing
   //FRich.PlainText := True;
@@ -597,6 +640,7 @@ begin
   // it's handle is unknown yet. We do it in WMSize, but
   // to prevent setting it multiple times
   // we have this variable
+  }
   FRichParamsSet := False;
 
   // Ok, now selected richedit
@@ -605,6 +649,7 @@ begin
 
   // Ok, now inlined richedit
   FRichInline := TTntRichEdit.Create(Self);
+  FRichInline.Name := 'FRichInline';
   FRichInline.Visible := False;
   //FRichInline.Parent := Self.Parent;
   //FRichInline.PlainText := True;
@@ -676,6 +721,7 @@ VertScrollBar.Free;
 {$IFDEF RENDER_RICH}
 // it gets deleted autmagically because FRich.Owner = Self
 // FRich.Free;
+FRichCache.Free;
 {$ENDIF}
 if Assigned(Options) then
   Options.DeleteGrid(Self);
@@ -870,9 +916,10 @@ begin
   if State = gsInline then CancelInline;
 
   if not FRichParamsSet then begin
+    FRichCache.SetHandles;
     FRichParamsSet := true;
-    re_mask := SendMessage(FRich.Handle, EM_GETEVENTMASK, 0, 0);
-    SendMessage(FRich.Handle, EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
+    //re_mask := SendMessage(FRich.Handle, EM_GETEVENTMASK, 0, 0);
+    //SendMessage(FRich.Handle, EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
     //re_mask := FRich.Perform(EM_GETEVENTMASK, 0, 0);
     //FRich.Perform(EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
     FRichInline.Parent := Self.Parent;
@@ -881,11 +928,12 @@ begin
     //re_mask := FRichInline.Perform(EM_GETEVENTMASK, 0, 0);
     //FRichInline.Perform(EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
   end;
+  FRichCache.SetWidth(ClientWidth - 2*FPadding);
 
   SetW;
 
-  FRich.Width := ClientWidth - 2*FPadding;
-  //FRichSelected.Width := ClientWidth - 2*FPadding;
+  // tmp
+  //FRich.Width := ClientWidth - 2*FPadding;
 
   {$ENDIF}
 
@@ -1056,6 +1104,7 @@ var
   rc: TRect;
   Range: TFormatRange;
   {ENDIF}
+  RTL: Boolean;
 
 begin
   {$IFDEF DEBUG}
@@ -1063,7 +1112,15 @@ begin
   {$ENDIF}
 
   Sel := IsSelected(Index);
+  RTL := GetItemRTL(Index);
   Options.GetItemOptions(FItems[Index].MessageType,textFont,BackColor);
+
+  if not (RTL = ((Canvas.TextFlags and ETO_RTLREADING) > 0)) then begin
+    if RTL then
+      Canvas.TextFlags := Canvas.TextFlags or ETO_RTLREADING
+    else
+      Canvas.TextFlags := Canvas.TextFlags and not ETO_RTLREADING;
+  end;
 
   //BackColor := SendMessage(FRich.Handle,EM_SETBKGNDCOLOR,0,0);
   //SendMessage(FRich.Handle,EM_SETBKGNDCOLOR,0,ColorToRGB(BackColor));
@@ -1106,7 +1163,7 @@ begin
       IconOffset := 16+Padding;
       // canvas. draw here can sometimes draw 32x32 icon (sic!)
       //if Options.RTLEnabled then
-      if (RTLMode = hppRTLEnable) or ((RTLMode = hppRTLDefault) and Options.RTLEnabled) then
+      if RTL then
         DrawIconEx(Canvas.Handle,ItemRect.Right-16,ItemRect.Top,Icon.Handle,16,16,0,0,DI_NORMAL)
       else
         DrawIconEx(Canvas.Handle,ItemRect.Left,ItemRect.Top,Icon.Handle,16,16,0,0,DI_NORMAL);
@@ -1116,8 +1173,7 @@ begin
   Canvas.Font := nameFont;
   if sel then Canvas.Font.Color := Options.ColorSelectedText;
 
-  //if Options.RTLEnabled then begin
-  if (RTLMode = hppRTLEnable) or ((RTLMode = hppRTLDefault) and Options.RTLEnabled) then begin
+  if RTL then begin
     NickOffset := WideCanvasTextWidth(Canvas,HeaderName);
     WideCanvasTextOut(Canvas,ItemRect.Right-IconOffset-NickOffset,ItemRect.Top,HeaderName)
   end else
@@ -1126,7 +1182,7 @@ begin
   Canvas.Font := timestampFont;
   if sel then Canvas.Font.Color := Options.ColorSelectedText;
   //if Options.RTLEnabled then
-  if (RTLMode = hppRTLEnable) or ((RTLMode = hppRTLDefault) and Options.RTLEnabled) then
+  if RTL then
     WideCanvasTextOut(Canvas,ItemRect.Left,ItemRect.Top,TimeStamp)
   else begin
     TimeOffset := WideCanvasTextWidth(Canvas,TimeStamp);
@@ -1184,19 +1240,21 @@ end;
 procedure THistoryGrid.SetSelected(const Value: Integer);
 var
   OldSelected: Integer;
+  i: Integer;
 begin
+  FRichCache.ResetItem(FSelected);
   OldSelected := FSelected;
   FSelected := Value;
+  FRichCache.ResetItem(FSelected);
   if FSelected <> -1 then begin
+    FRichCache.ResetItems(FSelItems);
     SetLength(FSelItems,1);
     FSelItems[0] := FSelected;
-  end else
+  end
+  else begin
+    FRichCache.ResetItems(FSelItems);
     SetLength(FSelItems,0);
-  // paint previous selected as normal
-  //if (OldSelected <> FSelected) and (OldSelected <> -1) then begin
-    //r := GetItemRect(OldSelected);
-    //InvalidateRect(Handle,@r,False);
-  //end;
+  end;
   if FSelected <> -1 then begin
     MakeVisible(Selected);
   end;
@@ -1213,6 +1271,7 @@ begin
   if not IsMatched(Index) then exit;
   SetLength(FSelItems,SelCount+1);
   FSelItems[High(FSelItems)] := Index;
+  FRichCache.ResetItem(Index);
   //r := GetItemRect(Index);
   //InvalidateRect(Handle,@r,False);
 end;
@@ -1329,6 +1388,7 @@ begin
   if (Selected <> -1) and (mmkShift in Keys) and (Item <> -1) then begin
     s := FSelItems[0];
     e := Item;
+    FRichCache.ResetItems(FSelItems);
     SetLength(FSelItems,0);
     if s > e then
       for i := s downto e do
@@ -1396,6 +1456,18 @@ begin
   Result := Rect(0,SumHeight,ClientWidth,SumHeight+FItems[Item].Height);
 end;
 
+function THistoryGrid.GetItemRTL(Item: Integer): Boolean;
+begin
+  if FItems[Item].RTLMode = hppRTLDefault then begin
+    if RTLMode = hppRTLDefault then
+      Result := Options.RTLEnabled
+    else
+      Result := (RTLMode = hppRTLEnable);
+  end
+  else
+    Result := (FItems[Item].RTLMode = hppRTLEnable)
+end;
+
 function THistoryGrid.IsSelected(Item: Integer): Boolean;
 var
   i: Integer;
@@ -1428,8 +1500,18 @@ var
   textFont: TFont;
   FontColor,BackColor: TColor;
   cf: TCharFormat;
+  RichItem: PRichItem;
 begin
-  if RichEdit = nil then RichEdit := FRich;
+  if RichEdit = nil then begin
+     RichItem := FRichCache.RequestItem(Item);
+     FRich := RichItem.Rich;
+     FRichHeight := RichItem.Height;
+     exit;
+  end
+  else
+    if not (RichEdit = FRichInline) then
+      FRich := RichEdit;
+
   Options.GetItemOptions(FItems[Item].MessageType,textFont,BackColor);
   if (IsSelected(Item)) and (not (RichEdit = FRichInline)) then begin
     FontColor := Options.ColorSelectedText;
@@ -1457,14 +1539,7 @@ begin
   RichEdit.DefAttributes.Color := FontColor;
   //RichEdit.Font.Color := FontColor;
 
-  if FItems[Item].RTLMode = hppRTLDefault then begin
-    if RTLMode = hppRTLDefault then
-      SetRichRTL(Options.RTLEnabled)
-    else
-      SetRichRTL(RTLMode = hppRTLEnable);
-  end
-  else
-    SetRichRTL(FItems[Item].RTLMode = hppRTLEnable);
+  SetRichRTL(GetItemRTL(Item),RichEdit);
 
   RichEdit.Text := FItems[Item].Text;
 
@@ -1575,6 +1650,7 @@ if (mmkLButton in Keys) and (MultiSelect) and (WasDownOnGrid) then begin
   //s := Min(Item,Selected);
   //e := Max(Item,Selected);
   // Clear all previous selections
+  FRichCache.ResetItems(FSelItems);
   SetLength(FSelItems,0);
   //FSelItems[0] := FSelected;
   if s > e then
@@ -1774,6 +1850,7 @@ if Key = VK_HOME then begin
     AddSelected(NextItem);
     FirstSel := FSelItems[0];
     FSelected := NextItem;
+    FRichCache.ResetItems(FSelItems);
     SetLength(FSelItems,0);
     if FirstSel > NextItem then
       for i := FirstSel downto NextItem do
@@ -1797,6 +1874,7 @@ if Key = VK_END then begin
     AddSelected(NextItem);
     FirstSel := FSelItems[0];
     FSelected := NextItem;
+    FRichCache.ResetItems(FSelItems);
     SetLength(FSelItems,0);
     if FirstSel > NextItem then
       for i := FirstSel downto NextItem do
@@ -1845,6 +1923,7 @@ if Key = VK_NEXT then begin //PAGE DOWN
     AddSelected(NextItem);
     FirstSel := FSelItems[0];
     FSelected := NextItem;
+    FRichCache.ResetItems(FSelItems);
     SetLength(FSelItems,0);
     if FirstSel > NextItem then
       for i := FirstSel downto NextItem do
@@ -1886,6 +1965,7 @@ if Key = VK_PRIOR then begin //PAGE UP
     AddSelected(NextItem);
     FirstSel := FSelItems[0];
     FSelected := NextItem;
+    FRichCache.ResetItems(FSelItems);
     SetLength(FSelItems,0);
     if FirstSel > NextItem then
       for i := FirstSel downto NextItem do
@@ -1909,6 +1989,7 @@ if Key = VK_UP then begin
     AddSelected(Item);
     FirstSel := FSelItems[0];
     FSelected := Item;
+    FRichCache.ResetItems(FSelItems);
     SetLength(FSelItems,0);
     if FirstSel > Item then
       for i := FirstSel downto Item do
@@ -1933,6 +2014,7 @@ if Key = VK_DOWN then begin
     AddSelected(Item);
     FirstSel := FSelItems[0];
     FSelected := Item;
+    FRichCache.ResetItems(FSelItems);
     SetLength(FSelItems,0);
     if FirstSel > Item then
       for i := FirstSel downto Item do
@@ -2550,6 +2632,7 @@ State := gsDelete;
 try
 BarAdjusted := False;
 
+FRichCache.ResetItems(FSelItems);
 SetLength(FSelItems,0);
 FSelected := -1;
 
@@ -2844,6 +2927,7 @@ begin
 // to decrease some after we delete the item
 // from main array
 SelIdx := -1;
+FRichCache.ResetItem(Item);
 //if IsSelected(Item) then begin
   for i := 0 to SelCount-1 do begin
     if FSelItems[i] = Item then
@@ -3268,14 +3352,15 @@ begin
   Update;
 end;
 
-procedure THistoryGrid.SetRichRTL(RTL: Boolean);
+procedure THistoryGrid.SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit);
 var
   pf: PARAFORMAT2;
 begin
-  // we use FRich.Tag here to save previous RTL state to prevent from
+  // we use RichEdit.Tag here to save previous RTL state to prevent from
   // reapplying same state, because SetRichRTL is called VERY OFTEN
   // (from ApplyItemToRich)
-  if FRich.Tag = Integer(RTL) then exit;
+  // tmp
+  if RichEdit.Tag = Integer(RTL) then exit;
   pf.cbSize := SizeOf(pf);
   pf.dwMask := PFM_RTLPARA;
   if RTL then begin
@@ -3283,9 +3368,10 @@ begin
   end else begin
     pf.wReserved := 0;
   end;
-  FRich.Perform(EM_SETPARAFORMAT,0,integer(@pf));
-  FRichInline.Perform(EM_SETPARAFORMAT,0,integer(@pf));
-  FRich.Tag := Integer(RTL);
+  RichEdit.Perform(EM_SETPARAFORMAT,0,integer(@pf));
+  //FRich.Perform(EM_SETPARAFORMAT,0,integer(@pf));
+  //FRichInline.Perform(EM_SETPARAFORMAT,0,integer(@pf));
+  RichEdit.Tag := Integer(RTL);
 end;
 
 (* Index to Position *)
@@ -3326,8 +3412,7 @@ begin
   for i := 0 to Length(FItems)-1 do begin
     FItems[i].Height := -1;
   end;
-
-  FRich.Clear;
+  FRichCache.ResetAllItems;
 
   pf.cbSize := SizeOf(pf);
   pf.dwMask := PFM_RTLPARA;
@@ -3336,13 +3421,17 @@ begin
 
   //if Options.RTLEnabled then begin
   if (RTLMode = hppRTLEnable) or ((RTLMode = hppRTLDefault) and Options.RTLEnabled) then begin
-    SetRichRTL(True);
+    // redundant, we do it in ApplyItemToRich
+    //SetRichRTL(True);
     //pf.wReserved := PFE_RTLPARA;
-    Canvas.TextFlags := Canvas.TextFlags or ETO_RTLREADING;
+    // redundant, we do it PaintItem
+    // Canvas.TextFlags := Canvas.TextFlags or ETO_RTLREADING;
   end else begin
-    SetRichRTL(False);
+    // redundant, we do it in ApplyItemToRich
+    // SetRichRTL(False);
     //pf.wReserved := 0;
-    Canvas.TextFlags := Canvas.TextFlags and not ETO_RTLREADING;
+    // redundant, we do it PaintItem
+    // Canvas.TextFlags := Canvas.TextFlags and not ETO_RTLREADING;
   end;
   //SendMessage(FRich.Handle,EM_SETPARAFORMAT,0,integer(@pf));
   //SendMessage(FRichInline.Handle,EM_SETPARAFORMAT,0,integer(@pf));
@@ -3368,7 +3457,6 @@ begin
 
   //SendMessage(FRich.Handle, EM_AUTOURLDETECT, Integer(True), 0);
   //SendMessage(FRichInline.Handle, EM_AUTOURLDETECT, Integer(True), 0);
-  FRich.Perform(EM_AUTOURLDETECT, Integer(Options.UnderlineURLEnabled), 0);
   FRichInline.Perform(EM_AUTOURLDETECT, Integer(Options.UnderlineURLEnabled), 0);
 
   Inc(CHeaderHeight,Padding);
@@ -3397,7 +3485,12 @@ procedure THistoryGrid.SetRTLMode(const Value: TRTLMode);
 begin
   if FRTLMode = Value then exit;
   FRTLMode := Value;
-  DoOptionsChanged;
+  FRichCache.ResetAllItems;
+  Repaint;
+  // no need in it?
+  // cause we set rich's RTL in ApplyItemToRich and
+  // canvas'es RTL in PaintItem
+  // DoOptionsChanged;
 end;
 
 {$IFDEF CUST_SB}
@@ -3462,6 +3555,7 @@ end;
 procedure THistoryGrid.UpdateFilter;
 begin
   CheckBusy;
+  FRichCache.ResetItems(FSelItems);
   SetLength(FSelItems,0);
   State := gsLoad;
   try
@@ -3973,6 +4067,213 @@ end;
 procedure TGridOptions.StartChange;
 begin
   Inc(FLocks);
+end;
+
+{ TRichCache }
+
+function TRichCache.Add(Item: PRichItem): Integer;
+begin
+  Result := inherited Add(Item);
+end;
+
+procedure TRichCache.ApplyItemToRich(Item: PRichItem);
+begin
+  Grid.ApplyItemToRich(Item.GridItem,Item.Rich);
+  if FRichHeight = 0 then begin
+    Item.Rich.Text := Item.Rich.Text + 'sasme/m,ds ad34!a9-1da'; // any junk here
+    Grid.ApplyItemToRich(Item.GridItem,Item.Rich);
+  end;
+  Assert(FRichHeight <> 0, 'CalcItemHeight: rich is still 0 height');
+end;
+
+function TRichCache.CalcItemHeight(GridItem: Integer): Integer;
+var
+  Item: PRichItem;
+begin
+  Item := RequestItem(GridItem);
+  Assert(Item <> nil);
+  Result := Item.Height;
+end;
+
+constructor TRichCache.Create(AGrid: THistoryGrid);
+var
+  i: Integer;
+  Rich: TtntRichEdit;
+  RichItem: PRichItem;
+begin
+  inherited Create;
+
+  FRichHeight := -1;
+  Grid := AGrid;
+  // cache size:
+  Count := 20;
+
+  for i := 0 to Count - 1 do begin
+    New(RichItem);
+    RichItem^.Height := -1;
+    RichItem^.GridItem := -1;
+    RichItem^.Rich := TTntRichEdit.Create(nil);
+    RichItem^.Rich.Name := 'CachedRichEdit'+IntToStr(i);
+    RichItem^.Rich.Visible := False;
+    // just a dirty hack to workaround problem with
+    // SmileyAdd making richedit visible all the time
+    RichItem^.Rich.Height := 1000;
+    RichItem^.Rich.Top := -1001;
+    // </hack>
+    { Don't give him grid as parent, or we'll have
+    wierd problems with scroll bar }
+    RichItem^.Rich.Parent := nil;
+    RichItem^.Rich.WordWrap := True;
+    RichItem^.Rich.BorderStyle := bsNone;
+    RichItem^.Rich.OnResizeRequest := OnRichResize;
+    Items[i] := RichItem;
+  end;
+end;
+
+destructor TRichCache.Destroy;
+var
+  i: Integer;
+begin
+  for i := 0 to Count - 1 do begin
+    FreeAndNil(Items[i].Rich);
+    Dispose(Items[i]);
+  end;
+  SetCount(0);
+  inherited;
+end;
+
+function TRichCache.FindGridItem(GridItem: Integer): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  if GridItem = -1 then exit;
+  for i := 0 to Count - 1 do
+    if Items[i].GridItem = GridItem then begin
+       Result := i;
+       break;
+    end;
+end;
+
+function TRichCache.GetItem(Index: Integer): PRichItem;
+begin
+  Result := inherited Items[Index];
+end;
+
+function TRichCache.GetItemRich(GridItem: Integer): TTntRichEdit;
+var
+  Item: PRichItem;
+begin
+  Item := RequestItem(GridItem);
+  Assert(Item <> nil);
+  Result := Item.Rich;
+end;
+
+procedure TRichCache.Insert(Index: Integer; Item: PRichItem);
+begin
+  inherited Insert(Index, Item);
+end;
+
+procedure TRichCache.OnRichResize(Sender: TObject; Rect: TRect);
+begin
+  FRichHeight := Rect.Bottom - Rect.Top;
+end;
+
+function TRichCache.Remove(Item: PRichItem): Integer;
+begin
+  Result := inherited Remove(Item);
+end;
+
+function TRichCache.RequestItem(GridItem: Integer): PRichItem;
+var
+  idx: Integer;
+begin
+  Result := nil;
+  Assert(GridItem > -1);
+  idx := FindGridItem(gridItem);
+  if idx <> -1 then begin
+    Result := Items[idx];
+  end
+  else begin
+    Result := Last;
+    Result.GridItem := GridItem;
+    Result.Height := -1;
+    idx := Count-1;
+  end;
+  if Result.Height = -1 then begin
+    ApplyItemToRich(Result);
+    Result.Height := FRichHeight;
+  end;
+  Move(idx,0);
+end;
+
+procedure TRichCache.ResetAllItems;
+var
+  i: Integer;
+begin
+  for i := 0 to Count - 1 do begin
+    Items[i].Height := -1;
+  end;
+end;
+
+procedure TRichCache.ResetItem(GridItem: Integer);
+var
+  idx: Integer;
+begin
+  if GridItem = -1 then exit;
+  idx := FindGridItem(GridItem);
+  if idx = -1 then exit;
+  Items[idx].Height := -1;
+end;
+
+procedure TRichCache.ResetItems(GridItems: array of Integer);
+var
+  i: Integer;
+  idx: Integer;
+  ItemsReset: Integer;
+begin
+  ItemsReset := 0;
+  for i := 0 to Length(GridItems) - 1 do begin
+    idx := FindGridItem(GridItems[i]);
+    if idx <> -1 then begin
+      Items[idx].Height := -1;
+      Inc(ItemsReset);
+    end;
+    // no point in searching, we've reset all items
+    if ItemsReset >= Count then break;
+  end;
+end;
+
+procedure TRichCache.SetHandles;
+var
+  i: Integer;
+  re_mask: DWord;
+begin
+  for i := 0 to Count - 1 do begin
+    Items[i].Rich.ParentWindow := Grid.Handle;
+    // Rich.Clear is not neccesary here, except url autodetection stops
+    // working if we remove it, but all else works fine
+    Items[i].Rich.Clear;
+    re_mask := Items[i].Rich.Perform(EM_GETEVENTMASK, 0, 0);
+    Items[i].Rich.Perform(EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
+    Items[i].Rich.Perform(EM_AUTOURLDETECT, DWord(True), 0);
+  end;
+end;
+
+procedure TRichCache.SetItem(Index: Integer; const Value: PRichItem);
+begin
+  inherited Items[Index] := Value;
+end;
+
+procedure TRichCache.SetWidth(NewWidth: Integer);
+var
+  i: Integer;
+begin
+  for i := 0 to Count - 1 do begin
+    //Items[i].Rich.Clear;
+    Items[i].Rich.Width := NewWidth;
+    Items[i].Height := -1;
+  end;
 end;
 
 initialization
