@@ -2385,7 +2385,7 @@ begin
   SumHeight := -TopItemOffset;
   idx := GetFirstVisible;
   LoadItem(idx,True);
-  while (SumHeight+FItems[idx].Height < ClientHeight) and (Item <> -1) and (Item < Count) do begin
+  while (SumHeight+FItems[idx].Height <= ClientHeight) and (Item <> -1) and (Item < Count) do begin
     if Item = idx then begin
       Result := True;
       break;
