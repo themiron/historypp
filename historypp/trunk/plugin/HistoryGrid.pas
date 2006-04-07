@@ -2522,6 +2522,7 @@ var
   pos,SumHeight: Integer;
 begin
   first := GetFirstVisible;
+  if first = -1 then exit;
   SumHeight := -TopItemOffset;
   idx := first;
   PositionSet := False;
