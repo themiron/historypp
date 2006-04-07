@@ -528,10 +528,8 @@ begin
 
   edSearch.Left := laSearch.Left + laSearch.Width + 5;
   edSearch.Width := bnSearch.Left - edSearch.Left - 5;
-  laPass.Left := edPass.Left - laPass.Width - 5;
 
-
-  //edPass.Left := laPass.Left + laPass.Width + 10;
+  edPass.Left := laPass.Left + laPass.Width + 10;
 end;
 
 procedure TfmGlobalSearch.FilterOnContact(hContact: Integer);
