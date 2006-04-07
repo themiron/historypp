@@ -2518,14 +2518,12 @@ end;
 procedure THistoryGrid.ScrollGridBy(Offset: Integer; Update: Boolean = True);
 var
   previdx,idx,first: Integer;
-  PositionSet: Boolean;
   pos,SumHeight: Integer;
 begin
   first := GetFirstVisible;
   if first = -1 then exit;
   SumHeight := -TopItemOffset;
   idx := first;
-  PositionSet := False;
 
   while (Offset > 0) do begin
     LoadItem(idx,True);
@@ -2534,10 +2532,10 @@ begin
     Inc(SumHeight,FItems[idx].Height);
     idx := GetDown(idx);
     if idx = -1 then begin
-      Dec(Offset,(Offset+ClientHeight)-SumHeight);
-      VertScrollBar.Position := MaxSBPos+1;
-      PositionSet := True;
-      break;
+      // we scroll to the last item, let's SetSBPos do the job
+      SetSBPos(MaxSBPos+1);
+      Repaint;
+      exit;
     end;
   end;
 
@@ -2547,8 +2545,7 @@ begin
     LoadItem(idx,True);
     if SumHeight + FItems[idx].Height > Offset then begin
       pos := GetIdx(idx);
-      if not PositionSet then
-        VertScrollBar.Position := pos;
+      VertScrollBar.Position := pos;
       TopItemOffset := Offset - SumHeight;
       if Update then begin
         ScrollWindow(Handle,0,-Offset,nil,nil);
