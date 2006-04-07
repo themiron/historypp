@@ -165,24 +165,20 @@ object fmGlobalSearch: TfmGlobalSearch
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 1
-      DesignSize = (
-        547
-        26)
+      ExplicitLeft = 4
       object laPass: TTntLabel
-        Left = 369
+        Left = 250
         Top = 5
         Width = 49
         Height = 13
-        Anchors = [akTop, akRight]
         Caption = 'Password:'
         Enabled = False
       end
       object edPass: TPasswordEdit
-        Left = 421
+        Left = 302
         Top = 1
         Width = 125
         Height = 21
-        Anchors = [akTop, akRight]
         TabOrder = 1
         OnKeyDown = edSearchKeyUp
         OnKeyPress = edPassKeyPress
@@ -190,7 +186,7 @@ object fmGlobalSearch: TfmGlobalSearch
       object cbPass: TTntCheckBox
         Left = 4
         Top = 4
-        Width = 273
+        Width = 241
         Height = 17
         Caption = 'Include password-protected contacts'
         TabOrder = 0
