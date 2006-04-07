@@ -261,6 +261,9 @@ type
     procedure SetWidth(NewWidth: Integer);
     procedure SetHandles;
 
+    procedure WorkOutItemAdded(GridItem: Integer);
+    procedure WorkOutItemDeleted(GridItem: Integer);
+
     function RequestItem(GridItem: Integer): PRichItem;
     function CalcItemHeight(GridItem: Integer): Integer;
     function GetItemRich(GridItem: Integer): TTntRichedit;
@@ -2898,10 +2901,12 @@ var
 begin
   SetLength(FItems,Count+1);
 
+  FRichCache.WorkOutItemAdded(0);
+
   for i := Length(FItems)-1 downto 1 do begin
     FItems[i] := FItems[i-1];
   end;
-  
+
   FItems[0].MessageType := [mtUnknown];
   FItems[0].Height := -1;
   FItems[0].Text := '';
@@ -2943,7 +2948,7 @@ begin
 // to decrease some after we delete the item
 // from main array
 SelIdx := -1;
-FRichCache.ResetItem(Item);
+FRichCache.WorkOutItemDeleted(Item);
 //if IsSelected(Item) then begin
   for i := 0 to SelCount-1 do begin
     if FSelItems[i] = Item then
@@ -4213,9 +4218,13 @@ var
   rc: TRect;
   BkColor: TCOLORREF;
   Range: TFormatRange;
+  str: String;
 begin
-  OutputDebugString(PChar('Painted bitmap ['+IntToStr(item.bitmap.Height)+'] for rich '+Item.Rich.Name));
   Item.Bitmap.Height := Item.Height;
+
+  //str := 'Painted bitmap ['+IntToStr(item.bitmap.Height)+'] for rich "'+Copy(Item.Rich.Text,1,15)+'"';
+  //OutputDebugString(PChar(str));
+
   rc := Rect(0,0,Item.Bitmap.Width,Item.Bitmap.Height);
 
   // because RichEdit sometimes paints smaller image
@@ -4344,6 +4353,30 @@ begin
     Items[i].Bitmap.Width := NewWidth;
     Items[i].Height := -1;
   end;
+end;
+
+procedure TRichCache.WorkOutItemAdded(GridItem: Integer);
+var
+  i: Integer;
+begin
+  for i := 0 to Count - 1 do
+    if Items[i].Height <> -1 then begin
+      if Items[i].GridItem >= GridItem then
+        Inc(Items[i].GridItem);
+    end;
+end;
+
+procedure TRichCache.WorkOutItemDeleted(GridItem: Integer);
+var
+  i: Integer;
+begin
+  for i := 0 to Count - 1 do
+    if Items[i].Height <> -1 then begin
+      if Items[i].GridItem = GridItem then
+        Items[i].Height := -1
+      else if Items[i].GridItem > GridItem then
+        Dec(Items[i].GridItem);
+    end;
 end;
 
 initialization
