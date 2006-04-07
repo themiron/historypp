@@ -4098,10 +4098,14 @@ end;
 procedure TRichCache.ApplyItemToRich(Item: PRichItem);
 begin
   Grid.ApplyItemToRich(Item.GridItem,Item.Rich);
-  if FRichHeight = 0 then begin
+  // force to send the size:
+  SendMessage(Item.Rich.Handle,EM_SETEVENTMASK, 0, ENM_REQUESTRESIZE);
+  SendMessage(Item.Rich.Handle,EM_REQUESTRESIZE,0, 0);
+  SendMessage(Item.Rich.Handle,EM_SETEVENTMASK, 0, ENM_CHANGE or ENM_SELCHANGE or ENM_PROTECTED or ENM_LINK);
+  {if FRichHeight = 0 then begin
     Item.Rich.Text := Item.Rich.Text + 'sasme/m,ds ad34!a9-1da'; // any junk here
     Grid.ApplyItemToRich(Item.GridItem,Item.Rich);
-  end;
+  end;}
   Assert(FRichHeight <> 0, 'CalcItemHeight: rich is still 0 height');
 end;
 
@@ -4218,7 +4222,9 @@ var
   Range: TFormatRange;
   str: String;
 begin
-  Item.Bitmap.Height := Item.Height;
+  Item.Bitmap.SetSize(Item.Rich.Width,Item.Height);
+  //  Items[i].Bitmap.Width := NewWidth;
+  // Item.Bitmap.Height := Item.Height;
 
   //str := 'Painted bitmap ['+IntToStr(item.bitmap.Height)+'] for rich "'+Copy(Item.Rich.Text,1,15)+'"';
   //OutputDebugString(PChar(str));
@@ -4326,11 +4332,11 @@ var
 begin
   for i := 0 to Count - 1 do begin
     Items[i].Rich.ParentWindow := Grid.Handle;
-    // Rich.Clear is not neccesary here, except url autodetection stops
-    // working if we remove it, but all else works fine
-    Items[i].Rich.Clear;
-    re_mask := Items[i].Rich.Perform(EM_GETEVENTMASK, 0, 0);
-    Items[i].Rich.Perform(EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
+    //re_mask := Items[i].Rich.Perform(EM_GETEVENTMASK, 0, 0);
+    SendMessage(Items[i].Rich.Handle,EM_SETEVENTMASK, 0,
+      ENM_CHANGE or ENM_SELCHANGE or ENM_PROTECTED or ENM_LINK);
+    //re_mask or ENM_LINK);
+    //re_mask := Items[i].Rich.Perform(EM_GETEVENTMASK, 0, 0);
     Items[i].Rich.Perform(EM_AUTOURLDETECT, DWord(True), 0);
     Items[i].Rich.Perform(EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
   end;
@@ -4346,9 +4352,7 @@ var
   i: Integer;
 begin
   for i := 0 to Count - 1 do begin
-    //Items[i].Rich.Clear;
     Items[i].Rich.Width := NewWidth;
-    Items[i].Bitmap.Width := NewWidth;
     Items[i].Height := -1;
   end;
 end;
