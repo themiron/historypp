@@ -472,16 +472,20 @@ var
   ctrl: TControl;
 begin
   Handled := True;
-  ctrl := Panel1.ControlAtPos(MousePos,False,True);
-  if Assigned(ctrl) then
-    if Ctrl.Name = 'paContacts' then begin
-      {$RANGECHECKS OFF}
-      TListView(ctrl).Perform(WM_MOUSEWHEEL,MakeLong(MK_CONTROL,WheelDelta),0);
-      {$RANGECHECKS ON}
-      exit;
-    end;
+  ctrl := Panel1.ControlAtPos(Panel1.ScreenToClient(MousePos),False,True);
   {$RANGECHECKS OFF}
-  hg.perform(WM_MOUSEWHEEL,MakeLong(MK_CONTROL,WheelDelta),0);
+  if Assigned(ctrl) then begin
+    if Ctrl.Name = 'paContacts' then begin
+      Handled := not TTntListView(ctrl).Focused;
+      if Handled then begin
+        // ??? what to do here?
+        // how to tell listview to scroll?
+      end;
+    end
+    else begin
+      hg.perform(WM_MOUSEWHEEL,MakeLong(MK_CONTROL,WheelDelta),0);
+    end;
+  end;
   {$RANGECHECKS ON}
 end;
 
