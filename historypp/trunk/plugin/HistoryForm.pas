@@ -777,7 +777,6 @@ procedure THistoryFrm.FormClose(Sender: TObject; var Action: TCloseAction);
   //h: hwnd;
 begin
   try
-  FindDialog.CloseDialog;
   Action:=caFree;
   if Assigned(WindowList) then begin
     if WindowList.Count = 1 then begin
@@ -791,7 +790,6 @@ begin
     //Windows.ShowCaret(Handle);
     //Windows.ShowCursor(True);
   end;
-  UnhookEvents;;
   SavePosition;
   except
   end;
@@ -868,6 +866,10 @@ end;
 
 procedure THistoryFrm.FormDestroy(Sender: TObject);
 begin
+  // this is the only event fired when history is open
+  // and miranda is closed
+  FindDialog.CloseDialog;
+  UnhookEvents;
   if Assigned(EventDetailFrom) then
     EventDetailFrom.Release;
   SessThread.Free;
