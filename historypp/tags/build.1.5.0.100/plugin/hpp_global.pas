@@ -62,7 +62,7 @@ const
   hppVerMajor   = {MAJOR_VER}1{/MAJOR_VER};
   hppVerMinor   = {MINOR_VER}5{/MINOR_VER};
   hppVerRelease = {SUB_VER}0{/SUB_VER};
-  hppVerBuild   = {BUILD}100{/BUILD};
+  hppVerBuild   = {BUILD}101{/BUILD};
   hppVersion    = hppVerMajor shl 24 + hppVerMinor shl 16 + hppVerRelease shl 8 + hppVerBuild;
 
   hppUpdateURL = 'http://slav.pp.ru/miranda/historypp';
