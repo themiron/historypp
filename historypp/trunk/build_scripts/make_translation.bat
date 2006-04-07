@@ -2,7 +2,9 @@
 
 set TRANSNAME=hpp_translate.txt
 
+md ..\trans > nul 2>&1
 del /Q ..\trans\*.* > nul 2>&1
+
 
 set TRANS=hpp_t.txt
 
