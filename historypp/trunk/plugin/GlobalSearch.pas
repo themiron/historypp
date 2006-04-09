@@ -45,9 +45,10 @@ uses
   Contnrs, TntMenus;
 
 const
-  HM_EVENTDELETED = WM_APP + 100;
-  HM_CONTACTDELETED = WM_APP + 101;
+  HM_EVENTDELETED       = WM_APP + 100;
+  HM_CONTACTDELETED     = WM_APP + 101;
   HM_CONTACTICONCHANGED = WM_APP + 102;
+  HM_PRESHUTDOWN        = WM_APP + 103;
 
 type
   TContactInfo = class(TObject)
@@ -156,7 +157,8 @@ type
     LastUpdateTime: DWord;
     CloseAfterThreadFinish: Boolean;
     HotString: WideString;
-    hHookContactIconChanged, hHookContactDeleted, hHookEventDeleted: THandle;
+    hHookContactIconChanged, hHookContactDeleted, hHookEventDeleted,
+      hHookEventPreShutdown: THandle;
     FContactFilter: Integer;
     FFiltered: Boolean;
     IsSearching: Boolean;
@@ -180,6 +182,7 @@ type
     procedure DeleteEventFromLists(Item: Integer);
     procedure HMContactDeleted(var M: TMessage); message HM_CONTACTDELETED;
     procedure HMContactIconChanged(var M: TMessage); message HM_CONTACTICONCHANGED;
+    procedure HMPreShutdown(var M: TMessage); message HM_PRESHUTDOWN;
 
     procedure TranslateForm;
 
@@ -581,9 +584,9 @@ procedure TfmGlobalSearch.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
   try
-  Action := caFree;
-  SaveWindowPosition;
-  UnhookEvents;
+    Action := caFree;
+    SaveWindowPosition;
+    UnhookEvents;
   except
   end;
 end;
@@ -958,6 +961,7 @@ begin
   hHookEventDeleted := PluginLink.HookEventMessage(ME_DB_EVENT_DELETED,Self.Handle,HM_EVENTDELETED);
   hHookContactDeleted := PluginLink.HookEventMessage(ME_DB_CONTACT_DELETED,Self.Handle,HM_CONTACTDELETED);
   hHookContactIconChanged :=PluginLink.HookEventMessage(ME_CLIST_CONTACTICONCHANGED,Self.Handle,HM_CONTACTICONCHANGED);
+  hHookEventPreShutdown :=PluginLink.HookEventMessage(ME_SYSTEM_PRESHUTDOWN,Self.Handle,HM_PRESHUTDOWN);
 end;
 
 procedure TfmGlobalSearch.UnhookEvents;
@@ -965,6 +969,7 @@ begin
   PluginLink.UnhookEvent(hHookEventDeleted);
   PluginLink.UnhookEvent(hHookContactDeleted);
   PluginLink.UnhookEvent(hHookContactIconChanged);
+  PluginLink.UnhookEvent(hHookEventPreShutdown);
 end;
 
 procedure TfmGlobalSearch.FormShow(Sender: TObject);
@@ -1064,6 +1069,11 @@ if not FFiltered then exit;
 i := FindHistoryItemByHandle(m.LParam);
 if i <> -1 then
   DeleteEventFromLists(i);
+end;
+
+procedure TfmGlobalSearch.HMPreShutdown(var M: TMessage);
+begin
+  Close;
 end;
 
 procedure TfmGlobalSearch.hgKeyDown(Sender: TObject; var Key: Word;
