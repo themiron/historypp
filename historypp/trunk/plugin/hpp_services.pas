@@ -86,8 +86,7 @@ end;
 procedure CloseGlobalSearchWindow;
 begin
   if Assigned(fmGlobalSearch) then begin
-    fmGlobalSearch.Close;
-    //fmGlobalSearch.Free;
+    fmGlobalSearch.Free;
   end;
 end;
 
