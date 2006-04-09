@@ -839,7 +839,7 @@ finalization
     if UnhookIsKnownToFail then
       UnhookWindowsHookEx(NTGetMessageHook) // no Win32Check!
     else
-      Win32Check(UnhookWindowsHookEx(NTGetMessageHook));
+      UnhookWindowsHookEx(NTGetMessageHook); // no Win32Check!
   end;
   FreeAndNil(TntApplication);
 
