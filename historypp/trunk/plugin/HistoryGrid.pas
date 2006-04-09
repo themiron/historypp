@@ -3853,6 +3853,8 @@ begin
 end;
 
 destructor TGridOptions.Destroy;
+var
+  i: Integer;
 begin
   FFontContact.Free;
   FFontProfile.Free;
@@ -3862,6 +3864,9 @@ begin
   FIconMessage.Free;
   FIconFile.Free;
   FIconOther.Free;
+  for i := 0 to Length(FItemOptions) - 1 do begin
+    FItemOptions[i].textFont.Free;
+  end;
   SetLength(FItemOptions,0);
   SetLength(Grids,0);
   inherited;

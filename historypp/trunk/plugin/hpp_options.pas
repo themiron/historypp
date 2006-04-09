@@ -269,7 +269,7 @@ procedure LoadGridOptions;
   begin
     Result := GetDBInt(hppDBName,PChar('Color'+intToStr(Order)),ColorToRGB(hppFontItems[Order].back));
   end;
-  function LoadFont(Order: integer): TFont;
+  procedure LoadFont(Order: integer; F: TFont);
   const
     size: integer = -11;
   var
@@ -278,21 +278,20 @@ procedure LoadGridOptions;
     col: TColor;
     fs: TFontStyles;
   begin
-    Result := TFont.Create;
     if FontServiceEnabled then begin
       fid.cbSize := sizeof(fid);
       fid.group := hppName;
       lstrcpy(fid.name,Translate(hppFontItems[Order].name));
       col := PluginLink.CallService(MS_FONT_GET,integer(@fid),integer(@lf));
-      Result.Handle := CreateFontIndirect(lf);
-      Result.Color := col;
+      F.Handle := CreateFontIndirect(lf);
+      F.Color := col;
     end else begin
-      Result.Name := 'Tahoma';
-      Result.Height := size;
+      F.Name := 'Tahoma';
+      F.Height := size;
       fs := [];
       if (hppFontItems[Order].style and DBFONTF_BOLD) > 0 then include(fs,fsBold);
-      Result.Style := fs;
-      Result.Color := hppFontItems[Order].color;
+      F.Style := fs;
+      F.Color := hppFontItems[Order].color;
     end;
   end;
 var
@@ -301,9 +300,9 @@ begin
   GridOptions.StartChange;
   try
     // load fonts
-  GridOptions.FontContact.Assign(LoadFont(0));
-  GridOptions.FontProfile.Assign(LoadFont(1));
-  GridOptions.FontTimestamp.Assign(LoadFont(2));
+  LoadFont(0,GridOptions.FontContact);
+  LoadFont(1,GridOptions.FontProfile);
+  LoadFont(2,GridOptions.FontTimestamp);
   // load colors
   GridOptions.ColorDivider := LoadColorDB(0);
   GridOptions.ColorSelectedText := LoadColorDB(1);
@@ -312,7 +311,7 @@ begin
   for i :=  3 to High(hppFontItems) do begin
     if (i-3) > High(GridOptions.ItemOptions) then GridOptions.AddItemOptions;
     GridOptions.ItemOptions[i-3].MessageType := hppFontItems[i].Mes;
-    GridOptions.ItemOptions[i-3].textFont.Assign(LoadFont(i));
+    LoadFont(i,GridOptions.ItemOptions[i-3].textFont);
     GridOptions.ItemOptions[i-3].textColor := LoadColorDB(i);
   end;
   // load others
