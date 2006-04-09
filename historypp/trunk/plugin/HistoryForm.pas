@@ -55,8 +55,9 @@ uses
   ImgList, PasswordEditControl, TntStdCtrls, TntButtons, TntMenus;
 
 const
-  HM_EVENTADDED = WM_USER+10;
-  HM_EVENTDELETED = WM_APP + 100;
+  HM_EVENTADDED   = WM_APP + 100;
+  HM_EVENTDELETED = WM_APP + 101;
+  HM_PRESHUTDOWN  = WM_APP + 102;
 
 type
 
@@ -232,7 +233,7 @@ type
     StartTimestamp: DWord;
     EndTimestamp: DWord;
     FhContact: THandle;
-    hHookEventAdded,hHookEventDeleted: THandle;
+    hHookEventAdded,hHookEventDeleted,hHookEventPreShutdown: THandle;
     FPasswordMode: Boolean;
     UserCodepage: Cardinal;
     SavedLinkUrl: String;
@@ -245,6 +246,7 @@ type
 
     procedure HMEventAdded(var Message: TMessage); message HM_EVENTADDED;
     procedure HMEventDeleted(var Message: TMessage); message HM_EVENTDELETED;
+    procedure HMPreShutdown(var Message: TMessage); message HM_PRESHUTDOWN;
 
     procedure HookEvents;
     procedure UnhookEvents;
@@ -677,6 +679,11 @@ begin
     end;
 end;
 
+procedure THistoryFrm.HMPreShutdown(var Message: TMessage);
+begin
+  Close;
+end;
+
 {Unfortunatly when you make a form from a dll this form won't become the
 normal messages specified by the VCL but only the basic windows messages.
 Therefore neither tabs nor button shortcuts work on this form. As a workaround
@@ -777,20 +784,23 @@ procedure THistoryFrm.FormClose(Sender: TObject; var Action: TCloseAction);
   //h: hwnd;
 begin
   try
-  Action:=caFree;
-  if Assigned(WindowList) then begin
-    if WindowList.Count = 1 then begin
-      // we are the last left
-      if Assigned(PassCheckFm) then
-        FreeAndNil(PassCheckFm);
-      if Assigned(PassFm) then
-        FreeAndNil(PassFm);
-      end;
-    WindowList.Delete(WindowList.IndexOf(Self));
-    //Windows.ShowCaret(Handle);
-    //Windows.ShowCursor(True);
-  end;
-  SavePosition;
+    Action:=caFree;
+    if Assigned(WindowList) then begin
+      if WindowList.Count = 1 then begin
+        // we are the last left
+        if Assigned(PassCheckFm) then
+          FreeAndNil(PassCheckFm);
+        if Assigned(PassFm) then
+          FreeAndNil(PassFm);
+        end;
+      WindowList.Delete(WindowList.IndexOf(Self));
+      //Windows.ShowCaret(Handle);
+      //Windows.ShowCursor(True);
+    end;
+    SavePosition;
+    UnhookEvents;
+    SessThread.Free;
+    FindDialog.CloseDialog;
   except
   end;
 end;
@@ -868,11 +878,9 @@ procedure THistoryFrm.FormDestroy(Sender: TObject);
 begin
   // this is the only event fired when history is open
   // and miranda is closed
-  FindDialog.CloseDialog;
-  UnhookEvents;
+  // (except now I added ME_SYSTEM_PRESHUTDOWN hook, which should work)
   if Assigned(EventDetailFrom) then
     EventDetailFrom.Release;
-  SessThread.Free;
   Release;
 end;
 
@@ -901,12 +909,14 @@ procedure THistoryFrm.HookEvents;
 begin
   hHookEventAdded:=PluginLink.HookEventMessage(ME_DB_EVENT_ADDED,Self.Handle,HM_EVENTADDED);
   hHookEventDeleted := PluginLink.HookEventMessage(ME_DB_EVENT_DELETED,Self.Handle,HM_EVENTDELETED);
+  hHookEventPreShutdown := PluginLink.HookEventMessage(ME_SYSTEM_PRESHUTDOWN,Self.Handle,HM_PRESHUTDOWN);
 end;
 
 procedure THistoryFrm.UnhookEvents;
 begin
   PluginLink.UnhookEvent(hHookEventAdded);
   PluginLink.UnhookEvent(hHookEventDeleted);
+  PluginLink.UnhookEvent(hHookEventPreShutdown);
 end;
 
 procedure THistoryFrm.FormShow(Sender: TObject);
