@@ -253,7 +253,7 @@ type
     property Items[Index: Integer]: PRichItem read GetItem write SetItem; default;
   public
     constructor Create(AGrid: THistoryGrid); overload;
-    destructor Destroy;
+    destructor Destroy; override;
 
     procedure ResetAllItems;
     procedure ResetItems(GridItems: array of Integer);
