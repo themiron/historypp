@@ -30,6 +30,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 {$R 'hpp_res_ver.res' 'hpp_res_ver.rc'}
 
 uses
+  {$IFDEF EUREKALOG}
+  ExceptionLog,
+  {$ENDIF}
   Windows,
   SysUtils,
   Graphics,
