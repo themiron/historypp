@@ -155,7 +155,6 @@ type
   private
     WasReturnPressed: Boolean;
     LastUpdateTime: DWord;
-    CloseAfterThreadFinish: Boolean;
     HotString: WideString;
     hHookContactIconChanged, hHookContactDeleted, hHookEventDeleted,
       hHookEventPreShutdown: THandle;
@@ -283,7 +282,7 @@ begin
   // if change, change also in hg.State:
   sbt := WideFormat(TranslateWideW('%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.'),[Length(History)/1, ContactsFound, stime/1000, AllItems/1]);
   st.WaitFor;
-  st.Free;
+  FreeAndNil(st);
   IsSearching := False;
   paProgress.Hide;
   //paFilter.Show;
@@ -291,9 +290,6 @@ begin
   bnSearch.Enabled := True;
   if Length(History) = 0 then
     ShowContacts(False);
-  if CloseAfterThreadFinish then begin
-    Close;
-  end;
 end;
 
 procedure TfmGlobalSearch.SMItemsFound(var M: TMessage);
@@ -382,7 +378,6 @@ end;
 
 procedure TfmGlobalSearch.SMPrepare(var M: TMessage);
 begin
-  CloseAfterThreadFinish := False;
   LastUpdateTime := 0;
   ContactsFound := 0;
   AllItems := 0;
@@ -638,7 +633,7 @@ end;
 // takes index from *History* array as parameter
 procedure TfmGlobalSearch.DeleteEventFromLists(Item: Integer);
 var
-  DelIdx,i: Integer;
+  i: Integer;
   EventDeleted: Boolean;
 begin
   if Item = -1 then exit;
@@ -675,15 +670,12 @@ procedure TfmGlobalSearch.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 begin
   if IsSearching then begin
-    // put before Terminate;
-    CanClose := False;
-    CloseAfterThreadFinish := True;
     st.Terminate;
     laProgress.Caption := TranslateWideW('Please wait while closing the window...');
     laProgress.Font.Style := [fsBold];
     pb.Visible := False;
-    //Application.ProcessMessages;
-    //st.WaitFor;
+    while IsSearching do
+      Application.ProcessMessages;
     end;
 end;
 
@@ -696,8 +688,6 @@ begin
 end;
 
 procedure TfmGlobalSearch.hgItemDelete(Sender: TObject; Index: Integer);
-var
-  idx: Integer;
 begin
   if FFiltered then
     Index := FilterHistory[Index];
@@ -731,7 +721,6 @@ end;
 procedure TfmGlobalSearch.LoadWindowPosition;
 var
   n: Integer;
-  AdvancedOptions: Integer;
 begin
   if Utils_RestoreWindowPosition(Self.Handle,0,0,hppDBName,'GlobalSearchWindow.') <> 0 then begin
     Self.Left := (Screen.Width-Self.Width) div 2;
@@ -1098,7 +1087,6 @@ end;
 
 procedure TfmGlobalSearch.hgNameData(Sender: TObject; Index: Integer; var Name: WideString);
 var
-  Mes: WideString;
   si: TSearchItem;
 begin
  si := GetSearchItem(Index);
@@ -1312,12 +1300,10 @@ end;
 
 procedure TfmGlobalSearch.hgState(Sender: TObject; State: TGridState);
 var
-  Idle: Boolean;
   t: WideString;
 begin
   if csDestroying in ComponentState then
     exit;
-  Idle := (State <> gsDelete);
 
   case State of
     // if change, change also in SMFinished:
