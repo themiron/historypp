@@ -2,6 +2,30 @@
 
 rem #
 rem # Build debug build with Eureka Log information built-in
+rem # 
+rem # How to use in History++ svn:
+rem #  * Download and install Eureak Log trial from http://www.eurekalog.com/
+rem #  * When you turn Eureka Log on, it puts ExceptionLog unit first in
+rem #    the project's uses clause, but you need to put it in IFDEFs
+rem #    Make sure historypp.dpr uses STARTS with:
+rem #    {$IFDEF EUREKALOG}
+rem #    ExceptionLog,
+rem #    {$ENDIF}
+rem #  * Remove "Eureka Log VER" package from Installed Packages
+rem #  * Now you can open historypp project in dephi IDE without trial package 
+rem #    (and trial nag screen), to build historypp with eureka 
+rem #    log support, run this script
+rem #  
+rem #  Some notes:
+rem #    To change eureka log options, you can either edit historypp.eof or
+rem #    do it within IDE, but you'll need eureka's package installed.
+rem #    You can add package again to the list of Installed Packages and
+rem #    change options thorugh Project -> Eureka Log Options
+rem #    Make sure to press "Load options file", load historypp.eof
+rem #    After changing, save options to historypp.eof file. 
+rem #    You can disable package again after that.
+rem #    Make sure historypp.dpr uses clause is as peviously written 
+rem #    (ExceptionLog unit between ifdef's)
 rem #
 
 cd ..
