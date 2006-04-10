@@ -41,6 +41,8 @@ uses
   m_globaldefs,
   m_api,
   tntSystem,
+  Forms,
+  TntControls,
   hpp_global in 'hpp_global.pas',
   hpp_contacts in 'hpp_contacts.pas',
   hpp_database in 'hpp_database.pas',
@@ -315,6 +317,7 @@ begin
   FreeLibrary(GetModuleHandle('oleaut32.dll'));
 
   TntSystem.InstallTntSystemUpdates;
+  Forms.HintWindowClass := TntControls.TTntHintWindow;
 
   {$IFDEF REPORT_LEAKS}
   // TThemeServices leaks on exit, looks like it's ok
