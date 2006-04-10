@@ -35,42 +35,43 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, TntStdCtrls,
   HistoryGrid, HistoryForm,
+  TntForms,
   m_globaldefs, m_api, hpp_messages,
-  hpp_global, hpp_contacts, hpp_events, hpp_forms;
+  hpp_global, hpp_contacts, hpp_events, hpp_forms, TntExtCtrls;
 
 type
-  TEventDetailsFrm = class(TForm)
-    Panel2: TPanel;
-    Panel3: TPanel;
-    Panel4: TPanel;
-    Panel5: TPanel;
-    Panel6: TPanel;
-    GroupBox1: TGroupBox;
-    Label1: TLabel;
-    Label2: TLabel;
-    EMsgType: TEdit;
+  TEventDetailsFrm = class(TTntForm)
+    Panel2: TTntPanel;
+    Panel3: TTntPanel;
+    Panel4: TTntPanel;
+    Panel5: TTntPanel;
+    Panel6: TTntPanel;
+    GroupBox1: TTntGroupBox;
+    Label1: TTntLabel;
+    Label2: TTntLabel;
+    EMsgType: TTntEdit;
     EDateTime: TTntEdit;
-    PrevBtn: TButton;
-    NextBtn: TButton;
-    bnReply: TButton;
-    CloseBtn: TButton;
-    GroupBox4: TGroupBox;
+    PrevBtn: TTntButton;
+    NextBtn: TTntButton;
+    bnReply: TTntButton;
+    CloseBtn: TTntButton;
+    GroupBox4: TTntGroupBox;
     Panel1: TPanel;
     EText: TTntMemo;
-    Panel7: TPanel;
-    Panel8: TPanel;
-    GroupBox2: TGroupBox;
-    Label3: TLabel;
-    Label4: TLabel;
+    Panel7: TTntPanel;
+    Panel8: TTntPanel;
+    GroupBox2: TTntGroupBox;
+    Label3: TTntLabel;
+    Label4: TTntLabel;
     EFromNick: TTntEdit;
-    EFromUIN: TEdit;
-    EFromMore: TButton;
-    GroupBox3: TGroupBox;
-    Label5: TLabel;
-    Label6: TLabel;
+    EFromUIN: TTntEdit;
+    EFromMore: TTntButton;
+    GroupBox3: TTntGroupBox;
+    Label5: TTntLabel;
+    Label6: TTntLabel;
     EToNick: TTntEdit;
-    EToUIN: TEdit;
-    EToMore: TButton;
+    EToUIN: TTntEdit;
+    EToMore: TTntButton;
     procedure PrevBtnClick(Sender: TObject);
     procedure NextBtnClick(Sender: TObject);
     procedure EFromMoreClick(Sender: TObject);
@@ -250,30 +251,30 @@ procedure TEventDetailsFrm.SetItem(const Value: Integer);
 var
   FromContact,ToContact : boolean;
 
-  function GetMsgType(MesType: TMessageTypes; EventInfo: Word): string;
+  function GetMsgType(MesType: TMessageTypes; EventInfo: Word): WideString;
   begin
     if mtMessage in MesType then
-      Result := Translate('Message')
+      Result := TranslateWideW('Message')
     else if mtURL in MesType then
-      Result := Translate('URL')
+      Result := TranslateWideW('URL')
     else if mtFile in MesType then
-      Result := Translate('File Transfer')
+      Result := TranslateWideW('File Transfer')
     else if mtContacts in MesType then
-      Result := Translate('Contacts')
+      Result := TranslateWideW('Contacts')
     //else if mtAdded in MesType then
     //  Result := Translate('You Were Added Message')
     //else if mtAuthRequest in MesType then
     //  Result := Translate('Authorisation Request')
     else if mtSystem in MesType then
-      Result := Translate('System message')
+      Result := TranslateWideW('System message')
     else if mtSMS in MesType then
-      Result := Translate('SMS Message')
+      Result := TranslateWideW('SMS Message')
     else if mtWebPager in MesType then
-      Result := Translate('WebPager')
+      Result := TranslateWideW('WebPager')
     else if mtEmailExpress in MesType then
-      Result := Translate('EMail Express')
+      Result := TranslateWideW('EMail Express')
     else if mtOther in MesType then
-      Result := Translate('Other event')+' '+IntToStr(EventInfo);
+      Result := TranslateWideW('Other event')+' '+IntToStr(EventInfo);
   end;
 
 begin
@@ -295,9 +296,9 @@ begin
   EFromMore.Enabled := not FromContact;
   EToMore.Enabled := not ToContact;
   EFromNick.Text := GetContactDisplayName(FROMhContact,FParentForm.Protocol,FromContact);
-  EFromUIN.Text := GetContactID(FROMhContact,FParentForm.Protocol,FromContact);
+  EFromUIN.Text := AnsiToWideString(GetContactID(FROMhContact,FParentForm.Protocol,FromContact),ParentForm.UserCodepage);
   EToNick.Text := GetContactDisplayName(TOhContact,FParentForm.Protocol,ToContact);
-  EToUIN.Text := GetContactID(TOhContact,FParentForm.Protocol,ToContact);
+  EToUIN.Text := AnsiToWideString(GetContactID(TOhContact,FParentForm.Protocol,ToContact),ParentForm.UserCodepage);
   //EText.Lines.Clear
   EText.Lines.Text:=FParentForm.hg.Items[Item].Text;
   //EText.Lines.
@@ -335,23 +336,23 @@ end;
 
 procedure TEventDetailsFrm.TranslateForm;
 begin
-  Caption := Translate(PChar(Caption));
-  GroupBox1.Caption:=Translate(PChar(GroupBox1.Caption));
-  GroupBox2.Caption:=Translate(PChar(GroupBox2.Caption));
-  GroupBox3.Caption:=Translate(PChar(GroupBox3.Caption));
-  GroupBox4.Caption:=Translate(PChar(GroupBox4.Caption));
-  Label1.Caption:=Translate(PChar(Label1.Caption));
-  Label2.Caption:=Translate(PChar(Label2.Caption));
-  Label3.Caption:=Translate(PChar(Label3.Caption));
-  Label4.Caption:=Translate(PChar(Label4.Caption));
-  Label5.Caption:=Translate(PChar(Label5.Caption));
-  Label6.Caption:=Translate(PChar(Label6.Caption));
-  EFromMore.Caption:=Translate(PChar(EFromMore.Caption));
-  EToMore.Caption:=Translate(PChar(EToMore.Caption));
-  PrevBtn.Caption:=Translate(PChar(PrevBtn.Caption));
-  NextBtn.Caption:=Translate(PChar(NextBtn.Caption));
-  CloseBtn.Caption:=Translate(PChar(CloseBtn.Caption));
-  bnReply.Caption:=Translate(PChar(bnReply.Caption));
+  Caption := TranslateWideW(Caption);
+  GroupBox1.Caption:=TranslateWideW(GroupBox1.Caption);
+  GroupBox2.Caption:=TranslateWideW(GroupBox2.Caption);
+  GroupBox3.Caption:=TranslateWideW(GroupBox3.Caption);
+  GroupBox4.Caption:=TranslateWideW(GroupBox4.Caption);
+  Label1.Caption:=TranslateWideW(Label1.Caption);
+  Label2.Caption:=TranslateWideW(Label2.Caption);
+  Label3.Caption:=TranslateWideW(Label3.Caption);
+  Label4.Caption:=TranslateWideW(Label4.Caption);
+  Label5.Caption:=TranslateWideW(Label5.Caption);
+  Label6.Caption:=TranslateWideW(Label6.Caption);
+  EFromMore.Caption:=TranslateWideW(EFromMore.Caption);
+  EToMore.Caption:=TranslateWideW(EToMore.Caption);
+  PrevBtn.Caption:=TranslateWideW(PrevBtn.Caption);
+  NextBtn.Caption:=TranslateWideW(NextBtn.Caption);
+  CloseBtn.Caption:=TranslateWideW(CloseBtn.Caption);
+  bnReply.Caption:=TranslateWideW(bnReply.Caption);
 end;
 
 end.
