@@ -73,14 +73,15 @@ if errorlevel 1 goto builderr
 %UPXPATH% --force --best --crp-ms=999999 --nrv2d --no-backup --overlay=copy --compress-exports=0 --compress-resources=0 --strip-relocs=0 historypp.dll
 if errorlevel 1 goto upxerr
 
-move historypp.dll ..
+md ..\bin
+move historypp.dll ..\bin
 
-cd ..
+cd ..\bin
 
-%ZPATH% a -y -tzip -mx historypp-%VER%-bin.zip historypp.dll
+%ZPATH% a -y -tzip -mx ..\historypp-%VER%-bin.zip *
 if errorlevel 1 goto ziperr
 
-cd src
+cd ..\src
 rem # a bit of saftiness here
 if errorlevel 1 (
   echo Error! Can not change dirs
@@ -108,7 +109,7 @@ if errorlevel 1 goto ziperr
 
 cd ..
 rd /q/s src
-del historypp.dll
+rd /q/s bin
 
 goto end
 

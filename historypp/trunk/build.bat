@@ -6,12 +6,12 @@ set D8LIB=c:\program files\borland\bds\2.0\lib
 set D2005LIB=c:\program files\borland\bds\3.0\lib
 set D2006LIB=c:\program files\borland\bds\4.0\lib
 
-cd plugin
-
 brcc32 > nul 2>&1
 if errorlevel 2 goto nobcc
 dcc32 > nul 2>&1
 if errorlevel 1 goto nodcc
+
+cd plugin
 
 rem #
 rem # Get delphi compiler version
