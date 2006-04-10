@@ -155,7 +155,7 @@ end;
 // doesn't bug on MY SYSTEM!
 function GetContactRTLMode(hContact: THandle; Proto: String = ''): boolean;
 var
-  Temp: Word;
+  Temp: Byte;
 begin
   if Proto = '' then Proto := GetContactProto(hContact);
   if Proto = '' then
