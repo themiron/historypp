@@ -1941,10 +1941,9 @@ begin
   pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
 end;
 
+procedure THistoryFrm.hgProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
 var
   ItemRenderDetails: TItemRenderDetails;
-
-procedure THistoryFrm.hgProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
 begin
   ZeroMemory(@ItemRenderDetails,SizeOf(ItemRenderDetails));
   ItemRenderDetails.hContact := hContact;
