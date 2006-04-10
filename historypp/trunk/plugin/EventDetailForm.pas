@@ -115,12 +115,6 @@ implementation
 
 uses hpp_database;
 
-{$I m_database.inc}
-{$I m_langpack.inc}
-{$I m_clist.inc}
-{$I m_userinfo.inc}
-{$I m_icq.inc}
-
 {$R *.DFM}
 
 { TForm1 }
