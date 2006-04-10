@@ -13,7 +13,7 @@ rem #
 rem # Copy dirs
 xcopy /S /I plugin build\src\plugin
 xcopy /S /I inc build\src\inc
-rem FOR /D %%A IN (*) DO IF NOT "%%A"=="build" xcopy /S /I %%A build\src\%%A
+copy trans\hpp_translate.txt build\src
 rem # Copy files
 copy * build\src
 

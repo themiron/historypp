@@ -63,6 +63,14 @@ goto askproceed
 
 rd /q/s ..\build 2>nul
 
+echo:
+echo Preparing translation...
+echo:
+call make_translation.bat
+
+echo:
+echo Copying sources...
+echo:
 call copysrc.bat
 rem # we are now in cd ..
 
@@ -75,6 +83,7 @@ if errorlevel 1 goto upxerr
 
 md ..\bin
 move historypp.dll ..\bin
+copy hpp_translate.txt ..\bin
 
 cd ..\bin
 
