@@ -171,36 +171,19 @@ object EventDetailsFrm: TEventDetailsFrm
     BorderWidth = 4
     Caption = ' '
     TabOrder = 2
-    object GroupBox4: TTntGroupBox
+    object EText: TTntRichEdit
       Left = 4
       Top = 4
       Width = 450
       Height = 186
       Align = alClient
-      Caption = 'Content'
+      BiDiMode = bdLeftToRight
+      ParentBiDiMode = False
+      ReadOnly = True
+      ScrollBars = ssVertical
       TabOrder = 0
-      object Panel1: TPanel
-        Left = 2
-        Top = 15
-        Width = 446
-        Height = 169
-        Align = alClient
-        BevelOuter = bvNone
-        BorderWidth = 4
-        TabOrder = 0
-        object EText: TTntRichEdit
-          Left = 4
-          Top = 4
-          Width = 438
-          Height = 161
-          Align = alClient
-          BiDiMode = bdLeftToRight
-          ParentBiDiMode = False
-          ReadOnly = True
-          ScrollBars = ssVertical
-          TabOrder = 0
-        end
-      end
+      ExplicitWidth = 438
+      ExplicitHeight = 161
     end
   end
   object Panel5: TTntPanel

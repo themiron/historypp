@@ -56,9 +56,6 @@ type
     NextBtn: TTntButton;
     bnReply: TTntButton;
     CloseBtn: TTntButton;
-    GroupBox4: TTntGroupBox;
-    Panel1: TPanel;
-    EText: TTntRichEdit;
     Panel7: TTntPanel;
     Panel8: TTntPanel;
     GroupBox2: TTntGroupBox;
@@ -73,6 +70,7 @@ type
     EToNick: TTntEdit;
     EToUIN: TTntEdit;
     EToMore: TTntButton;
+    EText: TTntRichEdit;
     procedure PrevBtnClick(Sender: TObject);
     procedure NextBtnClick(Sender: TObject);
     procedure EFromMoreClick(Sender: TObject);
@@ -360,7 +358,6 @@ begin
   GroupBox1.Caption:=TranslateWideW(GroupBox1.Caption);
   GroupBox2.Caption:=TranslateWideW(GroupBox2.Caption);
   GroupBox3.Caption:=TranslateWideW(GroupBox3.Caption);
-  GroupBox4.Caption:=TranslateWideW(GroupBox4.Caption);
   Label1.Caption:=TranslateWideW(Label1.Caption);
   Label2.Caption:=TranslateWideW(Label2.Caption);
   Label3.Caption:=TranslateWideW(Label3.Caption);
