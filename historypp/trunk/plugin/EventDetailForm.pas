@@ -37,7 +37,8 @@ uses
   HistoryGrid, HistoryForm,
   TntForms,
   m_globaldefs, m_api, hpp_messages,
-  hpp_global, hpp_contacts, hpp_events, hpp_forms, TntExtCtrls;
+  hpp_global, hpp_contacts, hpp_events, hpp_forms, TntExtCtrls, ComCtrls,
+  TntComCtrls;
 
 type
   TEventDetailsFrm = class(TTntForm)
@@ -57,7 +58,7 @@ type
     CloseBtn: TTntButton;
     GroupBox4: TTntGroupBox;
     Panel1: TPanel;
-    EText: TTntMemo;
+    EText: TTntRichEdit;
     Panel7: TTntPanel;
     Panel8: TTntPanel;
     GroupBox2: TTntGroupBox;
@@ -97,6 +98,7 @@ type
     procedure LoadPosition;
     procedure SavePosition;
     procedure SetItem(const Value: Integer);
+    procedure ProcessRichEdit;
 
     procedure TranslateForm;
     { Private declarations }
@@ -113,7 +115,7 @@ var
 
 implementation
 
-uses hpp_database;
+uses hpp_database, hpp_services;
 
 {$R *.DFM}
 
@@ -132,6 +134,28 @@ end;
 procedure TEventDetailsFrm.PrevBtnClick(Sender: TObject);
 begin
 Item := Prev;
+end;
+
+procedure TEventDetailsFrm.ProcessRichEdit;
+var
+  ItemRenderDetails: TItemRenderDetails;
+begin
+  ZeroMemory(@ItemRenderDetails,SizeOf(ItemRenderDetails));
+  ItemRenderDetails.hContact := ParentForm.hContact;
+  ItemRenderDetails.hDBEvent := ParentForm.History[ParentForm.GridIndexToHistory(Item)];
+  ItemRenderDetails.pProto := PChar(ParentForm.hg.Items[Item].Proto);
+  ItemRenderDetails.pModule := PChar(ParentForm.hg.Items[Item].Module);
+  ItemRenderDetails.dwEventTime := ParentForm.hg.Items[Item].Time;
+  ItemRenderDetails.wEventType := ParentForm.hg.Items[Item].EventType;
+  ItemRenderDetails.IsEventSent := (mtOutgoing in ParentForm.hg.Items[Item].MessageType);
+  {TODO: Add flag for special event details form treatment?}
+  ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_INLINE;
+  if ParentForm.hContact = 0 then
+    ItemRenderDetails.bHistoryWindow := IRDHW_GLOBALHISTORY
+  else
+    ItemRenderDetails.bHistoryWindow := IRDHW_CONTACTHISTORY;
+
+  PluginLink.NotifyEventHooks(hHppRichEditItemProcess,EText.Handle,Integer(@ItemRenderDetails));
 end;
 
 procedure TEventDetailsFrm.NextBtnClick(Sender: TObject);
@@ -239,6 +263,7 @@ begin
   TranslateForm;
   Prev := -1;
   Next := -1;
+  SendMessage(EText.Handle,EM_SETMARGINS,EC_RIGHTMARGIN or EC_LEFTMARGIN,MakeLParam(3,3));
 end;
 
 procedure TEventDetailsFrm.SetItem(const Value: Integer);
@@ -311,6 +336,7 @@ begin
     EText.BiDiMode := bdLeftToRight;
   if FParentForm.hg.selected <> Item then
     FParentForm.hg.Selected := Item;
+  ProcessRichEdit;
 end;
 
 procedure TEventDetailsFrm.FormHide(Sender: TObject);
