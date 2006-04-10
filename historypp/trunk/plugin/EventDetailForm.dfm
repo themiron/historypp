@@ -104,7 +104,7 @@ object EventDetailsFrm: TEventDetailsFrm
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object Panel2: TPanel
+  object Panel2: TTntPanel
     Left = 0
     Top = 335
     Width = 458
@@ -113,7 +113,7 @@ object EventDetailsFrm: TEventDetailsFrm
     BevelOuter = bvNone
     Caption = ' '
     TabOrder = 3
-    object Panel3: TPanel
+    object Panel3: TTntPanel
       Left = 258
       Top = 0
       Width = 200
@@ -122,7 +122,7 @@ object EventDetailsFrm: TEventDetailsFrm
       BevelOuter = bvNone
       Caption = ' '
       TabOrder = 2
-      object bnReply: TButton
+      object bnReply: TTntButton
         Left = 16
         Top = 4
         Width = 96
@@ -131,7 +131,7 @@ object EventDetailsFrm: TEventDetailsFrm
         TabOrder = 0
         OnClick = bnReplyClick
       end
-      object CloseBtn: TButton
+      object CloseBtn: TTntButton
         Left = 118
         Top = 4
         Width = 75
@@ -142,7 +142,7 @@ object EventDetailsFrm: TEventDetailsFrm
         OnClick = CloseBtnClick
       end
     end
-    object PrevBtn: TButton
+    object PrevBtn: TTntButton
       Left = 8
       Top = 4
       Width = 35
@@ -151,7 +151,7 @@ object EventDetailsFrm: TEventDetailsFrm
       TabOrder = 0
       OnClick = PrevBtnClick
     end
-    object NextBtn: TButton
+    object NextBtn: TTntButton
       Left = 50
       Top = 4
       Width = 33
@@ -161,7 +161,7 @@ object EventDetailsFrm: TEventDetailsFrm
       OnClick = NextBtnClick
     end
   end
-  object Panel4: TPanel
+  object Panel4: TTntPanel
     Left = 0
     Top = 141
     Width = 458
@@ -171,7 +171,7 @@ object EventDetailsFrm: TEventDetailsFrm
     BorderWidth = 4
     Caption = ' '
     TabOrder = 2
-    object GroupBox4: TGroupBox
+    object GroupBox4: TTntGroupBox
       Left = 4
       Top = 4
       Width = 450
@@ -204,7 +204,7 @@ object EventDetailsFrm: TEventDetailsFrm
       end
     end
   end
-  object Panel5: TPanel
+  object Panel5: TTntPanel
     Left = 0
     Top = 69
     Width = 458
@@ -214,7 +214,7 @@ object EventDetailsFrm: TEventDetailsFrm
     BorderWidth = 2
     Caption = ' '
     TabOrder = 1
-    object Panel7: TPanel
+    object Panel7: TTntPanel
       Left = 2
       Top = 2
       Width = 227
@@ -223,7 +223,7 @@ object EventDetailsFrm: TEventDetailsFrm
       BevelOuter = bvNone
       BorderWidth = 2
       TabOrder = 0
-      object GroupBox2: TGroupBox
+      object GroupBox2: TTntGroupBox
         Left = 2
         Top = 2
         Width = 223
@@ -234,21 +234,21 @@ object EventDetailsFrm: TEventDetailsFrm
         DesignSize = (
           223
           64)
-        object Label3: TLabel
+        object Label3: TTntLabel
           Left = 8
           Top = 16
           Width = 25
           Height = 13
           Caption = 'Nick:'
         end
-        object Label4: TLabel
+        object Label4: TTntLabel
           Left = 8
           Top = 36
           Width = 14
           Height = 13
           Caption = 'ID:'
         end
-        object EFromUIN: TEdit
+        object EFromUIN: TTntEdit
           Left = 56
           Top = 36
           Width = 99
@@ -270,7 +270,7 @@ object EventDetailsFrm: TEventDetailsFrm
           ReadOnly = True
           TabOrder = 2
         end
-        object EFromMore: TButton
+        object EFromMore: TTntButton
           Left = 162
           Top = 32
           Width = 51
@@ -282,7 +282,7 @@ object EventDetailsFrm: TEventDetailsFrm
         end
       end
     end
-    object Panel8: TPanel
+    object Panel8: TTntPanel
       Left = 229
       Top = 2
       Width = 227
@@ -291,7 +291,7 @@ object EventDetailsFrm: TEventDetailsFrm
       BevelOuter = bvNone
       BorderWidth = 2
       TabOrder = 1
-      object GroupBox3: TGroupBox
+      object GroupBox3: TTntGroupBox
         Left = 2
         Top = 2
         Width = 223
@@ -302,14 +302,14 @@ object EventDetailsFrm: TEventDetailsFrm
         DesignSize = (
           223
           64)
-        object Label5: TLabel
+        object Label5: TTntLabel
           Left = 8
           Top = 16
           Width = 25
           Height = 13
           Caption = 'Nick:'
         end
-        object Label6: TLabel
+        object Label6: TTntLabel
           Left = 8
           Top = 36
           Width = 14
@@ -327,7 +327,7 @@ object EventDetailsFrm: TEventDetailsFrm
           ReadOnly = True
           TabOrder = 0
         end
-        object EToUIN: TEdit
+        object EToUIN: TTntEdit
           Left = 56
           Top = 36
           Width = 99
@@ -338,7 +338,7 @@ object EventDetailsFrm: TEventDetailsFrm
           ReadOnly = True
           TabOrder = 1
         end
-        object EToMore: TButton
+        object EToMore: TTntButton
           Left = 162
           Top = 32
           Width = 51
@@ -351,7 +351,7 @@ object EventDetailsFrm: TEventDetailsFrm
       end
     end
   end
-  object Panel6: TPanel
+  object Panel6: TTntPanel
     Left = 0
     Top = 0
     Width = 458
@@ -361,7 +361,7 @@ object EventDetailsFrm: TEventDetailsFrm
     BorderWidth = 4
     Caption = ' '
     TabOrder = 0
-    object GroupBox1: TGroupBox
+    object GroupBox1: TTntGroupBox
       Left = 4
       Top = 4
       Width = 450
@@ -372,21 +372,21 @@ object EventDetailsFrm: TEventDetailsFrm
       DesignSize = (
         450
         61)
-      object Label1: TLabel
+      object Label1: TTntLabel
         Left = 8
         Top = 16
         Width = 27
         Height = 13
         Caption = 'Type:'
       end
-      object Label2: TLabel
+      object Label2: TTntLabel
         Left = 8
         Top = 36
         Width = 54
         Height = 13
         Caption = 'Date/Time:'
       end
-      object EMsgType: TEdit
+      object EMsgType: TTntEdit
         Left = 80
         Top = 16
         Width = 361

@@ -235,7 +235,6 @@ type
     FhContact: THandle;
     hHookEventAdded,hHookEventDeleted,hHookEventPreShutdown: THandle;
     FPasswordMode: Boolean;
-    UserCodepage: Cardinal;
     SavedLinkUrl: String;
     ShowSessionsAfterPassword: Boolean;
 
@@ -260,6 +259,7 @@ type
     procedure LoadInOptions();
 
   public
+    UserCodepage: Cardinal;
     LastSearch: TLastSearch;
     HotString: WideString;
     LastHotIdx: Integer;
