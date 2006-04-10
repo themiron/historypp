@@ -2123,7 +2123,9 @@ begin
   // wParam - array of hDBEvent, lParam - array size
   PrevYearNode := nil;
   PrevMonthNode := nil;
+  //SetLength(Sessions,m.LParam);
   Sessions := PSessArray(m.WParam)^;
+  FreeMem(PSessArray(m.WParam));
   tvSess.Items.BeginUpdate;
   try
     for i := 0 to Length(Sessions) - 1 do begin
