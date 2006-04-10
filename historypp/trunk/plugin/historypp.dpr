@@ -37,6 +37,7 @@ uses
   SysUtils,
   Graphics,
   Classes,
+  {$IFDEF REPORT_LEAKS} Themes, {$ENDIF}
   m_globaldefs,
   m_api,
   tntSystem,
@@ -316,6 +317,9 @@ begin
   TntSystem.InstallTntSystemUpdates;
 
   {$IFDEF REPORT_LEAKS}
+  // TThemeServices leaks on exit, looks like it's ok
+  // to leave it leaking, just ignore the leak report
+  RegisterExpectedMemoryLeak(ThemeServices);
   ReportMemoryLeaksOnShutdown := True;
   {$ENDIF}
 end.
