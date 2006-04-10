@@ -30,11 +30,11 @@ rem #
 
 cd ..
 
-set D6LIB=c:\program files\borland\delphi6\lib
-set D7LIB=c:\program files\borland\delphi7\lib
-set D8LIB=c:\program files\borland\bds\2.0\lib
-set D2005LIB=c:\program files\borland\bds\3.0\lib
-set D2006LIB=c:\program files\borland\bds\4.0\lib
+set D6LIB=c:\program files\borland\delphi6\lib\debug;c:\program files\borland\delphi6\lib
+set D7LIB=c:\program files\borland\delphi7\lib\debug;c:\program files\borland\delphi7\lib
+set D8LIB=c:\program files\borland\bds\2.0\lib\debug;c:\program files\borland\bds\2.0\lib
+set D2005LIB=c:\program files\borland\bds\3.0\lib\debug;c:\program files\borland\bds\3.0\lib
+set D2006LIB=c:\program files\borland\bds\4.0\lib\debug;c:\program files\borland\bds\4.0\lib
 
 cd plugin
 
@@ -82,7 +82,6 @@ if %DVER%==7 set DELPHILIB=%D7LIB%
 if %DVER%==8 set DELPHILIB=%D8LIB%
 if %DVER%==2005 set DELPHILIB=%D2005LIB%
 if %DVER%==2006 set DELPHILIB=%D2006LIB%
-if not exist "%DELPHILIB%" set DELPHILIB=
 if "%DELPHILIB%"=="" goto nolib
 
 echo:
