@@ -1,5 +1,23 @@
 @echo off
 
+rem #
+rem # To find PHP bin, set your path to include php directory
+rem # or set PHP environment variable to PHP binary, like
+rem # SET PHP=C:\PHP\php.exe
+rem #
+
+set PHPBIN=%PHP%
+%PHPBIN% -h > nul 2>&1
+if not errorlevel 2 goto gotphp
+set PHPBIN=php
+%PHPBIN% -h > nul 2>&1
+if not errorlevel 2 goto gotphp
+set PHPBIN=\php\php
+%PHPBIN% -h > nul 2>&1
+if not errorlevel 2 goto gotphp
+goto nophp
+:gotphp
+
 set TRANSNAME=hpp_translate.txt
 
 md ..\trans > nul 2>&1
@@ -13,7 +31,7 @@ call change_vars.bat r+ trans_header.txt ..\trans\hpp_t.txt
 echo Running PHP to grab all translations...
 
 FOR %%A IN (..\plugin\*.dfm) DO (
-  \php\php -q -d html_errors=false trans.php %%A
+  %PHPBIN% -q -d html_errors=false trans.php %%A
 )
 
 cd ..\plugin
@@ -70,6 +88,14 @@ echo Done!
 
 if exist ..\trans\*.trans-err.txt goto trans_have_errors
 
+goto end
+
+:nophp
+echo:
+echo ##
+echo ## Error! PHP binary not found!
+echo ##
+echo:
 goto end
 
 :trans_have_errors
