@@ -2009,7 +2009,7 @@ begin
       hppRTLDisable: Self.RTLDisabled2.Checked := true;
     end;
     for i := 0 to ANSICodepage1.Count-1 do
-      if ANSICodepage1.Items[i].Tag = UserCodepage then begin
+      if ANSICodepage1.Items[i].Tag = Integer(UserCodepage) then begin
         ANSICodepage1.Items[i].Checked := true;
         break;
       end;
