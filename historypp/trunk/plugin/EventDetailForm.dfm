@@ -188,14 +188,13 @@ object EventDetailsFrm: TEventDetailsFrm
         BevelOuter = bvNone
         BorderWidth = 4
         TabOrder = 0
-        object EText: TTntMemo
+        object EText: TTntRichEdit
           Left = 4
           Top = 4
           Width = 438
           Height = 161
           Align = alClient
           BiDiMode = bdLeftToRight
-          Color = clBtnFace
           ParentBiDiMode = False
           ReadOnly = True
           ScrollBars = ssVertical
