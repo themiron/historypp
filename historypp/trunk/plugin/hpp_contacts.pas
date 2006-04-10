@@ -161,7 +161,6 @@ begin
   if Proto = '' then
     Result := Application.UseRightToLeftScrollBar
   else begin
-    if hContact = 0 then
     Temp := GetDBByte(hContact,Proto,'RTL',255);
     If Temp = 255 then
       Temp := GetDBByte(0,Proto,'RTL',Byte(Application.UseRightToLeftScrollBar));
