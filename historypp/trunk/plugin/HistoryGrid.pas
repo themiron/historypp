@@ -341,6 +341,7 @@ type
 
     TopItemOffset: Integer;
     MaxSBPos: Integer;
+    function GetIdx(Index: Integer): Integer;
     // Item offset support
     //procedure SetScrollBar
     procedure ScrollGridBy(Offset: Integer; Update: Boolean = True);
@@ -431,7 +432,6 @@ type
     procedure SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; Caption: WideString);
     procedure SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: TSaveFormat);
     procedure SaveEnd(Stream: TFileStream; SaveFormat: TSaveFormat);
-    function GetIdx(Index: Integer): Integer;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -479,6 +479,7 @@ type
 
     procedure CalcAllHeight;
     function GetItemRTL(Item: Integer): Boolean;
+    procedure MakeTopmost(Item: Integer);
   published
     property MultiSelect: Boolean read FMultiSelect write SetMultiSelect;
 
@@ -2085,6 +2086,12 @@ procedure THistoryGrid.WMGetDlgCode(var Message: TWMGetDlgCode);
 begin
   inherited;
   Message.Result := DLGC_WANTARROWS;
+end;
+
+procedure THistoryGrid.MakeTopmost(Item: Integer);
+begin
+  if (Item < 0) or (Item >= Count) then exit;
+  SetSBPos(GetIdx(Item));  
 end;
 
 procedure THistoryGrid.MakeVisible(Item: Integer);

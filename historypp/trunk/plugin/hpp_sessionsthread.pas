@@ -41,8 +41,16 @@ uses
   hpp_global, m_api, hpp_events, TntSysUtils;
 
 type
+  TSess = record
+    hDBEventFirst: THandle;
+    TimestampFirst: DWord;
+    hDBEventLast: THandle;
+    TimestampLast: DWord;
+    ItemsCount: DWord;
+  end;
+
   PSessArray = ^TSessArray;
-  TSessArray = array of array[0..1] of DWord;
+  TSessArray = array of TSess;
 
   TSessionsThread = class(TThread)
   private
@@ -54,7 +62,7 @@ type
     SearchStart: Cardinal;
     FContact: THandle;
   protected
-    procedure SendItem(hDBEvent,Timestamp: DWord);
+    procedure SendItem(hDBEvent,Timestamp, LastEvent, LastTimestamp, Count: DWord);
     procedure SendBatch;
     procedure Execute; override;
 
@@ -110,12 +118,14 @@ end;
 procedure TSessionsThread.Execute;
 var
   Event: TDBEventInfo;
-  hDBEvent: THandle;
+  Count, LastTimestamp, FirstTimestamp: DWord;
+  FirstEvent, LastEvent, hDBEvent: THandle;
   PrevTime, CurTime: DWord;
 begin
   PrevTime := 0;
   SearchStart := GetTickCount;
   BufCount := 0;
+  Count := 0;
   FirstBatch := True;
   try
     DoMessage(SM_PREPARE,0,0);
@@ -128,16 +138,28 @@ begin
       CurTime := Event.timestamp;
       if PrevTime = 0 then begin
         PrevTime := CurTime;
-        SendItem(hDBEvent,PrevTime);
+        FirstEvent := hDBEvent;
+        FirstTimestamp := PrevTime;
+        LastEvent := hDBEvent;
+        LastTimestamp := PrevTime;
+        Inc(Count);
+        //SendItem(hDBEvent,PrevTime);
       end
       else begin
         if (CurTime - PrevTime) > SESSION_TIMEDIFF then begin
-          SendItem(hDBEvent,CurTime);
+          SendItem(FirstEvent,FirstTimestamp,LastEvent,LastTimestamp,Count);
+          FirstEvent := hDBEvent;
+          FirstTimestamp := CurTime;
+          Count := 0;
         end;
+        LastEvent := hDBEvent;
+        LastTimestamp := CurTime;
+        Inc(Count);
         PrevTime := CurTime;
       end;
       hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBEvent,0);
     end;
+    SendItem(FirstEvent,FirstTimestamp,LastEvent,LastTimestamp,Count);
     SendBatch;
   finally
     FSearchTime := GetTickCount - SearchStart;
@@ -148,7 +170,7 @@ begin
  end;
 
 
-procedure TSessionsThread.SendItem(hDBEvent,Timestamp: DWord);
+procedure TSessionsThread.SendItem(hDBEvent,Timestamp, LastEvent, LastTimestamp, Count: DWord);
 //var
 //  CurBuf: Integer;
 begin
@@ -161,9 +183,12 @@ begin
   //Buffer[BufCount-1] := hDBEvent;
   SetLength(Buffer,Length(Buffer)+1);
 //  Timestamp := PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOLOCAL,Timestamp,0);
-  Buffer[High(Buffer)][0] := hDBevent;
-  Buffer[High(Buffer)][1] := Timestamp;
   BufCount := Length(Buffer);
+  Buffer[BufCount-1].hDBEventFirst := hDBevent;
+  Buffer[BufCount-1].TimestampFirst := Timestamp;
+  Buffer[BufCount-1].hDBEventLast := LastEvent;
+  Buffer[BufCount-1].TimestampLast := LastTimestamp;
+  Buffer[BufCount-1].ItemsCount := Count;
   //if BufCount = CurBuf then begin
   //  SendBatch;
   //  end;
