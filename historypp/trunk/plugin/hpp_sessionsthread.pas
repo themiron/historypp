@@ -50,8 +50,8 @@ type
     BufCount: Integer;
     FirstBatch: Boolean;
     FParentHandle: THandle;
-    FSearchTime: Integer;
-    SearchStart: Integer;
+    FSearchTime: Cardinal;
+    SearchStart: Cardinal;
     FContact: THandle;
   protected
     procedure SendItem(hDBEvent,Timestamp: DWord);
@@ -67,7 +67,7 @@ type
     destructor Destroy; override;
 
     property Contact: THandle read FContact write FContact;
-    property SearchTime: Integer read FSearchTime;
+    property SearchTime: Cardinal read FSearchTime;
     property ParentHandle: THandle read FParentHandle write FParentHandle;
 
     property Terminated;
@@ -109,17 +109,12 @@ end;
 
 procedure TSessionsThread.Execute;
 var
-  BlobSize:Integer;
   Event: TDBEventInfo;
   hDBEvent: THandle;
-  Conv: Integer;
-  FirstTime,PrevTime, CurTime: DWord;
-  tick: DWord;
+  PrevTime, CurTime: DWord;
 begin
   PrevTime := 0;
   SearchStart := GetTickCount;
-  Conv := 0;
-  tick := GetTickCount;
   BufCount := 0;
   FirstBatch := True;
   try
@@ -133,7 +128,6 @@ begin
       CurTime := Event.timestamp;
       if PrevTime = 0 then begin
         PrevTime := CurTime;
-        FirstTime := CurTime;
         SendItem(hDBEvent,PrevTime);
       end
       else begin

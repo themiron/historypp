@@ -74,6 +74,7 @@ function EventDeletedHelper(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
 begin
   if Assigned(BookmarkServer) then
     BookmarkServer.EventDeleted(wParam,lParam);
+  Result := 0;
 end;
 
 function EventAddedHelper(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
@@ -81,13 +82,14 @@ function EventAddedHelper(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
 begin
   if Assigned(BookmarkServer) then
     BookmarkServer.EventAdded(wParam,lParam);
+  Result := 0;
 end;
 
 { TBookmarkServer }
 
 function TBookmarkServer.AddBookmark(hContact, hDBEvent: THandle): Integer;
 begin
-  ;
+  Result := 0;
 end;
 
 constructor TBookmarkServer.Create;

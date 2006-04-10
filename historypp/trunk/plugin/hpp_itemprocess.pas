@@ -291,6 +291,7 @@ begin
   mrei.disableredraw := Integer(True);
   res := PluginLink.CallService(MATH_RTF_REPLACE_FORMULAE,0,DWord(@mrei));
   res := 0;
+  Result := 0;
 end;
 
 {$IFDEF DISABLED}
