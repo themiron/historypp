@@ -150,6 +150,9 @@ type
     ContactRTLmode1: TTntMenuItem;
     ANSICodepage1: TTntMenuItem;
     Options1: TTntMenuItem;
+    procedure tvSessMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure tvSessClick(Sender: TObject);
     procedure sbCloseSessClick(Sender: TObject);
     procedure hgItemFilter(Sender: TObject; Index: Integer; var Show: Boolean);
     procedure tvSessChange(Sender: TObject; Node: TTreeNode);
@@ -284,6 +287,7 @@ type
     procedure OpenPassword;
 
     procedure SMItemsFound(var M: TMessage); message SM_ITEMSFOUND;
+    procedure SMFinished(var M: TMessage); message SM_FINISHED;
     procedure ShowSessions(Show: Boolean);
   protected
     procedure LoadPendingHeaders(rowidx: integer; count: integer);
@@ -799,8 +803,9 @@ begin
     end;
     SavePosition;
     UnhookEvents;
-    SessThread.Free;
     FindDialog.CloseDialog;
+    while SessThread <> nil do
+      Application.ProcessMessages;
   except
   end;
 end;
@@ -1765,6 +1770,12 @@ begin
 
 end;
 
+procedure THistoryFrm.SMFinished(var M: TMessage);
+begin
+  SessThread.Free;
+  SessThread := nil;
+end;
+
 procedure THistoryFrm.bnPassClick(Sender: TObject);
 begin
 if DigToBase(HashString(edPass.Text)) = GetPassword then
@@ -1884,8 +1895,43 @@ begin
 end;
 
 procedure THistoryFrm.tvSessChange(Sender: TObject; Node: TTreeNode);
+var
+  Index,i: Integer;
+  Event: THandle;
 begin
-  if Node = nil then begin
+  if SessThread <> nil then exit;
+  if Node = nil then exit;
+  if Node.Level <> 2 then begin
+    Node := Node.getFirstChild;
+    if (Node <> nil) and (Node.Level <> 2) then
+      Node := Node.getFirstChild;
+    if Node = nil then exit;
+  end;
+
+  Event := Sessions[DWord(Node.Data)].hDBEventFirst;
+  Index := -1;
+  // looks like history starts to load from end?
+  // well, of course, we load from the last event!
+  for i := Length(History) - 1 downto 0 do begin
+    if History[i] = 0 then
+      LoadPendingHeaders(i,HistoryLength);
+    if History[i] = Event then begin
+      Index := i;
+      break;
+    end;
+  end;
+  if Index = -1 then exit;
+  Index := HistoryIndexToGrid(Index);
+  hg.MakeTopmost(Index);
+  hg.Selected := Index;
+  exit;
+  // OXY: try to make selected item the topmost
+  //while hg.GetFirstVisible <> Index do begin
+  //  if hg.VertScrollBar.Position = hg.VertScrollBar.Range then break;
+  //  hg.VertScrollBar.Position := hg.VertScrollBar.Position + 1;
+  //end;
+
+  {if Node = nil then begin
     StartTimestamp := 0;
     EndTimestamp := 0;
     hg.UpdateFilter;
@@ -1899,7 +1945,48 @@ begin
   if DWord(Node.Data) <= Length(Sessions)-2 then begin
     EndTimestamp := Sessions[DWord(Node.Data)+1][1];
   end;
-  hg.UpdateFilter;
+  hg.UpdateFilter;}
+end;
+
+procedure THistoryFrm.tvSessClick(Sender: TObject);
+var
+  Node: TTntTreeNode;
+begin
+  Node := tvSess.Selected;
+  if Node = nil then exit;
+  //tvSessChange(Self,Node);
+end;
+
+procedure THistoryFrm.tvSessMouseMove(Sender: TObject; Shift: TShiftState; X,
+  Y: Integer);
+var
+  Node: TTntTreeNode;
+  count,time: DWord;
+begin
+  Node := tvSess.GetNodeAt(x,y);
+  if (Node = nil) or (Node.Level <> 2) then begin
+    Application.CancelHint;
+    tvSess.ShowHint := False;
+    exit;
+  end;
+  if tvSess.Tag <> Integer(Node.Data)+1 then begin
+    Application.CancelHint;
+    tvSess.ShowHint := False;
+    tvSess.Tag := Integer(Node.Data)+1; // +1 because we have tag = 0 by default, and it will not catch first session then
+    end;
+  //else
+  //  exit; // we are already showing the hint for this node
+
+  time := Sessions[DWord(Node.Data)].TimestampLast - Sessions[DWord(Node.Data)].TimestampFirst;
+  count := Sessions[DWord(Node.Data)].ItemsCount;
+  if count = 1 then
+    tvSess.Hint := WideFormat('%d message',[count, time/60])
+  else
+    tvSess.Hint := WideFormat(
+      'Conversation:'+#13#10+
+      '   '+'%d messages'+#13#10+
+      '   '+'%0.f minutes',[count,time/60]);
+  tvSess.ShowHint := True;
 end;
 
 procedure THistoryFrm.CopyText1Click(Sender: TObject);
@@ -2127,7 +2214,7 @@ begin
   tvSess.Items.BeginUpdate;
   try
     for i := 0 to Length(Sessions) - 1 do begin
-      ts := Sessions[i][1];
+      ts := Sessions[i].TimestampFirst;
       dt := TimestampToDateTime(ts);
       if (PrevYearNode = nil) or (DWord(PrevYearNode.Data) <> YearOf(dt)) then begin
         PrevYearNode := tvSess.Items.AddChild(nil,FormatDateTime('yyyy',dt));
@@ -2155,6 +2242,8 @@ begin
       PrevYearNode.Expand(False);
       PrevMonthNode.Expand(True);
     end;
+    if ti <> nil then
+      ti.Selected := True;
   finally
     tvSess.Items.EndUpdate;
   end;

@@ -6,8 +6,8 @@ object HistoryFrm: THistoryFrm
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
-  ClientHeight = 373
-  ClientWidth = 492
+  ClientHeight = 391
+  ClientWidth = 524
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -110,34 +110,39 @@ object HistoryFrm: THistoryFrm
   object paClient: TPanel
     Left = 0
     Top = 0
-    Width = 492
-    Height = 354
+    Width = 524
+    Height = 372
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 4
     TabOrder = 0
+    ExplicitWidth = 492
+    ExplicitHeight = 354
     object spSess: TTntSplitter
       Left = 160
       Top = 35
-      Height = 281
+      Height = 299
       AutoSnap = False
       MinSize = 100
+      ExplicitHeight = 281
     end
     object paGrid: TPanel
       Left = 163
       Top = 35
-      Width = 325
-      Height = 281
+      Width = 357
+      Height = 299
       Align = alClient
       BevelOuter = bvNone
       BorderStyle = bsSingle
       TabOrder = 0
       OnResize = paGridResize
+      ExplicitWidth = 325
+      ExplicitHeight = 281
       object hg: THistoryGrid
         Left = 0
         Top = 0
-        Width = 321
-        Height = 277
+        Width = 353
+        Height = 295
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         MultiSelect = True
@@ -175,6 +180,8 @@ object HistoryFrm: THistoryFrm
         Font.Name = 'MS Shell Dlg'
         Font.Style = []
         Padding = 4
+        ExplicitWidth = 321
+        ExplicitHeight = 277
       end
       object paPassword: TPanel
         Left = 20
@@ -331,13 +338,14 @@ object HistoryFrm: THistoryFrm
     object paTop: TPanel
       Left = 4
       Top = 4
-      Width = 484
+      Width = 516
       Height = 31
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 1
+      ExplicitWidth = 484
       DesignSize = (
-        484
+        516
         31)
       object laFilter: TTntLabel
         Left = 2
@@ -365,7 +373,7 @@ object HistoryFrm: THistoryFrm
           'Status Changes')
       end
       object cbSort: TTntComboBox
-        Left = 338
+        Left = 370
         Top = 3
         Width = 145
         Height = 21
@@ -377,19 +385,22 @@ object HistoryFrm: THistoryFrm
         Items.Strings = (
           'Recent at bottom'
           'Recent on top')
+        ExplicitLeft = 338
       end
     end
     object paBottom: TPanel
       Left = 4
-      Top = 316
-      Width = 484
+      Top = 334
+      Width = 516
       Height = 34
       Align = alBottom
       BevelOuter = bvNone
       Caption = ' '
       TabOrder = 2
+      ExplicitTop = 316
+      ExplicitWidth = 484
       object paClose: TPanel
-        Left = 329
+        Left = 361
         Top = 0
         Width = 155
         Height = 34
@@ -397,6 +408,7 @@ object HistoryFrm: THistoryFrm
         BevelOuter = bvNone
         Caption = ' '
         TabOrder = 3
+        ExplicitLeft = 329
         object bnClose: TTntButton
           Left = 80
           Top = 7
@@ -455,23 +467,31 @@ object HistoryFrm: THistoryFrm
       Left = 4
       Top = 35
       Width = 156
-      Height = 281
+      Height = 299
       Align = alLeft
       BevelOuter = bvLowered
       TabOrder = 3
+      ExplicitHeight = 281
       object tvSess: TTntTreeView
         Left = 1
         Top = 22
         Width = 154
-        Height = 258
+        Height = 276
+        Hint = 'Hello!'
         Align = alClient
         BevelInner = bvNone
         BorderStyle = bsNone
         Images = ilSessions
         Indent = 19
+        ParentShowHint = False
         ReadOnly = True
+        ShowHint = True
         TabOrder = 0
+        ToolTips = False
         OnChange = tvSessChange
+        OnClick = tvSessClick
+        OnMouseMove = tvSessMouseMove
+        ExplicitHeight = 258
       end
       object Panel1: TPanel
         Left = 1
@@ -512,11 +532,13 @@ object HistoryFrm: THistoryFrm
   end
   object sb: TTntStatusBar
     Left = 0
-    Top = 354
-    Width = 492
+    Top = 372
+    Width = 524
     Height = 19
     Panels = <>
     SimplePanel = True
+    ExplicitTop = 354
+    ExplicitWidth = 492
   end
   object SaveDialog: TSaveDialog
     FilterIndex = 0
