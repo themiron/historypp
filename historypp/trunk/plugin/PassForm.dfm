@@ -21,7 +21,7 @@ object fmPass: TfmPass
   OnKeyDown = FormKeyDown
   PixelsPerInch = 96
   TextHeight = 13
-  object Image1: TImage
+  object Image1: TTntImage
     Left = 10
     Top = 10
     Width = 32
@@ -120,7 +120,7 @@ object fmPass: TfmPass
       C0C0}
     Transparent = True
   end
-  object laPassState: TLabel
+  object laPassState: TTntLabel
     Left = 106
     Top = 254
     Width = 174
@@ -130,13 +130,13 @@ object fmPass: TfmPass
     Layout = tlCenter
     WordWrap = True
   end
-  object Bevel1: TBevel
+  object Bevel1: TTntBevel
     Left = 10
     Top = 291
     Width = 280
     Height = 2
   end
-  object Label1: TLabel
+  object Label1: TTntLabel
     Left = 50
     Top = 10
     Width = 102
@@ -149,7 +149,7 @@ object fmPass: TfmPass
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object rbProtAll: TRadioButton
+  object rbProtAll: TTntRadioButton
     Left = 10
     Top = 53
     Width = 280
@@ -160,7 +160,7 @@ object fmPass: TfmPass
     TabStop = True
     OnClick = rbProtSelClick
   end
-  object rbProtSel: TRadioButton
+  object rbProtSel: TTntRadioButton
     Left = 10
     Top = 73
     Width = 280
@@ -188,7 +188,7 @@ object fmPass: TfmPass
     TabOrder = 2
     ViewStyle = vsReport
   end
-  object bnPass: TButton
+  object bnPass: TTntButton
     Left = 10
     Top = 254
     Width = 89
@@ -197,7 +197,7 @@ object fmPass: TfmPass
     TabOrder = 3
     OnClick = bnPassClick
   end
-  object bnCancel: TButton
+  object bnCancel: TTntButton
     Left = 215
     Top = 299
     Width = 75
@@ -207,7 +207,7 @@ object fmPass: TfmPass
     TabOrder = 5
     OnClick = bnCancelClick
   end
-  object bnOK: TButton
+  object bnOK: TTntButton
     Left = 135
     Top = 299
     Width = 75
@@ -216,7 +216,7 @@ object fmPass: TfmPass
     TabOrder = 4
     OnClick = bnOKClick
   end
-  object PopupMenu1: TPopupMenu
+  object PopupMenu1: TTntPopupMenu
     Left = 186
     Top = 144
     object Refresh1: TMenuItem

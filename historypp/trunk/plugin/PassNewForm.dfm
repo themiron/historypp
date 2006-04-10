@@ -18,7 +18,7 @@ object fmPassNew: TfmPassNew
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
+  object Label1: TTntLabel
     Left = 52
     Top = 10
     Width = 243
@@ -32,21 +32,21 @@ object fmPassNew: TfmPassNew
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label2: TLabel
+  object Label2: TTntLabel
     Left = 10
     Top = 88
     Width = 49
     Height = 13
     Caption = 'Password:'
   end
-  object Label3: TLabel
+  object Label3: TTntLabel
     Left = 10
     Top = 113
     Width = 38
     Height = 13
     Caption = 'Confirm:'
   end
-  object Label4: TLabel
+  object Label4: TTntLabel
     Left = 10
     Top = 139
     Width = 297
@@ -55,7 +55,7 @@ object fmPassNew: TfmPassNew
     Caption = 'Leave this fields blank to disable password'
     WordWrap = True
   end
-  object Image1: TImage
+  object Image1: TTntImage
     Left = 10
     Top = 10
     Width = 32
@@ -154,7 +154,7 @@ object fmPassNew: TfmPassNew
       C0C0}
     Transparent = True
   end
-  object Label5: TLabel
+  object Label5: TTntLabel
     Left = 10
     Top = 50
     Width = 295
@@ -163,7 +163,7 @@ object fmPassNew: TfmPassNew
     Caption = 'Pay attention to CAPS LOCK button state'
     WordWrap = True
   end
-  object Bevel1: TBevel
+  object Bevel1: TTntBevel
     Left = 10
     Top = 162
     Width = 300
@@ -185,7 +185,7 @@ object fmPassNew: TfmPassNew
     MaxLength = 100
     TabOrder = 1
   end
-  object bnCancel: TButton
+  object bnCancel: TTntButton
     Left = 235
     Top = 171
     Width = 75
@@ -195,7 +195,7 @@ object fmPassNew: TfmPassNew
     TabOrder = 3
     OnClick = bnCancelClick
   end
-  object bnOK: TButton
+  object bnOK: TTntButton
     Left = 156
     Top = 171
     Width = 75

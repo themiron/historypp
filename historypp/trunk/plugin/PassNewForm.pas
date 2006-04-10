@@ -4,21 +4,22 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, m_GlobalDefs, m_api, PasswordEditControl, hpp_forms;
+  StdCtrls, ExtCtrls, m_GlobalDefs, m_api, PasswordEditControl, hpp_forms,
+  TntStdCtrls, TntExtCtrls, TntForms;
 
 type
-  TfmPassNew = class(TForm)
-    Label1: TLabel;
-    Label2: TLabel;
+  TfmPassNew = class(TTntForm)
+    Label1: TTntLabel;
+    Label2: TTntLabel;
     edPass: TPasswordEdit;
     edConf: TPasswordEdit;
-    Label3: TLabel;
-    bnCancel: TButton;
-    bnOK: TButton;
-    Label4: TLabel;
-    Image1: TImage;
-    Label5: TLabel;
-    Bevel1: TBevel;
+    Label3: TTntLabel;
+    bnCancel: TTntButton;
+    bnOK: TTntButton;
+    Label4: TTntLabel;
+    Image1: TTntImage;
+    Label5: TTntLabel;
+    Bevel1: TTntBevel;
     procedure bnCancelClick(Sender: TObject);
     procedure bnOKClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -34,7 +35,8 @@ var
 
 implementation
 
-{$I m_langpack.inc}
+uses hpp_global;
+
 {$R *.DFM}
 
 procedure TfmPassNew.bnCancelClick(Sender: TObject);
@@ -54,14 +56,14 @@ end;
 
 procedure TfmPassNew.TranslateForm;
 begin
-Caption := Translate(PChar(Caption));
-Label1.Caption := Translate(PChar(Label1.Caption));
-Label5.Caption := Translate(PChar(Label5.Caption));
-Label2.Caption := Translate(PChar(Label2.Caption));
-Label3.Caption := Translate(PChar(Label3.Caption));
-Label4.Caption := Translate(PChar(Label4.Caption));
-bnOK.Caption := Translate(PChar(bnOK.Caption));
-bnCancel.Caption := Translate(PChar(bnCancel.Caption));
+Caption := TranslateWideW(Caption);
+Label1.Caption := TranslateWideW(Label1.Caption);
+Label5.Caption := TranslateWideW(Label5.Caption);
+Label2.Caption := TranslateWideW(Label2.Caption);
+Label3.Caption := TranslateWideW(Label3.Caption);
+Label4.Caption := TranslateWideW(Label4.Caption);
+bnOK.Caption := TranslateWideW(bnOK.Caption);
+bnCancel.Caption := TranslateWideW(bnCancel.Caption);
 end;
 
 procedure TfmPassNew.FormCreate(Sender: TObject);

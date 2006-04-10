@@ -22,14 +22,14 @@ object fmPassCheck: TfmPassCheck
   OnKeyDown = FormKeyDown
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
+  object Label1: TTntLabel
     Left = 10
     Top = 92
     Width = 49
     Height = 13
     Caption = 'Password:'
   end
-  object Image1: TImage
+  object Image1: TTntImage
     Left = 10
     Top = 10
     Width = 32
@@ -128,7 +128,7 @@ object fmPassCheck: TfmPassCheck
       C0C0}
     Transparent = True
   end
-  object Label2: TLabel
+  object Label2: TTntLabel
     Left = 50
     Top = 10
     Width = 220
@@ -143,7 +143,7 @@ object fmPassCheck: TfmPassCheck
     ParentFont = False
     WordWrap = True
   end
-  object Label3: TLabel
+  object Label3: TTntLabel
     Left = 10
     Top = 46
     Width = 260
@@ -152,7 +152,7 @@ object fmPassCheck: TfmPassCheck
     Caption = 'To access Password Protection options you need to enter password'
     WordWrap = True
   end
-  object Bevel1: TBevel
+  object Bevel1: TTntBevel
     Left = 10
     Top = 124
     Width = 260
@@ -167,7 +167,7 @@ object fmPassCheck: TfmPassCheck
     TabOrder = 0
     OnKeyPress = edPassKeyPress
   end
-  object bnOK: TButton
+  object bnOK: TTntButton
     Left = 118
     Top = 134
     Width = 75
@@ -177,7 +177,7 @@ object fmPassCheck: TfmPassCheck
     TabOrder = 1
     OnClick = bnOKClick
   end
-  object bnCancel: TButton
+  object bnCancel: TTntButton
     Left = 196
     Top = 134
     Width = 75

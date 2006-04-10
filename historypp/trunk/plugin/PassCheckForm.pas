@@ -5,18 +5,18 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Checksum, ExtCtrls, m_GlobalDefs, m_api, hpp_forms,
-  PasswordEditControl;
+  PasswordEditControl, TntForms, TntStdCtrls, TntExtCtrls;
 
 type
-  TfmPassCheck = class(TForm)
-    Label1: TLabel;
+  TfmPassCheck = class(TTntForm)
+    Label1: TTntLabel;
     edPass: TPasswordEdit;
-    bnOK: TButton;
-    bnCancel: TButton;
-    Image1: TImage;
-    Label2: TLabel;
-    Label3: TLabel;
-    Bevel1: TBevel;
+    bnOK: TTntButton;
+    bnCancel: TTntButton;
+    Image1: TTntImage;
+    Label2: TTntLabel;
+    Label3: TTntLabel;
+    Bevel1: TTntBevel;
     procedure FormDestroy(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure bnOKClick(Sender: TObject);
@@ -37,9 +37,8 @@ var
 
 implementation
 
-uses hpp_options, PassForm;
+uses hpp_options, hpp_global, PassForm;
 
-{$I m_langpack.inc}
 {$R *.DFM}
 
 procedure TfmPassCheck.FormDestroy(Sender: TObject);
@@ -67,8 +66,8 @@ if CheckPassword(edPass.Text) then begin
   end
 else begin
   {DONE: sHure}
-  MessageBox(Handle, PChar(String(Translate('You have entered the wrong password.'))),
-  Translate('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
+  HppMessageBox(Handle, TranslateWideW('You have entered the wrong password.'),
+  TranslateWideW('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
   end;
 end;
 
@@ -109,12 +108,12 @@ end;
 
 procedure TfmPassCheck.TranslateForm;
 begin
-Caption := Translate(PChar(Caption));
-Label3.Caption := Translate(PChar(Label3.Caption));
-Label2.Caption := Translate(PChar(Label2.Caption));
-Label1.Caption := Translate(PChar(Label1.Caption));
-bnOK.Caption := Translate(PChar(bnOK.Caption));
-bnCancel.Caption := Translate(PChar(bnCancel.Caption));
+Caption := TranslateWideW(Caption);
+Label3.Caption := TranslateWideW(Label3.Caption);
+Label2.Caption := TranslateWideW(Label2.Caption);
+Label1.Caption := TranslateWideW(Label1.Caption);
+bnOK.Caption := TranslateWideW(bnOK.Caption);
+bnCancel.Caption := TranslateWideW(bnCancel.Caption);
 end;
 
 procedure TfmPassCheck.FormCreate(Sender: TObject);

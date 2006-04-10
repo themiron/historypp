@@ -6,22 +6,23 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ComCtrls, TntComCtrls, Menus, Checksum, ExtCtrls, StdCtrls,
   m_GlobalDefs, m_api,
-  hpp_global, hpp_contacts, hpp_database, hpp_forms;
+  hpp_global, hpp_contacts, hpp_database, hpp_forms,
+  TntForms, TntMenus, TntStdCtrls, TntExtCtrls;
 
 type
-  TfmPass = class(TForm)
-    Image1: TImage;
-    rbProtAll: TRadioButton;
-    rbProtSel: TRadioButton;
+  TfmPass = class(TTntForm)
+    Image1: TTntImage;
+    rbProtAll: TTntRadioButton;
+    rbProtSel: TTntRadioButton;
     lvCList: TTntListView;
-    bnPass: TButton;
-    laPassState: TLabel;
-    Bevel1: TBevel;
-    bnCancel: TButton;
-    bnOK: TButton;
-    PopupMenu1: TPopupMenu;
+    bnPass: TTntButton;
+    laPassState: TTntLabel;
+    Bevel1: TTntBevel;
+    bnCancel: TTntButton;
+    bnOK: TTntButton;
+    PopupMenu1: TTntPopupMenu;
     Refresh1: TMenuItem;
-    Label1: TLabel;
+    Label1: TTntLabel;
     procedure bnCancelClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure rbProtSelClick(Sender: TObject);
@@ -234,12 +235,12 @@ begin
 if Password = DigToBase(HashString('')) then begin
   // password not set
   laPassState.Font.Style := laPassState.Font.Style + [fsBold];
-  laPassState.Caption := Translate('Password not set');
+  laPassState.Caption := TranslateWideW('Password not set');
   end
 else begin
   // password set
   laPassState.ParentFont := True;
-  laPassState.Caption := Translate('Password set');
+  laPassState.Caption := TranslateWideW('Password set');
   end;
 end;
 
@@ -312,14 +313,14 @@ end;
 
 procedure TfmPass.TranslateForm;
 begin
-Caption := Translate(PChar(Caption));
-Label1.Caption := Translate(PChar(Label1.Caption));
-rbProtAll.Caption := Translate(PChar(rbProtAll.Caption));
-rbProtSel.Caption := Translate(PChar(rbProtSel.Caption));
-bnPass.Caption := Translate(PChar(bnPass.Caption));
-bnOK.Caption := Translate(PChar(bnOK.Caption));
-bnCancel.Caption := Translate(PChar(bnCancel.Caption));
-Refresh1.Caption := Translate(PChar(Refresh1.Caption));
+Caption := TranslateWideW(Caption);
+Label1.Caption := TranslateWideW(Label1.Caption);
+rbProtAll.Caption := TranslateWideW(rbProtAll.Caption);
+rbProtSel.Caption := TranslateWideW(rbProtSel.Caption);
+bnPass.Caption := TranslateWideW(bnPass.Caption);
+bnOK.Caption := TranslateWideW(bnOK.Caption);
+bnCancel.Caption := TranslateWideW(bnCancel.Caption);
+Refresh1.Caption := TranslateWideW(Refresh1.Caption);
 end;
 
 end.
