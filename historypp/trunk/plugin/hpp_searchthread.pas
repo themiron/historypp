@@ -67,8 +67,8 @@ type
     CurProgress: Integer;
     MaxProgress: Integer;
     FParentHandle: THandle;
-    FSearchTime: Integer;
-    SearchStart: Integer;
+    FSearchTime: Cardinal;
+    SearchStart: Cardinal;
     SearchWords: array of WideString;
     FSearchText: WideString;
     FSearchMethod: TSearchMethod;
@@ -98,7 +98,7 @@ type
     property SearchProtectedContacts: Boolean read FSearchProtected write FSearchProtected;
     property SearchText: WideString read FSearchText write FSearchText;
     property SearchMethod: TSearchMethod read FSearchMethod write FSearchMethod;
-    property SearchTime: Integer read FSearchTime;
+    property SearchTime: Cardinal read FSearchTime;
     property ParentHandle: THandle read FParentHandle write FParentHandle;
 
     property Terminated;
@@ -160,7 +160,6 @@ var
   procedure AddContact(Cont: THandle);
   var
     hDB: THandle;
-    Event: TDBEventInfo;
   begin
     SetLength(Contacts,Length(Contacts)+1);
     Contacts[High(Contacts)].hContact := Cont;
@@ -254,8 +253,6 @@ begin
 end;
 
 destructor TSearchThread.Destroy;
-var
-  i: Integer;
 begin
   SetLength(SearchWords,0);
   SetLength(Contacts,0);
@@ -269,8 +266,9 @@ end;
 
 procedure TSearchThread.Execute;
 var
+  {$IFNDEF SMARTSEARCH}
   hCont: THandle;
-  {$IFDEF SMARTSEARCH}
+  {$ELSE}
   i: Integer;
   {$ENDIF}
 begin
