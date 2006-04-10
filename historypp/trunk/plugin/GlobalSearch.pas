@@ -154,7 +154,7 @@ type
     procedure hgSelect(Sender: TObject; Item, OldItem: Integer);
   private
     WasReturnPressed: Boolean;
-    LastUpdateTime: DWord;
+    LastUpdateTime: Cardinal;
     HotString: WideString;
     hHookContactIconChanged, hHookContactDeleted, hHookEventDeleted,
       hHookEventPreShutdown: THandle;
@@ -559,7 +559,7 @@ end;
 
 function TfmGlobalSearch.FindContact(hContact: Integer): TContactInfo;
 begin
-
+  Result := nil;
 end;
 
 function TfmGlobalSearch.FindHistoryItemByHandle(hDBEvent: THandle): Integer;
@@ -759,7 +759,8 @@ end;
 procedure TfmGlobalSearch.lvContactsSelectItem(Sender: TObject; Item: TListItem;
   Selected: Boolean);
 var
-  i,hCont,Index: Integer;
+  hCont: Integer;
+  //i,Index: Integer;
 begin
   if not Selected then exit;
 
@@ -1276,8 +1277,8 @@ begin
 end;
 
 procedure TfmGlobalSearch.hgSelect(Sender: TObject; Item, OldItem: Integer);
-var
-  i,hCont,Index: Integer;
+{var
+  i,hCont,Index: Integer;}
 begin
 if hg.HotString = '' then begin
   hgState(hg,gsIdle);
