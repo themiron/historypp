@@ -1293,7 +1293,7 @@ end;
 procedure THistoryFrm.DeleteAll1Click(Sender: TObject);
 begin
   if Windows.MessageBox(Handle,
-    PChar(Format(Translate('Do you really want to delete ALL items (%.0n) for this contact?')+
+    PChar(Format(Translate('Do you really want to delete ALL items (%.0f) for this contact?')+
     #10#13+''+#10#13+Translate('Note: It can take several minutes for large history.'),
     [hg.Count/1])), Translate('Delete All'), MB_YESNO or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) = IDNO then exit;
 
