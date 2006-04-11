@@ -137,7 +137,6 @@ type
     N1: TTntMenuItem;
     OpeninNewWindow1: TTntMenuItem;
     Open1: TTntMenuItem;
-    UnderlineURLs1: TTntMenuItem;
     FindURLs1: TTntMenuItem;
     N11: TTntMenuItem;
     RTLEnabled1: TTntMenuItem;
@@ -220,7 +219,6 @@ type
     procedure RTLEnabled1Click(Sender: TObject);
     procedure SmileysEnabled1Click(Sender: TObject);
     procedure MathModuleEnabled1Click(Sender: TObject);
-    procedure UnderlineURLs1Click(Sender: TObject);
     procedure BBCodesEnabled1Click(Sender: TObject);
     procedure FindURLs1Click(Sender: TObject);
     procedure ContactRTLmode1Click(Sender: TObject);
@@ -2125,7 +2123,6 @@ begin
   BBCodesEnabled1.Checked := hg.Options.BBCodesEnabled;
   //MathModuleEnabled1.Enabled := MathModuleEnabled;
   //MathModuleEnabled1.Checked  := hg.Options.MathModuleEnabled;
-  UnderlineURLs1.Checked := hg.Options.UnderlineURLEnabled;
   FindURLs1.Checked := hg.Options.FindURLEnabled;
 end;
 
@@ -2300,16 +2297,6 @@ var
 begin
   val := not hg.Options.MathModuleEnabled;
   hg.Options.MathModuleEnabled := val;
-  SaveGridOptions;
-  //(Sender as TMenuItem).Checked := val;
-end;
-
-procedure THistoryFrm.UnderlineURLs1Click(Sender: TObject);
-var
-  val: boolean;
-begin
-  val := not hg.Options.UnderlineURLEnabled;
-  hg.Options.UnderlineURLEnabled := val;
   SaveGridOptions;
   //(Sender as TMenuItem).Checked := val;
 end;

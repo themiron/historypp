@@ -323,7 +323,6 @@ begin
   GridOptions.SmileysEnabled := GetDBBool(hppDBName,'Smileys',SmileyAddEnabled);
   GridOptions.BBCodesEnabled := GetDBBool(hppDBName,'BBCodes',True);
   GridOptions.MathModuleEnabled := GetDBBool(hppDBName,'MathModule',MathModuleEnabled);
-  GridOptions.UnderlineURLEnabled := GetDBBool(hppDBName,'UnderlineURL',True);
   GridOptions.FindURLEnabled := GetDBBool(hppDBName,'FindURL',True);
   finally
   GridOptions.EndChange;
