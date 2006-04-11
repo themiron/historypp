@@ -213,7 +213,8 @@ type
     procedure hgProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
     procedure hgSearchItem(Sender: TObject; Item, ID: Integer; var Found: Boolean);
     procedure hgKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure AddMenu(M: TMenuItem; FromM,ToM: TPopupMenu; Index: integer);
+    //procedure AddMenu(M: TMenuItem; FromM,ToM: TPopupMenu; Index: integer);
+    procedure AddMenuArray(Menu: TPopupMenu; List: Array of TMenuItem; Index: integer);
     procedure pmPopup(Sender: TObject);
     procedure IconsEnabled1Click(Sender: TObject);
     procedure RTLEnabled1Click(Sender: TObject);
@@ -603,8 +604,8 @@ begin
   cbFilter.ItemIndex := 0;
   RecentFormat := sfHtml;
   hg.InlineRichEdit.PopupMenu := pmGridInline;
-  for i := 0 to pmOptions.Items.Count-1 do
-    pmOptions.Items.Remove(pmOptions.Items[0]);
+  //for i := 0 to pmOptions.Items.Count-1 do
+  //  pmOptions.Items.Remove(pmOptions.Items[0]);
   ShowSessions(False);
 end;
 
@@ -714,10 +715,15 @@ var
   //t,stext: String;
   //res: Integer;
 begin
+  if (key = VK_F4) and (Shift=[]) then begin
+    ShowSessions(not paSess.Visible);
+    key := 0;
+    end;
+
   if (key = VK_F3) and ((Shift=[]) or (Shift=[ssShift])) and (not PasswordMode) then begin
     SearchNext(ssShift in Shift,True);
     key := 0;
-    end;
+  end;
 
   if (ssAlt in Shift) then
     begin
@@ -996,9 +1002,10 @@ begin
         end;
       end;
     }
-    AddMenu(Options1,pmAdd,pmGrid,-1);
-    AddMenu(ANSICodepage1,pmAdd,pmGrid,-1);
-    AddMenu(ContactRTLmode1,pmAdd,pmGrid,-1);
+    //AddMenu(Options1,pmAdd,pmGrid,-1);
+    //AddMenu(ANSICodepage1,pmAdd,pmGrid,-1);
+    //AddMenu(ContactRTLmode1,pmAdd,pmGrid,-1);
+    AddMenuArray(pmGrid,[Options1,ANSICodepage1,ContactRTLmode1],-1);
     pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
   end;
 end;
@@ -1178,14 +1185,15 @@ end;
 
 procedure THistoryFrm.bbAdditClick(Sender: TObject);
 var
-p: TPoint;
+  p: TPoint;
 begin
   if hg.state <> gsIdle then exit;
   p := Point(0,bbAddit.Height);
   p := bbAddit.ClientToScreen(p);
-  AddMenu(Options1,pmGrid,pmAdd,0);
-  AddMenu(ANSICodepage1,pmGrid,pmAdd,1);
-  AddMenu(ContactRTLmode1,pmGrid,pmAdd,2);
+  //AddMenu(Options1,pmGrid,pmAdd,0);
+  //AddMenu(ANSICodepage1,pmGrid,pmAdd,1);
+  //AddMenu(ContactRTLmode1,pmGrid,pmAdd,2);
+  AddMenuArray(pmAdd,[Options1,ANSICodepage1,ContactRTLmode1],0);
   pmAdd.Popup(p.x,p.y);
 end;
 
@@ -2127,16 +2135,30 @@ begin
     UserCodepage := DBGetContactSettingWord(hContact,hppDBName,'CodePage',CP_ACP);}
 end;
 
-procedure THistoryFrm.AddMenu(M: TMenuItem; FromM,ToM: TPopupMenu; Index: integer);
-var
-  i: integer;
-  mi: TMenuItem;
+{procedure THistoryFrm.AddMenu(M: TMenuItem; FromM,ToM: TPopupMenu; Index: integer);
+//var
+//  i: integer;
+//  mi: TMenuItem;
 begin
   if ToM.FindItem(M.Handle,fkHandle) = nil then begin
     if FromM.FindItem(M.Handle,fkHandle) <> nil then
       FromM.Items.Remove(M);
     if Index = -1 then ToM.Items.Add(M)
                   else ToM.Items.Insert(Index,M);
+  end;
+end;}
+
+procedure THistoryFrm.AddMenuArray(Menu: TPopupMenu; List: Array of TMenuItem; Index: integer);
+var
+  i: integer;
+begin
+  for i := 0 to High(List) do begin
+    if List[i].Parent <> nil then begin
+      if List[i].GetParentMenu = Menu then continue;
+      List[i].Parent.Remove(List[i]);
+    end;
+    if Index = -1 then Menu.Items.Add(List[i])
+                  else Menu.Items.Insert(Index+i,List[i]);
   end;
 end;
 
