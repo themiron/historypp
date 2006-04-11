@@ -573,6 +573,7 @@ begin
   if hContact = 0 then Caption := AnsiToWideString(Translate('System History'),hppCodepage)
                   else Caption := WideFormat(Caption,[hg.ContactName]);
   hg.Allocate(Length(History));
+  bnConversation.Visible := not (hContact = 0);
 end;
 
 procedure THistoryFrm.FindDialogFind(Sender: TObject);
@@ -604,7 +605,6 @@ begin
   hg.InlineRichEdit.PopupMenu := pmGridInline;
   for i := 0 to pmOptions.Items.Count-1 do
     pmOptions.Items.Remove(pmOptions.Items[0]);
-  bnConversation.Visible := (hContact <> 0);
   ShowSessions(False);
 end;
 
