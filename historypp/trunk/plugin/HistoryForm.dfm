@@ -1,13 +1,13 @@
 object HistoryFrm: THistoryFrm
-  Left = 260
-  Top = 143
+  Left = 263
+  Top = 168
+  Width = 532
+  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
-  ClientHeight = 391
-  ClientWidth = 524
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -116,15 +116,12 @@ object HistoryFrm: THistoryFrm
     BevelOuter = bvNone
     BorderWidth = 4
     TabOrder = 0
-    ExplicitWidth = 492
-    ExplicitHeight = 354
     object spSess: TTntSplitter
       Left = 160
       Top = 35
       Height = 299
       AutoSnap = False
       MinSize = 100
-      ExplicitHeight = 281
     end
     object paGrid: TPanel
       Left = 163
@@ -136,8 +133,6 @@ object HistoryFrm: THistoryFrm
       BorderStyle = bsSingle
       TabOrder = 0
       OnResize = paGridResize
-      ExplicitWidth = 325
-      ExplicitHeight = 281
       object hg: THistoryGrid
         Left = 0
         Top = 0
@@ -180,8 +175,6 @@ object HistoryFrm: THistoryFrm
         Font.Name = 'MS Shell Dlg'
         Font.Style = []
         Padding = 4
-        ExplicitWidth = 321
-        ExplicitHeight = 277
       end
       object paPassword: TPanel
         Left = 20
@@ -343,7 +336,6 @@ object HistoryFrm: THistoryFrm
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitWidth = 484
       DesignSize = (
         516
         31)
@@ -385,7 +377,6 @@ object HistoryFrm: THistoryFrm
         Items.Strings = (
           'Recent at bottom'
           'Recent on top')
-        ExplicitLeft = 338
       end
     end
     object paBottom: TPanel
@@ -397,8 +388,6 @@ object HistoryFrm: THistoryFrm
       BevelOuter = bvNone
       Caption = ' '
       TabOrder = 2
-      ExplicitTop = 316
-      ExplicitWidth = 484
       object paClose: TPanel
         Left = 361
         Top = 0
@@ -408,7 +397,6 @@ object HistoryFrm: THistoryFrm
         BevelOuter = bvNone
         Caption = ' '
         TabOrder = 3
-        ExplicitLeft = 329
         object bnClose: TTntButton
           Left = 80
           Top = 7
@@ -471,7 +459,6 @@ object HistoryFrm: THistoryFrm
       Align = alLeft
       BevelOuter = bvLowered
       TabOrder = 3
-      ExplicitHeight = 281
       object tvSess: TTntTreeView
         Left = 1
         Top = 22
@@ -491,7 +478,6 @@ object HistoryFrm: THistoryFrm
         OnChange = tvSessChange
         OnClick = tvSessClick
         OnMouseMove = tvSessMouseMove
-        ExplicitHeight = 258
       end
       object Panel1: TPanel
         Left = 1
@@ -537,8 +523,6 @@ object HistoryFrm: THistoryFrm
     Height = 19
     Panels = <>
     SimplePanel = True
-    ExplicitTop = 354
-    ExplicitWidth = 492
   end
   object SaveDialog: TSaveDialog
     FilterIndex = 0
