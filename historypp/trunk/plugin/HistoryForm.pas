@@ -1083,7 +1083,7 @@ const
 
 procedure THistoryFrm.bnConversationClick(Sender: TObject);
 begin
-  if HistoryLength > 0 then ShowSessions(not paSess.Visible);
+  ShowSessions(not paSess.Visible);
 end;
 
 procedure THistoryFrm.hgDblClick(Sender: TObject);
@@ -1773,7 +1773,7 @@ end;
 
 procedure THistoryFrm.ShowSessions(Show: Boolean);
 begin
-  if (hContact = 0) or (HistoryLength = 0) then  Show := False;
+  if (hContact = 0) or (HistoryLength = 0) then Show := False;
 
   paSess.Visible := Show;
   spSess.Visible := Show;
