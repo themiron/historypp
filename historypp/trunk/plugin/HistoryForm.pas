@@ -588,6 +588,7 @@ var
   i: integer;
   mi: TMenuItem;
 begin
+  hg.ShowHeaders := True;
   Icon.ReleaseHandle;
   Icon.Handle := CopyIcon(hppIcons[0].handle);
   DesktopFont := True;
@@ -946,11 +947,19 @@ begin
 end;
 
 procedure THistoryFrm.hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
-//var
-  //hi: THistoryItem;
+var
+  PrevTimestamp: DWord;
 begin
   Item := GetItemData(GridIndexToHistory(Index));
   Item.Proto := Protocol;
+  if GridIndexToHistory(Index) = 0 then
+    Item.HasHeader := True
+  else begin
+    if History[GridIndexToHistory(Index)-1] = 0 then
+      LoadPendingHeaders(GridIndexToHistory(Index)-1,HistoryLength);
+    PrevTimestamp := GetEventTimestamp(History[GridIndexToHistory(Index)-1]);
+    Item.HasHeader := ((DWord(Item.Time) - PrevTimestamp) > SESSION_TIMEDIFF);
+  end;
 end;
 
 procedure THistoryFrm.hgTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
