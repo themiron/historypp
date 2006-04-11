@@ -574,7 +574,7 @@ begin
   if hContact = 0 then Caption := TranslateW('System History')
                   else Caption := WideFormat(Caption,[hg.ContactName]);
   hg.Allocate(Length(History));
-  bnConversation.Visible := not (hContact = 0);
+  bnConversation.Enabled := not (hContact = 0);
 end;
 
 procedure THistoryFrm.FindDialogFind(Sender: TObject);
@@ -1083,7 +1083,7 @@ const
 
 procedure THistoryFrm.bnConversationClick(Sender: TObject);
 begin
-  ShowSessions(not paSess.Visible);
+  if HistoryLength > 0 then ShowSessions(not paSess.Visible);
 end;
 
 procedure THistoryFrm.hgDblClick(Sender: TObject);
@@ -1773,7 +1773,7 @@ end;
 
 procedure THistoryFrm.ShowSessions(Show: Boolean);
 begin
-  if hContact = 0 then Show := False;
+  if (hContact = 0) or (HistoryLength = 0) then  Show := False;
 
   paSess.Visible := Show;
   spSess.Visible := Show;
