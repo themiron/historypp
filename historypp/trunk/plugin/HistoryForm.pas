@@ -571,7 +571,7 @@ begin
   UserCodepage := GetContactCodePage(hContact, Protocol);
   hg.RTLMode := GetContactRTLModeTRTL(hContact, Protocol);
 
-  if hContact = 0 then Caption := AnsiToWideString(Translate('System History'),hppCodepage)
+  if hContact = 0 then Caption := TranslateW('System History')
                   else Caption := WideFormat(Caption,[hg.ContactName]);
   hg.Allocate(Length(History));
   bnConversation.Visible := not (hContact = 0);
@@ -1970,6 +1970,7 @@ procedure THistoryFrm.tvSessMouseMove(Sender: TObject; Shift: TShiftState; X,
 var
   Node: TTntTreeNode;
   count,time: DWord;
+  t: WideString;
 begin
   Node := tvSess.GetNodeAt(x,y);
   if (Node = nil) or (Node.Level <> 2) then begin
@@ -1987,13 +1988,15 @@ begin
 
   time := Sessions[DWord(Node.Data)].TimestampLast - Sessions[DWord(Node.Data)].TimestampFirst;
   count := Sessions[DWord(Node.Data)].ItemsCount;
+
+  t := TranslateWideW('Conversation:')+#13+#10;
   if count = 1 then
-    tvSess.Hint := WideFormat('%d message',[count, time/60])
+    tvSess.Hint := t + WideFormat(
+      '   '+TranslateWideW('%d message'),[count])
   else
-    tvSess.Hint := WideFormat(
-      'Conversation:'+#13#10+
-      '   '+'%d messages'+#13#10+
-      '   '+'%0.f minutes',[count,time/60]);
+    tvSess.Hint := t + WideFormat(
+      '   '+TranslateWideW('%d messages')+#13#10+
+      '   '+TranslateWideW('%0.f minutes'),[count,time/60]);
   tvSess.ShowHint := True;
 end;
 
