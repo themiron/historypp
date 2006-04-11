@@ -604,7 +604,7 @@ begin
   hg.InlineRichEdit.PopupMenu := pmGridInline;
   for i := 0 to pmOptions.Items.Count-1 do
     pmOptions.Items.Remove(pmOptions.Items[0]);
-
+  bnConversation.Visible := (hContact <> 0);
   ShowSessions(False);
 end;
 
