@@ -1,13 +1,13 @@
 object HistoryFrm: THistoryFrm
   Left = 263
   Top = 168
-  Width = 532
-  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
+  ClientHeight = 391
+  ClientWidth = 524
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -464,7 +464,6 @@ object HistoryFrm: THistoryFrm
         Top = 22
         Width = 154
         Height = 276
-        Hint = 'Hello!'
         Align = alClient
         BevelInner = bvNone
         BorderStyle = bsNone
@@ -710,11 +709,6 @@ object HistoryFrm: THistoryFrm
         Caption = 'Find URLs in messages'
         Checked = True
         OnClick = FindURLs1Click
-      end
-      object UnderlineURLs1: TTntMenuItem
-        Caption = 'Underline URLs'
-        Checked = True
-        OnClick = UnderlineURLs1Click
       end
     end
     object ANSICodepage1: TTntMenuItem
