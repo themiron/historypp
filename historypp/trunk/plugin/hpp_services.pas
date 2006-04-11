@@ -60,11 +60,13 @@ uses
 // our own processing of RichEdit for all history windows
 function AllHistoryRichEditProcess(wParam{hRichEdit}, lParam{PItemRenderDetails}: DWord): Integer; cdecl;
 begin
-  if GridOptions.SmileysEnabled then
-    DoSupportSmileys(wParam,lParam);
 
+  // first bbcodes, then smileys, should fix freezes, when smile is inside bbcode
   if GridOptions.BBCodesEnabled then
     DoSupportBBCodes(wParam,lParam);
+
+  if GridOptions.SmileysEnabled then
+    DoSupportSmileys(wParam,lParam);
 
   if GridOptions.MathModuleEnabled then
     DoSupportMathModule(wParam,lParam);
