@@ -4234,9 +4234,12 @@ var
   Range: TFormatRange;
   str: String;
 begin
+  {$IFDEF DELPHI_7}
   Item.Bitmap.SetSize(Item.Rich.Width,Item.Height);
-  //  Items[i].Bitmap.Width := NewWidth;
-  // Item.Bitmap.Height := Item.Height;
+  {$ELSE}
+  Item.Bitmap.Width := Item.Rich.Width;
+  Item.Bitmap.Height := Item.Height;
+  {$ENDIF}
 
   //str := 'Painted bitmap ['+IntToStr(item.bitmap.Height)+'] for rich "'+Copy(Item.Rich.Text,1,15)+'"';
   //OutputDebugString(PChar(str));
