@@ -272,6 +272,7 @@ type
 
   THistoryGrid = class(TScrollingWinControl)
   private
+    SessHeaderHeight: Integer;
     CHeaderHeight, PHeaderheight: Integer;
     IsCanvasClean: Boolean;
     ProgressRect: TRect;
@@ -341,6 +342,8 @@ type
 
     TopItemOffset: Integer;
     MaxSBPos: Integer;
+    FShowHeaders: Boolean;
+    procedure SetShowHeaders(const Value: Boolean);
     function GetIdx(Index: Integer): Integer;
     // Item offset support
     //procedure SetScrollBar
@@ -410,6 +413,7 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
     property Canvas: TCanvas read FCanvas;
     procedure Paint;
+    procedure PaintHeader(Index: Integer; ItemRect: TRect);
     procedure PaintItem(Index: Integer; ItemRect: TRect);
     procedure DrawProgress;
     procedure DrawMessage(Text: String);
@@ -482,6 +486,8 @@ type
     procedure MakeTopmost(Item: Integer);
   published
     property MultiSelect: Boolean read FMultiSelect write SetMultiSelect;
+    property ShowHeaders: Boolean read FShowHeaders write SetShowHeaders;
+
 
     property TxtStartup: String read FTxtStartup write FTxtStartup;
     property TxtNoItems: String read FTxtNoItems write FTxtNoItems;
@@ -534,6 +540,9 @@ const
 procedure Register;
 
 implementation
+
+uses
+  hpp_options;
 
 const
   HtmlStop = [#0,#10,#13,'<','>',' '];
@@ -831,9 +840,14 @@ begin
     TextRect := Rect(0,SumHeight,cw,SumHeight+FItems[idx].Height);
     if DoRectsIntersect(ClipRect,TextRect) then begin
       Canvas.Brush.Color := Options.ColorDivider;
-      //InflateRect(TextRect,-(Padding div 2),0);
       Canvas.FillRect(TextRect);
-      TextRect := Rect(0,SumHeight,cw,SumHeight+FItems[idx].Height-1);
+      if (FItems[idx].HasHeader) and (ShowHeaders) then begin
+        TextRect := Rect(0,SumHeight,cw,SumHeight+SessHeaderHeight-1);
+        PaintHeader(idx,TextRect);
+        TextRect := Rect(0,SumHeight+SessHeaderHeight,cw,SumHeight+FItems[idx].Height-1);
+      end
+      else
+        TextRect := Rect(0,SumHeight,cw,SumHeight+FItems[idx].Height-1);
       PaintItem(idx,TextRect);
     end;
     Inc(SumHeight,FItems[idx].Height);
@@ -849,6 +863,46 @@ begin
     Canvas.Brush.Color := clWindow;
     Canvas.FillRect(Rect(0,SumHeight,ClientWidth,ClientHeight));
   end;
+end;
+
+procedure THistoryGrid.PaintHeader(Index: Integer; ItemRect: TRect);
+var
+  text: WideString;
+  RTL: Boolean;
+  IconOffset, IconTop: Integer;
+  //BackColor: TColor;
+  //TextFont: TFont;
+begin
+  RTL := GetItemRTL(Index);
+  //Options.GetItemOptions(FItems[Index].MessageType,textFont,BackColor);
+
+  if not (RTL = ((Canvas.TextFlags and ETO_RTLREADING) > 0)) then begin
+    if RTL then
+      Canvas.TextFlags := Canvas.TextFlags or ETO_RTLREADING
+    else
+      Canvas.TextFlags := Canvas.TextFlags and not ETO_RTLREADING;
+  end;
+
+  Canvas.Brush.Color := clWindow;
+  Canvas.FillRect(ItemRect);
+  InflateRect(ItemRect,-3,-3);
+
+  IconOffset := 0;
+  if hppIcons[2].Handle <> 0 then begin
+    IconTop := ((ItemRect.Bottom-ItemRect.Top-16) div 2);
+    IconOffset := 16 + 2;
+    if RTL then
+      DrawIconEx(Canvas.Handle,ItemRect.Right-16,ItemRect.Top + IconTop,
+        hppIcons[2].Handle,16,16,0,0,DI_NORMAL)
+    else
+      DrawIconEx(Canvas.Handle,ItemRect.Left,ItemRect.Top + IconTop,
+        hppIcons[2].Handle,16,16,0,0,DI_NORMAL);
+  end;
+
+  text := 'Conversation started at '+GetTime(Items[Index].Time);
+  Canvas.Font := Options.FontTimeStamp;
+  Inc(ItemRect.Left,IconOffset);
+  WideCanvasTextRect(Canvas,ItemRect,ItemRect.Left,ItemRect.Top,text);
 end;
 
 procedure THistoryGrid.SetContact(const Value: THandle);
@@ -1103,6 +1157,7 @@ end;
 procedure THistoryGrid.PaintItem(Index: Integer; ItemRect: TRect);
 var
   TimeStamp,HeaderName: WideString;
+  OrgRect: TRect;
   hh,IconOffset,NickOffset,TimeOffset: Integer;
   icon: TIcon;
   BackColor: TColor;
@@ -1120,6 +1175,8 @@ begin
   {$IFDEF DEBUG}
   OutputDebugString(PChar('Paint item '+intToStr(Index)+' to screen'));
   {$ENDIF}
+
+  OrgRect := ItemRect;
 
   Sel := IsSelected(Index);
   RTL := GetItemRTL(Index);
@@ -1254,9 +1311,9 @@ begin
   //SendMessage(FRich.Handle, EM_FORMATRANGE, 0,0);
 
   if Focused and (Index = Selected) then begin
-    InflateRect(ItemRect,Padding,Padding);
-    Dec(ItemRect.Top,hh);
-    DrawFocusRect(Canvas.Handle,ItemRect);
+    //InflateRect(ItemRect,Padding,Padding);
+    //Dec(ItemRect.Top,hh);
+    DrawFocusRect(Canvas.Handle,OrgRect);
   end;
 end;
 
@@ -1285,6 +1342,11 @@ begin
     FOnSelect(Self,Selected,OldSelected);
   Invalidate;
   Update;
+end;
+
+procedure THistoryGrid.SetShowHeaders(const Value: Boolean);
+begin
+  FShowHeaders := Value;
 end;
 
 procedure THistoryGrid.AddSelected(Index: Integer);
@@ -1770,6 +1832,8 @@ begin
   // text height
   // + HEADER_HEIGHT header
   Result := 1 + 2*Padding + h + hh;
+  if (FItems[Item].HasHeader) and (ShowHeaders) then
+    Inc(Result,SessHeaderHeight);
 end;
 
 procedure THistoryGrid.SetFilter(const Value: TMessageTypes);
@@ -3476,6 +3540,7 @@ begin
   // find heighest and don't forget about icons
   PHeaderHeight := Max(ph,th);
   CHeaderHeight := Max(ch,th);
+  SessHeaderHeight := th+1+3*2;
   if Options.ShowIcons then begin
     CHeaderHeight := Max(CHeaderHeight,16);
     PHeaderHeight := Max(PHeaderHeight,16);
@@ -3766,6 +3831,8 @@ begin
     hh := PHeaderHeight;
   Inc(Result.Top,hh+Padding);
   Dec(Result.Bottom,Padding+1);
+  if (Items[Item].HasHeader) and (ShowHeaders) then
+    Inc(Result.Top,SessHeaderHeight);
   IntersectRect(r,ClientRect,Result);
   Result := r;
 end;
