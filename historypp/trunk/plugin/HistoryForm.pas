@@ -137,8 +137,6 @@ type
     N1: TTntMenuItem;
     OpeninNewWindow1: TTntMenuItem;
     Open1: TTntMenuItem;
-    FindURLs1: TTntMenuItem;
-    N11: TTntMenuItem;
     RTLEnabled1: TTntMenuItem;
     N9: TTntMenuItem;
     MathModuleEnabled1: TTntMenuItem;
@@ -220,7 +218,6 @@ type
     procedure SmileysEnabled1Click(Sender: TObject);
     procedure MathModuleEnabled1Click(Sender: TObject);
     procedure BBCodesEnabled1Click(Sender: TObject);
-    procedure FindURLs1Click(Sender: TObject);
     procedure ContactRTLmode1Click(Sender: TObject);
     procedure SelectAllInlineClick(Sender: TObject);
     procedure CopyInlineClick(Sender: TObject);
@@ -586,11 +583,15 @@ var
   i: integer;
   mi: TMenuItem;
 begin
-  hg.ShowHeaders := True;
   Icon.ReleaseHandle;
   Icon.Handle := CopyIcon(hppIcons[0].handle);
+
   DesktopFont := True;
   MakeFontsParent(Self);
+
+  hg.ShowHeaders := True;
+  hg.Filter := filAll;
+
   for i := 0 to High(cpTable) do begin
     mi := NewItem(cpTable[i].name,0,false,true,nil,0,'cp'+intToStr(i));
     mi.Tag := cpTable[i].cp;
@@ -628,15 +629,6 @@ begin
     Self.Left := (Screen.Width-Self.Width) div 2;
     Self.Top := (Screen.Height - Self.Height) div 2;
   end;
-  if hContact = 0 then begin
-    cbFilter.ItemIndex := 0;
-    //paTop.Visible := False; // already set at Load proc
-  end else begin
-    filt := GetDBInt(hppDBName,'LastFilter',0);
-  // if filter is System then set to all
-    if filt >= cbFilter.Items.Count then filt := 0;
-    cbFilter.ItemIndex := filt;
-  end;
   cbSort.ItemIndex:=GetDBInt(hppDBName,'SortOrder',0);
   ShowSessionsAfterPassword := GetDBBool(hppDBName,'ShowSessions',False);
   paSess.Width := GetDBInt(hppDBName,'SessionsWidth',150);
@@ -646,8 +638,6 @@ procedure THistoryFrm.SavePosition;
 //save position and filter setting
 begin
   Utils_SaveWindowPosition(Self.Handle,0,hppDBName,'HistoryWindow.');
-  if hContact <> 0 then
-    WriteDBInt(hppDBName,'LastFilter',cbFilter.ItemIndex);
   WriteDBInt(hppDBName,'SortOrder',cbSort.ItemIndex);
   if (hContact <> 0) and (not PasswordMode) then begin
      WriteDBBool(hppDBName,'ShowSessions',paSess.Visible);
@@ -2123,7 +2113,6 @@ begin
   BBCodesEnabled1.Checked := hg.Options.BBCodesEnabled;
   //MathModuleEnabled1.Enabled := MathModuleEnabled;
   //MathModuleEnabled1.Checked  := hg.Options.MathModuleEnabled;
-  FindURLs1.Checked := hg.Options.FindURLEnabled;
 end;
 
 procedure THistoryFrm.SethContact(const Value: THandle);
@@ -2297,16 +2286,6 @@ var
 begin
   val := not hg.Options.MathModuleEnabled;
   hg.Options.MathModuleEnabled := val;
-  SaveGridOptions;
-  //(Sender as TMenuItem).Checked := val;
-end;
-
-procedure THistoryFrm.FindURLs1Click(Sender: TObject);
-var
-  val: boolean;
-begin
-  val := not hg.Options.FindURLEnabled;
-  hg.Options.FindURLEnabled := val;
   SaveGridOptions;
   //(Sender as TMenuItem).Checked := val;
 end;

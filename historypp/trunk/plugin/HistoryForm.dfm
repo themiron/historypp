@@ -702,14 +702,6 @@ object HistoryFrm: THistoryFrm
         Caption = 'Use RTL by default'
         OnClick = RTLEnabled1Click
       end
-      object N11: TTntMenuItem
-        Caption = '-'
-      end
-      object FindURLs1: TTntMenuItem
-        Caption = 'Find URLs in messages'
-        Checked = True
-        OnClick = FindURLs1Click
-      end
     end
     object ANSICodepage1: TTntMenuItem
       Caption = 'ANSI Encoding'
