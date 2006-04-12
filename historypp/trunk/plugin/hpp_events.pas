@@ -32,7 +32,7 @@ interface
 
 uses
   Windows, TntSystem, SysUtils, TntSysUtils, TntWideStrUtils,
-  m_globaldefs, m_api,
+  m_globaldefs, m_api,WideStrUtils, TntWindows,
   hpp_global, hpp_contacts;
 
 // Miranda timestamp to TDateTime
@@ -57,6 +57,9 @@ function GetEventTextForEmailExpress(EventInfo: TDBEventInfo; UseCP: Cardinal): 
 function GetEventTextForStatusChange(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
 function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
 
+// service routines
+function TextHasUrls(var Text: WideString): Boolean;
+procedure CleanupTextHasUrlsBuf;
 
 implementation
 
@@ -102,6 +105,50 @@ begin
   dbtts.szFormat := 'd s';
   PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOSTRING,timestamp,Integer(@dbtts));
   Result := strdatetime;
+end;
+
+var
+  find_buf: PWideChar = nil;
+  find_len: Integer = 0;
+
+// probably, we should run it more often, so buffer is not growing all the time
+procedure CleanupTextHasUrlsBuf;
+begin
+  FreeMem(find_buf,find_len*SizeOf(WideChar));
+  find_buf := nil;
+  find_len := 0;
+end;
+
+function TextHasUrls(var Text: WideString): Boolean;
+var
+  len: Integer;
+begin
+  // we are using Tnt_WStrPos because delphi's WStrPos even in Delphi2006 returns weird results
+  Result := False;
+  if Tnt_WStrPos(@Text[1],'://') = nil then exit;
+  len := Length(Text);
+  if len+1 > find_len then begin
+    ReallocMem(find_buf,(len+1)*SizeOf(WideChar));
+    find_len := len+1;
+  end;
+  Move(Text[1],find_buf^,(len+1)*SizeOf(WideChar));
+  Tnt_CharLowerBuffW(find_buf,len);
+  // note: we can make it one big OR clause, but it's more readable this way
+  // list strings in order of probability
+  Result := Tnt_WStrPos(find_buf, 'http://') <> nil;
+  if Result then exit;
+  Result := Tnt_WStrPos(find_buf, 'ftp://') <> nil;
+  if Result then exit;
+  Result := Tnt_WStrPos(find_buf, 'https://') <> nil;
+  if Result then exit;
+  Result := Tnt_WStrPos(find_buf, 'nntp://') <> nil;
+  if Result then exit;
+  Result := Tnt_WStrPos(find_buf, 'irc://') <> nil;
+  if Result then exit;
+  Result := Tnt_WStrPos(find_buf, 'news://') <> nil;
+  if Result then exit;
+  //Result := Tnt_WStrPos(find_buf, 'opera:') <> nil;
+  //if Result then exit;
 end;
 
 procedure ReadStringTillZero(Text: PChar; TextLength: LongWord; var Result: String; var Pos: LongWord);
@@ -350,27 +397,6 @@ begin
     Result := ICQEVENTTYPE_EMAILEXPRESS; exit; end;
 end;}
 
-function TextHasUrls(var Text: WideString): Boolean;
-begin
-  Result := False;
-  // note: we can make it one big OR clause, but it's more readable this way
-  // list strings in order of probability
-  Result := Pos('http://',WideLowerCase(Text)) <> 0;
-  if Result then exit;
-  Result := Pos('ftp://',WideLowerCase(Text)) <> 0;
-  if Result then exit;
-  Result := Pos('https://',WideLowerCase(Text)) <> 0;
-  if Result then exit;
-  Result := Pos('nntp://',WideLowerCase(Text)) <> 0;
-  if Result then exit;
-  Result := Pos('irc://',WideLowerCase(Text)) <> 0;
-  if Result then exit;
-  Result := Pos('opera:',WideLowerCase(Text)) <> 0;
-  if Result then exit;
-  Result := Pos('news:',WideLowerCase(Text)) <> 0;
-  if Result then exit;
-end;
-
 // reads event from hDbEvent handle
 // reads all THistoryItem fields
 // *EXCEPT* Proto field. Fill it manually, plz
@@ -432,4 +458,11 @@ begin
   end;
 end;
 
+
+initialization
+  // allocate some mem, so first ReadEvents would start faster
+  find_len := 150;
+  GetMem(find_buf,find_len*SizeOf(WideChar));
+finalization
+  CleanupTextHasUrlsBuf;
 end.

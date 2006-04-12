@@ -429,7 +429,6 @@ type
     procedure DoRButtonUp(X,Y: Integer; Keys: TMouseMoveKeys);
     procedure DoUrlMouseMove(Url: String);
     procedure DoProgress(Position,Max: Integer);
-    procedure DoFindURL(Item: Integer);
     function CalcItemHeight(Item: Integer): Integer;
     procedure ScrollBy(DeltaX, DeltaY: Integer);
     procedure DeleteItem(Item: Integer);
@@ -781,25 +780,11 @@ begin
   Invalidate;
 end;
 
-procedure THistoryGrid.DoFindURL(Item: Integer);
-var
-  mts: TMessageTypes;
-begin
-  mts := [mtUrl,mtUnknown];
-  if (Word(FItems[Item].MessageType) and Word(mts)) > 0 then exit;
-  if Pos('://',FItems[Item].Text) <> 0 then
-    if mtIncoming in FItems[Item].MessageType then
-      FItems[Item].MessageType := [mtUrl,mtIncoming]
-    else
-      FItems[Item].MessageType := [mtUrl,mtOutgoing];
-end;
-
 procedure THistoryGrid.LoadItem(Item: Integer; LoadHeight: Boolean = True);
 begin
   if isUnknown(Item) then
     if Assigned(FGetItemData) then
       OnItemData(Self,Item,FItems[Item]);
-  if Options.FindURLEnabled then DoFindURL(Item);
   if LoadHeight then
     if FItems[Item].Height = -1 then
       FItems[Item].Height := CalcItemHeight(Item);
