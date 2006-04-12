@@ -229,6 +229,7 @@ type
   TRichCache = class(TList)
   private
     LogX,LogY: Integer;
+    RichEventMasks: DWord;
     GridItems: array of Integer;
     Grid: THistoryGrid;
     FRichHeight: Integer;
@@ -4133,7 +4134,7 @@ begin
   // force to send the size:
   SendMessage(Item.Rich.Handle,EM_SETEVENTMASK, 0, ENM_REQUESTRESIZE);
   SendMessage(Item.Rich.Handle,EM_REQUESTRESIZE,0, 0);
-  SendMessage(Item.Rich.Handle,EM_SETEVENTMASK, 0, ENM_CHANGE or ENM_SELCHANGE or ENM_PROTECTED or ENM_LINK);
+  SendMessage(Item.Rich.Handle,EM_SETEVENTMASK, 0, RichEventMasks);
   {if FRichHeight = 0 then begin
     Item.Rich.Text := Item.Rich.Text + 'sasme/m,ds ad34!a9-1da'; // any junk here
     Grid.ApplyItemToRich(Item.GridItem,Item.Rich);
@@ -4162,6 +4163,9 @@ begin
   Grid := AGrid;
   // cache size:
   Count := 20;
+
+  RichEventMasks := EN_LINK;
+  //RichEventMasks := ENM_CHANGE or ENM_SELCHANGE or ENM_PROTECTED or ENM_LINK;
 
   for i := 0 to Count - 1 do begin
     New(RichItem);
@@ -4368,8 +4372,7 @@ begin
   for i := 0 to Count - 1 do begin
     Items[i].Rich.ParentWindow := Grid.Handle;
     //re_mask := Items[i].Rich.Perform(EM_GETEVENTMASK, 0, 0);
-    SendMessage(Items[i].Rich.Handle,EM_SETEVENTMASK, 0,
-      ENM_CHANGE or ENM_SELCHANGE or ENM_PROTECTED or ENM_LINK);
+    SendMessage(Items[i].Rich.Handle,EM_SETEVENTMASK, 0, RichEventMasks);
     //re_mask or ENM_LINK);
     //re_mask := Items[i].Rich.Perform(EM_GETEVENTMASK, 0, 0);
     Items[i].Rich.Perform(EM_AUTOURLDETECT, DWord(True), 0);
