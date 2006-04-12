@@ -122,10 +122,18 @@ end;
 function TextHasUrls(var Text: WideString): Boolean;
 var
   len: Integer;
+  HasProto, HasWWW: Boolean;
 begin
   // we are using Tnt_WStrPos because delphi's WStrPos even in Delphi2006 returns weird results
   Result := False;
-  if Tnt_WStrPos(@Text[1],'://') = nil then exit;
+  HasProto := Tnt_WStrPos(@Text[1],'://') <> nil;
+  HasWWW := Tnt_WStrPos(@Text[1],'www.') <> nil;
+  if (not HasProto) and (not HasWWW) then exit;
+  if HasWWW then begin
+    Result := True;
+    exit;
+  end;
+
   len := Length(Text);
   if len+1 > find_len then begin
     ReallocMem(find_buf,(len+1)*SizeOf(WideChar));
@@ -133,22 +141,25 @@ begin
   end;
   Move(Text[1],find_buf^,(len+1)*SizeOf(WideChar));
   Tnt_CharLowerBuffW(find_buf,len);
-  // note: we can make it one big OR clause, but it's more readable this way
-  // list strings in order of probability
-  Result := Tnt_WStrPos(find_buf, 'http://') <> nil;
-  if Result then exit;
-  Result := Tnt_WStrPos(find_buf, 'ftp://') <> nil;
-  if Result then exit;
-  Result := Tnt_WStrPos(find_buf, 'https://') <> nil;
-  if Result then exit;
-  Result := Tnt_WStrPos(find_buf, 'nntp://') <> nil;
-  if Result then exit;
-  Result := Tnt_WStrPos(find_buf, 'irc://') <> nil;
-  if Result then exit;
-  Result := Tnt_WStrPos(find_buf, 'news://') <> nil;
-  if Result then exit;
-  //Result := Tnt_WStrPos(find_buf, 'opera:') <> nil;
-  //if Result then exit;
+
+  if HasProto then begin
+    // note: we can make it one big OR clause, but it's more readable this way
+    // list strings in order of probability
+    Result := Tnt_WStrPos(find_buf, 'http://') <> nil;
+    if Result then exit;
+    Result := Tnt_WStrPos(find_buf, 'ftp://') <> nil;
+    if Result then exit;
+    Result := Tnt_WStrPos(find_buf, 'https://') <> nil;
+    if Result then exit;
+    Result := Tnt_WStrPos(find_buf, 'nntp://') <> nil;
+    if Result then exit;
+    Result := Tnt_WStrPos(find_buf, 'irc://') <> nil;
+    if Result then exit;
+    Result := Tnt_WStrPos(find_buf, 'news://') <> nil;
+    if Result then exit;
+    //Result := Tnt_WStrPos(find_buf, 'opera:') <> nil;
+    //if Result then exit;
+  end;
 end;
 
 procedure ReadStringTillZero(Text: PChar; TextLength: LongWord; var Result: String; var Pos: LongWord);
