@@ -357,6 +357,7 @@ type
     procedure WMKillFocus(var Message: TWMKillFocus); message WM_KILLFOCUS;
     procedure WMSysCommand(var Message: TWMSysCommand); message WM_SYSCOMMAND;
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
+    procedure WMSetCursor(var Message: TWMSetCursor); message WM_SETCURSOR;
     procedure WMMouseMove(var Message: TWMMouseMove); message WM_MOUSEMOVE;
     procedure WMRButtonUp(var Message: TWMRButtonDown); message WM_RBUTTONUP;
     procedure WMRButtonDown(var Message: TWMRButtonDown); message WM_RBUTTONDOWN;
@@ -2548,6 +2549,23 @@ begin
   inherited;
 end;
 
+procedure THistoryGrid.WMSetCursor(var Message: TWMSetCursor);
+var
+  p: TPoint;
+begin
+  CheckBusy;
+  // button is pressed, exit
+  if Message.HitTest = HTERROR then exit;
+  p := ScreenToClient(Mouse.CursorPos);
+  OverURL := False;
+  HandleRichEditMouse(WM_MOUSEMOVE,p.X,p.Y);
+  if OverURL then
+    Windows.SetCursor(Screen.Cursors[crHandPoint])
+  else
+    Windows.SetCursor(Screen.Cursors[crDefault]);
+  Message.Result := 1;
+end;
+
 procedure THistoryGrid.WMSetFocus(var Message: TWMSetFocus);
 var
   r: TRect;
@@ -3693,8 +3711,8 @@ var
 begin
   Item := FindItemAt(x,y);
   if Item <> -1 then begin
-    ItemRect := GetItemRect(Item);
     ItemRect := GetRichEditRect(Item);
+    if not PointInRect(Point(x,y),ItemRect) then exit;
     RichX := x - ItemRect.Left;
     RichY := y - ItemRect.Top;
 
