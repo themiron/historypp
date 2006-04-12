@@ -350,6 +350,27 @@ begin
     Result := ICQEVENTTYPE_EMAILEXPRESS; exit; end;
 end;}
 
+function TextHasUrls(var Text: WideString): Boolean;
+begin
+  Result := False;
+  // note: we can make it one big OR clause, but it's more readable this way
+  // list strings in order of probability
+  Result := Pos('http://',WideLowerCase(Text)) <> 0;
+  if Result then exit;
+  Result := Pos('ftp://',WideLowerCase(Text)) <> 0;
+  if Result then exit;
+  Result := Pos('https://',WideLowerCase(Text)) <> 0;
+  if Result then exit;
+  Result := Pos('nntp://',WideLowerCase(Text)) <> 0;
+  if Result then exit;
+  Result := Pos('irc://',WideLowerCase(Text)) <> 0;
+  if Result then exit;
+  Result := Pos('opera:',WideLowerCase(Text)) <> 0;
+  if Result then exit;
+  Result := Pos('news:',WideLowerCase(Text)) <> 0;
+  if Result then exit;
+end;
+
 // reads event from hDbEvent handle
 // reads all THistoryItem fields
 // *EXCEPT* Proto field. Fill it manually, plz
@@ -377,13 +398,15 @@ begin
     Result.MessageType := [mtIncoming]
   else
     Result.MessageType := [mtOutgoing];
-  // MS_DB_TIMESTAMPTOLOCAL should fix some issues
   Result.Time := EventInfo.timestamp;
-  //Time := PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOLOCAL,Time,0);
   Result.EventType := EventInfo.EventType;
   case EventInfo.EventType of
-    EVENTTYPE_MESSAGE:
-      Include(Result.MessageType,mtMessage);
+    EVENTTYPE_MESSAGE: begin
+      if TextHasUrls(Result.Text) then
+        Include(Result.MessageType,mtUrl)
+      else
+        Include(Result.MessageType,mtMessage);
+    end;
     EVENTTYPE_FILE:
       Include(Result.MessageType,mtFile);
     EVENTTYPE_URL:
