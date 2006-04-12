@@ -152,8 +152,6 @@ type
     FSmileysEnabled: Boolean;
     FBBCodesEnabled: Boolean;
     FMathModuleEnabled: Boolean;
-    FUnderlineURLEnabled: Boolean;
-    FFindURLEnabled: Boolean;
 
     procedure SetColorDivider(const Value: TColor);
     procedure SetColorSelectedText(const Value: TColor);
@@ -175,8 +173,6 @@ type
     procedure SetSmileysEnabled(const Value: Boolean);
     procedure SetBBCodesEnabled(const Value: Boolean);
     procedure SetMathModuleEnabled(const Value: Boolean);
-    procedure SetUnderlineURLEnabled(const Value: Boolean);
-    procedure SetFindURLEnabled(const Value: Boolean);
 
     function GetLocked: Boolean;
   protected
@@ -218,8 +214,6 @@ type
     property SmileysEnabled: Boolean read FSmileysEnabled write SetSmileysEnabled;
     property BBCodesEnabled: Boolean read FBBCodesEnabled write SetBBCodesEnabled;
     property MathModuleEnabled: Boolean read FMathModuleEnabled write SetMathModuleEnabled;
-    property UnderlineURLEnabled: Boolean read FUnderlineURLEnabled write SetUnderlineURLEnabled;
-    property FindURLEnabled: Boolean read FFindURLEnabled write SetFindURLEnabled;
   end;
 
 
@@ -3297,11 +3291,9 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
                                               else cnt := UTF8Encode(ProfileName);
     cnt := MakeTextHtmled(cnt+':');
     txt := MakeTextHtmled(UTF8Encode(FItems[Item].Text));
-    if Options.UnderlineURLEnabled then begin
-      try
-        txt := UrlHighlightHtml(txt);
-      except
-      end;
+    try
+      txt := UrlHighlightHtml(txt);
+    except
     end;
     if Options.BBCodesEnabled then begin
       try
@@ -3533,7 +3525,7 @@ begin
 
   //SendMessage(FRich.Handle, EM_AUTOURLDETECT, Integer(True), 0);
   //SendMessage(FRichInline.Handle, EM_AUTOURLDETECT, Integer(True), 0);
-  FRichInline.Perform(EM_AUTOURLDETECT, Integer(Options.UnderlineURLEnabled), 0);
+  FRichInline.Perform(EM_AUTOURLDETECT, Integer(True), 0);
 
   Inc(CHeaderHeight,Padding);
   Inc(PHeaderHeight,Padding);
@@ -3630,6 +3622,7 @@ end;
 
 procedure THistoryGrid.UpdateFilter;
 begin
+  if not Allocated then exit;
   CheckBusy;
   FRichCache.ResetItems(FSelItems);
   SetLength(FSelItems,0);
@@ -3869,7 +3862,6 @@ begin
   SmileysEnabled := False;
   BBCodesEnabled := False;
   MathModuleEnabled := False;
-  UnderlineURLEnabled := False;
 
   FLocks := 0;
   Changed := 0;
@@ -4094,30 +4086,6 @@ procedure TGridOptions.SetMathModuleEnabled(const Value: Boolean);
 begin
   if FMathModuleEnabled = Value then exit;
   FMathModuleEnabled := Value;
-  Self.StartChange;
-  try
-    DoChange;
-  finally
-    Self.EndChange;
-  end;
-end;
-
-procedure TGridOptions.SetUnderlineURLEnabled(const Value: Boolean);
-begin
-  if FUnderlineURLEnabled = Value then exit;
-  FUnderlineURLEnabled := Value;
-  Self.StartChange;
-  try
-    DoChange;
-  finally
-    Self.EndChange;
-  end;
-end;
-
-procedure TGridOptions.SetFindURLEnabled(const Value: Boolean);
-begin
-  if FFindURLEnabled = Value then exit;
-  FFindURLEnabled := Value;
   Self.StartChange;
   try
     DoChange;
