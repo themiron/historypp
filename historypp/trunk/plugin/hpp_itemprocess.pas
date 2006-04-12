@@ -284,14 +284,14 @@ end;
 function DoSupportMathModule(wParam{hRichEdit}, lParam{PItemRenderDetails}: DWord): Integer; cdecl;
 var
   mrei: TMathRicheditInfo;
-  res: DWord;
+  //res: DWord;
 begin
   mrei.hwndRichEditControl := wParam;
   mrei.sel := nil;
   mrei.disableredraw := Integer(True);
-  res := PluginLink.CallService(MATH_RTF_REPLACE_FORMULAE,0,DWord(@mrei));
-  res := 0;
-  Result := 0;
+  Result := PluginLink.CallService(MATH_RTF_REPLACE_FORMULAE,0,DWord(@mrei));
+  //res := 0;
+  //Result := 0;
 end;
 
 {$IFDEF DISABLED}

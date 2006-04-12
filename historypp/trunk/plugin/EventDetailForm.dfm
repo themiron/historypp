@@ -1,9 +1,9 @@
 object EventDetailsFrm: TEventDetailsFrm
   Left = 275
   Top = 178
+  Width = 466
+  Height = 396
   Caption = 'Event Details'
-  ClientHeight = 369
-  ClientWidth = 458
   Color = clBtnFace
   Constraints.MinHeight = 340
   Constraints.MinWidth = 466
@@ -182,8 +182,6 @@ object EventDetailsFrm: TEventDetailsFrm
       ReadOnly = True
       ScrollBars = ssVertical
       TabOrder = 0
-      ExplicitWidth = 438
-      ExplicitHeight = 161
     end
   end
   object Panel5: TTntPanel
