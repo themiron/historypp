@@ -28,8 +28,8 @@ goto misszip
 :havezip
 
 :start
-FOR /F "TOKENS=1" %%A IN ('type relno.txt') DO SET VER=%%A
-if not exist relno.txt set VER=nover
+FOR /F "TOKENS=1" %%A IN ('type relno.txt') DO SET VER_=%%A
+if not exist relno.txt set VER_=nover
 
 echo:
 echo --------- Make History++ Distribution ---------
@@ -41,11 +41,11 @@ echo:
 echo Upx.exe path: %UPXPATH%
 echo 7-z.exe path:  %ZPATH%
 echo:
-echo Current release: %VER%
+echo Current release: %VER_%
 echo:
 echo Following files will be generated:
-echo    build\historypp-%VER%-bin.zip
-echo    build\historypp-%VER%-src.zip
+echo    build\historypp-%VER_%-bin.zip
+echo    build\historypp-%VER_%-src.zip
 echo:
 echo Y - proceed, N - quit, R - set release no
 :askproceed
@@ -87,7 +87,7 @@ copy hpp_translate.txt ..\bin
 
 cd ..\bin
 
-%ZPATH% a -y -tzip -mx ..\historypp-%VER%-bin.zip *
+%ZPATH% a -y -tzip -mx ..\historypp-%VER_%-bin.zip *
 if errorlevel 1 goto ziperr
 
 cd ..\src
@@ -113,7 +113,7 @@ del /S /Q /F *.identcache
 del /S /Q /F *.map
 del /S /Q /F *.todo
 
-%ZPATH% a -y -tzip -r -mx ..\historypp-%VER%-src.zip *
+%ZPATH% a -y -tzip -r -mx ..\historypp-%VER_%-src.zip *
 if errorlevel 1 goto ziperr
 
 cd ..
