@@ -323,7 +323,6 @@ begin
   GridOptions.SmileysEnabled := GetDBBool(hppDBName,'Smileys',SmileyAddEnabled);
   GridOptions.BBCodesEnabled := GetDBBool(hppDBName,'BBCodes',True);
   GridOptions.MathModuleEnabled := GetDBBool(hppDBName,'MathModule',MathModuleEnabled);
-  GridOptions.FindURLEnabled := GetDBBool(hppDBName,'FindURL',True);
   finally
   GridOptions.EndChange;
   end;
@@ -338,8 +337,6 @@ begin
   WriteDBBool(hppDBName,'Smileys',GridOptions.SmileysEnabled);
   WriteDBBool(hppDBName,'BBCodes',GridOptions.BBCodesEnabled);
   WriteDBBool(hppDBName,'MathModule',GridOptions.MathModuleEnabled);
-  WriteDBBool(hppDBName,'UnderlineURL',GridOptions.UnderlineURLEnabled);
-  WriteDBBool(hppDBName,'FindURL',GridOptions.FindURLEnabled);
   finally
   GridOptions.EndChange;
   end;
