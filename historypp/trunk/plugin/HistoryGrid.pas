@@ -968,6 +968,7 @@ begin
     FRichInline.Parent := Self.Parent;
     re_mask := SendMessage(FRichInline.Handle, EM_GETEVENTMASK, 0, 0);
     SendMessage(FRichInline.Handle, EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
+    SendMessage(FRichInline.Handle,EM_AUTOURLDETECT,1,0);
     //re_mask := FRichInline.Perform(EM_GETEVENTMASK, 0, 0);
     //FRichInline.Perform(EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
   end;
@@ -3524,10 +3525,6 @@ begin
     PHeaderHeight := Max(PHeaderHeight,16);
   end;
 
-  //SendMessage(FRich.Handle, EM_AUTOURLDETECT, Integer(True), 0);
-  //SendMessage(FRichInline.Handle, EM_AUTOURLDETECT, Integer(True), 0);
-  FRichInline.Perform(EM_AUTOURLDETECT, Integer(True), 0);
-
   Inc(CHeaderHeight,Padding);
   Inc(PHeaderHeight,Padding);
 
@@ -3697,18 +3694,10 @@ begin
   Item := FindItemAt(x,y);
   if Item <> -1 then begin
     ItemRect := GetItemRect(Item);
-    Dec(ItemRect.Left,Padding);
+    ItemRect := GetRichEditRect(Item);
     RichX := x - ItemRect.Left;
-    RichX := RichX - Padding;
     RichY := y - ItemRect.Top;
-    // this is based on CalcItemHeight calculations
-    if mtIncoming in FItems[Item].MessageType then
-      hh := CHeaderHeight
-    else
-      hh := PHeaderHeight;
-    RichY := RichY - Padding - hh;
 
-    // make it saved to avoid multiple calculations
     ApplyItemToRich(Item);
     // make it that height so we don't loose any clicks
     FRich.Height := FRichHeight;
@@ -4165,7 +4154,7 @@ begin
   Count := 20;
 
   RichEventMasks := EN_LINK;
-  //RichEventMasks := ENM_CHANGE or ENM_SELCHANGE or ENM_PROTECTED or ENM_LINK;
+  RichEventMasks := ENM_CHANGE or ENM_SELCHANGE or ENM_PROTECTED or ENM_LINK;
 
   for i := 0 to Count - 1 do begin
     New(RichItem);
