@@ -97,15 +97,16 @@ begin
 end;
 
 function TimestampToString(Timestamp: DWord): WideString;
-var
+{var
   strdatetime: array [0..64] of Char;
-  dbtts: TDBTimeToString;
+  dbtts: TDBTimeToString;}
 begin
-  dbtts.cbDest := sizeof(strdatetime);
+  {dbtts.cbDest := sizeof(strdatetime);
   dbtts.szDest := @strdatetime;
   dbtts.szFormat := 'd s';
   PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOSTRING,timestamp,Integer(@dbtts));
-  Result := strdatetime;
+  Result := strdatetime;}
+  Result := DateTimeToStr(TimestampToDateTime(Timestamp));
 end;
 
 var
