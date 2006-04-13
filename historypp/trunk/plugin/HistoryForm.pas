@@ -52,7 +52,8 @@ uses
   hpp_forms,
   clipbrd, {FileCtrl,} shellapi,
   HistoryGrid, Checksum, WFindReplaceDialog, TntExtCtrls, hpp_sessionsthread, DateUtils,
-  ImgList, PasswordEditControl, TntStdCtrls, TntButtons, TntMenus;
+  ImgList, PasswordEditControl, TntStdCtrls, TntButtons, TntMenus,
+  CommCtrl;
 
 const
   HM_EVENTADDED   = WM_APP + 100;
@@ -287,6 +288,7 @@ type
     procedure SMItemsFound(var M: TMessage); message SM_ITEMSFOUND;
     procedure SMFinished(var M: TMessage); message SM_FINISHED;
     procedure AddEventToSessions(hDBEvent: THandle);
+    procedure LoadSessionIcons;
     procedure ShowSessions(Show: Boolean);
   protected
     procedure LoadPendingHeaders(rowidx: integer; count: integer);
@@ -587,7 +589,8 @@ var
 begin
   Icon.ReleaseHandle;
   Icon.Handle := CopyIcon(hppIcons[0].handle);
-
+  LoadSessionIcons;
+  
   DesktopFont := True;
   MakeFontsParent(Self);
 
@@ -634,6 +637,23 @@ begin
   cbSort.ItemIndex:=GetDBInt(hppDBName,'SortOrder',0);
   ShowSessionsAfterPassword := GetDBBool(hppDBName,'ShowSessions',False);
   paSess.Width := GetDBInt(hppDBName,'SessionsWidth',150);
+end;
+
+procedure THistoryFrm.LoadSessionIcons;
+var
+  il: THandle;
+begin
+  il := ilSessions.Handle;
+  il := ImageList_Create(16,16,ILC_COLOR32,8,2);
+  if il <> 0 then
+    ilSessions.Handle := il;
+
+  ImageList_AddIcon(il,LoadIcon(hInstance, hppIcons[3].name));
+  ImageList_AddIcon(il,LoadIcon(hInstance, hppIcons[4].name));
+  ImageList_AddIcon(il,LoadIcon(hInstance, hppIcons[5].name));
+  ImageList_AddIcon(il,LoadIcon(hInstance, hppIcons[6].name));
+  ImageList_AddIcon(il,LoadIcon(hInstance, hppIcons[7].name));
+  ImageList_AddIcon(il,LoadIcon(hInstance, hppIcons[8].name));
 end;
 
 procedure THistoryFrm.SavePosition;
@@ -935,7 +955,7 @@ begin
     if year = nil then begin
       year := tvSess.Items.AddChild(nil,FormatDateTime('yyyy',dt));
       year.Data := Pointer(YearOf(dt));
-      year.ImageIndex := -1;
+      year.ImageIndex := 5;
       year.SelectedIndex := year.ImageIndex;
     end;
     month := nil;
@@ -2299,7 +2319,7 @@ begin
       if (PrevYearNode = nil) or (DWord(PrevYearNode.Data) <> YearOf(dt)) then begin
         PrevYearNode := tvSess.Items.AddChild(nil,FormatDateTime('yyyy',dt));
         PrevYearNode.Data := Pointer(YearOf(dt));
-        PrevYearNode.ImageIndex := -1;
+        PrevYearNode.ImageIndex := 5;
         PrevYearNode.SelectedIndex := PrevYearNode.ImageIndex;
       end;
       if (PrevMonthNode = nil) or (DWord(PrevMonthNode.Data) <> MonthOf(dt)) then begin
