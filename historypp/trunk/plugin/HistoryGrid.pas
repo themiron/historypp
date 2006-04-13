@@ -401,7 +401,6 @@ type
     procedure ApplyItemToRich(Item: Integer; RichEdit: TTntRichEdit = nil);
     function GetRichEditRect(Item: Integer): TRect;
     procedure HandleRichEditMouse(Message: DWord; X,Y: Integer);
-    procedure SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit);
     {$ENDIF}
     procedure SetRTLMode(const Value: TRTLMode);
   protected
@@ -477,12 +476,13 @@ type
     property RTLMode: TRTLMode read FRTLMode write SetRTLMode;
 
     procedure CalcAllHeight;
-    function GetItemRTL(Item: Integer): Boolean;
     procedure MakeTopmost(Item: Integer);
   published
+    procedure SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit; ProcessTag: Boolean = true);
+    function GetItemRTL(Item: Integer): Boolean;
+
     property MultiSelect: Boolean read FMultiSelect write SetMultiSelect;
     property ShowHeaders: Boolean read FShowHeaders write SetShowHeaders;
-
 
     property TxtStartup: String read FTxtStartup write FTxtStartup;
     property TxtNoItems: String read FTxtNoItems write FTxtNoItems;
@@ -880,7 +880,7 @@ begin
         hppIcons[2].Handle,16,16,0,0,DI_NORMAL);
   end;
 
-  text := 'Conversation started at '+GetTime(Items[Index].Time);
+  text := WideFormat(TranslateWideW('Conversation started at %s'),[GetTime(Items[Index].Time)]);
   Canvas.Font := Options.FontTimeStamp;
   Inc(ItemRect.Left,IconOffset);
   WideCanvasTextRect(Canvas,ItemRect,ItemRect.Left,ItemRect.Top,text);
@@ -1530,8 +1530,7 @@ begin
       Result := Options.RTLEnabled
     else
       Result := (RTLMode = hppRTLEnable);
-  end
-  else
+  end else
     Result := (FItems[Item].RTLMode = hppRTLEnable)
 end;
 
@@ -3439,7 +3438,7 @@ begin
   Update;
 end;
 
-procedure THistoryGrid.SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit);
+procedure THistoryGrid.SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit; ProcessTag: Boolean = true);
 var
   pf: PARAFORMAT2;
 begin
@@ -3447,7 +3446,7 @@ begin
   // reapplying same state, because SetRichRTL is called VERY OFTEN
   // (from ApplyItemToRich)
   // tmp
-  if RichEdit.Tag = Integer(RTL) then exit;
+  if (RichEdit.Tag = Integer(RTL)) and ProcessTag then exit;
   pf.cbSize := SizeOf(pf);
   pf.dwMask := PFM_RTLPARA;
   if RTL then begin
@@ -3458,7 +3457,8 @@ begin
   RichEdit.Perform(EM_SETPARAFORMAT,0,integer(@pf));
   //FRich.Perform(EM_SETPARAFORMAT,0,integer(@pf));
   //FRichInline.Perform(EM_SETPARAFORMAT,0,integer(@pf));
-  RichEdit.Tag := Integer(RTL);
+  if ProcessTag then
+    RichEdit.Tag := Integer(RTL);
 end;
 
 (* Index to Position *)
