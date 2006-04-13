@@ -2091,6 +2091,7 @@ begin
   if hContact = 0 then begin
     ContactRTLmode1.Visible := False;
     ANSICodepage1.Visible := False;
+    ConversationLog1.Visible := False;
   end else begin
     case hg.RTLMode of
       hppRTLDefault: Self.RTLDefault2.Checked := true;
