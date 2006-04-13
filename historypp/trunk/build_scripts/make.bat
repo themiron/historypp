@@ -84,6 +84,7 @@ if errorlevel 1 goto upxerr
 md ..\bin
 move historypp.dll ..\bin
 copy hpp_translate.txt ..\bin
+copy ..\..\hpp_changelog.txt ..\bin
 
 cd ..\bin
 
