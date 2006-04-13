@@ -1,13 +1,13 @@
 object HistoryFrm: THistoryFrm
   Left = 263
   Top = 168
+  Width = 532
+  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
-  ClientHeight = 391
-  ClientWidth = 524
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -441,15 +441,6 @@ object HistoryFrm: THistoryFrm
         Layout = blGlyphRight
         Style = bsNew
       end
-      object bnConversation: TTntButton
-        Left = 277
-        Top = 7
-        Width = 96
-        Height = 25
-        Caption = 'Conversation log'
-        TabOrder = 4
-        OnClick = bnConversationClick
-      end
     end
     object paSess: TPanel
       Left = 4
@@ -705,7 +696,7 @@ object HistoryFrm: THistoryFrm
     end
     object ANSICodepage1: TTntMenuItem
       Caption = 'ANSI Encoding'
-      object SystemCodepage1: TMenuItem
+      object SystemCodepage1: TTntMenuItem
         AutoCheck = True
         Caption = 'System default codepage'
         Checked = True
@@ -715,25 +706,34 @@ object HistoryFrm: THistoryFrm
     end
     object ContactRTLmode1: TTntMenuItem
       Caption = 'Text direction'
-      object RTLDefault2: TMenuItem
+      object RTLDefault2: TTntMenuItem
         AutoCheck = True
         Caption = 'Default'
         Checked = True
         RadioItem = True
         OnClick = ContactRTLmode1Click
       end
-      object RTLEnabled2: TMenuItem
+      object RTLEnabled2: TTntMenuItem
         AutoCheck = True
         Caption = 'Always RTL'
         RadioItem = True
         OnClick = ContactRTLmode1Click
       end
-      object RTLDisabled2: TMenuItem
+      object RTLDisabled2: TTntMenuItem
         AutoCheck = True
         Caption = 'Always LTR'
         RadioItem = True
         OnClick = ContactRTLmode1Click
       end
+    end
+    object N11: TTntMenuItem
+      Caption = '-'
+    end
+    object ConversationLog1: TTntMenuItem
+      Caption = 'Conversation log'
+      Checked = True
+      ShortCut = 115
+      OnClick = ConversationLog1Click
     end
   end
   object pmGridInline: TTntPopupMenu
