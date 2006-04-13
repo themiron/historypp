@@ -59,15 +59,15 @@ type
 const
 
   hppIcons : array[0..8] of ThppIconsRec = (
-    (name:'historypp_contact'; desc:'Contact history'; i:0; handle:0),
-    (name:'historypp_search'; desc:'History search'; i:1; handle:0),
-    (name:'historypp_session_div'; desc:'Conversation divider'; i:2; handle:0),
-    (name:'sess_session'; desc:'Conversation icon'; i:3; handle:0),
-    (name:'sess_summer'; desc:'Conversation summer'; i:4; handle:0),
-    (name:'sess_autumn'; desc:'Conversation autumn'; i:5; handle:0),
-    (name:'sess_winter'; desc:'Conversation winter'; i:6; handle:0),
-    (name:'sess_spring'; desc:'Conversation spring'; i:7; handle:0),
-    (name:'sess_year'; desc:'Conversation year'; i:8; handle:0)
+    (name:'h00_historypp_contact'; desc:'Contact history'; i:0; handle:0),
+    (name:'h01_historypp_search'; desc:'History search'; i:1; handle:0),
+    (name:'h02_historypp_session_div'; desc:'Conversation divider'; i:2; handle:0),
+    (name:'h03_sess_session'; desc:'Conversation icon'; i:3; handle:0),
+    (name:'h04_sess_summer'; desc:'Conversation summer'; i:4; handle:0),
+    (name:'h05_sess_autumn'; desc:'Conversation autumn'; i:5; handle:0),
+    (name:'h06_sess_winter'; desc:'Conversation winter'; i:6; handle:0),
+    (name:'h07_sess_spring'; desc:'Conversation spring'; i:7; handle:0),
+    (name:'h08_sess_year'; desc:'Conversation year'; i:8; handle:0)
   );
 
   hppFontItems: array[0..15] of ThppFontsRec = (

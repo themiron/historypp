@@ -288,6 +288,7 @@ type
     procedure SMItemsFound(var M: TMessage); message SM_ITEMSFOUND;
     procedure SMFinished(var M: TMessage); message SM_FINISHED;
     procedure AddEventToSessions(hDBEvent: THandle);
+    procedure DeleteEventFromSessions(hDBEvent: THandle);
     procedure LoadSessionIcons;
     procedure ShowSessions(Show: Boolean);
   protected
@@ -644,16 +645,16 @@ var
   il: THandle;
 begin
   il := ilSessions.Handle;
-  il := ImageList_Create(16,16,ILC_COLOR32,8,2);
+  il := ImageList_Create(16,16,ILC_COLOR32 or ILC_MASK,8,2);
   if il <> 0 then
     ilSessions.Handle := il;
 
-  ImageList_AddIcon(il,LoadIcon(hInstance, hppIcons[3].name));
-  ImageList_AddIcon(il,LoadIcon(hInstance, hppIcons[4].name));
-  ImageList_AddIcon(il,LoadIcon(hInstance, hppIcons[5].name));
-  ImageList_AddIcon(il,LoadIcon(hInstance, hppIcons[6].name));
-  ImageList_AddIcon(il,LoadIcon(hInstance, hppIcons[7].name));
-  ImageList_AddIcon(il,LoadIcon(hInstance, hppIcons[8].name));
+  ImageList_AddIcon(il,hppIcons[3].handle);
+  ImageList_AddIcon(il,hppIcons[4].handle);
+  ImageList_AddIcon(il,hppIcons[5].handle);
+  ImageList_AddIcon(il,hppIcons[6].handle);
+  ImageList_AddIcon(il,hppIcons[7].handle);
+  ImageList_AddIcon(il,hppIcons[8].handle);
 end;
 
 procedure THistoryFrm.SavePosition;
@@ -989,7 +990,6 @@ begin
   SetLength(History,HistoryLength);
   History[HistoryLength-1] := hDBEvent;
   hg.AddItem;
-  AddEventToSessions(hDBEvent);
   if HistoryLength = 1 then
     if GetDBBool(hppDBName,'ShowSessions',False) then
       ShowSessions(True);
@@ -1394,6 +1394,87 @@ begin
   finally
     SetSafetyMode(True);
     end;
+end;
+
+procedure THistoryFrm.DeleteEventFromSessions(hDBEvent: THandle);
+var
+  ts: DWord;
+  dt: TDateTime;
+  year,month,day: TTntTreeNode;
+  i,idx: Integer;
+begin
+  ts := GetEventTimestamp(hDBEvent);
+
+  // find idx in sessions array
+  idx := -1;
+  for i := Length(Sessions) - 1 downto 0 do
+    if (ts >= Sessions[i].TimestampFirst) and (ts <= Sessions[i].TimestampLast) then begin
+      idx := i;
+      break;
+    end;
+  if idx = -1 then exit;
+
+  Dec(Sessions[idx].ItemsCount);
+
+  // if the event is not first, we can do it faster
+  if Sessions[idx].hDBEventFirst <> hDBEvent then begin
+    if Sessions[idx].hDBEventLast = hDBEvent then begin
+      hDBEvent := PluginLink.CallService(MS_DB_EVENT_FINDPREV,hDBEvent,0);
+      if hDBEvent <> 0 then begin
+        Sessions[idx].hDBEventLast := hDBEvent;
+        Sessions[idx].TimestampLast := GetEventTimestamp(hDBEvent);
+      end
+      else begin //????
+        Sessions[idx].hDBEventLast := Sessions[idx].hDBEventFirst;
+        Sessions[idx].TimestampLast := Sessions[idx].TimestampFirst;
+      end;
+    end;
+    exit;
+  end;
+
+  // now, the even is the first, probably the last in session
+  dt := TimestampToDateTime(ts);
+  year := tvSess.Items.GetFirstNode;
+  while year <> nil do begin
+    if Integer(year.data) = YearOf(dt) then
+      break;
+    year := year.getNextSibling;
+  end;
+  if year = nil then exit; // ???
+  month := year.getFirstChild;
+  while month <> nil do begin
+    if Integer(month.data) = MonthOf(dt) then
+      break;
+    month := month.getNextSibling;
+  end;
+  if month = nil then exit; // ???
+  day := month.getFirstChild;
+  while day <> nil do begin
+    if Integer(day.data) = idx then
+      break;
+    day := day.getNextSibling;
+  end;
+  if day = nil then exit; // ???
+  if Sessions[idx].ItemsCount = 0 then begin
+    day.Delete;
+    // hmm... should we delete record in sessions array?
+    // I'll not do it for the speed, I don't think there would be problems
+    exit;
+  end;
+  hDBEvent := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBEvent,0);
+  if hDBEvent <> 0 then begin
+    Sessions[idx].hDBEventFirst := hDBEvent;
+    Sessions[idx].TimestampFirst := GetEventTimestamp(hDBEvent);
+  end
+  else begin // ????
+    Sessions[idx].hDBEventFirst := Sessions[idx].hDBEventLast;
+    Sessions[idx].TimestampFirst := Sessions[idx].TimestampLast;
+  end;
+  ts := Sessions[idx].TimestampFirst;
+  dt := TimestampToDateTime(ts);
+  day.Text := FormatDateTime('d (h:nn)',dt);
+  // now we need to reset item in grid
+  // don't know how, probably need new procedure for grid
 end;
 
 procedure THistoryFrm.SaveasHTML1Click(Sender: TObject);
