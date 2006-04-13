@@ -32,7 +32,7 @@ interface
 
 uses
   Windows, TntSystem, SysUtils, TntSysUtils, TntWideStrUtils,
-  m_globaldefs, m_api,WideStrUtils, TntWindows,
+  m_globaldefs, m_api, {WideStrUtils,} TntWindows,
   hpp_global, hpp_contacts;
 
 // Miranda timestamp to TDateTime
