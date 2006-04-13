@@ -644,10 +644,11 @@ procedure THistoryFrm.LoadSessionIcons;
 var
   il: THandle;
 begin
-  il := ilSessions.Handle;
   il := ImageList_Create(16,16,ILC_COLOR32 or ILC_MASK,8,2);
   if il <> 0 then
-    ilSessions.Handle := il;
+    ilSessions.Handle := il
+  else
+    il := ilSessions.Handle;
 
   ImageList_AddIcon(il,hppIcons[3].handle);
   ImageList_AddIcon(il,hppIcons[4].handle);
