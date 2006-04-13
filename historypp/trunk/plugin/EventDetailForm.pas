@@ -96,7 +96,7 @@ type
     procedure LoadPosition;
     procedure SavePosition;
     procedure SetItem(const Value: Integer);
-    procedure ProcessRichEdit;
+    procedure ProcessRichEdit(const FItem: Integer);
 
     procedure TranslateForm;
     { Private declarations }
@@ -134,18 +134,18 @@ begin
 Item := Prev;
 end;
 
-procedure TEventDetailsFrm.ProcessRichEdit;
+procedure TEventDetailsFrm.ProcessRichEdit(const FItem: Integer);
 var
   ItemRenderDetails: TItemRenderDetails;
 begin
   ZeroMemory(@ItemRenderDetails,SizeOf(ItemRenderDetails));
   ItemRenderDetails.hContact := ParentForm.hContact;
-  ItemRenderDetails.hDBEvent := ParentForm.History[ParentForm.GridIndexToHistory(Item)];
-  ItemRenderDetails.pProto := PChar(ParentForm.hg.Items[Item].Proto);
-  ItemRenderDetails.pModule := PChar(ParentForm.hg.Items[Item].Module);
-  ItemRenderDetails.dwEventTime := ParentForm.hg.Items[Item].Time;
-  ItemRenderDetails.wEventType := ParentForm.hg.Items[Item].EventType;
-  ItemRenderDetails.IsEventSent := (mtOutgoing in ParentForm.hg.Items[Item].MessageType);
+  ItemRenderDetails.hDBEvent := ParentForm.History[ParentForm.GridIndexToHistory(FItem)];
+  ItemRenderDetails.pProto := PChar(ParentForm.hg.Items[FItem].Proto);
+  ItemRenderDetails.pModule := PChar(ParentForm.hg.Items[FItem].Module);
+  ItemRenderDetails.dwEventTime := ParentForm.hg.Items[FItem].Time;
+  ItemRenderDetails.wEventType := ParentForm.hg.Items[FItem].EventType;
+  ItemRenderDetails.IsEventSent := (mtOutgoing in ParentForm.hg.Items[FItem].MessageType);
   {TODO: Add flag for special event details form treatment?}
   ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_INLINE;
   if ParentForm.hContact = 0 then
@@ -297,11 +297,12 @@ var
 begin
   Assert(Assigned(FParentForm));
   FItem := Value;
-  EMsgType.Text := GetMsgType(FParentForm.hg.Items[Item].MessageType,FParentForm.hg.Items[Item].EventType);
-  EDateTime.Text := TimestampToString(FParentForm.hg.Items[Item].Time);
+  
+  EMsgType.Text := GetMsgType(FParentForm.hg.Items[FItem].MessageType,FParentForm.hg.Items[FItem].EventType);
+  EDateTime.Text := TimestampToString(FParentForm.hg.Items[FItem].Time);
   FromContact := false;
   ToContact := false;
-  if mtIncoming in FParentForm.hg.Items[Item].MessageType then begin
+  if mtIncoming in FParentForm.hg.Items[FItem].MessageType then begin
     FROMhContact := FParentForm.hContact;
     if FROMhContact = 0 then FromContact := true;
     TOhContact:=0;
@@ -310,31 +311,38 @@ begin
     if TOhContact = 0 then ToContact := true;
     FromhContact:=0;
   end;
+
   EFromMore.Enabled := not FromContact;
   EToMore.Enabled := not ToContact;
   EFromNick.Text := GetContactDisplayName(FROMhContact,FParentForm.Protocol,FromContact);
   EFromUIN.Text := AnsiToWideString(GetContactID(FROMhContact,FParentForm.Protocol,FromContact),ParentForm.UserCodepage);
   EToNick.Text := GetContactDisplayName(TOhContact,FParentForm.Protocol,ToContact);
   EToUIN.Text := AnsiToWideString(GetContactID(TOhContact,FParentForm.Protocol,ToContact),ParentForm.UserCodepage);
-  //EText.Lines.Clear
-  EText.Lines.Text:=FParentForm.hg.Items[Item].Text;
-  //EText.Lines.
+
+  // BeginUpdate and EndUpdate needed 'cose we have visual artefacts on screen
+  // but it's better to lock and unlock rich in DoSupport... services
+  EText.Lines.BeginUpdate;
+  EText.Clear;
+  ParentForm.hg.SetRichRTL(ParentForm.hg.GetItemRTL(FItem),EText,false);
+  EText.Text:=FParentForm.hg.Items[FItem].Text;
+  ProcessRichEdit(FItem);
+  // 'cose smileys are selected sometimes
+  EText.SelLength := 0;
+  EText.Lines.EndUpdate;
+
   if FromContact or ToContact then
     bnReply.Enabled := False
   else
     bnReply.Enabled := True;
+
   // check forward and back buttons
-  Prev := FParentForm.hg.GetPrev(Item);
-  Next := FParentForm.hg.GetNext(Item);
+  Prev := FParentForm.hg.GetPrev(FItem);
+  Next := FParentForm.hg.GetNext(FItem);
   NextBtn.Enabled := (Next <> -1);
   PrevBtn.Enabled := (Prev <> -1);
-  if ParentForm.hg.GetItemRTL(FItem) then
-    EText.BiDiMode := bdRightToLeft
-  else
-    EText.BiDiMode := bdLeftToRight;
-  if FParentForm.hg.selected <> Item then
-    FParentForm.hg.Selected := Item;
-  ProcessRichEdit;
+
+  if FParentForm.hg.selected <> FItem then
+    FParentForm.hg.Selected := FItem;
 end;
 
 procedure TEventDetailsFrm.FormHide(Sender: TObject);
