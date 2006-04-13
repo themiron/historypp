@@ -641,7 +641,7 @@ procedure THistoryFrm.SavePosition;
 begin
   Utils_SaveWindowPosition(Self.Handle,0,hppDBName,'HistoryWindow.');
   WriteDBInt(hppDBName,'SortOrder',cbSort.ItemIndex);
-  if (hContact <> 0) and (not PasswordMode) then begin
+  if (hContact <> 0) and (not PasswordMode) and not ((HistoryLength = 0) and (not paSess.Visible)) then begin
      WriteDBBool(hppDBName,'ShowSessions',paSess.Visible);
      if paSess.Visible then
         WriteDBInt(hppDBName,'SessionsWidth',paSess.Width);
@@ -970,6 +970,9 @@ begin
   History[HistoryLength-1] := hDBEvent;
   hg.AddItem;
   AddEventToSessions(hDBEvent);
+  if HistoryLength = 1 then
+    if GetDBBool(hppDBName,'ShowSessions',False) then
+      ShowSessions(True);
 end;
 
 procedure THistoryFrm.HookEvents;
@@ -990,7 +993,7 @@ procedure THistoryFrm.FormShow(Sender: TObject);
 begin
   LoadPosition;
   ProcessPassword;
-  if not PasswordMode then ShowSessions(ShowSessionsAfterPassword);
+  ShowSessions(ShowSessionsAfterPassword);
   
   HookEvents;
 
@@ -1820,6 +1823,10 @@ end;
 procedure THistoryFrm.ShowSessions(Show: Boolean);
 begin
   if (hContact = 0) or (HistoryLength = 0) then Show := False;
+  if PasswordMode then begin
+    ShowSessionsAfterPassword := Show;
+    exit;
+  end;
 
   paSess.Visible := Show;
   spSess.Visible := Show;
