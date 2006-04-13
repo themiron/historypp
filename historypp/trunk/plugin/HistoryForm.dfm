@@ -361,7 +361,7 @@ object HistoryFrm: THistoryFrm
           'Incoming Messages'
           'Outgoing Messages'
           'Files'
-          'Urls'
+          'Link URLs'
           'Status Changes')
       end
       object cbSort: TTntComboBox
