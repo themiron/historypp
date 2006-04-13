@@ -1210,13 +1210,13 @@ procedure THistoryFrm.Delete1Click(Sender: TObject);
 begin
   if hg.SelCount = 0 then exit;
   if hg.SelCount > 1 then begin
-    if Windows.MessageBox(Handle,
-      PChar(Format(Translate('Do you really want to delete selected items (%.0f)?'),
-      [hg.SelCount/1])), Translate('Delete Selected'),
+    if HppMessageBox(Handle,
+      WideFormat(TranslateWideW('Do you really want to delete selected items (%.0f)?'),
+      [hg.SelCount/1]), TranslateWideW('Delete Selected'),
       MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = IDNO then exit;
   end else begin
-    if Windows.MessageBox(Handle, Translate('Do you really want to delete selected item?'),
-    Translate('Delete'), MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = IDNO then exit;
+    if HppMessageBox(Handle, TranslateWideW('Do you really want to delete selected item?'),
+    TranslateWideW('Delete'), MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = IDNO then exit;
   end;
   SetSafetyMode(False);
   try
@@ -1363,10 +1363,10 @@ end;
 
 procedure THistoryFrm.DeleteAll1Click(Sender: TObject);
 begin
-  if Windows.MessageBox(Handle,
-    PChar(Format(Translate('Do you really want to delete ALL items (%.0f) for this contact?')+
-    #10#13+''+#10#13+Translate('Note: It can take several minutes for large history.'),
-    [hg.Count/1])), Translate('Delete All'), MB_YESNO or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) = IDNO then exit;
+  if HppMessageBox(Handle,
+    WideFormat(TranslateWideW('Do you really want to delete ALL items (%.0f) for this contact?')+
+    #10#13+''+#10#13+TranslateWideW('Note: It can take several minutes for large history.'),
+    [hg.Count/1]), TranslateWideW('Delete All'), MB_YESNO or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) = IDNO then exit;
 
   SetSafetyMode(False);
   try
@@ -1458,8 +1458,7 @@ end;
 
 procedure THistoryFrm.SearchNext(Rev: Boolean; Warp: Boolean = True);
 var
-  stext: WideString;
-  t,tCap: string;
+  stext,t,tCap: WideString;
   res: Integer;
   mcase,down: Boolean;
   WndHandle: HWND;
@@ -1480,35 +1479,30 @@ begin
     // found
     hg.Selected := res;
     if LastSearch = lsSearch then
-      t := Translate('Search: %s (F3 to find next)')
+      t := TranslateWideW('Search: %s (F3 to find next)')
     else
-      t := Translate('HotSearch: %s (F3 to find next)');
-    sb.SimpleText := WideFormat(AnsiToWideString(t,hppCodepage),[stext]);
+      t := TranslateWideW('HotSearch: %s (F3 to find next)');
+    sb.SimpleText := WideFormat(t,[stext]);
   end else begin
     if (LastSearch = lsSearch) and (FindDialog.Handle <> 0) then
       WndHandle := FindDialog.Handle
     else
       WndHandle := Handle;
-    tCap := Translate('History++ Search');
+    tCap := TranslateWideW('History++ Search');
     // not found
     if Warp and (down = not hg.Reversed) then begin
       // do warp?
-      if MessageBox(WndHandle, PChar(String(Translate('You have reached the end of the history.'))+
-      #10#13+String(Translate('Do you want to continue searching at the beginning?'))),
-      PChar(tCap), MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = ID_YES then
+      if HppMessageBox(WndHandle, TranslateWideW('You have reached the end of the history.')+
+      #10#13+TranslateWideW('Do you want to continue searching at the beginning?'),
+      tCap, MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = ID_YES then
         SearchNext(Rev,False);
     end else begin
       // not warped
       hgState(Self,gsIdle);
       { 25.03.03 OXY: FindDialog looses focus when
       calling ShowMessage, using MessageBox instead }
-      t := Translate('"%s" not found');
-      if hppOSUnicode then
-        MessageBoxW(WndHandle, PWideChar(WideFormat(AnsiToWideString(t,hppCodepage),[stext])),
-        PWideChar(AnsiToWideString(tCap,hppCodepage)), MB_OK or MB_DEFBUTTON1 or 0)
-      else
-        MessageBox(WndHandle, PChar(Format(t,[stext])),
-        PChar(tCap), MB_OK or MB_DEFBUTTON1 or 0);
+      t := TranslateWideW('"%s" not found');
+      HppMessageBox(WndHandle, WideFormat(t,[stext]),tCap, MB_OK or MB_DEFBUTTON1 or 0);
     end;
   end;
 end;
@@ -1853,8 +1847,8 @@ if DigToBase(HashString(edPass.Text)) = GetPassword then
   PasswordMode := False
 else
   {DONE: sHure}
-  MessageBox(Handle, PChar(String(Translate('You have entered the wrong password'))),
-  Translate('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
+  hppMessageBox(Handle, TranslateWideW('You have entered the wrong password'),
+  TranslateWideW('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
 end;
 
 procedure THistoryFrm.paGridResize(Sender: TObject);
