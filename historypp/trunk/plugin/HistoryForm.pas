@@ -92,18 +92,13 @@ type
     edPass: TPasswordEdit;
     bnPass: TTntButton;
     pmOptions: TTntPopupMenu;
-    RTLEnabled2: TMenuItem;
-    RTLDisabled2: TMenuItem;
-    RTLDefault2: TMenuItem;
     pmGridInline: TTntPopupMenu;
-    SystemCodepage1: TMenuItem;
     tvSess: TTntTreeView;
     spSess: TTntSplitter;
     ilSessions: TImageList;
     Panel1: TPanel;
     laSess: TTntLabel;
     sbCloseSess: TTntSpeedButton;
-    bnConversation: TTntButton;
     Setpassword1: TTntMenuItem;
     N6: TTntMenuItem;
     DeleteAll1: TTntMenuItem;
@@ -147,13 +142,19 @@ type
     ContactRTLmode1: TTntMenuItem;
     ANSICodepage1: TTntMenuItem;
     Options1: TTntMenuItem;
+    RTLDisabled2: TTntMenuItem;
+    RTLEnabled2: TTntMenuItem;
+    RTLDefault2: TTntMenuItem;
+    ConversationLog1: TTntMenuItem;
+    SystemCodepage1: TTntMenuItem;
+    N11: TTntMenuItem;
     procedure tvSessMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure tvSessClick(Sender: TObject);
     procedure sbCloseSessClick(Sender: TObject);
     procedure hgItemFilter(Sender: TObject; Index: Integer; var Show: Boolean);
     procedure tvSessChange(Sender: TObject; Node: TTreeNode);
-    procedure bnConversationClick(Sender: TObject);
+    //procedure bnConversationClick(Sender: TObject);
 
     procedure LoadHistory(Sender: TObject);
     procedure FindDialogFind(Sender: TObject);
@@ -228,6 +229,7 @@ type
     procedure ReplyQuoted1Click(Sender: TObject);
     procedure UserDetails1Click(Sender: TObject);
     procedure CodepageChangeClick(Sender: TObject);
+    procedure ConversationLog1Click(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -569,7 +571,6 @@ begin
   if hContact = 0 then Caption := TranslateW('System History')
                   else Caption := WideFormat(Caption,[hg.ContactName]);
   hg.Allocate(Length(History));
-  bnConversation.Enabled := not (hContact = 0);
 end;
 
 procedure THistoryFrm.FindDialogFind(Sender: TObject);
@@ -1002,7 +1003,7 @@ begin
     //AddMenu(Options1,pmAdd,pmGrid,-1);
     //AddMenu(ANSICodepage1,pmAdd,pmGrid,-1);
     //AddMenu(ContactRTLmode1,pmAdd,pmGrid,-1);
-    AddMenuArray(pmGrid,[Options1,ANSICodepage1,ContactRTLmode1],-1);
+    AddMenuArray(pmGrid,[Options1,ANSICodepage1,ContactRTLmode1,N11,ConversationLog1],-1);
     pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
   end;
 end;
@@ -1068,11 +1069,6 @@ end;
 const
   // 4 hours
   TIME_DIFF = 4*(60*60);
-
-procedure THistoryFrm.bnConversationClick(Sender: TObject);
-begin
-  ShowSessions(not paSess.Visible);
-end;
 
 procedure THistoryFrm.hgDblClick(Sender: TObject);
 begin
@@ -1190,7 +1186,7 @@ begin
   //AddMenu(Options1,pmGrid,pmAdd,0);
   //AddMenu(ANSICodepage1,pmGrid,pmAdd,1);
   //AddMenu(ContactRTLmode1,pmGrid,pmAdd,2);
-  AddMenuArray(pmAdd,[Options1,ANSICodepage1,ContactRTLmode1],0);
+  AddMenuArray(pmAdd,[Options1,ANSICodepage1,ContactRTLmode1,N11,ConversationLog1],0);
   pmAdd.Popup(p.x,p.y);
 end;
 
@@ -1873,7 +1869,6 @@ begin
   bnDelete.Caption := TranslateWideW(bnDelete.Caption);
   bbAddit.Caption := TranslateWideW(bbAddit.Caption);
   bnClose.Caption := TranslateWideW(bnClose.Caption);
-  bnConversation.Caption := TranslateWideW(bnConversation.Caption);
 
   bnPass.Caption := TranslateWideW(bnPass.Caption);
   laPass.Caption := TranslateWideW(laPass.Caption);
@@ -2113,6 +2108,7 @@ begin
   BBCodesEnabled1.Checked := hg.Options.BBCodesEnabled;
   //MathModuleEnabled1.Enabled := MathModuleEnabled;
   //MathModuleEnabled1.Checked  := hg.Options.MathModuleEnabled;
+  ConversationLog1.Checked := paSess.Visible;
 end;
 
 procedure THistoryFrm.SethContact(const Value: THandle);
@@ -2341,6 +2337,11 @@ begin
   val := (Sender as TMenuItem).Tag;
   WriteContactCodePage(hContact,val,Protocol);
   UserCodepage := val;
+end;
+
+procedure THistoryFrm.ConversationLog1Click(Sender: TObject);
+begin
+  ShowSessions(not paSess.Visible);
 end;
 
 end.
