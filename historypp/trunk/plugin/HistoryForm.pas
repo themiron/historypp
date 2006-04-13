@@ -1802,6 +1802,7 @@ SaveAsHTML1.Enabled := enb;
 SaveAsXML1.Enabled := enb;
 SaveAsText1.Enabled := enb;
 DeleteAll1.Enabled := enb;
+ConversationLog1.Enabled := enb;
 hgState(hg,hg.State);
 hg.Enabled := enb;
 hg.Visible := enb;
@@ -1852,8 +1853,7 @@ if DigToBase(HashString(edPass.Text)) = GetPassword then
   PasswordMode := False
 else
   {DONE: sHure}
-  MessageBox(Handle, PChar(String(Translate('You have entered the wrong password.'))+
-  #10#13+String(Translate('Make sure you have CAPS LOCK turned off.'))),
+  MessageBox(Handle, PChar(String(Translate('You have entered the wrong password'))),
   Translate('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
 end;
 
