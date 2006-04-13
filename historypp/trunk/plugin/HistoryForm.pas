@@ -1823,7 +1823,6 @@ hg.Visible := enb;
 paPassword.Enabled := not enb;
 paPassword.Visible := not enb;
 if value = true then begin
-  ShowSessions(False);
   paPassword.Left := (paGrid.ClientWidth-paPassword.Width) div 2;
   paPassword.Top := (paGrid.ClientHeight - paPassword.Height) div 2;
   //laPass.Caption := Format('You need password to access history for %s
