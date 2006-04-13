@@ -286,6 +286,7 @@ type
 
     procedure SMItemsFound(var M: TMessage); message SM_ITEMSFOUND;
     procedure SMFinished(var M: TMessage); message SM_FINISHED;
+    procedure AddEventToSessions(hDBEvent: THandle);
     procedure ShowSessions(Show: Boolean);
   protected
     procedure LoadPendingHeaders(rowidx: integer; count: integer);
@@ -896,6 +897,70 @@ begin
   SetLength(history,HistoryLength);
 end;
 
+procedure THistoryFrm.AddEventToSessions(hDBEvent: THandle);
+var
+  ts: DWord;
+  dt: TDateTime;
+  idx: Integer;
+  year,month,day: TTntTreeNode;
+  AddNewSession: Boolean;
+begin
+  ts := GetEventTimestamp(hDBEvent);
+  AddNewSession := True;
+  if Length(Sessions) > 0 then begin
+    idx := High(Sessions);
+    if (ts - Sessions[idx].TimestampLast) <= SESSION_TIMEDIFF then begin
+      Sessions[idx].hDBEventLast := hDBEvent;
+      Sessions[idx].TimestampLast := ts;
+      Inc(Sessions[idx].ItemsCount);
+      AddNewSession := False;
+    end;
+  end;
+  if AddNewSession then begin
+    idx := Length(Sessions);
+    SetLength(Sessions,idx+1);
+    Sessions[idx].hDBEventFirst := hDBEvent;
+    Sessions[idx].TimestampFirst := ts;
+    Sessions[idx].hDBEventLast := Sessions[idx].hDBEventFirst;
+    Sessions[idx].TimestampLast := Sessions[idx].TimestampFirst;
+    Sessions[idx].ItemsCount := 1;
+    dt := TimestampToDateTime(ts);
+    year := nil;
+    if tvSess.Items.GetFirstNode <> nil then begin
+      year := tvSess.Items.GetFirstNode;
+      while year.getNextSibling <> nil do
+        year := year.getNextSibling;
+      if Integer(year.Data) <> YearOf(dt) then year := nil;
+    end;
+    if year = nil then begin
+      year := tvSess.Items.AddChild(nil,FormatDateTime('yyyy',dt));
+      year.Data := Pointer(YearOf(dt));
+      year.ImageIndex := -1;
+      year.SelectedIndex := year.ImageIndex;
+    end;
+    month := nil;
+    if year.GetLastChild <> nil then begin
+      month := year.GetLastChild;
+      if Integer(month.Data) <> MonthOf(dt) then month := nil;
+    end;
+    if month = nil then begin
+      month := tvSess.Items.AddChild(year,FormatDateTime('mmmm',dt));
+      month.Data := Pointer(MonthOf(dt));
+      case MonthOf(dt) of
+        12,1..2: month.ImageIndex := 3;
+        3..5: month.ImageIndex := 4;
+        6..8: month.ImageIndex := 1;
+        9..11: month.ImageIndex := 2;
+      end;
+      month.SelectedIndex := month.ImageIndex;
+    end;
+    day := tvSess.Items.AddChild(month,FormatDateTime('d (h:nn)',dt));
+    day.Data := Pointer(idx);
+    day.ImageIndex := 0;
+    day.SelectedIndex := day.ImageIndex;
+  end;
+end;
+
 procedure THistoryFrm.AddHistoryItem(hDBEvent:THandle);
 //only add single lines, not whole histories, because this routine is pretty
 //slow
@@ -904,6 +969,7 @@ begin
   SetLength(History,HistoryLength);
   History[HistoryLength-1] := hDBEvent;
   hg.AddItem;
+  AddEventToSessions(hDBEvent);
 end;
 
 procedure THistoryFrm.HookEvents;
@@ -1065,10 +1131,6 @@ begin
   //hgState(Self,gsSearch);
   FindDialog.Execute;
 end;
-
-const
-  // 4 hours
-  TIME_DIFF = 4*(60*60);
 
 procedure THistoryFrm.hgDblClick(Sender: TObject);
 begin
