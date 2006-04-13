@@ -59,6 +59,7 @@ function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal): WideStr
 
 // service routines
 function TextHasUrls(var Text: WideString): Boolean;
+procedure ShrinkTextHasUrlsBuf;
 procedure CleanupTextHasUrlsBuf;
 
 implementation
@@ -111,7 +112,21 @@ var
   find_buf: PWideChar = nil;
   find_len: Integer = 0;
 
-// probably, we should run it more often, so buffer is not growing all the time
+const
+  SHRINK_ON_CALL = 50;
+  SHRINK_TO_LEN  = 250;
+
+var
+  calls_count: Integer = 0;
+
+// call this procedure periodically to limit find_buf growing
+procedure ShrinkTextHasUrlsBuf;
+begin
+  find_len := SHRINK_TO_LEN;
+  ReallocMem(find_buf,find_len*SizeOf(WideChar));
+  calls_count := 0;
+end;
+
 procedure CleanupTextHasUrlsBuf;
 begin
   FreeMem(find_buf,find_len*SizeOf(WideChar));
@@ -125,6 +140,12 @@ var
   HasProto, HasWWW: Boolean;
 begin
   // we are using Tnt_WStrPos because delphi's WStrPos even in Delphi2006 returns weird results
+
+  // shrink find_buf on every SHRINK_ON_CALL event, so it's not growing to infinity
+  Inc(calls_count);
+  if (calls_count >= SHRINK_ON_CALL) then
+    ShrinkTextHasUrlsBuf;
+
   Result := False;
   HasProto := Tnt_WStrPos(@Text[1],'://') <> nil;
   HasWWW := Tnt_WStrPos(@Text[1],'www.') <> nil;
@@ -472,8 +493,7 @@ end;
 
 initialization
   // allocate some mem, so first ReadEvents would start faster
-  find_len := 150;
-  GetMem(find_buf,find_len*SizeOf(WideChar));
+  ShrinkTextHasUrlsBuf;
 finalization
   CleanupTextHasUrlsBuf;
 end.
