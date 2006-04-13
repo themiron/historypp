@@ -315,6 +315,11 @@ uses EventDetailForm, PassForm, hpp_options, hpp_services;
 
 {$R *.DFM}
 
+const
+  HPP_SESS_YEARFORMAT  = 'yyyy';
+  HPP_SESS_MONTHFORMAT = 'mmmm';
+  HPP_SESS_DAYFORMAT   = 'd (h:nn)';
+
 function Max(a,b:integer):integer;
 begin if b>a then Result:=b else Result:=a end;
 function NotZero(x:dword):dword;//used that array doesn't store 0 for already loaded data
@@ -955,7 +960,7 @@ begin
       if Integer(year.Data) <> YearOf(dt) then year := nil;
     end;
     if year = nil then begin
-      year := tvSess.Items.AddChild(nil,FormatDateTime('yyyy',dt));
+      year := tvSess.Items.AddChild(nil,FormatDateTime(HPP_SESS_YEARFORMAT,dt));
       year.Data := Pointer(YearOf(dt));
       year.ImageIndex := 5;
       year.SelectedIndex := year.ImageIndex;
@@ -966,7 +971,7 @@ begin
       if Integer(month.Data) <> MonthOf(dt) then month := nil;
     end;
     if month = nil then begin
-      month := tvSess.Items.AddChild(year,FormatDateTime('mmmm',dt));
+      month := tvSess.Items.AddChild(year,FormatDateTime(HPP_SESS_MONTHFORMAT,dt));
       month.Data := Pointer(MonthOf(dt));
       case MonthOf(dt) of
         12,1..2: month.ImageIndex := 3;
@@ -976,7 +981,7 @@ begin
       end;
       month.SelectedIndex := month.ImageIndex;
     end;
-    day := tvSess.Items.AddChild(month,FormatDateTime('d (h:nn)',dt));
+    day := tvSess.Items.AddChild(month,FormatDateTime(HPP_SESS_DAYFORMAT,dt));
     day.Data := Pointer(idx);
     day.ImageIndex := 0;
     day.SelectedIndex := day.ImageIndex;
@@ -1473,7 +1478,7 @@ begin
   end;
   ts := Sessions[idx].TimestampFirst;
   dt := TimestampToDateTime(ts);
-  day.Text := FormatDateTime('d (h:nn)',dt);
+  day.Text := FormatDateTime(HPP_SESS_DAYFORMAT,dt);
   // now we need to reset item in grid
   // don't know how, probably need new procedure for grid
 end;
@@ -2398,13 +2403,13 @@ begin
       ts := Sessions[i].TimestampFirst;
       dt := TimestampToDateTime(ts);
       if (PrevYearNode = nil) or (DWord(PrevYearNode.Data) <> YearOf(dt)) then begin
-        PrevYearNode := tvSess.Items.AddChild(nil,FormatDateTime('yyyy',dt));
+        PrevYearNode := tvSess.Items.AddChild(nil,FormatDateTime(HPP_SESS_YEARFORMAT,dt));
         PrevYearNode.Data := Pointer(YearOf(dt));
         PrevYearNode.ImageIndex := 5;
         PrevYearNode.SelectedIndex := PrevYearNode.ImageIndex;
       end;
       if (PrevMonthNode = nil) or (DWord(PrevMonthNode.Data) <> MonthOf(dt)) then begin
-        PrevMonthNode := tvSess.Items.AddChild(PrevYearNode,FormatDateTime('mmmm',dt));
+        PrevMonthNode := tvSess.Items.AddChild(PrevYearNode,FormatDateTime(HPP_SESS_MONTHFORMAT,dt));
         PrevMonthNode.Data := Pointer(MonthOf(dt));
         case MonthOf(dt) of
           12,1..2: PrevMonthNode.ImageIndex := 3;
@@ -2414,7 +2419,7 @@ begin
         end;
         PrevMonthNode.SelectedIndex := PrevMonthNode.ImageIndex;
       end;
-      ti := tvSess.Items.AddChild(PrevMonthNode,FormatDateTime('d (h:nn)',dt));
+      ti := tvSess.Items.AddChild(PrevMonthNode,FormatDateTime(HPP_SESS_DAYFORMAT,dt));
       ti.Data := Pointer(i);
       ti.ImageIndex := 0;
       ti.SelectedIndex := ti.ImageIndex;
