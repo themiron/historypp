@@ -2551,8 +2551,13 @@ end;
 procedure THistoryGrid.WMSetCursor(var Message: TWMSetCursor);
 var
   p: TPoint;
+  FocusWnd: THandle;
 begin
   CheckBusy;
+  if not IsChild(GetParentForm(Self,False).Handle,GetFocus) then begin
+    inherited;
+    exit;
+  end;
   // button is pressed, exit
   if Message.HitTest = HTERROR then exit;
   p := ScreenToClient(Mouse.CursorPos);
