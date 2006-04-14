@@ -918,9 +918,6 @@ begin
   end;
 end;
 
-var
-  ItemRenderDetails: TItemRenderDetails;
-
 procedure TfmGlobalSearch.hgPopup(Sender: TObject);
 begin
   //SaveSelected1.Visible := False;
@@ -935,6 +932,8 @@ end;
 
 procedure TfmGlobalSearch.hgProcessRichText(Sender: TObject;
   Handle: Cardinal; Item: Integer);
+var
+  ItemRenderDetails: TItemRenderDetails;
 begin
   ZeroMemory(@ItemRenderDetails,SizeOf(ItemRenderDetails));
   ItemRenderDetails.hContact := GetSearchItem(Item).Contact.Handle;
