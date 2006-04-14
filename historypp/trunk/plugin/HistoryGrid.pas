@@ -3706,6 +3706,7 @@ procedure THistoryGrid.HandleRichEditMouse(Message: DWord; X, Y: Integer);
 var
   Item: Integer;
   ItemRect: TRect;
+  PrevHwnd: THandle;
   hh: Integer;
   RichX,RichY: word;
 begin
@@ -3721,9 +3722,11 @@ begin
     FRich.Height := FRichHeight;
     //res := SendMessage(FRich.Handle,WM_SETFOCUS,0,0);
     //res := SendMessage(FRich.Handle,Message,0,MakeLParam(RichX,RichY));
-    FRich.Perform(WM_SETFOCUS,0,0);
+    PrevHwnd := Windows.SetFocus(FRich.Handle);
+    //FRich.Perform(WM_SETFOCUS,0,0);
     FRich.Perform(Message,0,MakeLParam(RichX,RichY));
-    FRich.Perform(WM_KILLFOCUS,0,0);
+   // FRich.Perform(WM_KILLFOCUS,PrevHwnd,0);
+    Windows.SetFocus(PrevHwnd);
   end;
 end;
 
