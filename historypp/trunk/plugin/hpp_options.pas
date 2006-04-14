@@ -58,19 +58,20 @@ type
 
 const
 
-  HPP_ICON_CONTACTHISTORY = 0;
-  HPP_ICON_GLOBALSEARCH   = 1;
-  HPP_ICON_SESS_DIVIDER   = 2;
-  HPP_ICON_SESSION        = 3;
-  HPP_ICON_SESS_SUMMER    = 4;
-  HPP_ICON_SESS_AUTUMN    = 5;
-  HPP_ICON_SESS_WINTER    = 6;
-  HPP_ICON_SESS_SPRING    = 7;
-  HPP_ICON_SESS_YEAR      = 8;
-  HPP_ICON_HOTFILTER      = 9;
-  HPP_ICON_HOTFILTERWAIT  = 10;
+  HPP_ICON_CONTACTHISTORY    = 0;
+  HPP_ICON_GLOBALSEARCH      = 1;
+  HPP_ICON_SESS_DIVIDER      = 2;
+  HPP_ICON_SESSION           = 3;
+  HPP_ICON_SESS_SUMMER       = 4;
+  HPP_ICON_SESS_AUTUMN       = 5;
+  HPP_ICON_SESS_WINTER       = 6;
+  HPP_ICON_SESS_SPRING       = 7;
+  HPP_ICON_SESS_YEAR         = 8;
+  HPP_ICON_HOTFILTER         = 9;
+  HPP_ICON_HOTFILTERWAIT     = 10;
+  HPP_ICON_SEARCH_ALLRESULTS = 11;
 
-  hppIcons : array[0..10] of ThppIconsRec = (
+  hppIcons : array[0..11] of ThppIconsRec = (
     (name:'historypp_00'; desc:'Contact history'; i:0; handle:0),
     (name:'historypp_01'; desc:'History search'; i:1; handle:0),
     (name:'historypp_02'; desc:'Conversation divider'; i:2; handle:0),
@@ -81,7 +82,8 @@ const
     (name:'historypp_07'; desc:'Conversation spring'; i:7; handle:0),
     (name:'historypp_08'; desc:'Conversation year'; i:8; handle:0),
     (name:'historypp_09'; desc:'In-place filter'; i:9; handle:0),
-    (name:'historypp_10'; desc:'In-place filter wait'; i:10; handle:0)
+    (name:'historypp_10'; desc:'In-place filter wait'; i:10; handle:0),
+    (name:'historypp_11'; desc:'Search All Results'; i:11; handle:0)
   );
 
   hppFontItems: array[0..15] of ThppFontsRec = (
