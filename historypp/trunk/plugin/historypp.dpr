@@ -43,6 +43,7 @@ uses
   tntSystem,
   Forms,
   TntControls,
+  CommCtrl,
   hpp_global in 'hpp_global.pas',
   hpp_contacts in 'hpp_contacts.pas',
   hpp_database in 'hpp_database.pas',
@@ -295,6 +296,12 @@ begin
   if Assigned(fmGlobalSearch) then begin
     fmGlobalSearch.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_GLOBALSEARCH].handle);
     fmGlobalSearch.pbFilter.Repaint;
+    if GlobalSearchAllResultsIcon <> -1 then begin
+      fmGlobalSearch.lvContacts.Items.BeginUpdate;
+      ImageList_ReplaceIcon(fmGlobalSearch.ilContacts.Handle,
+        GlobalSearchAllResultsIcon,hppIcons[HPP_ICON_SEARCH_ALLRESULTS].Handle);
+      fmGlobalSearch.lvContacts.Items.EndUpdate;
+    end;
   end;
   for i:=0 to HstWindowList.Count-1 do begin
     THistoryFrm(HstWindowList[i]).Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
