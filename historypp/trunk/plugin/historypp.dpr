@@ -291,8 +291,10 @@ var
 begin
   Result := 0;
   LoadIcons2;
-  if Assigned(fmGlobalSearch) then
+  if Assigned(fmGlobalSearch) then begin
     fmGlobalSearch.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_GLOBALSEARCH].handle);
+    fmGlobalSearch.pbFilter.Repaint;
+  end;
   for i:=0 to HstWindowList.Count-1 do begin
     THistoryFrm(HstWindowList[i]).Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
     THistoryFrm(HstWindowList[i]).LoadSessionIcons;

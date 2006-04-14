@@ -103,10 +103,11 @@ type
     paHistory: TtntPanel;
     hg: THistoryGrid;
     paFilter: TtntPanel;
-    imFilter: TImage;
     sbClearFilter: TTntSpeedButton;
     edFilter: TTntEdit;
-    imFilterWait: TImage;
+    imFilter: TImage;
+    pbFilter: TPaintBox;
+    procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
     procedure sbClearFilterClick(Sender: TObject);
@@ -270,7 +271,7 @@ begin
   MakeFontsParent(Self);
 
   ContactList := TObjectList.Create;
-end;
+ end;
 
 procedure TfmGlobalSearch.SMFinished(var M: TMessage);
 var
@@ -419,14 +420,18 @@ begin
 end;
 
 procedure TfmGlobalSearch.StartHotFilterTimer;
+var
+  RepaintIcon: Boolean;
 begin
   if tiFilter.Interval = 0 then
     EndHotFilterTimer
   else begin
     tiFilter.Enabled := False;
     tiFilter.Enabled := True;
-    imFilter.Visible := False;
-    imFilterWait.Visible := True;
+    if pbFilter.Tag <> 1 then begin // use Tag to not repaint every keystroke
+      pbFilter.Tag := 1;
+      pbFilter.Repaint;
+    end;
   end;
 end;
 
@@ -802,6 +807,19 @@ begin
     end;
 end;
 
+procedure TfmGlobalSearch.pbFilterPaint(Sender: TObject);
+var
+  ic: hIcon;
+begin
+  if tiFilter.Enabled then
+    ic := hppIcons[HPP_ICON_HOTFILTERWAIT].Handle
+  else
+    ic := hppIcons[HPP_ICON_HOTFILTER].Handle;
+
+  DrawIconEx(pbFilter.Canvas.Handle,0,0,ic,
+    16,16,0,pbFilter.Canvas.Brush.Handle,DI_NORMAL);
+end;
+
 procedure TfmGlobalSearch.ReplyQuoted(Item: Integer);
 var
   Txt: WideString;
@@ -894,8 +912,10 @@ begin
   tiFilter.Enabled := False;
   HotFilterString := edFilter.Text;
   hg.UpdateFilter;
-  imFilter.Visible := True;
-  imFilterWait.Visible := False;
+  if pbFilter.Tag <> 0 then begin
+    pbFilter.Tag := 0;
+    pbFilter.Repaint;
+  end;
 end;
 
 var
@@ -909,12 +929,6 @@ begin
       SendMessage1.Visible := False;
       ReplyQuoted1.Visible := False;
     end;
-    //Delete1.Visible := True;
-    //if hg.SelCount > 1 then
-    //  SaveSelected1.Visible := True;
-    //AddMenu(Options1,pmAdd,pmGrid,-1);
-    //AddMenu(ANSICodepage1,pmAdd,pmGrid,-1);
-    //AddMenu(ContactRTLmode1,pmAdd,pmGrid,-1);
     pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
   end;
 end;
