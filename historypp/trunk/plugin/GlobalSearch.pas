@@ -153,6 +153,8 @@ type
     procedure bnAdvancedClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure hgSelect(Sender: TObject; Item, OldItem: Integer);
+    procedure Copy1Click(Sender: TObject);
+    procedure CopyText1Click(Sender: TObject);
   private
     WasReturnPressed: Boolean;
     LastUpdateTime: Cardinal;
@@ -827,8 +829,8 @@ procedure TfmGlobalSearch.ReplyQuoted(Item: Integer);
 var
   Txt: WideString;
 begin
-  if GetSearchItem(Item).Contact.Handle = 0 then exit;
   if (item < 0) or (item > hg.Count-1) then exit;
+  if GetSearchItem(Item).Contact.Handle = 0 then exit;
   if mtIncoming in hg.Items[Item].MessageType then
     Txt := GetSearchItem(Item).Contact.Name
   else
@@ -1337,6 +1339,18 @@ begin
     sb.SimpleText := WideFormat(TranslateWideW('Searching... %.0n items in %d contacts found'),[Length(History)/1, ContactsFound])
   else
     sb.SimpleText := t;
+end;
+
+procedure TfmGlobalSearch.Copy1Click(Sender: TObject);
+begin
+  if hg.Selected = -1 then exit;
+  hg.CopyToClipSelected('%n, %t:\n%m',CP_ACP);
+end;
+
+procedure TfmGlobalSearch.CopyText1Click(Sender: TObject);
+begin
+  if hg.Selected = -1 then exit;
+  hg.CopyToClipSelected('%m\n',CP_ACP);
 end;
 
 initialization
