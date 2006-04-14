@@ -61,23 +61,27 @@ const
   HPP_ICON_CONTACTHISTORY = 0;
   HPP_ICON_GLOBALSEARCH   = 1;
   HPP_ICON_SESS_DIVIDER   = 2;
-  HPP_ICON_SESS_ICON      = 3;
+  HPP_ICON_SESSION        = 3;
   HPP_ICON_SESS_SUMMER    = 4;
   HPP_ICON_SESS_AUTUMN    = 5;
   HPP_ICON_SESS_WINTER    = 6;
   HPP_ICON_SESS_SPRING    = 7;
   HPP_ICON_SESS_YEAR      = 8;
+  HPP_ICON_HOTFILTER      = 9;
+  HPP_ICON_HOTFILTERWAIT  = 10;
 
-  hppIcons : array[0..8] of ThppIconsRec = (
-    (name:'historypp_0'; desc:'Contact history'; i:0; handle:0),
-    (name:'historypp_1'; desc:'History search'; i:1; handle:0),
-    (name:'historypp_2'; desc:'Conversation divider'; i:2; handle:0),
-    (name:'historypp_3'; desc:'Conversation icon'; i:3; handle:0),
-    (name:'historypp_4'; desc:'Conversation summer'; i:4; handle:0),
-    (name:'historypp_5'; desc:'Conversation autumn'; i:5; handle:0),
-    (name:'historypp_6'; desc:'Conversation winter'; i:6; handle:0),
-    (name:'historypp_7'; desc:'Conversation spring'; i:7; handle:0),
-    (name:'historypp_8'; desc:'Conversation year'; i:8; handle:0)
+  hppIcons : array[0..10] of ThppIconsRec = (
+    (name:'historypp_00'; desc:'Contact history'; i:0; handle:0),
+    (name:'historypp_01'; desc:'History search'; i:1; handle:0),
+    (name:'historypp_02'; desc:'Conversation divider'; i:2; handle:0),
+    (name:'historypp_03'; desc:'Conversation icon'; i:3; handle:0),
+    (name:'historypp_04'; desc:'Conversation summer'; i:4; handle:0),
+    (name:'historypp_05'; desc:'Conversation autumn'; i:5; handle:0),
+    (name:'historypp_06'; desc:'Conversation winter'; i:6; handle:0),
+    (name:'historypp_07'; desc:'Conversation spring'; i:7; handle:0),
+    (name:'historypp_08'; desc:'Conversation year'; i:8; handle:0),
+    (name:'historypp_09'; desc:'In-place filter'; i:9; handle:0),
+    (name:'historypp_10'; desc:'In-place filter wait'; i:10; handle:0)
   );
 
   hppFontItems: array[0..15] of ThppFontsRec = (
