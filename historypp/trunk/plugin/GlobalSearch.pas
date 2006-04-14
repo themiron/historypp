@@ -221,6 +221,9 @@ var
 const
   DEFAULT_SEARCH_TEXT = 'http: ftp: www. ftp.';
 
+var
+  GlobalSearchAllResultsIcon: Integer = -1;
+
 implementation
 
 uses hpp_options, PassForm, hpp_itemprocess, hpp_forms, hpp_messages,
@@ -228,9 +231,6 @@ uses hpp_options, PassForm, hpp_itemprocess, hpp_forms, hpp_messages,
 
 {$R *.DFM}
 
-var
-  AllResultsIcon: Integer = -1;
-  
 function TfmGlobalSearch.AddContact(hContact: Integer): TContactInfo;
 var
   ci: TContactInfo;
@@ -329,7 +329,7 @@ begin
     if lvContacts.Items.Count = 0 then begin
     li := lvContacts.Items.Add;
       li.Caption := TranslateWideW('All Results');
-      li.ImageIndex := AllResultsIcon;
+      li.ImageIndex := GlobalSearchAllResultsIcon;
       li.Selected := True;
     end;
     li := lvContacts.Items.Add;
@@ -1003,8 +1003,8 @@ begin
   LoadWindowPosition;
 
   ilContacts.Handle := PluginLink.CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
-  if AllResultsIcon = -1 then
-    AllResultsIcon := ImageList_AddIcon(ilContacts.Handle,hppIcons[HPP_ICON_SEARCH_ALLRESULTS].Handle);
+  if GlobalSearchAllResultsIcon = -1 then
+    GlobalSearchAllResultsIcon := ImageList_AddIcon(ilContacts.Handle,hppIcons[HPP_ICON_SEARCH_ALLRESULTS].Handle);
 
   HookEvents;
 
