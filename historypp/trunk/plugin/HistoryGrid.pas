@@ -60,7 +60,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   TntSysUtils,TntWindows, TntControls,TntGraphics, TntComCtrls, Menus, StdCtrls,
   Math, mmsystem,
-  hpp_global, hpp_contacts, hpp_itemprocess, m_api,
+  hpp_global, hpp_contacts, hpp_itemprocess, hpp_events, m_api,
   Contnrs,
   VertSB,
   RichEdit, ShellAPI;
@@ -477,10 +477,13 @@ type
 
     procedure CalcAllHeight;
     procedure MakeTopmost(Item: Integer);
-  published
+
     procedure SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit; ProcessTag: Boolean = true);
     function GetItemRTL(Item: Integer): Boolean;
 
+    procedure CopyToClipSelected(const Format: WideString = ''; Codepage: Cardinal = CP_ACP);
+
+  published
     property MultiSelect: Boolean read FMultiSelect write SetMultiSelect;
     property ShowHeaders: Boolean read FShowHeaders write SetShowHeaders;
 
@@ -2554,7 +2557,11 @@ var
   FocusWnd: THandle;
 begin
   CheckBusy;
+  {$IFDEF COMPILER_9_UP}
   if not IsChild(GetParentForm(Self,False).Handle,GetFocus) then begin
+  {$ELSE}
+  if not IsChild(GetParentForm(Self).Handle,GetFocus) then begin
+  {$ENDIF}
     inherited;
     exit;
   end;
@@ -3856,6 +3863,43 @@ begin
     end;
   ShowProgress := False;
   State := gsIdle;
+end;
+
+procedure THistoryGrid.CopyToClipSelected(const Format: WideString = ''; Codepage: Cardinal = CP_ACP);
+
+  function GetItemText(Item: Integer; const Format: WideString = ''): WideString;
+  var
+    name: WideString;
+  begin
+    Result := Format;
+    Result := Tnt_WideStringReplace(Result,'\n',#13#10,[rfReplaceAll]);
+    if Assigned(FGetNameData) then
+      FGetNameData(Self,Item,name)
+    else if mtIncoming in Items[Item].MessageType then
+      name := ContactName
+    else
+      name := ProfileName;
+    Result := Tnt_WideStringReplace(Result,'%n',name,[rfReplaceAll]);
+    Result := Tnt_WideStringReplace(Result,'%t',TimestampToString(Items[Item].Time),[rfReplaceAll]);
+    Result := Tnt_WideStringReplace(Result,'%m',Items[Item].Text,[rfReplaceAll]);
+  end;
+
+var
+  t: WideString;
+  i: Integer;
+begin
+  if Selected = -1 then exit;
+  t := '';
+  if SelCount = 1 then
+    t := GetItemText(Selected, Format)
+  else begin
+    if SelItems[0] > SelItems[SelCount-1] then
+      for i := 0 to SelCount-1 do t := t + GetItemText(SelItems[i],Format) + #13#10
+    else
+      for i := SelCount-1 downto 0 do t := t + GetItemText(SelItems[i],Format) + #13#10;
+    t := TrimRight(t);
+  end;
+  CopyToClip(t,Handle,Codepage);
 end;
 
 { TGridOptions }

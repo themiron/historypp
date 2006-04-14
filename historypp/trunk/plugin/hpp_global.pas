@@ -89,8 +89,8 @@ function AnsiToWideString(const S: AnsiString; CodePage: Cardinal): WideString;
 function WideToAnsiString(const WS: WideString; CodePage: Cardinal): AnsiString;
 function TranslateAnsiW(const S: AnsiString): WideString;
 function TranslateWideW(const WS: WideString): WideString;
-
 function MakeFileName(FileName: AnsiString): AnsiString;
+procedure CopyToClip(s: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
 
 implementation
 
@@ -160,6 +160,69 @@ begin
   Result := StringReplace(Result,'<',']',[rfReplaceAll]);
   Result := StringReplace(Result,'>','[',[rfReplaceAll]);
   Result := StringReplace(Result,'|','',[rfReplaceAll]);
+end;
+
+procedure CopyToClip(s: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
+
+  function StrAllocW(Size: Cardinal): PWideChar;
+  begin
+    Size := SizeOf(WideChar) * Size + SizeOf(Cardinal);
+    GetMem(Result, Size);
+    FillChar(Result^, Size, 0);
+    Cardinal(Pointer(Result)^) := Size;
+    Inc(Result, SizeOf(Cardinal) div SizeOf(WideChar));
+  end;
+
+  procedure StrDisposeW(Str: PWideChar);
+  begin
+    if Str <> nil then begin
+      Dec(Str, SizeOf(Cardinal) div SizeOf(WideChar));
+      FreeMem(Str, Cardinal(Pointer(Str)^));
+    end;
+  end;
+
+var
+  WData, AData, LData: THandle;
+  LDataPtr: PCardinal;
+  WDataPtr: PWideChar;
+  ADataPtr: PAnsiChar;
+  ASize,WSize: Integer;
+  a: AnsiString;
+begin
+  ASize := Length(s)+1;
+  WSize := ASize*SizeOf(WideChar);
+  OpenClipboard(Handle);
+  try
+    EmptyClipboard;
+    WData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, WSize);
+    AData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, ASize);
+    LData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, SizeOf(Cardinal));
+    try
+      WDataPtr := GlobalLock(WData);
+      ADataPtr := GlobalLock(AData);
+      LDataPtr := GlobalLock(LData);
+      a := WideToAnsiString(S,CodePage);
+      try
+        Move(s[1],WDataPtr^,WSize);
+        Move(a[1],ADataPtr^,ASize);
+        LDataPtr^ := CodePage;
+        SetClipboardData(CF_UNICODETEXT, WData);
+        SetClipboardData(CF_TEXT, AData);
+        SetClipboardData(CF_LOCALE, LData);
+      finally
+        GlobalUnlock(WData);
+        GlobalUnlock(AData);
+        GlobalUnlock(LData);
+      end;
+    except
+      GlobalFree(WData);
+      GlobalFree(AData);
+      GlobalFree(LData);
+    raise;
+    end;
+  finally
+    CloseClipBoard;
+  end;
 end;
 
 begin

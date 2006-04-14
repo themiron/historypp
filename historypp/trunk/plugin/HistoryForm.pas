@@ -429,74 +429,6 @@ begin
 end;
 
 (*
-Removes some glitches when copying non-latin
-letters to clipboard on NT systems
-*)
-procedure CopyToClip(s: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
-
-function StrAllocW(Size: Cardinal): PWideChar;
-begin
-  Size := SizeOf(WideChar) * Size + SizeOf(Cardinal);
-  GetMem(Result, Size);
-  FillChar(Result^, Size, 0);
-  Cardinal(Pointer(Result)^) := Size;
-  Inc(Result, SizeOf(Cardinal) div SizeOf(WideChar));
-end;
-
-procedure StrDisposeW(Str: PWideChar);
-begin
-  if Str <> nil then
-  begin
-    Dec(Str, SizeOf(Cardinal) div SizeOf(WideChar));
-    FreeMem(Str, Cardinal(Pointer(Str)^));
-  end;
-end;
-
-var
-  WData, AData, LData: THandle;
-  LDataPtr: PCardinal;
-  WDataPtr: PWideChar;
-  ADataPtr: PAnsiChar;
-  ASize,WSize: Integer;
-  a: AnsiString;
-begin
-  ASize := Length(s)+1;
-  WSize := ASize*2;
-  OpenClipboard(Handle);
-  try
-    EmptyClipboard;
-    WData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, WSize);
-    AData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, ASize);
-    LData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, SizeOf(Cardinal));
-    try
-      WDataPtr := GlobalLock(WData);
-      ADataPtr := GlobalLock(AData);
-      LDataPtr := GlobalLock(LData);
-      a := WideToAnsiString(S,CodePage);
-      try
-        Move(s[1],WDataPtr^,WSize);
-        Move(a[1],ADataPtr^,ASize);
-        LDataPtr^ := CodePage;
-        SetClipboardData(CF_UNICODETEXT, WData);
-        SetClipboardData(CF_TEXT, AData);
-        SetClipboardData(CF_LOCALE, LData);
-      finally
-        GlobalUnlock(WData);
-        GlobalUnlock(AData);
-        GlobalUnlock(LData);
-      end;
-    except
-      GlobalFree(WData);
-      GlobalFree(AData);
-      GlobalFree(LData);
-    raise;
-    end;
-  finally
-    CloseClipBoard;
-  end;
-end;
-
-(*
 This function gets only name of the file
 and tries to make it FAT-happy, so we trim out and
 ":"-s, "\"-s and so on...
@@ -1288,31 +1220,9 @@ begin
 end;
 
 procedure THistoryFrm.Copy1Click(Sender: TObject);
-  function GetItemText(Item: Integer): WideString;
-  begin
-    if mtIncoming in hg.Items[Item].MessageType then
-      Result := hg.ContactName
-    else
-      Result := hg.ProfileName;
-    Result := Result+', '+TimestampToString(hg.Items[Item].Time)+' :';
-    Result := Result+#13#10+hg.Items[Item].Text;
-  end;
-var
-  t: WideString;
-  i: Integer;
 begin
   if hg.Selected = -1 then exit;
-  t := '';
-  if hg.SelCount = 1 then
-    t := GetItemText(hg.Selected)
-  else begin
-    if hg.SelItems[0] > hg.SelItems[hg.SelCount-1] then
-      for i := 0 to hg.SelCount-1 do t := t+GetItemText(hg.SelItems[i]) + #13#10
-    else
-      for i := hg.SelCount-1 downto 0 do t := t+GetItemText(hg.SelItems[i]) + #13#10;
-    t := TrimRight(t);
-  end;
-  CopyToClip(t,Handle,UserCodepage);
+  hg.CopyToClipSelected('%n, %t:\n%m',UserCodePage);
 end;
 
 procedure THistoryFrm.Details1Click(Sender: TObject);
@@ -2168,26 +2078,9 @@ begin
 end;
 
 procedure THistoryFrm.CopyText1Click(Sender: TObject);
-  function GetItemText(Item: Integer): WideString;
-  begin
-    Result := hg.Items[Item].Text;
-  end;
-var
-  t: WideString;
-  i: Integer;
 begin
   if hg.Selected = -1 then exit;
-  t := '';
-  if hg.SelCount = 1 then
-    t := GetItemText(hg.Selected)
-  else begin
-    if hg.SelItems[0] > hg.SelItems[hg.SelCount-1] then
-      for i := 0 to hg.SelCount-1 do t := t+GetItemText(hg.SelItems[i]) + #13#10 + #13#10
-    else
-      for i := hg.SelCount-1 downto 0 do t := t+GetItemText(hg.SelItems[i]) + #13#10 + #13#10;
-    t := TrimRight(t);
-  end;
-  CopyToClip(t,Handle,UserCodepage);
+  hg.CopyToClipSelected('%m\n',UserCodePage);
 end;
 
 procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
