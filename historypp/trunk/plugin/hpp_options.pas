@@ -58,6 +58,16 @@ type
 
 const
 
+  HPP_ICON_CONTACTHISTORY = 0;
+  HPP_ICON_GLOBALSEARCH   = 1;
+  HPP_ICON_SESS_DIVIDER   = 2;
+  HPP_ICON_SESS_ICON      = 3;
+  HPP_ICON_SESS_SUMMER    = 4;
+  HPP_ICON_SESS_AUTUMN    = 5;
+  HPP_ICON_SESS_WINTER    = 6;
+  HPP_ICON_SESS_SPRING    = 7;
+  HPP_ICON_SESS_YEAR      = 8;
+
   hppIcons : array[0..8] of ThppIconsRec = (
     (name:'historypp_0'; desc:'Contact history'; i:0; handle:0),
     (name:'historypp_1'; desc:'History search'; i:1; handle:0),

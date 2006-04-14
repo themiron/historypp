@@ -869,15 +869,15 @@ begin
   InflateRect(ItemRect,-3,-3);
 
   IconOffset := 0;
-  if hppIcons[2].Handle <> 0 then begin
+  if hppIcons[HPP_ICON_SESS_DIVIDER].Handle <> 0 then begin
     IconTop := ((ItemRect.Bottom-ItemRect.Top-16) div 2);
     IconOffset := 16 + 2;
     if RTL then
       DrawIconEx(Canvas.Handle,ItemRect.Right-16,ItemRect.Top + IconTop,
-        hppIcons[2].Handle,16,16,0,0,DI_NORMAL)
+        hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL)
     else
       DrawIconEx(Canvas.Handle,ItemRect.Left,ItemRect.Top + IconTop,
-        hppIcons[2].Handle,16,16,0,0,DI_NORMAL);
+        hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL);
   end;
 
   text := WideFormat(TranslateWideW('Conversation started at %s'),[GetTime(Items[Index].Time)]);

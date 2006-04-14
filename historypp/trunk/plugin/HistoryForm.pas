@@ -594,7 +594,7 @@ var
   mi: TMenuItem;
 begin
   Icon.ReleaseHandle;
-  Icon.Handle := CopyIcon(hppIcons[0].handle);
+  Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
   LoadSessionIcons;
   
   DesktopFont := True;
@@ -655,12 +655,12 @@ begin
   else
     il := ilSessions.Handle;
 
-  ImageList_AddIcon(il,hppIcons[3].handle);
-  ImageList_AddIcon(il,hppIcons[4].handle);
-  ImageList_AddIcon(il,hppIcons[5].handle);
-  ImageList_AddIcon(il,hppIcons[6].handle);
-  ImageList_AddIcon(il,hppIcons[7].handle);
-  ImageList_AddIcon(il,hppIcons[8].handle);
+  ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_ICON].handle);
+  ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_SUMMER].handle);
+  ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_AUTUMN].handle);
+  ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_WINTER].handle);
+  ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_SPRING].handle);
+  ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_YEAR].handle);
 end;
 
 procedure THistoryFrm.SavePosition;
