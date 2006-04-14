@@ -293,8 +293,10 @@ begin
   LoadIcons2;
   if Assigned(fmGlobalSearch) then
     fmGlobalSearch.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_GLOBALSEARCH].handle);
-  for i:=0 to HstWindowList.Count-1 do
+  for i:=0 to HstWindowList.Count-1 do begin
     THistoryFrm(HstWindowList[i]).Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
+    THistoryFrm(HstWindowList[i]).LoadSessionIcons;
+  end;
   //change menu icons
   ZeroMemory(@menuitem,SizeOf(menuItem));
   menuitem.cbSize := SizeOf(menuItem);
