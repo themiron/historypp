@@ -649,18 +649,24 @@ procedure THistoryFrm.LoadSessionIcons;
 var
   il: THandle;
 begin
-  il := ImageList_Create(16,16,ILC_COLOR32 or ILC_MASK,8,2);
-  if il <> 0 then
-    ilSessions.Handle := il
-  else
-    il := ilSessions.Handle;
+  tvSess.Items.BeginUpdate;
+  try
+    ImageList_Remove(ilSessions.Handle,-1); // clears image list
+    il := ImageList_Create(16,16,ILC_COLOR32 or ILC_MASK,8,2);
+    if il <> 0 then
+      ilSessions.Handle := il
+    else
+      il := ilSessions.Handle;
 
-  ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_ICON].handle);
-  ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_SUMMER].handle);
-  ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_AUTUMN].handle);
-  ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_WINTER].handle);
-  ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_SPRING].handle);
-  ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_YEAR].handle);
+    ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_ICON].handle);
+    ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_SUMMER].handle);
+    ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_AUTUMN].handle);
+    ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_WINTER].handle);
+    ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_SPRING].handle);
+    ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_YEAR].handle);
+  finally
+    tvSess.Items.EndUpdate;
+  end;
 end;
 
 procedure THistoryFrm.SavePosition;
