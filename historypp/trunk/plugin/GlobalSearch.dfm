@@ -1,9 +1,9 @@
 object fmGlobalSearch: TfmGlobalSearch
-  Left = 280
-  Top = 110
+  Left = 205
+  Top = 107
+  Width = 559
+  Height = 552
   Caption = 'Global History Search'
-  ClientHeight = 525
-  ClientWidth = 551
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -381,12 +381,12 @@ object fmGlobalSearch: TfmGlobalSearch
     object Copy1: TTntMenuItem
       Caption = '&Copy'
       ShortCut = 16451
-      Visible = False
+      OnClick = Copy1Click
     end
     object CopyText1: TTntMenuItem
       Caption = 'Copy &Text'
       ShortCut = 16468
-      Visible = False
+      OnClick = CopyText1Click
     end
     object N1: TTntMenuItem
       Caption = '-'
