@@ -163,7 +163,7 @@ begin
   menuitem.pszName := PChar(translate('View &History'));
   menuitem.pszService := MS_HISTORY_SHOWCONTACTHISTORY;
   //menuitem.hIcon := HistoryIcon;
-  menuitem.hIcon := hppIcons[0].handle;
+  menuitem.hIcon := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
   menuitem.pszContactOwner := nil;    //all contacts
   MenuHandles[0] := PluginLink.CallService(MS_CLIST_ADDCONTACTMENUITEM,0,DWord(@menuItem));
   //create menu item in main menu for system history
@@ -174,7 +174,7 @@ begin
   menuitem.Position:=500060001;
   menuitem.pszService := MS_HPP_SHOWGLOBALSEARCH;
   //menuitem.hIcon := GlobalSearchIcon;
-  menuitem.hIcon := hppIcons[1].handle;
+  menuitem.hIcon := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
   menuitem.pszName:=PChar(translate('His&tory Search'));
   MenuHandles[2] := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWord(@menuItem));
 
@@ -292,17 +292,17 @@ begin
   Result := 0;
   LoadIcons2;
   if Assigned(fmGlobalSearch) then
-    fmGlobalSearch.Icon.Handle := CopyIcon(hppIcons[1].handle);
+    fmGlobalSearch.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_GLOBALSEARCH].handle);
   for i:=0 to HstWindowList.Count-1 do
-    THistoryFrm(HstWindowList[i]).Icon.Handle := CopyIcon(hppIcons[0].handle);
+    THistoryFrm(HstWindowList[i]).Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
   //change menu icons
   ZeroMemory(@menuitem,SizeOf(menuItem));
   menuitem.cbSize := SizeOf(menuItem);
   menuitem.flags := CMIM_ICON;
-  menuitem.hIcon := hppIcons[0].handle;
+  menuitem.hIcon := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
   PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0], DWord(@menuItem));
   PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[1], DWord(@menuItem));
-  menuitem.hIcon := hppIcons[1].handle;
+  menuitem.hIcon := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
   PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[2], DWord(@menuItem));
 end;
 

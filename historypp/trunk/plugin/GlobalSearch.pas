@@ -971,7 +971,7 @@ begin
   ShowContacts(False);
 
   IsSearching := False;
-  Icon.Handle := CopyIcon(hppIcons[1].handle);
+  Icon.Handle := CopyIcon(hppIcons[HPP_ICON_GLOBALSEARCH].handle);
 
   hg.Options := GridOptions;
   hg.TxtStartup := Translate('Ready to search')+
