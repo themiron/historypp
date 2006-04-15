@@ -61,9 +61,14 @@ const
     // that is used for drawing a cell, but the one
     // used for "inline editing".
     IRDF_INLINE   = 2;
+    // IRDF_EVENT. The RichEdit provided is from "Open Event"
+    // window. It's the window which opens when you right-click
+    // item in contact's history and select "Open"
+    IRDF_EVENT    = 4;
 
 type
   TItemRenderDetails = packed record
+    cbSize: DWord; // size of the structure in bytes
     hContact: THandle; // handle to the contact for which the event is processed
     hDBEvent: THandle; // handle to the event which is processed
     dwEventTime: DWord; // timestamp of the event
@@ -73,7 +78,6 @@ type
     bHistoryWindow: Byte; // What kind of window history. See IRDHW_* values
     pProto: PChar; // Proto of the event, if available
     pModule: PChar; // Module of the event, if available
-    dwReserved: DWord; // Reserved for future use, for now it's zero
     end;
 
   PItemRenderDetails = ^TItemRenderDetails;

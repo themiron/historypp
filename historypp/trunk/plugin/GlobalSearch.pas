@@ -942,6 +942,7 @@ var
   ItemRenderDetails: TItemRenderDetails;
 begin
   ZeroMemory(@ItemRenderDetails,SizeOf(ItemRenderDetails));
+  ItemRenderDetails.cbSize := SizeOf(ItemRenderDetails);
   ItemRenderDetails.hContact := GetSearchItem(Item).Contact.Handle;
   ItemRenderDetails.hDBEvent := GetSearchItem(Item).hDBEvent;
   ItemRenderDetails.pProto := Pointer(hg.Items[Item].Proto);
