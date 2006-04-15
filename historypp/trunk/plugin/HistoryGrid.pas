@@ -2558,6 +2558,10 @@ var
   FocusWnd: THandle;
 begin
   CheckBusy;
+  if GetFocus = Handle then begin
+    inherited;
+    exit;
+  end;
   {$IFDEF COMPILER_9_UP}
   if not IsChild(GetParentForm(Self,False).Handle,GetFocus) then begin
   {$ELSE}
@@ -2566,6 +2570,7 @@ begin
     inherited;
     exit;
   end;
+
   // button is pressed, exit
   if Message.HitTest = HTERROR then exit;
   p := ScreenToClient(Mouse.CursorPos);
