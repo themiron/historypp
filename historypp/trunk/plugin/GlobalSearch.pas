@@ -276,6 +276,7 @@ begin
   MakeFontsParent(Self);
 
   ContactList := TObjectList.Create;
+  hg.Codepage := hppCodepage;
  end;
 
 procedure TfmGlobalSearch.SMFinished(var M: TMessage);
@@ -529,14 +530,14 @@ begin
   CopyText1.Caption := TranslateWideW(CopyText1.Caption);
   SaveSelected1.Caption := TranslateWideW(SaveSelected1.Caption);
 
-  hg.TxtFullLog := Translate(PChar(hg.txtFullLog));
-  hg.TxtGenHist1 := Translate(PChar(hg.txtGenHist1));
-  hg.TxtGenHist2 := Translate(PChar(hg.txtGenHist2));
-  hg.TxtHistExport := Translate(PChar(hg.TxtHistExport));
-  hg.TxtNoItems := Translate(PChar(hg.TxtNoItems));
-  hg.TxtNoSuch := Translate(PChar(hg.TxtNoSuch));
-  hg.TxtPartLog := Translate(PChar(hg.TxtPartLog));
-  hg.txtStartUp := Translate(PChar(hg.txtStartUp));
+  hg.TxtFullLog := TranslateWideW(hg.txtFullLog);
+  hg.TxtGenHist1 := TranslateWideW(hg.txtGenHist1);
+  hg.TxtGenHist2 := TranslateWideW(hg.txtGenHist2);
+  hg.TxtHistExport := TranslateWideW(hg.TxtHistExport);
+  hg.TxtNoItems := TranslateWideW(hg.TxtNoItems);
+  hg.TxtNoSuch := TranslateWideW(hg.TxtNoSuch);
+  hg.TxtPartLog := TranslateWideW(hg.TxtPartLog);
+  hg.txtStartUp := TranslateWideW(hg.txtStartUp);
 
   edSearch.Left := laSearch.Left + laSearch.Width + 5;
   edSearch.Width := bnSearch.Left - edSearch.Left - 5;
@@ -992,8 +993,8 @@ begin
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_GLOBALSEARCH].handle);
 
   hg.Options := GridOptions;
-  hg.TxtStartup := Translate('Ready to search')+
-    #10#13#10#13+Translate('Click Search button to start');
+  hg.TxtStartup := TranslateWideW('Ready to search')+
+    #10#13#10#13+TranslateWideW('Click Search button to start');
 
   PassMode := GetPassMode;
   cbPass.Enabled := (PassMode <> PASSMODE_PROTNONE);
@@ -1344,13 +1345,13 @@ end;
 procedure TfmGlobalSearch.Copy1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  hg.CopyToClipSelected('%n, %t:\n%m',CP_ACP);
+  hg.CopyToClipSelected('%n, %t:\n%m',GetSearchItem(hg.Selected).Contact.Codepage);
 end;
 
 procedure TfmGlobalSearch.CopyText1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  hg.CopyToClipSelected('%m\n',CP_ACP);
+  hg.CopyToClipSelected('%m\n',GetSearchItem(hg.Selected).Contact.Codepage);
 end;
 
 initialization

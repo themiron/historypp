@@ -507,6 +507,7 @@ begin
   hg.ContactName := GetContactDisplayName(hContact, Protocol, true);
 
   UserCodepage := GetContactCodePage(hContact, Protocol);
+  hg.Codepage := UserCodepage;
   hg.RTLMode := GetContactRTLModeTRTL(hContact, Protocol);
 
   if hContact = 0 then Caption := TranslateW('System History')
@@ -1935,14 +1936,14 @@ var
 begin
   Caption := TranslateWideW(Caption);
 
-  hg.TxtFullLog := Translate(PChar(hg.txtFullLog));
-  hg.TxtGenHist1 := Translate(PChar(hg.txtGenHist1));
-  hg.TxtGenHist2 := Translate(PChar(hg.txtGenHist2));
-  hg.TxtHistExport := Translate(PChar(hg.TxtHistExport));
-  hg.TxtNoItems := Translate(PChar(hg.TxtNoItems));
-  hg.TxtNoSuch := Translate(PChar(hg.TxtNoSuch));
-  hg.TxtPartLog := Translate(PChar(hg.TxtPartLog));
-  hg.txtStartUp := Translate(PChar(hg.txtStartUp));
+  hg.TxtFullLog := TranslateWideW(hg.txtFullLog);
+  hg.TxtGenHist1 := TranslateWideW(hg.txtGenHist1);
+  hg.TxtGenHist2 := TranslateWideW(hg.txtGenHist2);
+  hg.TxtHistExport := TranslateWideW(hg.TxtHistExport);
+  hg.TxtNoItems := TranslateWideW(hg.TxtNoItems);
+  hg.TxtNoSuch := TranslateWideW(hg.TxtNoSuch);
+  hg.TxtPartLog := TranslateWideW(hg.TxtPartLog);
+  hg.txtStartUp := TranslateWideW(hg.txtStartUp);
 
   laFilter.Caption := TranslateWideW(laFilter.Caption);
 
