@@ -2051,6 +2051,8 @@ var
   Node: TTntTreeNode;
   count,time: DWord;
   t: WideString;
+  dt: TDateTime;
+  timestr: WideString;
 begin
   Node := tvSess.GetNodeAt(x,y);
   if (Node = nil) or (Node.Level <> 2) then begin
@@ -2069,14 +2071,19 @@ begin
   time := Sessions[DWord(Node.Data)].TimestampLast - Sessions[DWord(Node.Data)].TimestampFirst;
   count := Sessions[DWord(Node.Data)].ItemsCount;
 
-  t := TranslateWideW('Conversation:')+#13+#10;
+  dt := TimestampToDateTime(Sessions[DWord(Node.Data)].TimestampFirst);
+  t := AnsiToWideString(FormatDateTime('[yyyy, mmmm, d]',dt),CP_ACP)+#13#10;
+  if time/60 > 60 then
+    timestr := WideFormat('%0.1n h',[time/(60*60)])
+  else
+    timestr := WideFormat('%d min',[time div 60]);
+
   if count = 1 then
     tvSess.Hint := t + WideFormat(
-      '   '+TranslateWideW('%d message'),[count])
+      ''+TranslateWideW('%d event'),[count])
   else
     tvSess.Hint := t + WideFormat(
-      '   '+TranslateWideW('%d messages')+#13#10+
-      '   '+TranslateWideW('%0.f minutes'),[count,time/60]);
+      ''+TranslateWideW('%0.n events (%s)'),[count/1,timestr]);
   tvSess.ShowHint := True;
 end;
 
