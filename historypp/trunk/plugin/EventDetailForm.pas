@@ -139,6 +139,7 @@ var
   ItemRenderDetails: TItemRenderDetails;
 begin
   ZeroMemory(@ItemRenderDetails,SizeOf(ItemRenderDetails));
+  ItemRenderDetails.cbSize := SizeOf(ItemRenderDetails);
   ItemRenderDetails.hContact := ParentForm.hContact;
   ItemRenderDetails.hDBEvent := ParentForm.History[ParentForm.GridIndexToHistory(FItem)];
   ItemRenderDetails.pProto := PChar(ParentForm.hg.Items[FItem].Proto);
@@ -147,7 +148,7 @@ begin
   ItemRenderDetails.wEventType := ParentForm.hg.Items[FItem].EventType;
   ItemRenderDetails.IsEventSent := (mtOutgoing in ParentForm.hg.Items[FItem].MessageType);
   {TODO: Add flag for special event details form treatment?}
-  ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_INLINE;
+  ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_EVENT;
   if ParentForm.hContact = 0 then
     ItemRenderDetails.bHistoryWindow := IRDHW_GLOBALHISTORY
   else

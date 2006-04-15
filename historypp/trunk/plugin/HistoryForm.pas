@@ -2107,6 +2107,7 @@ var
   ItemRenderDetails: TItemRenderDetails;
 begin
   ZeroMemory(@ItemRenderDetails,SizeOf(ItemRenderDetails));
+  ItemRenderDetails.cbSize := SizeOf(ItemRenderDetails);
   ItemRenderDetails.hContact := hContact;
   ItemRenderDetails.hDBEvent := History[GridIndexToHistory(Item)];
   //ItemRenderDetails.pProto := @hg.Items[Item].Proto[1];
