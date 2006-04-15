@@ -330,7 +330,7 @@ type
     FRichHeight: Integer;
     FRichParamsSet: Boolean;
     OverURL: Boolean;
-    OverURLStr: String;
+    OverURLStr: WideString;
     FOnSearchItem: TOnSearchItem;
 
     FRTLMode: TRTLMode;
@@ -422,7 +422,7 @@ type
     procedure DoMouseMove(X,Y: Integer; Keys: TMouseMoveKeys);
     procedure DoRButtonDown(X,Y: Integer; Keys: TMouseMoveKeys);
     procedure DoRButtonUp(X,Y: Integer; Keys: TMouseMoveKeys);
-    procedure DoUrlMouseMove(Url: String);
+    procedure DoUrlMouseMove(Url: WideString);
     procedure DoProgress(Position,Max: Integer);
     function CalcItemHeight(Item: Integer): Integer;
     procedure ScrollBy(DeltaX, DeltaY: Integer);
@@ -970,7 +970,7 @@ begin
     //SendMessage(FRich.Handle, EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
     //re_mask := FRich.Perform(EM_GETEVENTMASK, 0, 0);
     //FRich.Perform(EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
-    FRichInline.Parent := Self.Parent;
+    FRichInline.ParentWindow := Handle;
     re_mask := SendMessage(FRichInline.Handle, EM_GETEVENTMASK, 0, 0);
     SendMessage(FRichInline.Handle, EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
     SendMessage(FRichInline.Handle,EM_AUTOURLDETECT,1,0);
@@ -2106,27 +2106,54 @@ end;
 procedure THistoryGrid.WMNotify(var Message: TWMNotify);
 var
   link: TENLink;
-  url: String;
+  AnsiUrl: String;
+  url: WideString;
+  p: TPoint;
+  tr: TextRange;
+  OverInline: Boolean;
+  CurRich: TTntRichEdit;
 begin
 {$IFDEF RENDER_RICH}
 // ok, user either clicked or moved mouse over link
 if Message.NMHdr^.code = EN_LINK then begin
   link := TENLink(Pointer(Message.NMHdr)^);
-  //SendMessage(FRich.Handle, EM_EXSETSEL, 0, LongInt(@(link.chrg)));
-  FRich.Perform(EM_EXSETSEL, 0, LongInt(@(link.chrg)));
-  url := FRich.SelText;
-  if link.msg = WM_MOUSEMOVE then begin
-    DoUrlMouseMove(url);
-    end;
-  if link.msg = WM_LBUTTONUP then begin
-    { somehow, we never get this message
-      instead, we use grid's messages
-      and check if we over url (OverURL property)
-      to know when the user have clicked
-      It's a hack, but who knows how to implement
-      it clean? }
-    end;
+  // if we are over inline richedit?
+  OverInline := (Message.NMHdr^.hwndFrom = FRichInline.Handle);
+  if OverInline then CurRich := FRichInline
+  else CurRich := FRich;
+
+  // get url. instead of using selections, use GetTextRange
+  {FRich.Perform(EM_EXSETSEL, 0, LongInt(@(link.chrg)));
+  url := FRich.SelText;}
+  tr.chrg := link.chrg;
+  if hppOSUnicode then begin
+    SetLength(url,link.chrg.cpMax-link.chrg.cpMin);
+    tr.lpstrText := @url[1];
+  end
+  else begin
+    SetLength(AnsiUrl,link.chrg.cpMax-link.chrg.cpMin);
+    tr.lpstrText := @AnsiUrl[1];
   end;
+  CurRich.Perform(EM_GETTEXTRANGE,0,LongInt(@tr));
+  if not hppOSUnicode then url := AnsiToWideString(AnsiUrl,CP_ACP);
+
+  // process messages
+  if link.msg = WM_MOUSEMOVE then
+    if not OverInline then begin
+      // no need for inline rich
+      DoUrlMouseMove(url);
+    end;
+
+  // we recieve mouse buttons only for inline rich
+  if link.msg = WM_LBUTTONUP then begin
+    p := Mouse.CursorPos;
+    p := ScreenToClient(p);
+    OverUrlStr := url;
+    OverUrl := True;
+    DoLButtonUp(p.x,p.y,[]);
+    OverUrl := False;
+  end;
+end;
 {$ENDIF}
   inherited;
 end;
@@ -3720,7 +3747,7 @@ begin
   //x := 0;
 end;
 
-procedure THistoryGrid.DoUrlMouseMove(Url: String);
+procedure THistoryGrid.DoUrlMouseMove(Url: WideString);
 begin
   OverURL := True;
   OverURLStr := URL;
