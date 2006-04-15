@@ -2553,20 +2553,26 @@ begin
 end;
 
 procedure THistoryGrid.WMSetCursor(var Message: TWMSetCursor);
-var
+{var
   p: TPoint;
-  FocusWnd: THandle;
+  FocusWnd: THandle;}
 begin
-  CheckBusy;
+  // To *correctly* set cursor when we are not focused, we need RichEdit to
+  // process WM_SETCURSOR and issue EN_LINK. Activating Richedit and then
+  // killing focus in order for it to process WM_MOUSEMOVE causes bugs.
+  // But there's a caveat with WM_SETCURSOR:
+  // it wouldn't issue EN_LINK unless rich is visible, so we either should show
+  // richedit under cursor or not process this at all. One more: when grid is
+  // inactive and user clicks on this richedit under cursor, it would activate
+  // richedit :) So we need to show "special" richedits, who know that when they
+  // are clicked, they should hide themselves and transfer click to the grid
+  inherited;
+  {CheckBusy;
   if GetFocus = Handle then begin
     inherited;
     exit;
   end;
-  {$IFDEF COMPILER_9_UP}
-  if not IsChild(GetParentForm(Self,False).Handle,GetFocus) then begin
-  {$ELSE}
   if not IsChild(GetParentForm(Self).Handle,GetFocus) then begin
-  {$ENDIF}
     inherited;
     exit;
   end;
@@ -2580,7 +2586,7 @@ begin
     Windows.SetCursor(Screen.Cursors[crHandPoint])
   else
     Windows.SetCursor(Screen.Cursors[crDefault]);
-  Message.Result := 1;
+  Message.Result := 1;}
 end;
 
 procedure THistoryGrid.WMSetFocus(var Message: TWMSetFocus);
