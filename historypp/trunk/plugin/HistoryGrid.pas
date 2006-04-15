@@ -477,7 +477,8 @@ type
 
     procedure CalcAllHeight;
     procedure MakeTopmost(Item: Integer);
-
+    procedure ResetItem(Item: Integer);
+  published
     procedure SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit; ProcessTag: Boolean = true);
     function GetItemRTL(Item: Integer): Boolean;
 
@@ -2166,10 +2167,10 @@ begin
       LoadItem(Item,True);
       if (SumHeight + FItems[Item].Height) >= ClientHeight then break;
       Inc(SumHeight,FItems[Item].Height);
-      Item := GetPrev(Item);
+      Item := GetUp(Item);
     end;
-    if GetIdx(OrgItem) > MaxSBPos  then
-      SetSBPos(GetIdx(Orgitem))
+    if GetIdx(Item) >= MaxSBPos  then
+      SetSBPos(GetIdx(Item)+1)
     else begin
       SetSBPos(getIdx(Item));
       if Item <> First then
@@ -3796,6 +3797,17 @@ begin
   State := gsIdle;
   Self.SetFocus;
   FRichInline.Hide;
+end;
+
+procedure THistoryGrid.ResetItem(Item: Integer);
+begin
+  // we need to adjust scrollbar after ResetItem if GetIdx(Item) >= MaxSBPos
+  // as it's currently used to handle deletion with headers, adjust
+  // is run after deletion ends, so no point in doing it here
+  if IsUnknown(Item) then exit;
+  FItems[Item].Height := -1;
+  FItems[Item].MessageType := [mtUnknown];
+  FRichCache.ResetItem(Item);
 end;
 
 procedure THistoryGrid.RichInlineOnExit(Sender: TObject);
