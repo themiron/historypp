@@ -288,7 +288,7 @@ type
     procedure SMItemsFound(var M: TMessage); message SM_ITEMSFOUND;
     procedure SMFinished(var M: TMessage); message SM_FINISHED;
     procedure AddEventToSessions(hDBEvent: THandle);
-    procedure DeleteEventFromSessions(hDBEvent: THandle);
+    procedure DeleteEventFromSessions(ItemIdx: Integer);
     procedure LoadSessionIcons;
     procedure ShowSessions(Show: Boolean);
   protected
@@ -1145,6 +1145,7 @@ var
   idx: Integer;
 begin
   idx := GridIndexToHistory(Index);
+  DeleteEventFromSessions(idx);
   if History[idx] <> 0 then begin
     if Assigned(EventDetailFrom) then
       if TEventDetailsFrm(EventDetailFrom).Item=Index then
@@ -1318,13 +1319,15 @@ begin
     end;
 end;
 
-procedure THistoryFrm.DeleteEventFromSessions(hDBEvent: THandle);
+procedure THistoryFrm.DeleteEventFromSessions(ItemIdx: Integer);
 var
   ts: DWord;
   dt: TDateTime;
   year,month,day: TTntTreeNode;
   i,idx: Integer;
+  hDBEvent: THandle;
 begin
+  hDBEvent := History[ItemIdx];
   ts := GetEventTimestamp(hDBEvent);
 
   // find idx in sessions array
@@ -1379,6 +1382,10 @@ begin
   if day = nil then exit; // ???
   if Sessions[idx].ItemsCount = 0 then begin
     day.Delete;
+    if month.Count = 0 then
+      month.Delete;
+    if year.Count = 0 then
+      year.Delete;
     // hmm... should we delete record in sessions array?
     // I'll not do it for the speed, I don't think there would be problems
     exit;
@@ -1395,8 +1402,10 @@ begin
   ts := Sessions[idx].TimestampFirst;
   dt := TimestampToDateTime(ts);
   day.Text := FormatDateTime(HPP_SESS_DAYFORMAT,dt);
-  // now we need to reset item in grid
-  // don't know how, probably need new procedure for grid
+  // next item
+  Inc(ItemIdx);
+  if ItemIdx >= HistoryLength then exit;
+  hg.ResetItem(HistoryIndexToGrid(ItemIdx));
 end;
 
 procedure THistoryFrm.SaveasHTML1Click(Sender: TObject);
@@ -1848,13 +1857,6 @@ begin
   paSess.Visible := Show;
   spSess.Visible := Show;
   spSess.Left := paSess.Left + paSess.Width + 1;
-
-  if Show = False then begin
-     StartTimestamp := 0;
-     EndTimestamp := 0;
-     hg.UpdateFilter;
-  end;
-
 end;
 
 procedure THistoryFrm.SMFinished(var M: TMessage);
@@ -2306,6 +2308,7 @@ begin
         PrevYearNode.Data := Pointer(YearOf(dt));
         PrevYearNode.ImageIndex := 5;
         PrevYearNode.SelectedIndex := PrevYearNode.ImageIndex;
+        PrevMonthNode := nil;
       end;
       if (PrevMonthNode = nil) or (DWord(PrevMonthNode.Data) <> MonthOf(dt)) then begin
         PrevMonthNode := tvSess.Items.AddChild(PrevYearNode,FormatDateTime(HPP_SESS_MONTHFORMAT,dt));

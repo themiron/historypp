@@ -1,13 +1,13 @@
 object HistoryFrm: THistoryFrm
   Left = 274
   Top = 155
-  Width = 532
-  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
+  ClientHeight = 391
+  ClientWidth = 524
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
