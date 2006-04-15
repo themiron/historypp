@@ -300,14 +300,14 @@ type
     FItemDelete: TOnItemDelete;
     FState: TGridState;
 
-    FTxtNoItems: String;
-    FTxtStartup: String;
-    FTxtNoSuch: String;
+    FTxtNoItems: WideString;
+    FTxtStartup: WideString;
+    FTxtNoSuch: WideString;
 
-    FTxtFullLog: String;
-    FTxtPartLog: String;
-    FTxtHistExport: String;    FTxtGenHist2: String;
-    FTxtGenHist1: String;
+    FTxtFullLog: WideString;
+    FTxtPartLog: WideString;
+    FTxtHistExport: WideString;    FTxtGenHist2: WideString;
+    FTxtGenHist1: WideString;
 
     FOnState: TOnState;
     FReversed: Boolean;
@@ -338,6 +338,8 @@ type
     TopItemOffset: Integer;
     MaxSBPos: Integer;
     FShowHeaders: Boolean;
+    FCodepage: Cardinal;
+    procedure SetCodepage(const Value: Cardinal);
     procedure SetShowHeaders(const Value: Boolean);
     function GetIdx(Index: Integer): Integer;
     // Item offset support
@@ -411,7 +413,7 @@ type
     procedure PaintHeader(Index: Integer; ItemRect: TRect);
     procedure PaintItem(Index: Integer; ItemRect: TRect);
     procedure DrawProgress;
-    procedure DrawMessage(Text: String);
+    procedure DrawMessage(Text: WideString);
     procedure LoadItem(Item: Integer; LoadHeight: Boolean = True);
     procedure DoOptionsChanged;
     procedure DoKeyDown(Key: Word; ShiftState: TShiftState);
@@ -478,6 +480,8 @@ type
     procedure CalcAllHeight;
     procedure MakeTopmost(Item: Integer);
     procedure ResetItem(Item: Integer);
+
+    property Codepage: Cardinal read FCodepage write SetCodepage;
   published
     procedure SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit; ProcessTag: Boolean = true);
     function GetItemRTL(Item: Integer): Boolean;
@@ -488,14 +492,14 @@ type
     property MultiSelect: Boolean read FMultiSelect write SetMultiSelect;
     property ShowHeaders: Boolean read FShowHeaders write SetShowHeaders;
 
-    property TxtStartup: String read FTxtStartup write FTxtStartup;
-    property TxtNoItems: String read FTxtNoItems write FTxtNoItems;
-    property TxtNoSuch: String read FTxtNoSuch write FTxtNoSuch;
-    property TxtFullLog: String read FTxtFullLog write FTxtFullLog;
-    property TxtPartLog: String read FTxtPartLog write FTxtPartLog;
-    property TxtHistExport: String read FTxtHistExport write FTxtHistExport;
-    property TxtGenHist1: String read FTxtGenHist1 write FTxtGenHist1;
-    property TxtGenHist2: String read FTxtGenHist2 write FTxtGenHist2;
+    property TxtStartup: WideString read FTxtStartup write FTxtStartup;
+    property TxtNoItems: WideString read FTxtNoItems write FTxtNoItems;
+    property TxtNoSuch: WideString read FTxtNoSuch write FTxtNoSuch;
+    property TxtFullLog: WideString read FTxtFullLog write FTxtFullLog;
+    property TxtPartLog: WideString read FTxtPartLog write FTxtPartLog;
+    property TxtHistExport: WideString read FTxtHistExport write FTxtHistExport;
+    property TxtGenHist1: WideString read FTxtGenHist1 write FTxtGenHist1;
+    property TxtGenHist2: WideString read FTxtGenHist2 write FTxtGenHist2;
 
     property Filter: TMessageTypes read FFilter write SetFilter;
     property ProfileName: WideString read FProfileName write FProfileName;
@@ -680,6 +684,7 @@ begin
   FRichInline.OnKeyDown := RichInlineOnKeyDown;
   FRichInline.OnKeyUp := RichInlineOnKeyUp;
   {$ENDIF}
+  FCodepage := CP_ACP;
 
   CHeaderHeight := -1;
   PHeaderHeight := -1;
@@ -888,6 +893,12 @@ begin
   Canvas.Font := Options.FontTimeStamp;
   Inc(ItemRect.Left,IconOffset);
   WideCanvasTextRect(Canvas,ItemRect,ItemRect.Left,ItemRect.Top,text);
+end;
+
+procedure THistoryGrid.SetCodepage(const Value: Cardinal);
+begin
+  if FCodepage = Value then exit;
+  FCodepage := Value;
 end;
 
 procedure THistoryGrid.SetContact(const Value: THandle);
@@ -1849,13 +1860,10 @@ begin
   Repaint;}
 end;
 
-procedure THistoryGrid.DrawMessage(Text: String);
+procedure THistoryGrid.DrawMessage(Text: WideString);
 var
   cr,r: TRect;
-  t: WideString;
 begin
-  //t := AnsiToWideString(Text,CP_ACP);
-  t := AnsiToWideString(Text,hppCodepage);
   Canvas.Font := Screen.MenuFont;
   Canvas.Brush.Color := clWindow;
   Canvas.Font.Color := clWindowText;
@@ -1865,11 +1873,11 @@ begin
   // make multiline support
   //DrawText(Canvas.Handle,PChar(Text),Length(Text),
   //r,DT_CENTER or DT_NOPREFIX	or DT_VCENTER or DT_SINGLELINE);
-  Tnt_DrawTextW(Canvas.Handle, PWideChar(t), Length(t),r, DT_NOPREFIX or DT_CENTER or DT_CALCRECT);
+  Tnt_DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text),r, DT_NOPREFIX or DT_CENTER or DT_CALCRECT);
   OffsetRect(r,
     ((cr.Right - cr.Left) - (r.right - r.left)) div 2,
     ((cr.Bottom - cr.Top) - (r.bottom - r.top)) div 2);
-  Tnt_DrawTextW(Canvas.Handle, PWideChar(t), Length(t),r, DT_NOPREFIX or DT_CENTER);
+  Tnt_DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text),r, DT_NOPREFIX or DT_CENTER);
 end;
 
 procedure THistoryGrid.WMKeyDown(var Message: TWMKeyDown);
@@ -2135,7 +2143,7 @@ if Message.NMHdr^.code = EN_LINK then begin
     tr.lpstrText := @AnsiUrl[1];
   end;
   CurRich.Perform(EM_GETTEXTRANGE,0,LongInt(@tr));
-  if not hppOSUnicode then url := AnsiToWideString(AnsiUrl,CP_ACP);
+  if not hppOSUnicode then url := AnsiToWideString(AnsiUrl,Codepage);
 
   // process messages
   if link.msg = WM_MOUSEMOVE then
