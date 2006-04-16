@@ -1389,6 +1389,10 @@ begin
       year.Delete;
     // hmm... should we delete record in sessions array?
     // I'll not do it for the speed, I don't think there would be problems
+    Sessions[idx].hDBEventFirst := 0;
+    Sessions[idx].TimestampFirst := 0;
+    Sessions[idx].hDBEventLast := 0;
+    Sessions[idx].TimestampLast := 0;
     exit;
   end;
   hDBEvent := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBEvent,0);
