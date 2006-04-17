@@ -63,7 +63,8 @@ uses
   hpp_searchthread in 'hpp_searchthread.pas',
   hpp_miranda_mmi in 'hpp_miranda_mmi.pas',
   hpp_bookmarks in 'hpp_bookmarks.pas',
-  hpp_sessionsthread in 'hpp_sessionsthread.pas';
+  hpp_sessionsthread in 'hpp_sessionsthread.pas',
+  hpp_arrays in 'hpp_arrays.pas';
   
 var
   hookModulesLoad,
