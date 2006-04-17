@@ -57,6 +57,9 @@ type
     LinkedToPrev: Boolean; // for future use to group messages from one contact together
   end;
 
+  TWideStrArray = array of WideString;
+  TIntArray = array of Integer;
+
 const
 
   hppName       = 'History++';

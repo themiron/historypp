@@ -64,8 +64,9 @@ uses
   hpp_miranda_mmi in 'hpp_miranda_mmi.pas',
   hpp_bookmarks in 'hpp_bookmarks.pas',
   hpp_sessionsthread in 'hpp_sessionsthread.pas',
-  hpp_arrays in 'hpp_arrays.pas';
-  
+  hpp_arrays in 'hpp_arrays.pas',
+  hpp_strparser in 'hpp_strparser.pas';
+
 var
   hookModulesLoad,
   //hookOptInit,
