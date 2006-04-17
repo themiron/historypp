@@ -23,13 +23,17 @@ rem # Find tntControls path relatively to our current dir
 rem #
 
 set TNTPATH=tntControls
+set LIBPATH=
 set TRIES=0
 :loop
 if exist %TNTPATH% goto exitloop
+set LIBPATH=..\%LIBPATH%
 set TNTPATH=..\%TNTPATH%
 if "%TRIES%"=="000000" goto exitloop
 set TRIES=0%TRIES%
 goto loop
 :exitloop
+set JCLPATH=%LIBPATH%jcl
 
 xcopy /S /I %TNTPATH% build\src\tntControls
+xcopy /S /I %JCLPATH% build\src\jcl
