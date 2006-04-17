@@ -1862,6 +1862,8 @@ begin
   paSess.Visible := Show;
   spSess.Visible := Show;
   spSess.Left := paSess.Left + paSess.Width + 1;
+
+  hg.MakeVisible(hg.Selected);
 end;
 
 procedure THistoryFrm.SMFinished(var M: TMessage);
