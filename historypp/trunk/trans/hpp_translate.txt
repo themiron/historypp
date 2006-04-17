@@ -1,6 +1,6 @@
 ;;
 ;; History++ plugin translation
-;; Part of 1.5.0.101 distribution
+;; Part of 1.5.0.102 alpha distribution
 ;; 
 ;; Project: http://slav.pp.ru/miranda
 ;; SVN: http://opensvn.csie.org/historypp/
@@ -16,8 +16,6 @@ Event Details
 Reply &Quoted
 [&Close]
 &Close
-[Content]
-Content
 [From]
 From
 [Nick:]
@@ -186,8 +184,8 @@ Incoming Messages
 Outgoing Messages
 [Files]
 Files
-[Urls]
-Urls
+[Link URLs]
+Link URLs
 [Status Changes]
 Status Changes
 [Recent at bottom]
@@ -200,8 +198,6 @@ Recent on top
 &Delete
 [&Additional]
 &Additional
-[Conversation log]
-Conversation log
 [Conversations]
 Conversations
 [&Open]
@@ -238,10 +234,6 @@ Enable BBCodes support
 Enable MathModule support
 [Use RTL by default]
 Use RTL by default
-[Find URLs in messages]
-Find URLs in messages
-[Underline URLs]
-Underline URLs
 [ANSI Encoding]
 ANSI Encoding
 [System default codepage]
@@ -254,6 +246,8 @@ Default
 Always RTL
 [Always LTR]
 Always LTR
+[Conversation log]
+Conversation log
 [Copy]
 Copy
 [Copy all]
@@ -287,8 +281,12 @@ Full History [%s] - [%s]
 Search: %s (F3 to find next)
 ["%s" not found]
 "%s" not found
-[Make sure you have CAPS LOCK turned off.]
-Make sure you have CAPS LOCK turned off.
+[You have entered the wrong password]
+You have entered the wrong password
+[%d event]
+%d event
+[%0.n events (%s)]
+%0.n events (%s)
 ;; Text from variables in ..\plugin\HistoryForm.pas:
 [HTML file (*.html; *.htm)|*.html;*.htm]
 HTML file (*.html; *.htm)|*.html;*.htm

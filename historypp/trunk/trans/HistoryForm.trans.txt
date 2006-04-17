@@ -16,7 +16,7 @@ All Items
 Incoming Messages
 Outgoing Messages
 Files
-Urls
+Link URLs
 Status Changes
 Recent at bottom
 Recent on top
@@ -24,7 +24,6 @@ Recent on top
 &Search...
 &Delete
 &Additional
-Conversation log
 Conversations
 Save History
 &Open
@@ -52,14 +51,13 @@ Enable smiley support
 Enable BBCodes support
 Enable MathModule support
 Use RTL by default
-Find URLs in messages
-Underline URLs
 ANSI Encoding
 System default codepage
 Text direction
 Default
 Always RTL
 Always LTR
+Conversation log
 Copy
 Copy all
 Select all
@@ -90,9 +88,10 @@ Do you want to continue searching at the beginning?
 "%s" not found
 Full History [%s] - [%s]
 Full History [%s] - [%s]
-You have entered the wrong password.
-Make sure you have CAPS LOCK turned off.
+You have entered the wrong password
 History++ Password Protection
+%d event
+%0.n events (%s)
 ;; Text from variables in ..\plugin\HistoryForm.pas:
 HTML file (*.html; *.htm)|*.html;*.htm
 XML file (*.xml)|*.xml

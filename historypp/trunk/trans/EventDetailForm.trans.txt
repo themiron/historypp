@@ -2,7 +2,6 @@
 Event Details
 Reply &Quoted
 &Close
-Content
 From
 Nick:
 ID:
