@@ -375,7 +375,10 @@ type
     procedure SetContact(const Value: THandle);
     procedure SetPadding(Value: Integer);
     procedure SetSelected(const Value: Integer);
-    procedure AddSelected(Index: Integer);
+    procedure AddSelected(Item: Integer);
+    procedure RemoveSelected(Item: Integer);
+    procedure MakeRangeSelected(FromItem,ToItem: Integer);
+    procedure MakeSelectedTo(Item: Integer);
     function GetSelCount: Integer;
     procedure SetFilter(const Value: TMessageTypes);
     function GetTime(Time: DWord): WideString;
@@ -541,7 +544,7 @@ procedure Register;
 implementation
 
 uses
-  hpp_options;
+  hpp_options, hpp_arrays;
 
 const
   HtmlStop = [#0,#10,#13,'<','>',' '];
@@ -1342,15 +1345,14 @@ begin
   FShowHeaders := Value;
 end;
 
-procedure THistoryGrid.AddSelected(Index: Integer);
+procedure THistoryGrid.AddSelected(Item: Integer);
 begin
-  if IsSelected(Index) then exit;
-  if IsUnknown(Index) then LoadItem(Index,False);
-  if not IsMatched(Index) then exit;
-  SetLength(FSelItems,SelCount+1);
-  FSelItems[High(FSelItems)] := Index;
-  FRichCache.ResetItem(Index);
-  //r := GetItemRect(Index);
+  if IsSelected(Item) then exit;
+  if IsUnknown(Item) then LoadItem(Item,False);
+  if not IsMatched(Item) then exit;
+  IntSortedArray_Add(TIntArray(FSelItems),Item);
+  FRichCache.ResetItem(Item);
+  //r := GetItemRect(Item);
   //InvalidateRect(Handle,@r,False);
 end;
 
@@ -1465,22 +1467,16 @@ begin
 
   if Item <> -1 then begin
     if (mmkControl in Keys) then begin
-      AddSelected(Item);
+      if IsSelected(Item) then
+        RemoveSelected(Item)
+      else
+        AddSelected(Item);
       FSelected := Item;
       MakeVisible(Item);
       Invalidate;
     end else
     if (Selected <> -1) and (mmkShift in Keys) then begin
-      s := FSelItems[0];
-      e := Item;
-      FRichCache.ResetItems(FSelItems);
-      SetLength(FSelItems,0);
-      if s > e then
-        for i := s downto e do
-          AddSelected(i)
-      else
-        for i := s to e do
-          AddSelected(i);
+      MakeSelectedTo(Item);
       FSelected := Item;
       MakeVisible(Item);
       Invalidate;
@@ -1556,15 +1552,9 @@ function THistoryGrid.IsSelected(Item: Integer): Boolean;
 var
   i: Integer;
 begin
-  {TODO: Binary search here }
-
   Result := False;
   if Item = -1 then exit;
-
-  for i := 0 to SelCount-1 do begin
-    Result := (FSelItems[i] = Item);
-    if Result then break;
-   end;
+  Result := IntSortedArray_Find(TIntArray(FSelItems),Item) <> -1;
 end;
 
 function THistoryGrid.GetSelCount: Integer;
@@ -1726,31 +1716,19 @@ begin
   CheckBusy;
   if Count = 0 then exit;
   // do we need to process control here?
-  if (mmkLButton in Keys) and (MultiSelect) and (WasDownOnGrid) then begin
+  if ((mmkLButton in Keys) and not (mmkControl in Keys) and
+  not (mmkShift in Keys)) and (MultiSelect) and (WasDownOnGrid) then begin
     if SelCount = 0 then exit;
     Item := FindItemAt(x,y);
     if Item = -1 then exit;
-    s := FSelItems[0];
-    e := Item;
-    //s := Min(Item,Selected);
-    //e := Max(Item,Selected);
-    // Clear all previous selections
-    FRichCache.ResetItems(FSelItems);
-    SetLength(FSelItems,0);
-    //FSelItems[0] := FSelected;
-    if s > e then
-      for i := s downto e do
-        AddSelected(i)
-    else
-      for i := s to e do
-        AddSelected(i);
-    FSelected := Item;
-    MakeVisible(Item);
-    {
-    for i := s to e do
-      AddSelected(i);
-    }
-    Invalidate;
+    // do not do excessive relisting of items
+    if (not ((FSelItems[0] = Item) or (FSelItems[High(FSelItems)] = Item)))
+    or (FSelected <> Item) then begin
+      MakeSelectedTo(Item);
+      FSelected := Item;
+      MakeVisible(Item);
+      Invalidate;
+    end;
     exit;
   end;
 
@@ -1900,7 +1878,7 @@ const
 
 procedure THistoryGrid.DoKeyDown(Key: Word; ShiftState: TShiftState);
 var
-NextItem,FirstSel,i,Item: Integer;
+NextItem,i,Item: Integer;
 r: TRect;
 begin
 CheckBusy;
@@ -1931,19 +1909,9 @@ if Key = VK_HOME then begin
     Selected := NextItem;
     end
   else begin
-    AddSelected(NextItem);
-    FirstSel := FSelItems[0];
+    MakeSelectedTo(NextItem);
     FSelected := NextItem;
-    FRichCache.ResetItems(FSelItems);
-    SetLength(FSelItems,0);
-    if FirstSel > NextItem then
-      for i := FirstSel downto NextItem do
-        AddSelected(i)
-    else
-      for i := FirstSel to NextItem do
-        AddSelected(i);
     MakeVisible(NextItem);
-    //VertScrollBar.Position := NextItem;
     Invalidate;
     end;
   end;
@@ -1955,19 +1923,9 @@ if Key = VK_END then begin
     Selected := NextItem;
     end
   else begin
-    AddSelected(NextItem);
-    FirstSel := FSelItems[0];
+    MakeSelectedTo(NextItem);
     FSelected := NextItem;
-    FRichCache.ResetItems(FSelItems);
-    SetLength(FSelItems,0);
-    if FirstSel > NextItem then
-      for i := FirstSel downto NextItem do
-        AddSelected(i)
-    else
-      for i := FirstSel to NextItem do
-        AddSelected(i);
     MakeVisible(NextItem);
-    //VertScrollBar.Position := NextItem;
     Invalidate;
     end;
   AdjustScrollBar;
@@ -1977,17 +1935,6 @@ if Key = VK_NEXT then begin //PAGE DOWN
   SearchPattern := '';
   NextItem := Item;
   r := GetItemRect(NextItem);
-  {
-  while (NextItem < Count) and (r.bottom < ClientHeight) do begin
-    Item := NextItem;
-    NextItem := GetNext(Item);
-    if NextItem = -1 then begin
-      NextItem := Item;
-      break;
-      end;
-    r := GetItemRect(NextItem);
-    end;
-  }
   NextItem := FindItemAt(0,r.top+ClientHeight);
   if NextItem = Item then begin
     NextItem := GetNext(NextItem);
@@ -1999,24 +1946,13 @@ if Key = VK_NEXT then begin //PAGE DOWN
     if NextItem = -1 then
       NextItem := Item;
     end;
-  //if NextItem = Count then Dec(NextItem);
   if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
     Selected := NextItem;
     end
   else begin
-    AddSelected(NextItem);
-    FirstSel := FSelItems[0];
+    MakeSelectedTo(NextItem);
     FSelected := NextItem;
-    FRichCache.ResetItems(FSelItems);
-    SetLength(FSelItems,0);
-    if FirstSel > NextItem then
-      for i := FirstSel downto NextItem do
-        AddSelected(i)
-    else
-      for i := FirstSel to NextItem do
-        AddSelected(i);
     MakeVisible(NextItem);
-    //VertScrollBar.Position := NextItem;
     Invalidate;
     end;
   AdjustScrollBar;
@@ -2027,9 +1963,7 @@ if Key = VK_PRIOR then begin //PAGE UP
   NextItem := Item;
   r := GetItemRect(NextItem);
   NextItem := FindItemAt(0,r.top-ClientHeight);
-  //if NextItem = -1 then
   if NextItem <> -1 then begin
-    //r := GetItemRect(NextItem);
     if FItems[NextItem].Height < ClientHeight then
       NextItem := GetNext(NextItem);
     end
@@ -2042,22 +1976,11 @@ if Key = VK_PRIOR then begin //PAGE UP
       NextItem := GetNext(GetIdx(0));
   end;
   if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
-    //VertScrollBar.Position := NextItem;
     Selected := NextItem;
     end
   else begin
-    AddSelected(NextItem);
-    FirstSel := FSelItems[0];
+    MakeSelectedTo(NextItem);
     FSelected := NextItem;
-    FRichCache.ResetItems(FSelItems);
-    SetLength(FSelItems,0);
-    if FirstSel > NextItem then
-      for i := FirstSel downto NextItem do
-        AddSelected(i)
-    else
-      for i := FirstSel to NextItem do
-        AddSelected(i);
-    //VertScrollBar.Position := GetIdx(NextItem);
     MakeVisible(NextItem);
     Invalidate;
     end;
@@ -2068,19 +1991,9 @@ if Key = VK_UP then begin
   SearchPattern := '';
   if GetIdx(Item) > 0 then Item := GetPrev(Item);
   if item = -1 then exit;
-
   if (ssShift in ShiftState) and (MultiSelect) then begin
-    AddSelected(Item);
-    FirstSel := FSelItems[0];
+    MakeSelectedTo(Item);
     FSelected := Item;
-    FRichCache.ResetItems(FSelItems);
-    SetLength(FSelItems,0);
-    if FirstSel > Item then
-      for i := FirstSel downto Item do
-        AddSelected(i)
-    else
-      for i := FirstSel to Item do
-        AddSelected(i);
     MakeVisible(Selected);
     Invalidate;
     end
@@ -2093,19 +2006,9 @@ if Key = VK_DOWN then begin
   SearchPattern := '';
   if GetIdx(Item) < Count-1 then Item := GetNext(Item);
   if Item = -1 then exit;
-
   if (ssShift in ShiftState) and (MultiSelect) then begin
-    AddSelected(Item);
-    FirstSel := FSelItems[0];
+    MakeSelectedTo(Item);
     FSelected := Item;
-    FRichCache.ResetItems(FSelItems);
-    SetLength(FSelItems,0);
-    if FirstSel > Item then
-      for i := FirstSel downto Item do
-        AddSelected(i)
-    else
-      for i := FirstSel to Item do
-        AddSelected(i);
     MakeVisible(Item);
     Invalidate;
     end
@@ -2174,6 +2077,53 @@ procedure THistoryGrid.WMGetDlgCode(var Message: TWMGetDlgCode);
 begin
   inherited;
   Message.Result := DLGC_WANTARROWS;
+end;
+
+procedure THistoryGrid.MakeRangeSelected(FromItem, ToItem: Integer);
+var
+  i: Integer;
+  StartItem,EndItem: Integer;
+  len: Integer;
+begin
+  // detect start and end
+  if FromItem <= ToItem then begin
+    StartItem := FromItem;
+    EndItem := ToItem;
+  end
+  else begin
+    StartItem := ToItem;
+    EndItem := FromItem;
+  end;
+
+  // clear current selected items
+  FRichCache.ResetItems(FSelItems);
+  SetLength(FSelItems,0);
+  len := 0;
+
+  // fill selected items list
+  for i := StartItem to EndItem do begin
+    if IsUnknown(i) then LoadItem(i,False);
+    if not IsMatched(i) then continue;
+    Inc(len);
+    SetLength(FSelItems,len);
+    FSelItems[len-1] := i;
+  end;
+
+  // redraw newly selected items
+  FRichCache.ResetItems(FSelItems);
+end;
+
+procedure THistoryGrid.MakeSelectedTo(Item: Integer);
+var
+  first: Integer;
+begin
+  if FSelItems[0] = FSelected then
+    first := FSelItems[High(FSelItems)]
+  else if FSelItems[High(FSelItems)] = FSelected then
+    first := FSelItems[0]
+  else
+    first := FSelected;
+  MakeRangeSelected(first,Item);
 end;
 
 procedure THistoryGrid.MakeTopmost(Item: Integer);
@@ -3847,6 +3797,12 @@ begin
   State := gsIdle;
   Self.SetFocus;
   FRichInline.Hide;
+end;
+
+procedure THistoryGrid.RemoveSelected(Item: Integer);
+begin
+  IntSortedArray_Remove(TIntArray(FSelItems),Item);
+  FRichCache.ResetItem(Item);
 end;
 
 procedure THistoryGrid.ResetItem(Item: Integer);
