@@ -66,7 +66,7 @@ uses
   RichEdit, ShellAPI;
 
 type
-  TMouseMoveKey = (mmkControl,mmkLButton,mmkMButton,mmkRButton,mmkShift,mmkCtrl);
+  TMouseMoveKey = (mmkControl,mmkLButton,mmkMButton,mmkRButton,mmkShift);
   TMouseMoveKeys = set of TMouseMoveKey;
 
   TSaveFormat = (sfHTML,sfXML,sfUnicode,sfText);
@@ -1731,39 +1731,39 @@ begin
   if Count = 0 then exit;
   // do we need to process control here?
   if (mmkLButton in Keys) and (MultiSelect) and (WasDownOnGrid) then begin
-  if SelCount = 0 then exit;
-  Item := FindItemAt(x,y);
-  if Item = -1 then exit;
-  s := FSelItems[0];
-  e := Item;
-  //s := Min(Item,Selected);
-  //e := Max(Item,Selected);
-  // Clear all previous selections
-  FRichCache.ResetItems(FSelItems);
-  SetLength(FSelItems,0);
-  //FSelItems[0] := FSelected;
-  if s > e then
-    for i := s downto e do
-      AddSelected(i)
-  else
+    if SelCount = 0 then exit;
+    Item := FindItemAt(x,y);
+    if Item = -1 then exit;
+    s := FSelItems[0];
+    e := Item;
+    //s := Min(Item,Selected);
+    //e := Max(Item,Selected);
+    // Clear all previous selections
+    FRichCache.ResetItems(FSelItems);
+    SetLength(FSelItems,0);
+    //FSelItems[0] := FSelected;
+    if s > e then
+      for i := s downto e do
+        AddSelected(i)
+    else
+      for i := s to e do
+        AddSelected(i);
+    FSelected := Item;
+    MakeVisible(Item);
+    {
     for i := s to e do
       AddSelected(i);
-  FSelected := Item;
-  MakeVisible(Item);
-  {
-  for i := s to e do
-    AddSelected(i);
-  }
-  Invalidate;
-  exit;
+    }
+    Invalidate;
+    exit;
   end;
 
-{$IFDEF RENDER_RICH}
+  {$IFDEF RENDER_RICH}
   OverURL := False;
   HandleRichEditMouse(WM_MOUSEMOVE,X,Y);
   if OverURL then Cursor := crHandPoint
              else Cursor := crDefault;
-{$ENDIF}
+  {$ENDIF}
 end;
 
 procedure THistoryGrid.WMLButtonDblClick(var Message: TWMLButtonDblClk);
