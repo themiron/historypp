@@ -11,6 +11,7 @@ function IntSortedArray_Add(var A: TIntArray; Value: Integer): Integer;
 procedure IntSortedArray_Remove(var A: TIntArray; Value: Integer);
 function IntSortedArray_Find(var A: TIntArray; Value: Integer): Integer;
 procedure IntSortedArray_Sort(var A: TIntArray);
+function IntSortedArray_NonIntersect(var A,B: TIntArray): TIntArray;
 
 procedure IntArrayRemove(var A: TIntArray; Index: Integer);
 procedure IntArrayInsert(var A: TIntArray; Index: Integer; Value: Integer);
@@ -67,5 +68,62 @@ procedure IntSortedArray_Sort(var A: TIntArray);
 begin
   SortDynArray(A,SizeOf(Integer),DynArrayCompareInteger);
 end;
+
+function IntSortedArray_NonIntersect(var A,B: TIntArray): TIntArray;
+var
+  ia,ib: Integer;
+  lenr,lena,lenb: Integer;
+
+  procedure AddToResult(Item: Integer);
+  begin
+    Inc(lenr);
+    SetLength(Result,lenr);
+    Result[lenr-1] := Item;
+  end;
+begin
+  SetLength(Result,0);
+  lenr := 0;
+  lena := Length(A);
+  lenb := Length(B);
+  ib := 0;
+  ia := 0;
+  
+  while ia < lena do begin
+
+    if ib >= lenb then begin
+      AddToResult(A[ia]);
+      Inc(ia);
+      continue;
+    end;
+
+    if A[ia] = B[ib] then begin
+      Inc(ib);
+      Inc(ia);
+      continue;
+    end;
+
+    if A[ia] > B[ib] then begin
+      while A[ia] > B[ib] do begin
+        AddToResult(B[ib]);
+        Inc(ib);
+        if ib >= lenb then break;
+      end;
+    continue;
+    end;
+
+    if A[ia] < B[ib] then begin
+      AddToResult(A[ia]);
+      Inc(ia);
+      continue;
+    end;
+
+  end;
+
+  while ib < lenb do begin
+    AddToResult(B[ib]);
+    Inc(ib);
+    end;
+end;
+
 
 end.

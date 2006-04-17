@@ -275,7 +275,7 @@ type
     ProgressPercent: Byte;
     SearchPattern: WideString;
     LastKeyDown: DWord;
-    FSelItems: array of Integer;
+    FSelItems, TempSelItems: array of Integer;
     FSelected: Integer;
     FGetItemData: TGetItemData;
     FGetNameData: TGetNameData;
@@ -2084,6 +2084,7 @@ var
   i: Integer;
   StartItem,EndItem: Integer;
   len: Integer;
+  changed: TIntArray;
 begin
   // detect start and end
   if FromItem <= ToItem then begin
@@ -2095,22 +2096,22 @@ begin
     EndItem := FromItem;
   end;
 
-  // clear current selected items
-  FRichCache.ResetItems(FSelItems);
-  SetLength(FSelItems,0);
-  len := 0;
-
   // fill selected items list
+  len := 0;
   for i := StartItem to EndItem do begin
     if IsUnknown(i) then LoadItem(i,False);
     if not IsMatched(i) then continue;
     Inc(len);
-    SetLength(FSelItems,len);
-    FSelItems[len-1] := i;
+    SetLength(TempSelItems,len);
+    TempSelItems[len-1] := i;
   end;
 
-  // redraw newly selected items
-  FRichCache.ResetItems(FSelItems);
+  // determine and update changed items
+  changed := IntSortedArray_NonIntersect(TIntArray(FSelItems),TIntArray(TempSelItems));
+  FRichCache.ResetItems(changed);
+
+  // set selection
+  FSelItems := TempSelItems;
 end;
 
 procedure THistoryGrid.MakeSelectedTo(Item: Integer);
