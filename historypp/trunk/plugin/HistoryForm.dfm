@@ -687,6 +687,7 @@ object HistoryFrm: THistoryFrm
     Top = 167
   end
   object ilSessions: TImageList
+    ShareImages = True
     Left = 80
     Top = 192
   end
