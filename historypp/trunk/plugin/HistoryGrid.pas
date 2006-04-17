@@ -66,7 +66,7 @@ uses
   RichEdit, ShellAPI;
 
 type
-  TMouseMoveKey = (mmkControl,mmkLButton,mmkMButton,mmkRButton,mmkShift);
+  TMouseMoveKey = (mmkControl,mmkLButton,mmkMButton,mmkRButton,mmkShift,mmkCtrl);
   TMouseMoveKeys = set of TMouseMoveKey;
 
   TSaveFormat = (sfHTML,sfXML,sfUnicode,sfText);
@@ -1467,23 +1467,30 @@ begin
 
   Item := FindItemAt(x,y);
 
-  if (Selected <> -1) and (mmkShift in Keys) and (Item <> -1) then begin
-    s := FSelItems[0];
-    e := Item;
-    FRichCache.ResetItems(FSelItems);
-    SetLength(FSelItems,0);
-    if s > e then
-      for i := s downto e do
-        AddSelected(i)
-    else
-      for i := s to e do
-        AddSelected(i);
-    FSelected := Item;
-    MakeVisible(Item);
-    Invalidate;
-    end
-  else
-    Selected := Item;
+  if Item <> -1 then begin
+    if (mmkControl in Keys) then begin
+      AddSelected(Item);
+      FSelected := Item;
+      MakeVisible(Item);
+      Invalidate;
+    end else
+    if (Selected <> -1) and (mmkShift in Keys) then begin
+      s := FSelItems[0];
+      e := Item;
+      FRichCache.ResetItems(FSelItems);
+      SetLength(FSelItems,0);
+      if s > e then
+        for i := s downto e do
+          AddSelected(i)
+      else
+        for i := s to e do
+          AddSelected(i);
+      FSelected := Item;
+      MakeVisible(Item);
+      Invalidate;
+    end else
+      Selected := Item;
+  end;
 
 end;
 
@@ -1722,7 +1729,8 @@ s,e,i: Integer;
 begin
   CheckBusy;
   if Count = 0 then exit;
-if (mmkLButton in Keys) and (MultiSelect) and (WasDownOnGrid) then begin
+  // do we need to process control here?
+  if (mmkLButton in Keys) and (MultiSelect) and (WasDownOnGrid) then begin
   if SelCount = 0 then exit;
   Item := FindItemAt(x,y);
   if Item = -1 then exit;
