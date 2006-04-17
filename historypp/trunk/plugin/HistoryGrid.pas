@@ -226,15 +226,13 @@ type
   end;
   PRichItem = ^TRichItem;
 
-  TRichCache = class(TList)
+  TRichCache = class(TObject)
   private
     LogX,LogY: Integer;
     RichEventMasks: DWord;
     GridItems: array of Integer;
     Grid: THistoryGrid;
     FRichHeight: Integer;
-    function GetItem(Index: Integer): PRichItem;
-    procedure SetItem(Index: Integer; const Value: PRichItem);
 
     function FindGridItem(GridItem: Integer): Integer;
     procedure ApplyItemToRich(Item: PRichItem);
@@ -242,10 +240,8 @@ type
 
     procedure OnRichResize(Sender: TObject; Rect: TRect);
   protected
-    function Add(Item: PRichItem): Integer;
-    function Remove(Item: PRichItem): Integer;
-    procedure Insert(Index: Integer; Item: PRichItem);
-    property Items[Index: Integer]: PRichItem read GetItem write SetItem; default;
+    Items: array of PRichItem;
+    procedure MoveToTop(Index: Integer);
   public
     constructor Create(AGrid: THistoryGrid); overload;
     destructor Destroy; override;
@@ -4248,11 +4244,6 @@ end;
 
 { TRichCache }
 
-function TRichCache.Add(Item: PRichItem): Integer;
-begin
-  Result := inherited Add(Item);
-end;
-
 procedure TRichCache.ApplyItemToRich(Item: PRichItem);
 begin
   Grid.ApplyItemToRich(Item.GridItem,Item.Rich);
@@ -4287,12 +4278,12 @@ begin
   FRichHeight := -1;
   Grid := AGrid;
   // cache size:
-  Count := 20;
+  SetLength(Items,20);
 
   RichEventMasks := EN_LINK;
   RichEventMasks := ENM_CHANGE or ENM_SELCHANGE or ENM_PROTECTED or ENM_LINK;
 
-  for i := 0 to Count - 1 do begin
+  for i := 0 to Length(Items) - 1 do begin
     New(RichItem);
     RichItem.Bitmap := TBitmap.Create;
     RichItem^.Height := -1;
@@ -4319,12 +4310,12 @@ destructor TRichCache.Destroy;
 var
   i: Integer;
 begin
-  for i := 0 to Count - 1 do begin
+  for i := 0 to Length(Items) - 1 do begin
     FreeAndNil(Items[i].Rich);
     FreeAndNil(Items[i].Bitmap);
     Dispose(Items[i]);
   end;
-  SetCount(0);
+  SetLength(Items,0);
   inherited;
 end;
 
@@ -4334,16 +4325,11 @@ var
 begin
   Result := -1;
   if GridItem = -1 then exit;
-  for i := 0 to Count - 1 do
+  for i := 0 to Length(Items) - 1 do
     if Items[i].GridItem = GridItem then begin
        Result := i;
        break;
     end;
-end;
-
-function TRichCache.GetItem(Index: Integer): PRichItem;
-begin
-  Result := inherited Items[Index];
 end;
 
 function TRichCache.GetItemRich(GridItem: Integer): TTntRichEdit;
@@ -4366,9 +4352,17 @@ begin
   Result := Item.Bitmap;
 end;
 
-procedure TRichCache.Insert(Index: Integer; Item: PRichItem);
+procedure TRichCache.MoveToTop(Index: Integer);
+var
+  i: Integer;
+  item: PRichItem;
 begin
-  inherited Insert(Index, Item);
+  Assert(Index < Length(Items));
+  if Index = 0 then exit;
+  item := Items[Index];
+  for i := Index downto 1 do
+    Items[i] := Items[i-1];
+  Items[0] := item;
 end;
 
 procedure TRichCache.OnRichResize(Sender: TObject; Rect: TRect);
@@ -4422,11 +4416,6 @@ begin
   Item.BitmapDrawn := True;
 end;
 
-function TRichCache.Remove(Item: PRichItem): Integer;
-begin
-  Result := inherited Remove(Item);
-end;
-
 function TRichCache.RequestItem(GridItem: Integer): PRichItem;
 var
   idx: Integer;
@@ -4438,10 +4427,10 @@ begin
     Result := Items[idx];
   end
   else begin
-    Result := Last;
+    idx := High(Items);
+    Result := Items[idx];
     Result.GridItem := GridItem;
     Result.Height := -1;
-    idx := Count-1;
   end;
   if Result.Height = -1 then begin
     ApplyItemToRich(Result);
@@ -4449,14 +4438,14 @@ begin
     Result.BitmapDrawn := False;
    // PaintRichToBitmap(Result);
   end;
-  Move(idx,0);
+  MoveToTop(idx);
 end;
 
 procedure TRichCache.ResetAllItems;
 var
   i: Integer;
 begin
-  for i := 0 to Count - 1 do begin
+  for i := 0 to Length(Items) - 1 do begin
     Items[i].Height := -1;
   end;
 end;
@@ -4485,7 +4474,7 @@ begin
       Inc(ItemsReset);
     end;
     // no point in searching, we've reset all items
-    if ItemsReset >= Count then break;
+    if ItemsReset >= Length(Items) then break;
   end;
 end;
 
@@ -4494,7 +4483,7 @@ var
   i: Integer;
   re_mask: DWord;
 begin
-  for i := 0 to Count - 1 do begin
+  for i := 0 to Length(Items) - 1 do begin
     Items[i].Rich.ParentWindow := Grid.Handle;
     //re_mask := Items[i].Rich.Perform(EM_GETEVENTMASK, 0, 0);
     SendMessage(Items[i].Rich.Handle,EM_SETEVENTMASK, 0, RichEventMasks);
@@ -4505,16 +4494,11 @@ begin
   end;
 end;
 
-procedure TRichCache.SetItem(Index: Integer; const Value: PRichItem);
-begin
-  inherited Items[Index] := Value;
-end;
-
 procedure TRichCache.SetWidth(NewWidth: Integer);
 var
   i: Integer;
 begin
-  for i := 0 to Count - 1 do begin
+  for i := 0 to Length(Items) - 1 do begin
     Items[i].Rich.Width := NewWidth;
     Items[i].Height := -1;
   end;
@@ -4524,7 +4508,7 @@ procedure TRichCache.WorkOutItemAdded(GridItem: Integer);
 var
   i: Integer;
 begin
-  for i := 0 to Count - 1 do
+  for i := 0 to Length(Items) - 1 do
     if Items[i].Height <> -1 then begin
       if Items[i].GridItem >= GridItem then
         Inc(Items[i].GridItem);
@@ -4535,7 +4519,7 @@ procedure TRichCache.WorkOutItemDeleted(GridItem: Integer);
 var
   i: Integer;
 begin
-  for i := 0 to Count - 1 do
+  for i := 0 to Length(Items) - 1 do
     if Items[i].Height <> -1 then begin
       if Items[i].GridItem = GridItem then
         Items[i].Height := -1
