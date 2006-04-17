@@ -2,10 +2,7 @@ unit hpp_arrays;
 
 interface
 
-uses hpp_jclSysUtils;
-
-type
-  TIntArray = array of Integer;
+uses hpp_jclSysUtils, hpp_global;
 
 function IntSortedArray_Add(var A: TIntArray; Value: Integer): Integer;
 procedure IntSortedArray_Remove(var A: TIntArray; Value: Integer);
