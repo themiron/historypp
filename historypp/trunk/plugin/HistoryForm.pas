@@ -586,12 +586,16 @@ end;
 procedure THistoryFrm.LoadPosition;
 //load last position and filter setting
 var
-filt: Integer;
+  filt: Integer;
+  w,h,l,t: Integer;
 begin
-  if Utils_RestoreWindowPosition(Self.Handle,0,0,hppDBName,'HistoryWindow.') <> 0 then begin
-    Self.Left := (Screen.Width-Self.Width) div 2;
-    Self.Top := (Screen.Height - Self.Height) div 2;
-  end;
+  // removed Utils_RestoreWindowPosition because it shows window sooner than we expect
+  w := GetDBInt(hppDBName,'HistoryWindow.width',Self.Width);
+  h := GetDBInt(hppDBName,'HistoryWindow.height',Self.Height);
+  l := GetDBInt(hppDBName,'HistoryWindow.x',(Screen.Width-Self.Width) div 2);
+  t := GetDBInt(hppDBName,'HistoryWindow.y',(Screen.Height - Self.Height) div 2);
+  Self.SetBounds(l,t,w,h);
+  
   cbSort.ItemIndex:=GetDBInt(hppDBName,'SortOrder',0);
   ShowSessionsAfterPassword := GetDBBool(hppDBName,'ShowSessions',False);
   paSess.Width := GetDBInt(hppDBName,'SessionsWidth',150);
