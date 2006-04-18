@@ -28,8 +28,9 @@ goto misszip
 :havezip
 
 :start
-FOR /F "TOKENS=1" %%A IN ('date /t') DO SET VER=alpha-%%A
-FOR /F "TOKENS=1,2 delims=:" %%A IN ('time /t') DO SET VER=%VER%-%%A.%%B
+FOR /F "TOKENS=1" %%A IN ('date /t') DO SET VER_=alpha-%%A
+FOR /F "TOKENS=1,2 delims=:" %%A IN ('time /t') DO SET VER_=%VER_%-%%A.%%B
+if not exist relno.txt set VER_=nover
 
 echo:
 echo --------- Make History++ Distribution ---------
@@ -41,11 +42,11 @@ echo:
 echo Upx.exe path: %UPXPATH%
 echo 7-z.exe path:  %ZPATH%
 echo:
-echo Current release: %VER%
+echo Current release: %VER_%
 echo:
 echo Following files will be generated:
-echo    build\historypp-%VER%-bin.zip
-echo    build\historypp-%VER%-src.zip
+echo    build\historypp-%VER_%-bin.zip
+echo    build\historypp-%VER_%-src.zip
 echo:
 echo Y - proceed, N - quit, R - set release no
 :askproceed
@@ -61,8 +62,16 @@ echo Unknown command: "%ANS%"
 goto askproceed
 :proceed
 
-rd /q/s ..\build
+rd /q/s ..\build 2>nul
 
+echo:
+echo Preparing translation...
+echo:
+call make_translation.bat
+
+echo:
+echo Copying sources...
+echo:
 call copysrc.bat
 rem # we are now in cd ..
 
@@ -73,14 +82,17 @@ if errorlevel 1 goto builderr
 %UPXPATH% --force --best --crp-ms=999999 --nrv2d --no-backup --overlay=copy --compress-exports=0 --compress-resources=0 --strip-relocs=0 historypp.dll
 if errorlevel 1 goto upxerr
 
-move historypp.dll ..
+md ..\bin
+move historypp.dll ..\bin
+copy hpp_translate.txt ..\bin
+copy ..\..\hpp_changelog.txt ..\bin
 
-cd ..
+cd ..\bin
 
-%ZPATH% a -y -tzip -mx historypp-%VER%-bin.zip historypp.dll
+%ZPATH% a -y -tzip -mx ..\historypp-%VER_%-bin.zip *
 if errorlevel 1 goto ziperr
 
-cd src
+cd ..\src
 rem # a bit of saftiness here
 if errorlevel 1 (
   echo Error! Can not change dirs
@@ -103,12 +115,12 @@ del /S /Q /F *.identcache
 del /S /Q /F *.map
 del /S /Q /F *.todo
 
-%ZPATH% a -y -tzip -r -mx ..\historypp-%VER%-src.zip *
+%ZPATH% a -y -tzip -r -mx ..\historypp-%VER_%-src.zip *
 if errorlevel 1 goto ziperr
 
 cd ..
 rd /q/s src
-del historypp.dll
+rd /q/s bin
 
 goto end
 
