@@ -97,7 +97,7 @@ begin
   PluginInfo.description := 'Easy, fast and feature complete history viewer';
   PluginInfo.author := 'theMIROn, Art Fedorov';
   PluginInfo.authorEmail := 'themiron@mail.ru, artemf@mail.ru';
-  PluginInfo.copyright := '© 2006 theMIROn, 2003-2004 Art Fedorov. History+ parts © 2001 Christian Kastner';
+  PluginInfo.copyright := '© 2006 theMIROn, 2003-2006 Art Fedorov. History+ parts © 2001 Christian Kastner';
   PluginInfo.homepage := hppHomePageURL;
   PluginInfo.isTransient := 0;
   PluginInfo.replacesDefaultModule := DEFMOD_UIHISTORY;

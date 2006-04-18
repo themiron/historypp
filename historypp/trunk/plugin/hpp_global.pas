@@ -73,7 +73,7 @@ const
   hppUpdateURL = 'http://slav.pp.ru/miranda/historypp';
   hppVersionURL = 'http://slav.pp.ru/miranda/version';
 
-  hppHomePageURL = hppVersionURL;
+  hppHomePageURL = 'http://slav.pp.ru/miranda/';
 
   hppLoadBlock  = 4096;
 
