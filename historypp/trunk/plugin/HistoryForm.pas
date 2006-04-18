@@ -1869,13 +1869,19 @@ if value = true then begin
   paPassword.Left := (paGrid.ClientWidth-paPassword.Width) div 2;
   paPassword.Top := (paGrid.ClientHeight - paPassword.Height) div 2;
   //laPass.Caption := Format('You need password to access history for %s
-  edPass.SetFocus;
+  if Self.Visible then
+    edPass.SetFocus
+  else
+    Self.ActiveControl := edPass;
   end
 else begin
   ShowSessions(ShowSessionsAfterPassword);
   if ShowSessionsAfterPassword then
     hg.MakeVisible(hg.Selected);
-  hg.SetFocus;
+  if Self.Visible then
+    hg.SetFocus
+  else
+    Self.ActiveControl := hg;
   end;
 end;
 
