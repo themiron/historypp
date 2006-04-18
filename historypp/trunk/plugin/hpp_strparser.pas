@@ -110,7 +110,7 @@ begin
   in_token := False;
   i := 1;
   while i <= len do begin
-    if Template[i] in ['\','%'] then begin
+    if Template[i] in [WideChar('\'),WideChar('%')] then begin
       if Template[i] = '\' then begin
         if i = len then break;
         PushToken(token_s,i-1);
