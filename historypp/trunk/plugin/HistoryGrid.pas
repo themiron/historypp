@@ -3796,8 +3796,8 @@ procedure THistoryGrid.CancelInline;
 begin
   if State <> gsInline then exit;
   State := gsIdle;
-  Self.SetFocus;
   FRichInline.Hide;
+  Self.SetFocus;
 end;
 
 procedure THistoryGrid.RemoveSelected(Item: Integer);

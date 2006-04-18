@@ -1,13 +1,13 @@
 object HistoryFrm: THistoryFrm
-  Left = 274
-  Top = 155
+  Left = 230
+  Top = 130
+  Width = 532
+  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
-  ClientHeight = 391
-  ClientWidth = 524
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -38,7 +38,7 @@ object HistoryFrm: THistoryFrm
     object spSess: TTntSplitter
       Left = 160
       Top = 35
-      Height = 299
+      Height = 272
       AutoSnap = False
       MinSize = 100
     end
@@ -46,7 +46,7 @@ object HistoryFrm: THistoryFrm
       Left = 163
       Top = 35
       Width = 357
-      Height = 299
+      Height = 272
       Align = alClient
       BevelOuter = bvNone
       BorderStyle = bsSingle
@@ -56,7 +56,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 0
         Width = 353
-        Height = 295
+        Height = 268
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         MultiSelect = True
@@ -306,6 +306,7 @@ object HistoryFrm: THistoryFrm
       Align = alBottom
       BevelOuter = bvNone
       Caption = ' '
+      FullRepaint = False
       TabOrder = 2
       object paClose: TPanel
         Left = 361
@@ -360,12 +361,21 @@ object HistoryFrm: THistoryFrm
         Layout = blGlyphRight
         Style = bsNew
       end
+      object bnFilter: TTntButton
+        Left = 280
+        Top = 7
+        Width = 75
+        Height = 25
+        Caption = '&Filter...'
+        TabOrder = 4
+        OnClick = bnFilterClick
+      end
     end
     object paSess: TPanel
       Left = 4
       Top = 35
       Width = 156
-      Height = 299
+      Height = 272
       Align = alLeft
       BevelOuter = bvLowered
       TabOrder = 3
@@ -373,7 +383,7 @@ object HistoryFrm: THistoryFrm
         Left = 1
         Top = 22
         Width = 154
-        Height = 276
+        Height = 249
         Align = alClient
         BevelInner = bvNone
         BorderStyle = bsNone
@@ -422,6 +432,85 @@ object HistoryFrm: THistoryFrm
             0000}
           OnClick = sbCloseSessClick
         end
+      end
+    end
+    object paFilter: TTntPanel
+      Left = 4
+      Top = 307
+      Width = 516
+      Height = 27
+      Align = alBottom
+      BevelOuter = bvNone
+      TabOrder = 4
+      Visible = False
+      DesignSize = (
+        516
+        27)
+      object sbClearFilter: TTntSpeedButton
+        Left = 27
+        Top = 6
+        Width = 23
+        Height = 21
+        Hint = 'Clear Search'
+        Flat = True
+        Glyph.Data = {
+          7E030000424D7E030000000000003600000028000000120000000F0000000100
+          1800000000004803000000000000000000000000000000000000FF00FFFF00FF
+          FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00
+          FFFF00FFFF00FFFF00FFFF00FFFF00FF0000FF00FFD3CCC4FFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00FFFF00FFFF00FFFF
+          00FFFF00FFFF00FF0000FF00FFBDB6AF00000000000000000000000000000000
+          0000000000000000000000000000FFFFFFFF00FFFF00FFFF00FFFF00FFFF00FF
+          0000FF00FFBEB7B1000000000000000000000000000000000000000000000000
+          000000000000000000FFFFFFFF00FFFF00FFFF00FFFF00FF0000FF00FFBFB9B2
+          000000000000FFFFFFFFFFFF000000000000000000FFFFFFFFFFFF0000000000
+          00000000FFFFFFFF00FFFF00FFFF00FF0000FF00FFBFBAB4000000000000FFFF
+          FFFFFFFFFFFFFF000000FFFFFFFFFFFFFFFFFF000000000000000000000000FF
+          FFFFFF00FFFF00FF0000FF00FFC0BBB6000000000000000000FFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFF000000000000000000000000000000000000FFFFFFFF00FF
+          0000FF00FFC1BCB7000000181818181818000000FFFFFFFFFFFFFFFFFF000000
+          181818181818181818181818181818181818000000FF00FF0000FF00FFC2BEB8
+          0000004040402D2D2DFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2D2D2D4040404040
+          40404040404040000000D9D5CFFF00FF0000FF00FFC3BFBA0000005A5A5AFFFF
+          FFFFFFFFFFFFFF5A5A5AFFFFFFFFFFFFFFFFFF5A5A5A696969696969000000DA
+          D6D0FF00FFFF00FF0000FF00FFC3C0BB000000888888FFFFFFFFFFFF88888893
+          9393888888FFFFFFFFFFFF888888939393000000DBD8D2FF00FFFF00FFFF00FF
+          0000FF00FFC4C1BD000000CFCFCFBDBDBDB7B7B7B7B7B7BDBDBDB7B7B7B7B7B7
+          BDBDBDBDBDBD000000DCD8D4FF00FFFF00FFFF00FFFF00FF0000FF00FFC5C2BF
+          000000000000000000000000000000000000000000000000000000000000DDD9
+          D6FF00FFFF00FFFF00FFFF00FFFF00FF0000FF00FFB2B0ADC6C3C0C6C3C0C6C3
+          C0C6C3C0C6C3C0C6C3C0C6C3C0C6C3C0C6C3C0C6C3C0FF00FFFF00FFFF00FFFF
+          00FFFF00FFFF00FF0000FF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF
+          00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FFFF00FF
+          0000}
+        ParentShowHint = False
+        ShowHint = True
+        OnClick = sbClearFilterClick
+      end
+      object imFilter: TImage
+        Left = 6
+        Top = 8
+        Width = 16
+        Height = 16
+        Transparent = True
+      end
+      object pbFilter: TPaintBox
+        Left = 6
+        Top = 8
+        Width = 16
+        Height = 16
+        OnPaint = pbFilterPaint
+      end
+      object edFilter: TTntEdit
+        Left = 52
+        Top = 6
+        Width = 482
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 0
+        OnChange = edFilterChange
+        OnKeyDown = edFilterKeyDown
+        OnKeyUp = edFilterKeyUp
       end
     end
   end
@@ -690,5 +779,12 @@ object HistoryFrm: THistoryFrm
     ShareImages = True
     Left = 80
     Top = 192
+  end
+  object tiFilter: TTimer
+    Enabled = False
+    Interval = 300
+    OnTimer = tiFilterTimer
+    Left = 468
+    Top = 260
   end
 end
