@@ -1,13 +1,13 @@
 object HistoryFrm: THistoryFrm
   Left = 230
   Top = 130
-  Width = 532
-  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
+  ClientHeight = 391
+  ClientWidth = 524
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,7 +23,6 @@ object HistoryFrm: THistoryFrm
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnMouseWheel = FormMouseWheel
-  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object paClient: TPanel
@@ -41,6 +40,7 @@ object HistoryFrm: THistoryFrm
       Height = 272
       AutoSnap = False
       MinSize = 100
+      Visible = False
     end
     object paGrid: TPanel
       Left = 163
@@ -379,6 +379,7 @@ object HistoryFrm: THistoryFrm
       Align = alLeft
       BevelOuter = bvLowered
       TabOrder = 3
+      Visible = False
       object tvSess: TTntTreeView
         Left = 1
         Top = 22

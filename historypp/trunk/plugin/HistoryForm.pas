@@ -173,7 +173,6 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
-    procedure FormShow(Sender: TObject);
     procedure hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
     procedure hgTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
     procedure hgPopup(Sender: TObject);
@@ -279,6 +278,8 @@ type
     procedure SethContact(const Value: THandle);
     procedure LoadInOptions();
 
+    procedure PreLoadHistory;
+    procedure PostLoadHistory;
   public
     UserCodepage: Cardinal;
     LastSearch: TLastSearch;
@@ -569,7 +570,6 @@ begin
   hg.InlineRichEdit.PopupMenu := pmGridInline;
   //for i := 0 to pmOptions.Items.Count-1 do
   //  pmOptions.Items.Remove(pmOptions.Items[0]);
-  ShowSessions(False);
 end;
 
 procedure THistoryFrm.WMSysCommand(var Message: TWMSysCommand);
@@ -800,8 +800,9 @@ end;
 
 procedure THistoryFrm.Load;
 begin
-  if hContact = 0 then paTop.Visible := False;
+  PreLoadHistory;
   LoadHistory(Self);
+  PostLoadHistory;
 end;
 
 procedure THistoryFrm.LoadPendingHeaders(rowidx: integer; count: integer);
@@ -977,21 +978,6 @@ begin
   PluginLink.UnhookEvent(hHookEventAdded);
   PluginLink.UnhookEvent(hHookEventDeleted);
   PluginLink.UnhookEvent(hHookEventPreShutdown);
-end;
-
-procedure THistoryFrm.FormShow(Sender: TObject);
-begin
-  LoadPosition;
-  ProcessPassword;
-  ShowSessions(ShowSessionsAfterPassword);
-  
-  HookEvents;
-
-  SessThread := TSessionsThread.Create(True);
-  SessThread.ParentHandle := Self.Handle;
-  SessThread.Contact := hContact;
-  SessThread.Priority := tpLower;
-  SessThread.Resume;
 end;
 
 procedure THistoryFrm.hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
@@ -1883,6 +1869,8 @@ if value = true then begin
   end
 else begin
   ShowSessions(ShowSessionsAfterPassword);
+  if ShowSessionsAfterPassword then
+    hg.MakeVisible(hg.Selected);
   hg.SetFocus;
   end;
 end;
@@ -1898,8 +1886,6 @@ begin
   paSess.Visible := Show;
   spSess.Visible := Show;
   spSess.Left := paSess.Left + paSess.Width + 1;
-
-  hg.MakeVisible(hg.Selected);
 end;
 
 procedure THistoryFrm.SMFinished(var M: TMessage);
@@ -1941,6 +1927,24 @@ if Key = Chr(VK_RETURN) then key := #0;
 if Key = Chr(VK_TAB) then key := #0;
 // to prevent ** BLING ** when press Esc
 if Key = Chr(VK_ESCAPE) then key := #0;
+end;
+
+procedure THistoryFrm.PostLoadHistory;
+begin
+  LoadPosition;
+  ProcessPassword;
+  if hContact = 0 then paTop.Visible := False;
+  ShowSessions(ShowSessionsAfterPassword);
+  HookEvents;
+end;
+
+procedure THistoryFrm.PreLoadHistory;
+begin
+  SessThread := TSessionsThread.Create(True);
+  SessThread.ParentHandle := Self.Handle;
+  SessThread.Contact := hContact;
+  SessThread.Priority := tpLower;
+  SessThread.Resume;
 end;
 
 procedure THistoryFrm.ProcessPassword;
