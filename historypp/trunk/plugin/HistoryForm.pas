@@ -149,6 +149,13 @@ type
     ConversationLog1: TTntMenuItem;
     SystemCodepage1: TTntMenuItem;
     N11: TTntMenuItem;
+    paFilter: TTntPanel;
+    sbClearFilter: TTntSpeedButton;
+    imFilter: TImage;
+    pbFilter: TPaintBox;
+    edFilter: TTntEdit;
+    tiFilter: TTimer;
+    bnFilter: TTntButton;
     procedure tvSessMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure tvSessClick(Sender: TObject);
@@ -231,6 +238,17 @@ type
     procedure UserDetails1Click(Sender: TObject);
     procedure CodepageChangeClick(Sender: TObject);
     procedure ConversationLog1Click(Sender: TObject);
+    procedure sbClearFilterClick(Sender: TObject);
+    procedure pbFilterPaint(Sender: TObject);
+    procedure edFilterChange(Sender: TObject);
+    procedure edFilterKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure edFilterKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure StartHotFilterTimer;
+    procedure EndHotFilterTimer;
+    procedure tiFilterTimer(Sender: TObject);
+    procedure bnFilterClick(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -239,6 +257,7 @@ type
     FPasswordMode: Boolean;
     SavedLinkUrl: String;
     ShowSessionsAfterPassword: Boolean;
+    HotFilterString: WideString;
 
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo);message WM_GetMinMaxInfo;
     //procedure WMSize(var Message: TWMSize); message WM_SIZE;
@@ -692,6 +711,8 @@ begin
       bnDelete.Click;
     if (key=Ord('S')) and (not PasswordMode) then
       bnSearch.Click;
+    if (key=Ord('F')) and (not PasswordMode) then
+      bnFilter.Click;
     key:=0;
     end;
 
@@ -713,8 +734,12 @@ begin
       UserDetails1.Click;
       key:=0;
       end;
-    if (key=Ord('F')) and (not PasswordMode) then begin
+    if (key=Ord('S')) and (not PasswordMode) then begin
       bnSearch.Click;
+      key:=0;
+      end;
+    if (key=Ord('F')) and (not PasswordMode) then begin
+      bnFilter.Click;
       key:=0;
       end;
     if ((key=Ord('C')) or (key = VK_INSERT)) and (not PasswordMode) then begin
@@ -1160,16 +1185,25 @@ end;
 procedure THistoryFrm.hgItemFilter(Sender: TObject; Index: Integer;
   var Show: Boolean);
 begin
+
+  // if we have string filter
+  if HotFilterString <> '' then begin
+    if Pos(WideUpperCase(HotFilterString),WideUpperCase(hg.Items[Index].Text)) = 0 then
+      Show := False;
+    exit;
+  end;
+
   // if filter by sessions disabled, then exit
-  if StartTimestamp = 0 then exit;
-  //Show := False;
-  if hg.Items[Index].Time >= StartTimestamp then begin
-    if EndTimestamp = 0 then exit
-    else begin
-      if hg.Items[Index].Time < EndTimestamp then exit
-      else Show := False;
-    end;
-  end else Show := False;
+  if StartTimestamp <> 0 then begin
+    //Show := False;
+    if hg.Items[Index].Time >= StartTimestamp then begin
+      if EndTimestamp = 0 then exit
+      else begin
+        if hg.Items[Index].Time < EndTimestamp then exit
+        else Show := False;
+      end;
+    end else Show := False;
+  end;
 end;
 
 procedure THistoryFrm.Delete1Click(Sender: TObject);
@@ -1292,6 +1326,7 @@ begin
   bnSearch.Enabled := Idle and not PasswordMode;
   bnDelete.Enabled := Idle and not PasswordMode;
   bbAddit.Enabled := Idle; // bnAddit don't gets disabled on PassMode
+  bnFilter.Enabled := Idle and not PasswordMode;
   case State of
     gsIdle:   t := WideFormat(TranslateWideW('%.0n items in history'),[HistoryLength/1]);
     gsLoad:   t := TranslateWideW('Loading...');
@@ -1829,6 +1864,7 @@ cbFilter.Enabled := enb;
 cbSort.Enabled := enb;
 bnSearch.Enabled := enb;
 bnDelete.Enabled := enb;
+bnFilter.Enabled := enb;
 SaveAsHTML1.Enabled := enb;
 SaveAsXML1.Enabled := enb;
 SaveAsText1.Enabled := enb;
@@ -1962,7 +1998,10 @@ begin
   bnSearch.Caption := TranslateWideW(bnSearch.Caption);
   bnDelete.Caption := TranslateWideW(bnDelete.Caption);
   bbAddit.Caption := TranslateWideW(bbAddit.Caption);
+  bnFilter.Caption := TranslateWideW(bnFilter.Caption);
   bnClose.Caption := TranslateWideW(bnClose.Caption);
+
+  sbClearFilter.Hint := TranslateWideW(sbClearFilter.Hint);
 
   bnPass.Caption := TranslateWideW(bnPass.Caption);
   laPass.Caption := TranslateWideW(laPass.Caption);
@@ -1986,6 +2025,7 @@ begin
 
   cbFilter.Left := laFilter.Left + laFilter.Width + 5;
   cbSort.Left := paTop.Width - cbSort.Width - 2;
+  edFilter.Width := paFilter.Width - edFilter.Left - 2;
 end;
 
 procedure THistoryFrm.tvSessChange(Sender: TObject; Node: TTreeNode);
@@ -2429,6 +2469,90 @@ end;
 procedure THistoryFrm.ConversationLog1Click(Sender: TObject);
 begin
   ShowSessions(not paSess.Visible);
+end;
+
+procedure THistoryFrm.sbClearFilterClick(Sender: TObject);
+begin
+  edFilter.Text := '';
+  EndHotFilterTimer;
+  hg.SetFocus;
+end;
+
+procedure THistoryFrm.pbFilterPaint(Sender: TObject);
+var
+  ic: hIcon;
+begin
+  if tiFilter.Enabled then
+    ic := hppIcons[HPP_ICON_HOTFILTERWAIT].Handle
+  else
+    ic := hppIcons[HPP_ICON_HOTFILTER].Handle;
+
+  DrawIconEx(pbFilter.Canvas.Handle,0,0,ic,
+    16,16,0,pbFilter.Canvas.Brush.Handle,DI_NORMAL);
+end;
+
+procedure THistoryFrm.edFilterChange(Sender: TObject);
+begin
+  StartHotFilterTimer;
+end;
+
+procedure THistoryFrm.edFilterKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR] then begin
+    SendMessage(hg.Handle,WM_KEYDOWN,Key,0);
+    Key := 0;
+  end;
+end;
+
+procedure THistoryFrm.edFilterKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then begin
+    hg.SetFocus;
+    key := 0;
+  end;
+end;
+
+procedure THistoryFrm.StartHotFilterTimer;
+var
+  RepaintIcon: Boolean;
+begin
+  if tiFilter.Interval = 0 then
+    EndHotFilterTimer
+  else begin
+    tiFilter.Enabled := False;
+    tiFilter.Enabled := True;
+    if pbFilter.Tag <> 1 then begin // use Tag to not repaint every keystroke
+      pbFilter.Tag := 1;
+      pbFilter.Repaint;
+    end;
+  end;
+end;
+
+procedure THistoryFrm.EndHotFilterTimer;
+begin
+  tiFilter.Enabled := False;
+  HotFilterString := edFilter.Text;
+  hg.UpdateFilter;
+  if pbFilter.Tag <> 0 then begin
+    pbFilter.Tag := 0;
+    pbFilter.Repaint;
+  end;
+end;
+
+procedure THistoryFrm.tiFilterTimer(Sender: TObject);
+begin
+  EndHotFilterTimer;
+end;
+
+procedure THistoryFrm.bnFilterClick(Sender: TObject);
+begin
+  paFilter.Visible := not paFilter.Visible;
+  if paFilter.Visible then
+    edFilter.SetFocus
+  else
+    sbClearFilterClick(Self);
 end;
 
 end.

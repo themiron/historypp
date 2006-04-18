@@ -24,7 +24,9 @@ Recent on top
 &Search...
 &Delete
 &Additional
+&Filter...
 Conversations
+Clear Search
 Save History
 &Open
 Send &Message
