@@ -279,6 +279,7 @@ type
     SearchPattern: WideString;
     LastKeyDown: DWord;
     GridUpdates: TGridUpdates;
+    VLineScrollSize: Integer;
     FSelItems, TempSelItems: array of Integer;
     FSelected: Integer;
     FGetItemData: TGetItemData;
@@ -638,6 +639,9 @@ end;
 { THistoryGrid }
 
 constructor THistoryGrid.Create(AOwner: TComponent);
+var
+  LogY: Integer;
+  dc: HDC;
 begin
   inherited;
   {$IFDEF RENDER_RICH}
@@ -738,6 +742,13 @@ begin
   {$IFDEF CUST_SB}
   FVertScrollBar := TVertScrollBar.Create(Self,sbVertical);
   {$ENDIF}
+
+  // get line scroll size depending on current dpi
+  // default is 5 lines (13px usually) for standard 96dpi
+  dc := GetDC(0);
+  LogY := GetDeviceCaps(dc, LOGPIXELSY);
+  ReleaseDC(0,dc);
+  VLineScrollSize := Round(LogY*((13*5)/96));
 end;
 
 destructor THistoryGrid.Destroy;
@@ -1016,8 +1027,8 @@ begin
   if Message.ScrollCode in [SB_LINEUP,SB_LINEDOWN,SB_PAGEDOWN,SB_PAGEUP] then begin
     Message.Result := 0;
     case Message.ScrollCode of
-      SB_LINEDOWN: ScrollGridBy(5*13);
-      SB_LINEUP: ScrollGridBy(-5*13);
+      SB_LINEDOWN: ScrollGridBy(VLineScrollSize);
+      SB_LINEUP: ScrollGridBy(-VLineScrollSize);
       SB_PAGEDOWN: ScrollGridBy(ClientHeight);
       SB_PAGEUP: ScrollGridBy(-ClientHeight);
     end;
