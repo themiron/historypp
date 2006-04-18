@@ -5,6 +5,8 @@
  *
  */
 
+ini_set("register_globals","1");
+ini_set("register_argc_argv","1");
 
 $detailed_file = false;
 $ignore_menuitems = true;
