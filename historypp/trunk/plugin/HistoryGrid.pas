@@ -261,6 +261,9 @@ type
     function GetItemRichBitmap(GridItem: Integer): TBitmap;
   end;
 
+  TGridUpdate = (guSize, guAllocate, guFilter);
+  TGridUpdates = set of TGridUpdate;
+
   THistoryGrid = class(TScrollingWinControl)
   private
     SessHeaderHeight: Integer;
@@ -275,6 +278,7 @@ type
     ProgressPercent: Byte;
     SearchPattern: WideString;
     LastKeyDown: DWord;
+    GridUpdates: TGridUpdates;
     FSelItems, TempSelItems: array of Integer;
     FSelected: Integer;
     FGetItemData: TGetItemData;
@@ -431,6 +435,8 @@ type
     procedure SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; Caption: WideString);
     procedure SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: TSaveFormat);
     procedure SaveEnd(Stream: TFileStream; SaveFormat: TSaveFormat);
+
+    procedure GridUpdateSize;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -942,36 +948,8 @@ end;
 
 procedure THistoryGrid.WMSize(var Message: TWMSize);
 var
-  i: Integer;
-  NewClient: TBitmap;
   re_mask: Integer;
-
-  procedure SetW;
-  var
-    w,h: Integer;
-  begin
-    w := Message.Width;
-    h := Message.Height;
-    if (w = 0) or (h=0) then exit;
-    {
-    FClient.Width := w;
-    FClient.Height := h;
-    }
-
-    NewClient := TBitmap.Create;
-    NewClient.Width := w;
-    NewClient.Height := h;
-    NewClient.Canvas.Font.Assign(Canvas.Font);
-    NewClient.Canvas.TextFlags := Canvas.TextFlags;
-
-    FClient.Free;
-    FClient := NewClient;
-    FCanvas := FClient.Canvas;
-  end;
 begin
-
-  {$IFDEF RENDER_RICH}
-  if State = gsInline then CancelInline;
 
   if not FRichParamsSet then begin
     FRichCache.SetHandles;
@@ -987,22 +965,9 @@ begin
     //re_mask := FRichInline.Perform(EM_GETEVENTMASK, 0, 0);
     //FRichInline.Perform(EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
   end;
-  FRichCache.SetWidth(ClientWidth - 2*FPadding);
-
-  SetW;
-
-  // tmp
-  //FRich.Width := ClientWidth - 2*FPadding;
-
-  {$ENDIF}
-
-  IsCanvasClean := False;
-  BarAdjusted := False;
 
   BeginUpdate;
-  for i := 0 to Count-1 do
-    FItems[i].Height := -1;
-  if Allocated then AdjustScrollBar;
+  GridUpdates := GridUpdates + [guSize];
   EndUpdate;
 end;
 
@@ -2186,23 +2151,21 @@ end;
 
 procedure THistoryGrid.BeginUpdate;
 begin
-//if LockCount = 0 then
-//  if SendMessage(handle,WM_SETREDRAW,Integer(LongBool(False)),0) <> 0 then
-
-  //not LockWindowUpdate(Handle) then
-//    exit;
-
-Inc(LockCount);
+  Inc(LockCount);
 end;
 
 procedure THistoryGrid.EndUpdate;
 begin
-if LockCount > 0 then begin
-  Dec(LockCount);
-//  if LockCount = 0 then begin
-//    SendMessage(handle,WM_SETREDRAW,Integer(LongBool(False)),0);
-//    LockWindowUpdate(0);
-//  end;
+  if LockCount > 0 then begin
+    Dec(LockCount);
+  end;
+  if LockCount > 0 then exit;
+
+  try
+    if guSize in GridUpdates then
+      GridUpdateSize;
+  finally
+    GridUpdates := [];
   end;
 end;
 
@@ -2217,6 +2180,39 @@ end;
 function THistoryGrid.GetUp(Item: Integer): Integer;
 begin
   Result := GetPrev(Item,False);
+end;
+
+procedure THistoryGrid.GridUpdateSize;
+var
+  w,h: Integer;
+  NewClient: TBitmap;
+  i: Integer;
+begin
+  if State = gsInline then CancelInline;
+
+  FRichCache.SetWidth(ClientWidth - 2*FPadding);
+
+  w := ClientWidth;
+  h := ClientHeight;
+  if (w <> 0) and (h <> 0) then begin
+    NewClient := TBitmap.Create;
+    NewClient.Width := w;
+    NewClient.Height := h;
+    NewClient.Canvas.Font.Assign(Canvas.Font);
+    NewClient.Canvas.TextFlags := Canvas.TextFlags;
+
+    FClient.Free;
+    FClient := NewClient;
+    FCanvas := FClient.Canvas;
+  end;
+
+  IsCanvasClean := False;
+
+  for i := 0 to Count-1 do
+    FItems[i].Height := -1;
+
+  BarAdjusted := False;
+  if Allocated then AdjustScrollBar;
 end;
 
 function THistoryGrid.GetDown(Item: Integer): Integer;
@@ -4202,8 +4198,17 @@ end;
 { TRichCache }
 
 procedure TRichCache.ApplyItemToRich(Item: PRichItem);
+var
+  str: String;
 begin
   Grid.ApplyItemToRich(Item.GridItem,Item.Rich);
+
+  if Item.GridItem = 0 then
+    str := '';
+
+  //str := 'Apply item ['+IntToStr(Item.GridItem)+'] for "'+Copy(Item.Rich.Text,1,15)+'"';
+  //OutputDebugString(PChar(str));
+
   // force to send the size:
   SendMessage(Item.Rich.Handle,EM_SETEVENTMASK, 0, ENM_REQUESTRESIZE);
   SendMessage(Item.Rich.Handle,EM_REQUESTRESIZE,0, 0);
@@ -4341,7 +4346,7 @@ begin
   Item.Bitmap.Height := Item.Height;
   {$ENDIF}
 
-  //str := 'Painted bitmap ['+IntToStr(item.bitmap.Height)+'] for rich "'+Copy(Item.Rich.Text,1,15)+'"';
+  //str := 'Painted bitmap ['+IntToStr(item.GridItem)+'] for rich "'+Copy(Item.Rich.Text,1,15)+'"';
   //OutputDebugString(PChar(str));
 
   rc := Rect(0,0,Item.Bitmap.Width,Item.Bitmap.Height);
