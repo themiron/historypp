@@ -156,6 +156,7 @@ type
     edFilter: TTntEdit;
     tiFilter: TTimer;
     bnFilter: TTntButton;
+    procedure TntFormShow(Sender: TObject);
     procedure tvSessMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure tvSessClick(Sender: TObject);
@@ -546,6 +547,8 @@ var
   i: integer;
   mi: TMenuItem;
 begin
+  hg.BeginUpdate;
+  
   Icon.ReleaseHandle;
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
   LoadSessionIcons;
@@ -1972,6 +1975,15 @@ end;
 procedure THistoryFrm.OpenPassword;
 begin
   RunPassForm;
+end;
+
+procedure THistoryFrm.TntFormShow(Sender: TObject);
+begin
+  // EndUpdate is better here, not in PostHistoryLoad, because it's faster
+  // when called from OnShow. Don't know why.
+  // Other form-modifying routines are better be kept at PostHistoryLoad for
+  // speed too.
+  hg.EndUpdate;
 end;
 
 procedure THistoryFrm.TranslateForm;

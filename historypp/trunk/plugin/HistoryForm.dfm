@@ -23,6 +23,7 @@ object HistoryFrm: THistoryFrm
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnMouseWheel = FormMouseWheel
+  OnShow = TntFormShow
   PixelsPerInch = 96
   TextHeight = 13
   object paClient: TPanel
