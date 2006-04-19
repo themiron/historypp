@@ -1115,14 +1115,14 @@ begin
  si := GetSearchItem(Index);
  if FFiltered then begin
    if mtIncoming in hg.Items[Index].MessageType then
-     Name := si.Contact.Name+':'
+     Name := si.Contact.Name
    else
-     Name := si.Contact.ProfileName+':';
+     Name := si.Contact.ProfileName;
  end else begin
    if mtIncoming in hg.Items[Index].MessageType then
-     Name := WideFormat(TranslateWideW('From %s:'),[si.Contact.Name])
+     Name := WideFormat(TranslateWideW('From %s'),[si.Contact.Name])
    else
-     Name := WideFormat(TranslateWideW('To %s:'),[si.Contact.Name]);
+     Name := WideFormat(TranslateWideW('To %s'),[si.Contact.Name]);
  end;
 end;
 
@@ -1346,13 +1346,13 @@ end;
 procedure TfmGlobalSearch.Copy1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  hg.CopyToClipSelected('%n, %t:\n%m',GetSearchItem(hg.Selected).Contact.Codepage);
+  hg.CopyToClipSelected(hg.Options.ClipCopyFormat,GetSearchItem(hg.Selected).Contact.Codepage);
 end;
 
 procedure TfmGlobalSearch.CopyText1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  hg.CopyToClipSelected('%m\n',GetSearchItem(hg.Selected).Contact.Codepage);
+  hg.CopyToClipSelected(hg.Options.ClipCopyTextFormat,GetSearchItem(hg.Selected).Contact.Codepage);
 end;
 
 initialization

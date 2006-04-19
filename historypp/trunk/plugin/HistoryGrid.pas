@@ -152,6 +152,8 @@ type
     FSmileysEnabled: Boolean;
     FBBCodesEnabled: Boolean;
     FMathModuleEnabled: Boolean;
+    FClipCopyTextFormat: WideString;
+    FClipCopyFormat: WideString;
 
     procedure SetColorDivider(const Value: TColor);
     procedure SetColorSelectedText(const Value: TColor);
@@ -189,6 +191,9 @@ type
     procedure GetItemOptions(Mes: TMessageTypes; out textFont: TFont; out textColor: TColor);
     property OnShowIcons: TOnShowIcons read FOnShowIcons write SetOnShowIcons;
   published
+    property ClipCopyFormat: WideString read FClipCopyFormat write FClipCopyFormat;
+    property ClipCopyTextFormat: WideString read FClipCopyTextFormat write FClipCopyTextFormat;
+
     property Locked: Boolean read GetLocked;
 
     property IconOther: TIcon read FIconOther write SetIconOther;
@@ -492,8 +497,9 @@ type
     procedure SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit; ProcessTag: Boolean = true);
     function GetItemRTL(Item: Integer): Boolean;
 
-    procedure CopyToClipSelected(const Format: WideString = ''; Codepage: Cardinal = CP_ACP);
-
+    procedure CopyToClipSelected(const Format: WideString; ACodepage: Cardinal = CP_ACP);
+    function FormatItem(Item: Integer; Format: WideString): WideString;
+    function FormatItems(ItemList: array of Integer; Format: WideString): WideString;
   published
     property MultiSelect: Boolean read FMultiSelect write SetMultiSelect;
     property ShowHeaders: Boolean read FShowHeaders write SetShowHeaders;
@@ -551,7 +557,7 @@ procedure Register;
 implementation
 
 uses
-  hpp_options, hpp_arrays;
+  hpp_options, hpp_arrays, hpp_strparser;
 
 const
   HtmlStop = [#0,#10,#13,'<','>',' '];
@@ -1166,13 +1172,14 @@ begin
 
   if mtIncoming in FItems[Index].MessageType then begin
     nameFont := Options.FontContact;
-    HeaderName := ContactName+':';
+    HeaderName := ContactName;
   end else begin
     nameFont := Options.FontProfile;
-    HeaderName := ProfileName+':';
+    HeaderName := ProfileName;
   end;
   if Assigned(FGetNameData) then
     FGetNameData(Self,Index,HeaderName);
+  HeaderName := HeaderName + ':';
   timestampFont := Options.FontTimeStamp;
   TimeStamp := GetTime(FItems[Index].Time);
 
@@ -1413,6 +1420,83 @@ var
   r: TRect;
 begin
   Result := FindItemAt(x,y,r);
+end;
+
+const
+  Substs: array[0..3] of array[0..1] of WideString = (
+  ('\n',WideString(#13#10)),
+  ('\t','\t'),
+  ('\\','\'),
+  ('\%','%')
+  );
+
+function THistoryGrid.FormatItem(Item: Integer; Format: WideString): WideString;
+var
+  tok: TWideStrArray;
+  toksp: TIntArray;
+  i,n: Integer;
+  subst: WideString;
+  dt: TDateTime;
+  have_subst: Boolean;
+  nick, to_nick, from_nick: WideString;
+begin
+  TokenizeString(Format,tok,toksp);
+  for i := 0 to Length(toksp) - 1 do begin
+    subst := '';
+    if tok[toksp[i]][1] = WideChar('\') then begin
+      for n := 0 to Length(Substs) - 1 do
+        if tok[toksp[i]] = Substs[n][0] then begin
+          subst := Substs[n][1];
+          break;
+        end;
+    end
+    else begin
+      LoadItem(Item,False);
+      if mtIncoming in FItems[Item].MessageType then begin
+        from_nick := ContactName;
+        to_nick := ProfileName;
+      end else begin
+        from_nick := ProfileName;
+        to_nick := ContactName;
+      end;
+      nick := from_nick;
+      if Assigned(FGetNameData) then
+        FGetNameData(Self,Item,nick);
+      dt := TimestampToDateTime(FItems[Item].Time);
+      if tok[toksp[i]] = '%mes%' then subst := FItems[Item].Text
+      else
+      if tok[toksp[i]] = '%nick%' then subst := nick
+      else
+      if tok[toksp[i]] = '%from_nick%' then subst := from_nick
+      else
+      if tok[toksp[i]] = '%to_nick%' then subst := to_nick
+      else
+      if tok[toksp[i]] = '%datetime%' then subst := DateTimeToStr(dt)
+      else
+      if tok[toksp[i]] = '%date%' then subst := DateToStr(dt)
+      else
+      if tok[toksp[i]] = '%time%' then subst := TimeToStr(dt);
+    end;
+    tok[toksp[i]] := subst;
+  end;
+  Result := '';
+  for i := 0 to Length(tok) - 1 do
+    Result := Result + tok[i];
+end;
+
+function THistoryGrid.FormatItems(ItemList: array of Integer;
+  Format: WideString): WideString;
+var
+  i: Integer;
+  linebreak: WideString;
+begin
+  // array of items should be a sorted list
+  Result := '';
+  linebreak := #10#13;
+  for i := Length(ItemList)-1 downto 0 do begin
+    if i = 0 then linebreak := '';
+    Result := Result + FormatItem(ItemList[i],Format) + linebreak;
+  end;
 end;
 
 var
@@ -3891,41 +3975,13 @@ begin
   State := gsIdle;
 end;
 
-procedure THistoryGrid.CopyToClipSelected(const Format: WideString = ''; Codepage: Cardinal = CP_ACP);
-
-  function GetItemText(Item: Integer; const Format: WideString = ''): WideString;
-  var
-    name: WideString;
-  begin
-    Result := Format;
-    Result := Tnt_WideStringReplace(Result,'\n',#13#10,[rfReplaceAll]);
-    if Assigned(FGetNameData) then
-      FGetNameData(Self,Item,name)
-    else if mtIncoming in Items[Item].MessageType then
-      name := ContactName
-    else
-      name := ProfileName;
-    Result := Tnt_WideStringReplace(Result,'%n',name,[rfReplaceAll]);
-    Result := Tnt_WideStringReplace(Result,'%t',TimestampToString(Items[Item].Time),[rfReplaceAll]);
-    Result := Tnt_WideStringReplace(Result,'%m',Items[Item].Text,[rfReplaceAll]);
-  end;
-
+procedure THistoryGrid.CopyToClipSelected(const Format: WideString; ACodepage: Cardinal = CP_ACP);
 var
   t: WideString;
   i: Integer;
 begin
   if Selected = -1 then exit;
-  t := '';
-  if SelCount = 1 then
-    t := GetItemText(Selected, Format)
-  else begin
-    if SelItems[0] > SelItems[SelCount-1] then
-      for i := 0 to SelCount-1 do t := t + GetItemText(SelItems[i],Format) + #13#10
-    else
-      for i := SelCount-1 downto 0 do t := t + GetItemText(SelItems[i],Format) + #13#10;
-    t := TrimRight(t);
-  end;
-  CopyToClip(t,Handle,Codepage);
+  CopyToClip(FormatItems(FSelItems,Format),Handle,ACodepage);
 end;
 
 { TGridOptions }

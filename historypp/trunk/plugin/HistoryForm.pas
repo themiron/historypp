@@ -1251,7 +1251,7 @@ end;
 procedure THistoryFrm.Copy1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  hg.CopyToClipSelected('%n, %t:\n%m',UserCodePage);
+  hg.CopyToClipSelected(hg.Options.ClipCopyFormat,UserCodePage);
 end;
 
 procedure THistoryFrm.Details1Click(Sender: TObject);
@@ -2162,7 +2162,7 @@ end;
 procedure THistoryFrm.CopyText1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  hg.CopyToClipSelected('%m\n',UserCodePage);
+  hg.CopyToClipSelected(hg.Options.ClipCopyTextFormat,UserCodePage);
 end;
 
 procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
