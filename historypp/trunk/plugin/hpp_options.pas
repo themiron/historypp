@@ -346,7 +346,7 @@ begin
   GridOptions.BBCodesEnabled := GetDBBool(hppDBName,'BBCodes',True);
   GridOptions.MathModuleEnabled := GetDBBool(hppDBName,'MathModule',MathModuleEnabled);
 
-  GridOptions.ClipCopyFormat := '%nick%, %datetime%:\n%mes%';
+  GridOptions.ClipCopyFormat := '%nick%, %smart_datetime%:\n%mes%';
   GridOptions.ClipCopyTextFormat := '%mes%\n';
   finally
   GridOptions.EndChange;
