@@ -855,7 +855,7 @@ begin
       Canvas.Brush.Color := Options.ColorDivider;
       Canvas.FillRect(TextRect);
       if (FItems[idx].HasHeader) and (ShowHeaders) then begin
-        TextRect := Rect(0,SumHeight,cw,SumHeight+SessHeaderHeight-1);
+        TextRect := Rect(0,SumHeight+1,cw,SumHeight+SessHeaderHeight-2);
         PaintHeader(idx,TextRect);
         TextRect := Rect(0,SumHeight+SessHeaderHeight,cw,SumHeight+FItems[idx].Height-1);
       end
@@ -1677,7 +1677,7 @@ var
 begin
   SearchPattern := '';
   CheckBusy;
-
+  
   Item := FindItemAt(x,y);
 
   if OverURL then begin
@@ -3644,7 +3644,7 @@ begin
   // find heighest and don't forget about icons
   PHeaderHeight := Max(ph,th);
   CHeaderHeight := Max(ch,th);
-  SessHeaderHeight := th+1+3*2;
+  SessHeaderHeight := th+1+3*2+2;
   if Options.ShowIcons then begin
     CHeaderHeight := Max(CHeaderHeight,16);
     PHeaderHeight := Max(PHeaderHeight,16);
