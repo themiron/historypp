@@ -113,7 +113,7 @@ var
 
 implementation
 
-uses hpp_database, hpp_services;
+uses hpp_database, hpp_options, hpp_services;
 
 {$R *.DFM}
 
@@ -257,6 +257,9 @@ end;
 
 procedure TEventDetailsFrm.FormCreate(Sender: TObject);
 begin
+  Icon.ReleaseHandle;
+  Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
+
   DesktopFont := True;
   MakeFontsParent(Self);
   TranslateForm;

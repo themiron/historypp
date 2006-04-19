@@ -308,6 +308,9 @@ begin
   for i:=0 to HstWindowList.Count-1 do begin
     THistoryFrm(HstWindowList[i]).Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
     THistoryFrm(HstWindowList[i]).LoadSessionIcons;
+    THistoryFrm(HstWindowList[i]).pbFilter.Repaint;
+    if Assigned(THistoryFrm(HstWindowList[i]).EventDetailFrom) then
+      THistoryFrm(HstWindowList[i]).EventDetailFrom.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
   end;
   //change menu icons
   ZeroMemory(@menuitem,SizeOf(menuItem));
