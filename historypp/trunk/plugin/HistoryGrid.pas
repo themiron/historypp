@@ -2304,7 +2304,16 @@ begin
       if Assigned(FGetNameData) then
         FGetNameData(Self,Item,nick);
       dt := TimestampToDateTime(FItems[Item].Time);
+      // we are doing many if's here, because I don't want to pre-compose all the
+      // possible tokens into array. That's because some tokens take some time to
+      // be generated, and if they're not used, this time would be wasted.
       if tok[toksp[i]] = '%mes%' then subst := FItems[Item].Text
+      else
+      if tok[toksp[i]] = '%adj_mes%' then
+        subst := WideWrapText(FItems[Item].Text,#13#10,[' ',#9,'-'],72)
+      else
+      if tok[toksp[i]] = '%quot_mes%' then
+        subst := '> '+WideWrapText(FItems[Item].Text,#13#10+'> ',[' ',#9,'-'],70)
       else
       if tok[toksp[i]] = '%nick%' then subst := nick
       else
