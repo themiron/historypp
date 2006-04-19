@@ -235,7 +235,6 @@ type
   private
     LogX,LogY: Integer;
     RichEventMasks: DWord;
-    GridItems: array of Integer;
     Grid: THistoryGrid;
     FRichHeight: Integer;
 
@@ -1143,11 +1142,6 @@ var
   BackColor: TColor;
   nameFont,timestampFont,textFont: TFont;
   Sel: Boolean;
-  {IFDEF RENDER_RICH}
-  LogX,LogY: Integer;
-  rc: TRect;
-  Range: TFormatRange;
-  {ENDIF}
   RTL: Boolean;
   RichBMP: TBitmap;
 
@@ -1301,7 +1295,6 @@ end;
 procedure THistoryGrid.SetSelected(const Value: Integer);
 var
   OldSelected: Integer;
-  i: Integer;
 begin
   FRichCache.ResetItem(FSelected);
   OldSelected := FSelected;
@@ -1351,8 +1344,7 @@ end;
 function THistoryGrid.FindItemAt(x, y: Integer; out ItemRect: TRect): Integer;
 var
   SumHeight: Integer;
-  idx,tmp: Integer;
-  succ: Boolean;
+  idx: Integer;
 begin
   Result := -1;
   ItemRect := Rect(0,0,0,0);
@@ -1375,14 +1367,6 @@ begin
     end;
 
   idx := GetFirstVisible;
-  //tmp := GetUp(idx);
-  //if tmp <> -1 then idx := tmp;
- //else idx := GetIdx(GetIdx(idx)-1);
-  //idx := GetIdx(VertScrollBar.Position-1);
-  {if Reversed then
-    succ := (idx >= 0)
-  else
-    succ := ;}
 
   SumHeight := - TopItemOffset;
   while (idx >= 0) and (idx < Length(FItems)) do begin
@@ -1394,11 +1378,6 @@ begin
     Inc(SumHeight,FItems[idx].Height);
     idx := GetDown(idx);
     if idx = -1 then break;
-    //Inc(idx);
-    {if Reversed then
-      succ := (idx >= 0)
-    else
-      succ := (idx < Length(FItems));}
     end;
   {FIX: 2004-08-20, can have AV here, how could I miss this line? }
   if Result = -1 then exit;
@@ -1460,6 +1439,7 @@ begin
       SetLength(tok_smartdt,Length(tok_smartdt)+1);
       tok_smartdt[High(tok_smartdt)] := toksp[n];
     end;
+  dt := 0;
   prevdt := 0;
 
   // start processing all items
@@ -1502,7 +1482,7 @@ var
 
 procedure THistoryGrid.DoLButtonDown(X, Y: Integer; Keys: TMouseMoveKeys);
 var
-  i,s,e,Item: Integer;
+  Item: Integer;
 begin
   WasDownOnGrid := True;
   SearchPattern := '';
@@ -1595,8 +1575,6 @@ begin
 end;
 
 function THistoryGrid.IsSelected(Item: Integer): Boolean;
-var
-  i: Integer;
 begin
   Result := False;
   if Item = -1 then exit;
@@ -1751,13 +1729,7 @@ end;
 
 procedure THistoryGrid.DoMouseMove(X, Y: Integer; Keys: TMouseMoveKeys);
 var
-Item: Integer;
-{$IFDEF RENDER_RICH}
-//ItemRect: TRect;
-//RichX, RichY: Integer;
-//hh: Integer;
-{$ENDIF}
-s,e,i: Integer;
+  Item: Integer;
 begin
   CheckBusy;
   if Count = 0 then exit;
@@ -1778,12 +1750,10 @@ begin
     exit;
   end;
 
-  {$IFDEF RENDER_RICH}
   OverURL := False;
   HandleRichEditMouse(WM_MOUSEMOVE,X,Y);
   if OverURL then Cursor := crHandPoint
              else Cursor := crDefault;
-  {$ENDIF}
 end;
 
 procedure THistoryGrid.WMLButtonDblClick(var Message: TWMLButtonDblClk);
@@ -1808,14 +1778,9 @@ end;
 function THistoryGrid.CalcItemHeight(Item: Integer): Integer;
 var
   hh,h: Integer;
-  r: TRect;
-  t: WideString;
-  f: TFont;
-  c: TColor;
 begin
   Result := -1;
   if IsUnknown(Item) then exit;
-  {$IFDEF RENDER_RICH}
 
   ApplyItemToRich(Item);
   // look like it solves the next hack
@@ -1828,18 +1793,6 @@ begin
   // rude hack, but what the fuck??? First item with rtl chars is 1 line heighted always
   if FRichHeight = 0 then exit
                      else h := FRichHeight;
-
-  {$ENDIF}
-  {begin
-    r := Rect(padding,padding,ClientWidth-padding,padding+1);
-    // 26.03.03 - OXY - no need, already done in GetItemData
-    // t := TrimRight(FItems[Item].Text);
-    t := FItems[Item].Text;
-    Options.GetItemOptions(FItems[Item].MessageType,f,c);
-    Canvas.Font := f;
-    //h := DrawText(Canvas.Handle,PChar(t),Length(t),r,DT_CALCRECT or DT_NOCLIP or DT_NOPREFIX	or DT_WORDBREAK);
-    h := Tnt_DrawTextW(Canvas.Handle,PWideChar(t),Length(t),r,DT_CALCRECT or DT_NOCLIP or DT_NOPREFIX	or DT_WORDBREAK);
-  end;}
 
   if mtIncoming in FItems[Item].MessageType then
     hh := CHeaderHeight
@@ -2181,11 +2134,10 @@ end;
 
 procedure THistoryGrid.MakeVisible(Item: Integer);
 var
-  OrgItem,First: Integer;
+  First: Integer;
   SumHeight: Integer;
 begin
   if Item = -1 then exit;
-  OrgItem := Item;
   // load it to make positioning correct
   LoadItem(Item);
   if not IsMatched(Item) then exit;
@@ -3862,7 +3814,6 @@ var
   Item: Integer;
   ItemRect: TRect;
   PrevHwnd: THandle;
-  hh: Integer;
   RichX,RichY: word;
 begin
   Item := FindItemAt(x,y);
@@ -4026,9 +3977,6 @@ begin
 end;
 
 procedure THistoryGrid.CopyToClipSelected(const Format: WideString; ACodepage: Cardinal = CP_ACP);
-var
-  t: WideString;
-  i: Integer;
 begin
   if Selected = -1 then exit;
   CopyToClip(FormatItems(FSelItems,Format),Handle,ACodepage);
@@ -4349,7 +4297,6 @@ end;
 constructor TRichCache.Create(AGrid: THistoryGrid);
 var
   i: Integer;
-  Rich: TtntRichEdit;
   RichItem: PRichItem;
 begin
   inherited Create;
@@ -4560,14 +4507,10 @@ end;
 procedure TRichCache.SetHandles;
 var
   i: Integer;
-  re_mask: DWord;
 begin
   for i := 0 to Length(Items) - 1 do begin
     Items[i].Rich.ParentWindow := Grid.Handle;
-    //re_mask := Items[i].Rich.Perform(EM_GETEVENTMASK, 0, 0);
     SendMessage(Items[i].Rich.Handle,EM_SETEVENTMASK, 0, RichEventMasks);
-    //re_mask or ENM_LINK);
-    //re_mask := Items[i].Rich.Perform(EM_GETEVENTMASK, 0, 0);
     Items[i].Rich.Perform(EM_AUTOURLDETECT, DWord(True), 0);
     Items[i].Rich.Perform(EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
   end;
