@@ -492,6 +492,8 @@ type
     procedure MakeTopmost(Item: Integer);
     procedure ResetItem(Item: Integer);
 
+    procedure IntFormatItem(Item: Integer; var Tokens: TWideStrArray; var SpecialTokens: TIntArray);
+
     property Codepage: Cardinal read FCodepage write SetCodepage;
   published
     procedure SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit; ProcessTag: Boolean = true);
@@ -1422,63 +1424,15 @@ begin
   Result := FindItemAt(x,y,r);
 end;
 
-const
-  Substs: array[0..3] of array[0..1] of WideString = (
-  ('\n',WideString(#13#10)),
-  ('\t','\t'),
-  ('\\','\'),
-  ('\%','%')
-  );
-
 function THistoryGrid.FormatItem(Item: Integer; Format: WideString): WideString;
 var
   tok: TWideStrArray;
   toksp: TIntArray;
-  i,n: Integer;
-  subst: WideString;
-  dt: TDateTime;
-  have_subst: Boolean;
-  nick, to_nick, from_nick: WideString;
+  i: Integer;
 begin
   TokenizeString(Format,tok,toksp);
-  for i := 0 to Length(toksp) - 1 do begin
-    subst := '';
-    if tok[toksp[i]][1] = WideChar('\') then begin
-      for n := 0 to Length(Substs) - 1 do
-        if tok[toksp[i]] = Substs[n][0] then begin
-          subst := Substs[n][1];
-          break;
-        end;
-    end
-    else begin
-      LoadItem(Item,False);
-      if mtIncoming in FItems[Item].MessageType then begin
-        from_nick := ContactName;
-        to_nick := ProfileName;
-      end else begin
-        from_nick := ProfileName;
-        to_nick := ContactName;
-      end;
-      nick := from_nick;
-      if Assigned(FGetNameData) then
-        FGetNameData(Self,Item,nick);
-      dt := TimestampToDateTime(FItems[Item].Time);
-      if tok[toksp[i]] = '%mes%' then subst := FItems[Item].Text
-      else
-      if tok[toksp[i]] = '%nick%' then subst := nick
-      else
-      if tok[toksp[i]] = '%from_nick%' then subst := from_nick
-      else
-      if tok[toksp[i]] = '%to_nick%' then subst := to_nick
-      else
-      if tok[toksp[i]] = '%datetime%' then subst := DateTimeToStr(dt)
-      else
-      if tok[toksp[i]] = '%date%' then subst := DateToStr(dt)
-      else
-      if tok[toksp[i]] = '%time%' then subst := TimeToStr(dt);
-    end;
-    tok[toksp[i]] := subst;
-  end;
+  LoadItem(Item,False);
+  IntFormatItem(Item,tok,toksp);
   Result := '';
   for i := 0 to Length(tok) - 1 do
     Result := Result + tok[i];
@@ -1487,15 +1441,47 @@ end;
 function THistoryGrid.FormatItems(ItemList: array of Integer;
   Format: WideString): WideString;
 var
-  i: Integer;
+  i,n: Integer;
   linebreak: WideString;
+  tok2,tok: TWideStrArray;
+  toksp,tok_smartdt: TIntArray;
+  prevdt,dt: TDateTime;
 begin
-  // array of items should be a sorted list
+  // array of items MUST be a sorted list!
+
   Result := '';
-  linebreak := #10#13;
+  linebreak := #13#10;
+  TokenizeString(Format,tok,toksp);
+
+  // detect if we have smart_datetime in the tokens
+  // and cache them if we do
+  for n := 0 to Length(toksp) - 1 do
+    if tok[toksp[n]] = '%smart_datetime%' then begin
+      SetLength(tok_smartdt,Length(tok_smartdt)+1);
+      tok_smartdt[High(tok_smartdt)] := toksp[n];
+    end;
+  prevdt := 0;
+
+  // start processing all items
   for i := Length(ItemList)-1 downto 0 do begin
-    if i = 0 then linebreak := '';
-    Result := Result + FormatItem(ItemList[i],Format) + linebreak;
+    LoadItem(ItemList[i],False);
+    if i = 0 then linebreak := ''; // do not put linebr after last item
+    tok2 := Copy(tok,0,Length(tok));
+
+    // handle smart dates:
+    if Length(tok_smartdt) > 0 then begin
+      dt := TimestampToDateTime(FItems[ItemList[i]].Time);
+      if prevdt <> 0 then
+        if Trunc(dt) = Trunc(prevdt) then
+          for n := 0 to Length(tok_smartdt) - 1 do
+            tok2[tok_smartdt[n]] := '%time%';
+    end; // end smart dates
+
+    IntFormatItem(ItemList[i],tok2,toksp);
+    for n := 0 to Length(tok2) - 1 do
+      Result := Result + tok2[n];
+    Result := Result + linebreak;
+    prevdt := dt;
   end;
 end;
 
@@ -2320,6 +2306,70 @@ begin
   if (Index < 0) or (Index > High(FItems)) then exit;
   if IsUnknown(Index) then LoadItem(Index,False);
   Result := FItems[Index];
+end;
+
+const
+  Substs: array[0..3] of array[0..1] of WideString = (
+  ('\n',WideString(#13#10)),
+  ('\t',WideString(#9)),
+  ('\\','\'),
+  ('\%','%')
+  );
+
+procedure THistoryGrid.IntFormatItem(Item: Integer; var Tokens: TWideStrArray;
+  var SpecialTokens: TIntArray);
+var
+  i,n: Integer;
+  tok: TWideStrArray;
+  toksp: TIntArray;
+  subst: WideString;
+  from_nick,to_nick,nick: WideString;
+  dt: TDateTime;
+begin
+  // item MUST be loaded before calling IntFormatItem!
+  
+  tok := Tokens;
+  toksp := SpecialTokens;
+  
+  for i := 0 to Length(toksp) - 1 do begin
+    subst := '';
+    if tok[toksp[i]][1] = WideChar('\') then begin
+      for n := 0 to Length(Substs) - 1 do
+        if tok[toksp[i]] = Substs[n][0] then begin
+          subst := Substs[n][1];
+          break;
+        end;
+    end
+    else begin
+      if mtIncoming in FItems[Item].MessageType then begin
+        from_nick := ContactName;
+        to_nick := ProfileName;
+      end else begin
+        from_nick := ProfileName;
+        to_nick := ContactName;
+      end;
+      nick := from_nick;
+      if Assigned(FGetNameData) then
+        FGetNameData(Self,Item,nick);
+      dt := TimestampToDateTime(FItems[Item].Time);
+      if tok[toksp[i]] = '%mes%' then subst := FItems[Item].Text
+      else
+      if tok[toksp[i]] = '%nick%' then subst := nick
+      else
+      if tok[toksp[i]] = '%from_nick%' then subst := from_nick
+      else
+      if tok[toksp[i]] = '%to_nick%' then subst := to_nick
+      else
+      if tok[toksp[i]] = '%datetime%' then subst := DateTimeToStr(dt)
+      else
+      if tok[toksp[i]] = '%smart_datetime%' then subst := DateTimeToStr(dt)
+      else
+      if tok[toksp[i]] = '%date%' then subst := DateToStr(dt)
+      else
+      if tok[toksp[i]] = '%time%' then subst := TimeToStr(dt);
+    end;
+    tok[toksp[i]] := subst;
+  end;
 end;
 
 function THistoryGrid.IsMatched(Index: Integer): Boolean;
