@@ -830,14 +830,8 @@ procedure TfmGlobalSearch.ReplyQuoted(Item: Integer);
 var
   Txt: WideString;
 begin
-  if (item < 0) or (item > hg.Count-1) then exit;
-  if GetSearchItem(Item).Contact.Handle = 0 then exit;
-  if mtIncoming in hg.Items[Item].MessageType then
-    Txt := GetSearchItem(Item).Contact.Name
-  else
-    Txt := GetSearchItem(Item).Contact.ProfileName;
-  Txt := Txt+', '+TimestampToString(hg.Items[item].Time)+' :';
-  Txt := Txt+#13#10+QuoteText(hg.Items[item].Text);
+  if (GetSearchItem(Item).Contact.Handle = 0) or (hg.SelCount = 0) then exit;
+  Txt := QuoteText(hg.FormatSelected(hg.Options.ClipCopyFormat));
   SendMessageTo(GetSearchItem(Item).Contact.Handle,Txt);
 end;
 
@@ -1346,13 +1340,13 @@ end;
 procedure TfmGlobalSearch.Copy1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  hg.CopyToClipSelected(hg.Options.ClipCopyFormat,GetSearchItem(hg.Selected).Contact.Codepage);
+  CopyToClip(hg.FormatSelected(hg.Options.ClipCopyFormat),Handle,GetSearchItem(hg.Selected).Contact.Codepage);
 end;
 
 procedure TfmGlobalSearch.CopyText1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  hg.CopyToClipSelected(hg.Options.ClipCopyTextFormat,GetSearchItem(hg.Selected).Contact.Codepage);
+  CopyToClip(hg.FormatSelected(hg.Options.ClipCopyTextFormat),Handle,GetSearchItem(hg.Selected).Contact.Codepage);
 end;
 
 initialization

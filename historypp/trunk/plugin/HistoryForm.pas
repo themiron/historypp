@@ -156,6 +156,7 @@ type
     edFilter: TTntEdit;
     tiFilter: TTimer;
     bnFilter: TTntButton;
+    SaveasRTF1: TTntMenuItem;
     procedure TntFormShow(Sender: TObject);
     procedure tvSessMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
@@ -249,6 +250,7 @@ type
     procedure EndHotFilterTimer;
     procedure tiFilterTimer(Sender: TObject);
     procedure bnFilterClick(Sender: TObject);
+    procedure SaveasRTF1Click(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -1145,8 +1147,9 @@ begin
   case SaveDialog.FilterIndex of
     1: SaveFormat := sfHtml;
     2: SaveFormat := sfXml;
-    3: SaveFormat := sfUnicode;
-    4: SaveFormat := sfText;
+    3: SaveFormat := sfRTF;
+    4: SaveFormat := sfUnicode;
+    5: SaveFormat := sfText;
   end;
   RecentFormat := SaveFormat;
   hg.SaveSelected(SaveDialog.Files[0],SaveFormat);
@@ -1251,7 +1254,7 @@ end;
 procedure THistoryFrm.Copy1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  hg.CopyToClipSelected(hg.Options.ClipCopyFormat,UserCodePage);
+  CopyToClip(hg.FormatSelected(hg.Options.ClipCopyFormat),Handle,UserCodePage);
 end;
 
 procedure THistoryFrm.Details1Click(Sender: TObject);
@@ -1576,41 +1579,39 @@ procedure THistoryFrm.ReplyQuoted(Item: Integer);
 var
   Txt: WideString;
 begin
-  if hContact = 0 then exit;
-  if (item < 0) or (item > hg.Count-1) then exit;
-  if mtIncoming in hg.Items[Item].MessageType then
-    Txt := hg.ContactName
-  else
-    Txt := hg.ProfileName;
-  Txt := Txt+', '+TimestampToString(hg.Items[item].Time)+' :';
-  Txt := Txt+#13#10+QuoteText(hg.Items[item].Text);
+  if (hContact = 0) or (hg.SelCount = 0) then exit;
+  Txt := QuoteText(hg.FormatSelected(hg.Options.ClipCopyFormat));
   SendMessageTo(hContact,Txt);
 end;
 
 var
   HtmlFilter: String = 'HTML file (*.html; *.htm)|*.html;*.htm';
   XmlFilter: String = 'XML file (*.xml)|*.xml';
+  RtfFilter: String = 'RTF file (*.rtf)|*.rtf';
   UnicodeFilter: String = 'Unicode text file (*.txt)|*.txt';
   TextFilter: String = 'Text file (*.txt)|*.txt';
   AllFilter: String = 'All files (*.*)|*.*';
   HtmlDef: String = '.html';
   XmlDef: String = '.xml';
+  RtfDef: String = '.rtf';
   TextDef: String = '.txt';
 
 procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
 begin
   if AllFormats then begin
-    SaveDialog.Filter := HtmlFilter+'|'+XmlFilter+'|'+UnicodeFilter+'|'+TextFilter+'|'+AllFilter;
+    SaveDialog.Filter := HtmlFilter+'|'+XmlFilter+'|'+RtfFilter+'|'+UnicodeFilter+'|'+TextFilter+'|'+AllFilter;
     case SaveFormat of
       sfHTML: SaveDialog.FilterIndex := 1;
       sfXML: SaveDialog.FilterIndex := 2;
-      sfUnicode: SaveDialog.FilterIndex := 3;
-      sfText: SaveDialog.FilterIndex := 4;
+      sfRTF: SaveDialog.FilterIndex := 3;
+      sfUnicode: SaveDialog.FilterIndex := 4;
+      sfText: SaveDialog.FilterIndex := 5;
     end;
   end else begin
     case SaveFormat of
       sfHTML: begin SaveDialog.Filter := HtmlFilter; SaveDialog.FilterIndex := 1; end;
       sfXML:  begin SaveDialog.Filter := XmlFilter; SaveDialog.FilterIndex := 1; end;
+      sfRTF:  begin SaveDialog.Filter := RtfFilter; SaveDialog.FilterIndex := 1; end;
       sfUnicode: begin SaveDialog.Filter := UnicodeFilter+'|'+TextFilter; SaveDialog.FilterIndex := 1; end;
       sfText: begin SaveDialog.Filter := UnicodeFilter+'|'+TextFilter; SaveDialog.FilterIndex := 2; end;
     end;
@@ -1619,6 +1620,7 @@ begin
   case SaveFormat of
     sfHTML: SaveDialog.DefaultExt := HtmlDef;
     sfXML: SaveDialog.DefaultExt := XmlDef;
+    sfRTF: SaveDialog.DefaultExt := RtfDef;
     sfUnicode: SaveDialog.DefaultExt := TextDef;
     sfText: SaveDialog.DefaultExt := TextDef;
   end;
@@ -2045,6 +2047,7 @@ begin
 
   HtmlFilter := Translate(PChar(HtmlFilter));
   XmlFilter := Translate(PChar(XmlFilter));
+  RtfFilter := Translate(PChar(RtfFilter));
   UnicodeFilter := Translate(PChar(UnicodeFilter));
   TextFilter := Translate(PChar(TextFilter));
   AllFilter := Translate(PChar(AllFilter));
@@ -2162,7 +2165,7 @@ end;
 procedure THistoryFrm.CopyText1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  hg.CopyToClipSelected(hg.Options.ClipCopyTextFormat,UserCodePage);
+  CopyToClip(hg.FormatSelected(hg.Options.ClipCopyTextFormat),Handle,UserCodePage);
 end;
 
 procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
@@ -2579,6 +2582,22 @@ begin
     edFilter.SetFocus
   else
     sbClearFilterClick(Self);
+end;
+
+procedure THistoryFrm.SaveasRTF1Click(Sender: TObject);
+var
+  t: String;
+begin
+  PrepareSaveDialog(SaveDialog,sfRTF);
+  t := Translate('Full History [%s] - [%s]');
+  t := Format(t,[WideToAnsiString(hg.ProfileName,CP_ACP),WideToAnsiString(hg.ContactName,CP_ACP)]);
+  t := MakeFileName(t);
+  t := t + SaveDialog.DefaultExt;
+  SaveDialog.FileName := t;
+  if not SaveDialog.Execute then exit;
+  hg.SaveAll(SaveDialog.Files[0],sfRTF);
+  RecentFormat := sfRTF;
+  WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
 end;
 
 end.

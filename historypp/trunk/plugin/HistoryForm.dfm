@@ -1,13 +1,13 @@
 object HistoryFrm: THistoryFrm
   Left = 230
   Top = 130
+  Width = 532
+  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
-  ClientHeight = 391
-  ClientWidth = 524
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -604,6 +604,11 @@ object HistoryFrm: THistoryFrm
       Caption = 'Save All as &XML...'
       GroupIndex = 1
       OnClick = SaveasXML1Click
+    end
+    object SaveasRTF1: TTntMenuItem
+      Caption = 'Save All as &RTF...'
+      GroupIndex = 1
+      OnClick = SaveasRTF1Click
     end
     object SaveasText1: TTntMenuItem
       Caption = 'Save All as &Text...'
