@@ -41,8 +41,8 @@ Please wait while closing the window...
 Partial History [%s] - [%s]
 Ready to search
 Click Search button to start
-From %s:
-To %s:
+From %s
+To %s
 Advanced <<
 Advanced >>
 HotSearch: %s (F3 to find next)

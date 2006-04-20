@@ -38,6 +38,7 @@ Copy &Text
 &Save Selected...
 Save All as &HTML...
 Save All as &XML...
+Save All as &RTF...
 Save All as &Text...
 &Delete All
 &Password Protection...
@@ -94,9 +95,11 @@ You have entered the wrong password
 History++ Password Protection
 %d event
 %0.n events (%s)
+Full History [%s] - [%s]
 ;; Text from variables in ..\plugin\HistoryForm.pas:
 HTML file (*.html; *.htm)|*.html;*.htm
 XML file (*.xml)|*.xml
+RTF file (*.rtf)|*.rtf
 Unicode text file (*.txt)|*.txt
 Text file (*.txt)|*.txt
 All files (*.*)|*.*
