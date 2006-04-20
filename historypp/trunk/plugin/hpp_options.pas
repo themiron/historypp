@@ -57,6 +57,10 @@ type
   end;
 
 const
+  DEFFORMAT_CLIPCOPY     = '%nick%, %smart_datetime%:\n%mes%';
+  DEFFORMAT_CLIPCOPYTEXT = '%mes%\n';
+
+const
 
   HPP_ICON_CONTACTHISTORY    = 0;
   HPP_ICON_GLOBALSEARCH      = 1;
@@ -346,8 +350,8 @@ begin
   GridOptions.BBCodesEnabled := GetDBBool(hppDBName,'BBCodes',True);
   GridOptions.MathModuleEnabled := GetDBBool(hppDBName,'MathModule',MathModuleEnabled);
 
-  GridOptions.ClipCopyFormat := '%nick%, %smart_datetime%:\n%mes%';
-  GridOptions.ClipCopyTextFormat := '%mes%\n';
+  GridOptions.ClipCopyFormat := DEFFORMAT_CLIPCOPY;
+  GridOptions.ClipCopyTextFormat := DEFFORMAT_CLIPCOPYTEXT;
   finally
   GridOptions.EndChange;
   end;
