@@ -4063,7 +4063,7 @@ begin
   if State <> gsInline then exit;
   State := gsIdle;
   FRichInline.Hide;
-  Self.SetFocus;
+  Windows.SetFocus(Handle) ;
 end;
 
 procedure THistoryGrid.RemoveSelected(Item: Integer);
@@ -4090,11 +4090,14 @@ end;
 
 procedure THistoryGrid.RichInlineOnKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
+  if ((Key = VK_ESCAPE) or (Key = VK_RETURN)) then
+    FRichInline.Hide;
+  Key := 0;
 end;
 
 procedure THistoryGrid.RichInlineOnKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if (Key = VK_ESCAPE) or (Key = VK_RETURN) then begin
+  if not FRichInline.Visible then begin
     Key := 0;
     CancelInline;
     end;
