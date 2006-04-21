@@ -688,6 +688,7 @@ begin
 
   // Ok, now inlined richedit
   FRichInline := TTntRichEdit.Create(Self);
+  FRichInline.Top := -100;
   FRichInline.Name := 'FRichInline';
   FRichInline.Visible := False;
   //FRichInline.Parent := Self.Parent;
