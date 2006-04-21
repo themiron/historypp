@@ -3374,10 +3374,11 @@ procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; C
   var
     col: longint;
   begin
-    col := ColorToRGB(C);
-    Result := '\red'+intToStr((col shr 16) and $FF)+
+    //col := ColorToRGB(C);
+    col := C;
+    Result := '\red'+intToStr(col and $FF)+
               '\green'+intToStr((col shr 8) and $FF)+
-              '\blue'+intToStr(col and $FF)+';';
+              '\blue'+intToStr((col shr 16) and $FF)+';';
   end;
   function StyleToRTF(i: integer; const F: TFont; FLink, CLink: integer): String;
   var
@@ -3390,7 +3391,7 @@ procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; C
     Result := '{\s'+intToStr(i)+
               '\f'+intToStr(FLink)+
               style+
-              '\fs'+intToStr(F.Size)+
+              '\fs'+intToStr(F.Size*2)+
               '\cf'+intToStr(CLink)+
               '\basedon222'+
               '\snext'+intToStr(i)+
@@ -3416,10 +3417,10 @@ procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; C
     WriteString(Stream,ColorToRtf(0,Options.FontContact.Color)+#13#10);
     WriteString(Stream,ColorToRtf(1,Options.FontProfile.Color)+#13#10);
     WriteString(Stream,ColorToRtf(2,Options.FontTimeStamp.Color)+#13#10);
-    WriteString(Stream,ColorToRtf(4,Options.ColorDivider)+#13#10);
+    WriteString(Stream,ColorToRtf(3,Options.ColorDivider)+#13#10);
     for i := 0 to High(Options.ItemOptions) do begin
-      WriteString(Stream,ColorToRtf(5+i*2,Options.ItemOptions[i].textFont.Color)+#13#10);
-      WriteString(Stream,ColorToRtf(6+i*2,Options.ItemOptions[i].textColor)+#13#10);
+      WriteString(Stream,ColorToRtf(4+i*2,Options.ItemOptions[i].textFont.Color)+#13#10);
+      WriteString(Stream,ColorToRtf(5+i*2,Options.ItemOptions[i].textColor)+#13#10);
     end;
     // styles
     WriteString(Stream,'}{\stylesheet'+#13#10);
@@ -3427,7 +3428,7 @@ procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; C
     WriteString(Stream,StyleToRTF(1,Options.FontProfile,1,1)+#13#10);
     WriteString(Stream,StyleToRTF(2,Options.FontTimeStamp,2,2)+#13#10);
     for i := 0 to High(Options.ItemOptions) do begin
-      WriteString(Stream,StyleToRTF(3+i,Options.ItemOptions[i].textFont,i+3,5+i*2)+#13#10);
+      WriteString(Stream,StyleToRTF(3+i,Options.ItemOptions[i].textFont,i+3,4+i*2)+#13#10);
     end;
     WriteString(Stream,'}'+#13#10);
     // document info
@@ -3615,14 +3616,14 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
                                               else name := ProfileName;
     date := GetTime(FItems[Item].Time);
     MesTypeToRTF(FItems[Item].MessageType,mes_id);
-    WriteString(Stream,'\viewkind4\uc1\pard \cb'+intToStr(6+mes_id*2));
-    WriteString(Stream,'\s3 ['+date+']');
+    WriteString(Stream,'\viewkind4\uc1\pard \cb'+intToStr(5+mes_id*2));
+    WriteString(Stream,'\s2 ['+date+']');
     if mtIncoming in FItems[Item].MessageType then
-      WriteString(Stream,'\s0 '+TextToRTF(ContactName))
+      WriteString(Stream,'\s0  '+TextToRTF(ContactName))
     else
-      WriteString(Stream,'\s1 '+TextToRTF(ProfileName));
-    WriteString(Stream,':\par ');
-    WriteString(Stream,'\s'+intToStr(mes_id)+' '+TextToRTF(FItems[Item].Text));
+      WriteString(Stream,'\s1  '+TextToRTF(ProfileName));
+    WriteString(Stream,':\par \s'+intToStr(mes_id+3));
+    WriteString(Stream,TextToRTF(FItems[Item].Text));
     WriteString(Stream,'\par');
   end;
 
