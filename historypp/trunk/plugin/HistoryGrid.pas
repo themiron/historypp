@@ -857,12 +857,19 @@ begin
       Canvas.Brush.Color := Options.ColorDivider;
       Canvas.FillRect(TextRect);
       if (FItems[idx].HasHeader) and (ShowHeaders) then begin
-        TextRect := Rect(0,SumHeight+1,cw,SumHeight+SessHeaderHeight-2);
-        PaintHeader(idx,TextRect);
-        TextRect := Rect(0,SumHeight+SessHeaderHeight,cw,SumHeight+FItems[idx].Height-1);
+        if Reversed then begin
+          TextRect := Rect(0,SumHeight,cw,SumHeight+SessHeaderHeight);
+          PaintHeader(idx,TextRect);
+          TextRect := Rect(0,SumHeight+SessHeaderHeight,cw,SumHeight+FItems[idx].Height);
+        end
+        else begin
+          TextRect := Rect(0,SumHeight+FItems[idx].Height-SessHeaderHeight,cw,SumHeight+FItems[idx].Height);
+          PaintHeader(idx,TextRect);
+          TextRect := Rect(0,SumHeight,cw,SumHeight+FItems[idx].Height-SessHeaderHeight);
+        end;
       end
       else
-        TextRect := Rect(0,SumHeight,cw,SumHeight+FItems[idx].Height-1);
+        TextRect := Rect(0,SumHeight,cw,SumHeight+FItems[idx].Height);
       PaintItem(idx,TextRect);
     end;
     Inc(SumHeight,FItems[idx].Height);
@@ -898,8 +905,13 @@ begin
       Canvas.TextFlags := Canvas.TextFlags and not ETO_RTLREADING;
   end;
 
+  // leave divider lines:
+  Inc(ItemRect.Top);
+  Dec(ItemRect.Bottom,2);
+
   Canvas.Brush.Color := clWindow;
   Canvas.FillRect(ItemRect);
+
   InflateRect(ItemRect,-3,-3);
 
   IconOffset := 0;
@@ -1151,6 +1163,9 @@ begin
   {$IFDEF DEBUG}
   OutputDebugString(PChar('Paint item '+intToStr(Index)+' to screen'));
   {$ENDIF}
+
+  // leave divider line
+  Dec(ItemRect.Bottom);
 
   OrgRect := ItemRect;
 
