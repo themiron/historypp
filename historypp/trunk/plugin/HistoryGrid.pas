@@ -3903,12 +3903,24 @@ begin
     BarAdjusted := False;
     if (FSelected = -1) or (not IsMatched(FSelected)) then begin
       ShowProgress := True;
-      FSelected := 0;
-      SetSBPos(GetIdx(0));
-      if Reversed then
-        Selected := GetPrev(-1)
-      else
-        Selected := GetNext(-1);
+      try
+        if FSelected <> -1 then begin
+          FSelected := GetDown(FSelected);
+          if FSelected = -1 then
+            FSelected := GetUp(FSelected);
+          Selected := FSelected;
+        end
+        else begin
+          FSelected := 0;
+          SetSBPos(GetIdx(0));
+          if Reversed then
+            Selected := GetPrev(-1)
+          else
+            Selected := GetNext(-1);
+        end;
+      finally
+        ShowProgress := False;
+      end;
     end;
     AdjustScrollBar;
   finally
