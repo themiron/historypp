@@ -105,7 +105,6 @@ type
     paFilter: TtntPanel;
     sbClearFilter: TTntSpeedButton;
     edFilter: TTntEdit;
-    imFilter: TImage;
     pbFilter: TPaintBox;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);

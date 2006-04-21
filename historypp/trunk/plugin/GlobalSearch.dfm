@@ -1,9 +1,9 @@
 object fmGlobalSearch: TfmGlobalSearch
   Left = 367
   Top = 158
-  Width = 559
-  Height = 552
   Caption = 'Global History Search'
+  ClientHeight = 525
+  ClientWidth = 551
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -319,13 +319,6 @@ object fmGlobalSearch: TfmGlobalSearch
           ParentShowHint = False
           ShowHint = True
           OnClick = sbClearFilterClick
-        end
-        object imFilter: TImage
-          Left = 6
-          Top = 6
-          Width = 16
-          Height = 16
-          Transparent = True
         end
         object pbFilter: TPaintBox
           Left = 6
