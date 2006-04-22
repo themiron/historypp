@@ -108,6 +108,7 @@ end;
 function OpenContactHistory(hContact: THandle; index: integer = -1): THistoryFrm;
 var
   wHistory: THistoryFrm;
+  Lock: Boolean;
 begin
   //check if window exists, otherwise create one
   wHistory := FindContactWindow(hContact);
@@ -118,14 +119,20 @@ begin
     wHistory.hg.Options := GridOptions;
     wHistory.hContact := hContact;
     wHistory.Load;
-    if index <> -1 then
-      wHistory.hg.Selected := index
-    else begin
-      if wHistory.hg.Count > 0 then
-        wHistory.hg.Selected := 0;
+
+    Lock := LockWindowUpdate(wHistory.Handle);
+    try
+      if index <> -1 then
+        wHistory.hg.Selected := index
+      else begin
+        if wHistory.hg.Count > 0 then
+          wHistory.hg.Selected := 0;
+      end;
+      wHistory.Show;
+      wHistory.ApplyFilter(index = -1);
+    finally
+      if Lock then LockWindowUpdate(0);
     end;
-    wHistory.Show;
-    wHistory.ApplyFilter(index = -1);
   end else begin
     if index <> -1 then wHistory.hg.Selected := index;
     // restore even if minimized
