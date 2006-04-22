@@ -97,6 +97,7 @@ type
   TOnItemDelete = procedure(Sender: TObject; Index: Integer) of object;
   TOnState = procedure(Sender: TObject; State: TGridState) of object;
   TOnItemFilter = procedure(Sender: TObject; Index: Integer; var Show: Boolean) of object;
+  TOnChar = procedure(Sender: TObject; Char: WideChar; Shift: TShiftState) of object;
 
   THistoryGrid = class;
 
@@ -344,6 +345,9 @@ type
     MaxSBPos: Integer;
     FShowHeaders: Boolean;
     FCodepage: Cardinal;
+    FOnChar: TOnChar;
+    WindowPrePainting: Boolean;
+    WindowPrePainted: Boolean;
     procedure SetCodepage(const Value: Cardinal);
     procedure SetShowHeaders(const Value: Boolean);
     function GetIdx(Index: Integer): Integer;
@@ -494,6 +498,7 @@ type
     procedure ResetItem(Item: Integer);
 
     procedure IntFormatItem(Item: Integer; var Tokens: TWideStrArray; var SpecialTokens: TIntArray);
+    procedure PrePaintWindow;
 
     property Codepage: Cardinal read FCodepage write SetCodepage;
   published
@@ -530,6 +535,7 @@ type
     property OnItemDelete: TOnItemDelete read FItemDelete write FItemDelete;
     property OnKeyDown;
     property OnKeyUp;
+    property OnChar: TOnChar read FOnChar write FOnChar;
     property OnState: TOnState read FOnState write FOnState;
     property OnSelect: TOnSelect read FOnSelect write FOnSelect;
     property OnXMLData: TGetXMLData read FGetXMLData write FGetXMLData;
@@ -859,6 +865,11 @@ begin
     exit;
   end;
 
+  if WindowPrePainted then begin
+    WindowPrePainted := False;
+    exit;
+  end;
+
   SumHeight := -TopItemOffset;
   ch := ClientHeight;
   cw := ClientWidth;
@@ -973,6 +984,7 @@ begin
     Message.Result := 1;
     exit;
   end;
+  OutputDebugString('Paint');
   BeginPaint(Handle,ps);
   dc := ps.HDC;
   ClipRect := ps.rcPaint;
@@ -1315,11 +1327,20 @@ begin
   // Free cached information
   //SendMessage(FRich.Handle, EM_FORMATRANGE, 0,0);
 
-  if Focused and (Index = Selected) then begin
+  if (Focused or WindowPrePainting) and (Index = Selected) then begin
     //InflateRect(ItemRect,Padding,Padding);
     //Dec(ItemRect.Top,hh);
     DrawFocusRect(Canvas.Handle,OrgRect);
   end;
+end;
+
+procedure THistoryGrid.PrePaintWindow;
+begin
+  ClipRect := Rect(0,0,ClientWidth,ClientHeight);
+  WindowPrePainting := True;
+  Paint;
+  WindowPrePainting := False;
+  WindowPrePainted := True;
 end;
 
 procedure THistoryGrid.SetSelected(const Value: Integer);
@@ -3074,8 +3095,8 @@ var
   Down: Boolean;
   Sr: Integer;
 begin
-CheckBusy;
-if (ssAlt in ShiftState) or (ssCtrl in ShiftState) then exit;
+  CheckBusy;
+  if (ssAlt in ShiftState) or (ssCtrl in ShiftState) then exit;
 
 //if (ch <> #0) and (ch <> BT_BACKSPACE) then
 //  if (GetTickCount - LastKeyDown) > 5000 then SearchPattern := '';
@@ -3086,7 +3107,12 @@ if (ssAlt in ShiftState) or (ssCtrl in ShiftState) then exit;
     exit;
   end;}
 
-if (Ch in ForbiddenChars) then exit;
+  if (Ch in ForbiddenChars) then exit;
+
+  if Assigned(FOnChar) then begin
+    FOnChar(Self,Ch,ShiftState);
+  end;
+  exit;
 
 Down := not Reversed;
 

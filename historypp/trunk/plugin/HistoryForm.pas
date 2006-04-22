@@ -53,7 +53,7 @@ uses
   clipbrd, {FileCtrl,} shellapi,
   HistoryGrid, Checksum, WFindReplaceDialog, TntExtCtrls, hpp_sessionsthread, DateUtils,
   ImgList, PasswordEditControl, TntStdCtrls, TntButtons, TntMenus,
-  CommCtrl;
+  CommCtrl, ToolWin;
 
 const
   HM_EVENTADDED   = WM_APP + 100;
@@ -65,49 +65,26 @@ type
   TLastSearch = (lsNone,lsHotSearch,lsSearch);
 
   THistoryFrm = class(TTntForm)
-    FindDialog: TWFindDialog;
     SaveDialog: TSaveDialog;
     pmGrid: TTntPopupMenu;
-    pmAdd: TTntPopupMenu;
     paClient: TPanel;
     paGrid: TPanel;
     hg: THistoryGrid;
     paTop: TPanel;
     laFilter: TTntLabel;
     cbFilter: TTntComboBox;
-    paBottom: TPanel;
-    paClose: TPanel;
-    bnClose: TTntButton;
-    bnSearch: TTntButton;
-    bnDelete: TTntButton;
-    bbAddit: TTntBitBtn;
     sb: TTntStatusBar;
     cbSort: TTntComboBox;
     pmLink: TTntPopupMenu;
     pmFile: TTntPopupMenu;
-    paPassword: TPanel;
     paSess: TPanel;
-    laPass: TTntLabel;
-    Image1: TImage;
-    laPass2: TTntLabel;
-    edPass: TPasswordEdit;
-    bnPass: TTntButton;
     pmOptions: TTntPopupMenu;
     pmGridInline: TTntPopupMenu;
-    tvSess: TTntTreeView;
     spSess: TTntSplitter;
     ilSessions: TImageList;
     Panel1: TPanel;
     laSess: TTntLabel;
     sbCloseSess: TTntSpeedButton;
-    Setpassword1: TTntMenuItem;
-    N6: TTntMenuItem;
-    DeleteAll1: TTntMenuItem;
-    N4: TTntMenuItem;
-    SaveasText1: TTntMenuItem;
-    SaveasXML1: TTntMenuItem;
-    SaveasHTML1: TTntMenuItem;
-    N7: TTntMenuItem;
     CopyFile1: TTntMenuItem;
     N5: TTntMenuItem;
     OpenFileFolder2: TTntMenuItem;
@@ -133,30 +110,100 @@ type
     N1: TTntMenuItem;
     OpeninNewWindow1: TTntMenuItem;
     Open1: TTntMenuItem;
-    RTLEnabled1: TTntMenuItem;
-    N9: TTntMenuItem;
-    MathModuleEnabled1: TTntMenuItem;
-    BBCodesEnabled1: TTntMenuItem;
-    SmileysEnabled1: TTntMenuItem;
-    N3: TTntMenuItem;
-    IconsEnabled1: TTntMenuItem;
     ContactRTLmode1: TTntMenuItem;
     ANSICodepage1: TTntMenuItem;
-    Options1: TTntMenuItem;
     RTLDisabled2: TTntMenuItem;
     RTLEnabled2: TTntMenuItem;
     RTLDefault2: TTntMenuItem;
     ConversationLog1: TTntMenuItem;
     SystemCodepage1: TTntMenuItem;
-    N11: TTntMenuItem;
     paFilter: TTntPanel;
     sbClearFilter: TTntSpeedButton;
-    imFilter: TImage;
     pbFilter: TPaintBox;
     edFilter: TTntEdit;
     tiFilter: TTimer;
-    bnFilter: TTntButton;
-    SaveasRTF1: TTntMenuItem;
+    ilToolbar: TImageList;
+    Toolbar: TTntToolBar;
+    tbIncoming: TTntToolButton;
+    tbOutgoing: TTntToolButton;
+    TntToolButton4: TTntToolButton;
+    tbMessage: TTntToolButton;
+    tbFile: TTntToolButton;
+    tbURL: TTntToolButton;
+    tbStatus: TTntToolButton;
+    TntToolButton1: TTntToolButton;
+    tbSaveAll: TTntToolButton;
+    paPassHolder: TTntPanel;
+    paPassword: TPanel;
+    laPass: TTntLabel;
+    Image1: TImage;
+    laPass2: TTntLabel;
+    edPass: TPasswordEdit;
+    bnPass: TTntButton;
+    pmSaveAll: TTntPopupMenu;
+    SaveasRTF2: TTntMenuItem;
+    SaveasXML2: TTntMenuItem;
+    SaveasHTML2: TTntMenuItem;
+    SaveasText2: TTntMenuItem;
+    tbSearch: TTntToolButton;
+    TntToolButton2: TTntToolButton;
+    TntToolButton3: TTntToolButton;
+    paSearch: TTntPanel;
+    tbFilter: TTntToolButton;
+    tbDelete: TTntToolButton;
+    tbDeleteAll: TTntToolButton;
+    TntToolButton5: TTntToolButton;
+    tbOptions: TTntToolButton;
+    tbSessions: TTntToolButton;
+    TntToolButton7: TTntToolButton;
+    PassordProtection1: TTntMenuItem;
+    IconsEnabled1: TTntMenuItem;
+    SmileysEnabled1: TTntMenuItem;
+    BBCodesEnabled1: TTntMenuItem;
+    MathModuleEnabled1: TTntMenuItem;
+    N14: TTntMenuItem;
+    N15: TTntMenuItem;
+    RTLEnabled1: TTntMenuItem;
+    N16: TTntMenuItem;
+    RecentOnTop1: TTntMenuItem;
+    N3: TTntMenuItem;
+    paSearchStatus: TTntPanel;
+    laSearchState: TTntLabel;
+    pbSearchState: TPaintBox;
+    TntPanel2: TTntPanel;
+    sbSearchNext: TTntSpeedButton;
+    sbSearchPrev: TTntSpeedButton;
+    sbSearchClose: TTntSpeedButton;
+    edSearch: TTntEdit;
+    pbSearch: TPaintBox;
+    tvSess: TTntTreeView;
+    tbSave: TTntToolButton;
+    tbCopy: TTntToolButton;
+    procedure tbSaveAllClick(Sender: TObject);
+    procedure SaveasText2Click(Sender: TObject);
+    procedure SaveasRTF2Click(Sender: TObject);
+    procedure SaveasXML2Click(Sender: TObject);
+    procedure SaveasHTML2Click(Sender: TObject);
+    procedure RecentOnTop1Click(Sender: TObject);
+    procedure PassordProtection1Click(Sender: TObject);
+    procedure tbSessionsClick(Sender: TObject);
+    procedure pbSearchStatePaint(Sender: TObject);
+    procedure tbDeleteAllClick(Sender: TObject);
+    procedure tbDeleteClick(Sender: TObject);
+    procedure sbSearchPrevClick(Sender: TObject);
+    procedure sbSearchNextClick(Sender: TObject);
+    procedure edSearchChange(Sender: TObject);
+    procedure hgChar(Sender: TObject; Char: WideChar; Shift: TShiftState);
+    procedure edSearchKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure edSearchKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure sbSearchCloseClick(Sender: TObject);
+    procedure tbFilterClick(Sender: TObject);
+    procedure paSearchResize(Sender: TObject);
+    procedure pbSearchPaint(Sender: TObject);
+    procedure paFilterResize(Sender: TObject);
+    procedure paPassHolderResize(Sender: TObject);
+    procedure tbMessageClick(Sender: TObject);
     procedure TntFormShow(Sender: TObject);
     procedure tvSessMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
@@ -167,7 +214,6 @@ type
     //procedure bnConversationClick(Sender: TObject);
 
     procedure LoadHistory(Sender: TObject);
-    procedure FindDialogFind(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
     procedure WMSysCommand(var Message: TWMSysCommand); message WM_SYSCOMMAND;
@@ -180,26 +226,17 @@ type
     procedure hgPopup(Sender: TObject);
     procedure cbFilterChange(Sender: TObject);
     procedure hgSearchFinished(Sender: TObject; Text: WideString; Found: Boolean);
-    procedure bnSearchClick(Sender: TObject);
     procedure hgDblClick(Sender: TObject);
     procedure SaveSelected1Click(Sender: TObject);
     procedure hgItemDelete(Sender: TObject; Index: Integer);
     procedure Delete1Click(Sender: TObject);
-    procedure bnDeleteClick(Sender: TObject);
-    procedure bbAdditClick(Sender: TObject);
     procedure Copy1Click(Sender: TObject);
     procedure Details1Click(Sender: TObject);
     procedure hgKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure bnCloseClick(Sender: TObject);
     procedure hgState(Sender: TObject; State: TGridState);
-    procedure DeleteAll1Click(Sender: TObject);
-    procedure SaveasHTML1Click(Sender: TObject);
     procedure cbSortChange(Sender: TObject);
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure hgSelect(Sender: TObject; Item, OldItem: Integer);
-    procedure FindDialogClose(Sender: TObject);
-    procedure SaveasXML1Click(Sender: TObject);
-    procedure SaveasText1Click(Sender: TObject);
     procedure hgXMLData(Sender: TObject; Index: Integer; var Item: TXMLItem);
     procedure OpenFile1Click(Sender: TObject);
     procedure OpenFileFolder1Click(Sender: TObject);
@@ -210,10 +247,8 @@ type
     //procedure OpenFileFolder2Click(Sender: TObject);
     //procedure CopyFile1Click(Sender: TObject);
     procedure bnPassClick(Sender: TObject);
-    procedure paGridResize(Sender: TObject);
     procedure edPassKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure edPassKeyPress(Sender: TObject; var Key: Char);
-    procedure Setpassword1Click(Sender: TObject);
     procedure CopyText1Click(Sender: TObject);
     procedure hgUrlClick(Sender: TObject; Item: Integer; Url: String);
     procedure hgUrlPopup(Sender: TObject; Item: Integer; Url: String);
@@ -249,8 +284,6 @@ type
     procedure StartHotFilterTimer;
     procedure EndHotFilterTimer;
     procedure tiFilterTimer(Sender: TObject);
-    procedure bnFilterClick(Sender: TObject);
-    procedure SaveasRTF1Click(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -258,7 +291,6 @@ type
     hHookEventAdded,hHookEventDeleted,hHookEventPreShutdown: THandle;
     FPasswordMode: Boolean;
     SavedLinkUrl: String;
-    ShowSessionsAfterPassword: Boolean;
     HotFilterString: WideString;
 
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo);message WM_GetMinMaxInfo;
@@ -312,8 +344,15 @@ type
     procedure SMFinished(var M: TMessage); message SM_FINISHED;
     procedure AddEventToSessions(hDBEvent: THandle);
     procedure DeleteEventFromSessions(ItemIdx: Integer);
-    procedure LoadSessionIcons;
     procedure ShowSessions(Show: Boolean);
+
+    procedure LoadSessionIcons;
+    procedure LoadToolbarIcons;
+    procedure LoadButtonIcons;
+
+    procedure SetRecentEventsPosition(OnTop: Boolean);
+    procedure ChangeSearchMode(Filter: Boolean);
+    procedure Search(Next: Boolean; FromNext: Boolean = False);
   protected
     procedure LoadPendingHeaders(rowidx: integer; count: integer);
   published
@@ -510,7 +549,7 @@ procedure THistoryFrm.LoadHistory(Sender: TObject);
     History[HistoryLength-1] := NotZero(hDbEvent);
     {if NeedhDBEvent = 0 then toRead := Max(0,HistoryLength-hppLoadBlock-1)
                         else toRead := 0;}
-    toRead := Max(0,HistoryLength-hppLoadBlock-1);
+    toRead := Max(0,HistoryLength-hppFirstLoadBlock-1);
     LineIdx:=HistoryLength-2;
     repeat
       hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDPREV,hDbEvent,0);
@@ -538,12 +577,6 @@ begin
   hg.Allocate(Length(History));
 end;
 
-procedure THistoryFrm.FindDialogFind(Sender: TObject);
-begin
-  LastSearch := lsSearch;
-  SearchNext((frDown in FindDialog.Options)=(hg.Reversed));
-end;
-
 procedure THistoryFrm.FormCreate(Sender: TObject);
 var
   i: integer;
@@ -554,11 +587,12 @@ begin
   Icon.ReleaseHandle;
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
   LoadSessionIcons;
-  
+  LoadToolbarIcons;
+  LoadButtonIcons;
+
   DesktopFont := True;
   MakeFontsParent(Self);
 
-  hg.ShowHeaders := True;
   hg.Filter := filAll;
 
   for i := 0 to High(cpTable) do begin
@@ -600,9 +634,9 @@ begin
   l := GetDBInt(hppDBName,'HistoryWindow.x',(Screen.Width-Self.Width) div 2);
   t := GetDBInt(hppDBName,'HistoryWindow.y',(Screen.Height - Self.Height) div 2);
   Self.SetBounds(l,t,w,h);
-  
-  cbSort.ItemIndex:=GetDBInt(hppDBName,'SortOrder',0);
-  ShowSessionsAfterPassword := GetDBBool(hppDBName,'ShowSessions',False);
+
+  //cbSort.ItemIndex:=GetDBInt(hppDBName,'SortOrder',0);
+  ShowSessions(GetDBBool(hppDBName,'ShowSessions',False));
   paSess.Width := GetDBInt(hppDBName,'SessionsWidth',150);
 end;
 
@@ -630,11 +664,96 @@ begin
   end;
 end;
 
+procedure THistoryFrm.LoadToolbarIcons;
+var
+  il: HIMAGELIST;
+  ii: Integer;
+  ic: HICON;
+begin
+  //tvSess.Items.BeginUpdate;
+  try
+    ImageList_Remove(ilToolbar.Handle,-1); // clears image list
+    il := ImageList_Create(16,16,ILC_COLOR32 or ILC_MASK,10,2);
+    if il <> 0 then
+      ilToolbar.Handle := il
+    else
+      il := ilToolbar.Handle;
+    Toolbar.Images := ilToolbar;
+
+    // add overlay images
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_OVERLAY_HIDE].Handle);
+    ImageList_SetOverlayImage(il,ii,1);
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_OVERLAY_INC].Handle);
+    ImageList_SetOverlayImage(il,ii,2);
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_OVERLAY_OUT].Handle);
+    ImageList_SetOverlayImage(il,ii,3);
+    // add incoming icon
+    ii := ImageList_AddIcon(il,GridOptions.IconMessage.Handle);
+    ic := ImageList_GetIcon(il,ii,ILD_TRANSPARENT or IndexToOverlayMask(2));
+    ImageList_ReplaceIcon(il,ii,ic);
+    DestroyIcon(ic);
+    tbIncoming.ImageIndex := ii;
+    // add incoming icon
+    ii := ImageList_AddIcon(il,GridOptions.IconMessage.Handle);
+    ic := ImageList_GetIcon(il,ii,ILD_TRANSPARENT or IndexToOverlayMask(3));
+    ImageList_ReplaceIcon(il,ii,ic);
+    DestroyIcon(ic);
+    tbOutgoing.ImageIndex := ii;
+    // add messages icon
+    ii := ImageList_AddIcon(il,GridOptions.IconMessage.Handle);
+    ic := ImageList_GetIcon(il,ii,ILD_TRANSPARENT or IndexToOverlayMask(1));
+    ImageList_ReplaceIcon(il,ii,ic);
+    DestroyIcon(ic);
+    tbMessage.ImageIndex := ii;
+    // add file icon
+    ii := ImageList_AddIcon(il,GridOptions.IconFile.Handle);
+    ic := ImageList_GetIcon(il,ii,ILD_TRANSPARENT or IndexToOverlayMask(1));
+    ImageList_ReplaceIcon(il,ii,ic);
+    DestroyIcon(ic);
+    tbFile.ImageIndex := ii;
+    /// add url icon
+    ii := ImageList_AddIcon(il,GridOptions.IconUrl.Handle);
+    ic := ImageList_GetIcon(il,ii,ILD_TRANSPARENT or IndexToOverlayMask(1));
+    ImageList_ReplaceIcon(il,ii,ic);
+    DestroyIcon(ic);
+    tbURL.ImageIndex := ii;
+    // add status icon
+    ii := ImageList_AddIcon(il,GridOptions.IconOther.Handle);
+    ic := ImageList_GetIcon(il,ii,ILD_TRANSPARENT or IndexToOverlayMask(1));
+    ImageList_ReplaceIcon(il,ii,ic);
+    DestroyIcon(ic);
+    tbStatus.ImageIndex := ii;
+    // add other icons without processing
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_SAVEALL].Handle);
+    tbSaveAll.ImageIndex := ii;
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_HOTFILTER].Handle);
+    tbFilter.ImageIndex := ii;
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_HOTSEARCH].Handle);
+    tbSearch.ImageIndex := ii;
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_DELETE].Handle);
+    tbDelete.ImageIndex := ii;
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_DELETEALL].Handle);
+    tbDeleteAll.ImageIndex := ii;
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_OPTIONS].Handle);
+    tbOptions.ImageIndex := ii;
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_SESSIONS].Handle);
+    tbSessions.ImageIndex := ii;
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_SAVE].Handle);
+    tbSave.ImageIndex := ii;
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_COPY].Handle);
+    tbCopy.ImageIndex := ii;
+
+  finally
+    //Toolbar.Be
+  end;
+end;
+
 procedure THistoryFrm.SavePosition;
 //save position and filter setting
 begin
   Utils_SaveWindowPosition(Self.Handle,0,hppDBName,'HistoryWindow.');
-  WriteDBInt(hppDBName,'SortOrder',cbSort.ItemIndex);
+  //WriteDBInt(hppDBName,'SortOrder',cbSort.ItemIndex);
+  WriteDBInt(hppDBName,'SortOrder',Integer(RecentOnTop1.Checked));
   if (hContact <> 0) and (not PasswordMode) and not ((HistoryLength = 0) and (not paSess.Visible)) then begin
      WriteDBBool(hppDBName,'ShowSessions',paSess.Visible);
      if paSess.Visible then
@@ -696,33 +815,39 @@ end;
 procedure THistoryFrm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
   Mask: Integer;
-  //mcase,down: boolean;
-  //t,stext: String;
-  //res: Integer;
 begin
-  if (key = VK_F4) and (Shift=[]) then begin
+  if (Key = VK_ESCAPE) or ((Key = VK_F4) and (ssAlt in Shift)) then begin
+    Key := 0;
+    close;
+    exit;
+  end;
+
+  if (key = VK_F4) and (Shift=[]) and (not PasswordMode) then begin
     ShowSessions(not paSess.Visible);
     key := 0;
     end;
 
   if (key = VK_F3) and ((Shift=[]) or (Shift=[ssShift])) and (not PasswordMode) then begin
-    SearchNext(ssShift in Shift,True);
+    if ssShift in Shift then
+      sbSearchPrev.Click
+    else
+      sbSearchNext.Click;
     key := 0;
   end;
 
   if (ssAlt in Shift) then
     begin
-    if key=Ord('C') then
-      bnClose.Click;
-    if (key=Ord('A')) and (not PasswordMode) then
-      bbAddit.Click;
-    if (key=Ord('D')) and (not PasswordMode) then
-      bnDelete.Click;
-    if (key=Ord('S')) and (not PasswordMode) then
-      bnSearch.Click;
-    if (key=Ord('F')) and (not PasswordMode) then
-      bnFilter.Click;
-    key:=0;
+    //if key=Ord('C') then
+    //  bnClose.Click;
+    //if (key=Ord('A')) and (not PasswordMode) then
+    //  bbAddit.Click;
+    //if (key=Ord('D')) and (not PasswordMode) then
+    //  bnDelete.Click;
+    //if (key=Ord('S')) and (not PasswordMode) then
+    //  bnSearch.Click;
+    //if (key=Ord('F')) and (not PasswordMode) then
+    //  bnFilter.Click;
+    //key:=0;
     end;
 
   // let only search keys be accepted if inline
@@ -743,12 +868,12 @@ begin
       UserDetails1.Click;
       key:=0;
       end;
-    if (key=Ord('S')) and (not PasswordMode) then begin
-      bnSearch.Click;
+    if (key=Ord('E')) and (not PasswordMode) then begin
+      ChangeSearchMode(True);
       key:=0;
       end;
     if (key=Ord('F')) and (not PasswordMode) then begin
-      bnFilter.Click;
+      ChangeSearchMode(False);
       key:=0;
       end;
     if ((key=Ord('C')) or (key = VK_INSERT)) and (not PasswordMode) then begin
@@ -800,7 +925,6 @@ begin
     end;
     SavePosition;
     UnhookEvents;
-    FindDialog.CloseDialog;
     while SessThread <> nil do
       Application.ProcessMessages;
   except
@@ -812,6 +936,47 @@ begin
   PreLoadHistory;
   LoadHistory(Self);
   PostLoadHistory;
+end;
+
+var
+  SearchUpHint: WideString = 'Search Up (Ctrl+Up)';
+  SearchDownHint: WideString = 'Search Down (Ctrl+Down)';
+
+procedure THistoryFrm.LoadButtonIcons;
+var
+  previc: HICON;
+  nextic: HICON;
+  prev_hint, next_hint: WideString;
+begin
+  if hg.Reversed then begin
+    nextic := hppIcons[HPP_ICON_SEARCHUP].Handle;
+    previc := hppIcons[HPP_ICON_SEARCHDOWN].Handle;
+    sbSearchNext.Hint := TranslateWideW(SearchUpHint);
+    sbSearchPrev.Hint := TranslateWideW(SearchDownHint);
+  end
+  else begin
+    nextic := hppIcons[HPP_ICON_SEARCHDOWN].Handle;
+    previc := hppIcons[HPP_ICON_SEARCHUP].Handle;
+    sbSearchNext.Hint := TranslateWideW(SearchDownHint);
+    sbSearchPrev.Hint := TranslateWideW(SearchUpHint);
+  end;
+
+  with sbSearchPrev.Glyph do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := paSearch.Color;
+    Canvas.FillRect(Canvas.ClipRect);
+    DrawiconEx(Canvas.Handle,0,0,
+      previc,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
+  with sbSearchNext.Glyph do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := paSearch.Color;
+    Canvas.FillRect(Canvas.ClipRect);
+    DrawiconEx(Canvas.Handle,0,0,
+      nextic,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
 end;
 
 procedure THistoryFrm.LoadPendingHeaders(rowidx: integer; count: integer);
@@ -1054,10 +1219,7 @@ begin
         end;
       end;
     }
-    //AddMenu(Options1,pmAdd,pmGrid,-1);
-    //AddMenu(ANSICodepage1,pmAdd,pmGrid,-1);
-    //AddMenu(ContactRTLmode1,pmAdd,pmGrid,-1);
-    AddMenuArray(pmGrid,[Options1,ANSICodepage1,ContactRTLmode1,N11,ConversationLog1],-1);
+    //AddMenuArray(pmGrid,[Options1,ANSICodepage1,ContactRTLmode1,N11,ConversationLog1],-1);
     pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
   end;
 end;
@@ -1114,10 +1276,15 @@ begin
   //if Found then HotString := Text;
 end;
 
-procedure THistoryFrm.bnSearchClick(Sender: TObject);
+procedure THistoryFrm.hgChar(Sender: TObject; Char: WideChar;
+  Shift: TShiftState);
 begin
-  //hgState(Self,gsSearch);
-  FindDialog.Execute;
+  edSearch.Text := Char;
+  if not paSearch.Visible then
+    ChangeSearchMode(False);
+  edSearch.SetFocus;
+  edSearch.SelStart := Length(edSearch.Text);
+  edSearch.SelLength := 0;
 end;
 
 procedure THistoryFrm.hgDblClick(Sender: TObject);
@@ -1160,6 +1327,22 @@ end;
 procedure THistoryFrm.sbCloseSessClick(Sender: TObject);
 begin
   ShowSessions(False);
+end;
+
+procedure THistoryFrm.sbSearchCloseClick(Sender: TObject);
+begin
+  ChangeSearchMode(True);
+  hg.SetFocus;
+end;
+
+procedure THistoryFrm.sbSearchNextClick(Sender: TObject);
+begin
+  Search(True,True);
+end;
+
+procedure THistoryFrm.sbSearchPrevClick(Sender: TObject);
+begin
+  Search(False,True);
 end;
 
 procedure THistoryFrm.hgItemDelete(Sender: TObject; Index: Integer);
@@ -1232,25 +1415,6 @@ begin
   Result := Length(History)-1-Index;
 end;
 
-procedure THistoryFrm.bnDeleteClick(Sender: TObject);
-begin
-  Delete1.Click
-end;
-
-procedure THistoryFrm.bbAdditClick(Sender: TObject);
-var
-  p: TPoint;
-begin
-  if hg.state <> gsIdle then exit;
-  p := Point(0,bbAddit.Height);
-  p := bbAddit.ClientToScreen(p);
-  //AddMenu(Options1,pmGrid,pmAdd,0);
-  //AddMenu(ANSICodepage1,pmGrid,pmAdd,1);
-  //AddMenu(ContactRTLmode1,pmGrid,pmAdd,2);
-  AddMenuArray(pmAdd,[Options1,ANSICodepage1,ContactRTLmode1,N11,ConversationLog1],0);
-  pmAdd.Popup(p.x,p.y);
-end;
-
 procedure THistoryFrm.Copy1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
@@ -1305,11 +1469,6 @@ begin
   WasReturnPressed := (Key = VK_RETURN);
 end;
 
-procedure THistoryFrm.bnCloseClick(Sender: TObject);
-begin
-  close;
-end;
-
 procedure THistoryFrm.hgState(Sender: TObject; State: TGridState);
 var
   Idle: Boolean;
@@ -1318,11 +1477,6 @@ begin
   if csDestroying in ComponentState then
     exit;
   Idle := (State <> gsDelete);
-  cbFilter.Enabled := Idle and not PasswordMode;
-  bnSearch.Enabled := Idle and not PasswordMode;
-  bnDelete.Enabled := Idle and not PasswordMode;
-  bbAddit.Enabled := Idle; // bnAddit don't gets disabled on PassMode
-  bnFilter.Enabled := Idle and not PasswordMode;
   case State of
     gsIdle:   t := WideFormat(TranslateWideW('%.0n items in history'),[HistoryLength/1]);
     gsLoad:   t := TranslateWideW('Loading...');
@@ -1334,21 +1488,6 @@ begin
     t := TranslateWideW('Enter password');
   //sb.SimpleText := AnsiToWideString(t,hppCodepage);
   sb.SimpleText := t;
-end;
-
-procedure THistoryFrm.DeleteAll1Click(Sender: TObject);
-begin
-  if HppMessageBox(Handle,
-    WideFormat(TranslateWideW('Do you really want to delete ALL items (%.0f) for this contact?')+
-    #10#13+''+#10#13+TranslateWideW('Note: It can take several minutes for large history.'),
-    [hg.Count/1]), TranslateWideW('Delete All'), MB_YESNO or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) = IDNO then exit;
-
-  SetSafetyMode(False);
-  try
-    hg.DeleteAll;
-  finally
-    SetSafetyMode(True);
-    end;
 end;
 
 procedure THistoryFrm.DeleteEventFromSessions(ItemIdx: Integer);
@@ -1444,7 +1583,7 @@ begin
   hg.ResetItem(HistoryIndexToGrid(ItemIdx));
 end;
 
-procedure THistoryFrm.SaveasHTML1Click(Sender: TObject);
+procedure THistoryFrm.SaveasHTML2Click(Sender: TObject);
 var
   t: String;
 begin
@@ -1454,12 +1593,8 @@ begin
   t := MakeFileName(t);
   SaveDialog.FileName := t;
   if not SaveDialog.Execute then exit;
-  // why SaveDialog.FileName shows '' here???
-  // who knows? In debugger FFileName shows right file, but
-  // FileName property returns ''
   RecentFormat := sfHTML;
   hg.SaveAll(SaveDialog.Files[0],sfHTML);
-  //hg.SaveAll(SaveDialog.FileName,sfHTML);
   WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
 end;
 
@@ -1491,10 +1626,6 @@ begin
   LastSearch := lsNone;
   LastHotIdx := -1;
   HotString := '';
-  if (frDown in FindDIalog.Options) then
-    FindDialog.Options := FindDialog.Options - [frDown]
-  else
-    FindDialog.Options := FindDialog.Options + [frDown];
 end;
 
 procedure THistoryFrm.FormMouseWheel(Sender: TObject; Shift: TShiftState;
@@ -1512,6 +1643,10 @@ end;
 
 procedure THistoryFrm.hgSelect(Sender: TObject; Item, OldItem: Integer);
 begin
+tbDelete.Enabled := (Item <> -1);
+tbSave.Enabled := (hg.SelCount > 1);
+tbCopy.Enabled := (Item <> -1);
+
 if hg.HotString = '' then begin
   LastHotIdx := -1;
   // redraw status bar
@@ -1519,9 +1654,49 @@ if hg.HotString = '' then begin
   end;
 end;
 
-procedure THistoryFrm.FindDialogClose(Sender: TObject);
+procedure THistoryFrm.Search(Next, FromNext: Boolean);
+var
+  Down: Boolean;
+  item: Integer;
+  ShowEndOfPage: Boolean;
 begin
-  hg.SetFocus;
+  if edSearch.Text = '' then begin
+    paSearchStatus.Visible := False;
+    laSearchState.Visible := ShowEndOfPage;
+    laSearchState.Tag := 0;
+    pbSearchState.Repaint;
+    edSearch.Color := clWindow;
+    exit;
+  end;
+  
+  if Next then
+    Down := not hg.Reversed
+  else
+    Down := hg.Reversed;
+
+  item := hg.Search(edSearch.Text,False,False,False,FromNext,Down);
+  ShowEndOfPage := (item = -1);
+  if item = -1 then
+    item := hg.Search(edSearch.Text,False,True,False,FromNext,Down);
+  if item <> -1 then begin
+    hg.Selected := item;
+    edSearch.Color := clWindow;
+    laSearchState.Caption := TranslateWideW('Started from the beginning');
+    laSearchState.Visible := ShowEndOfPage;
+    paSearchStatus.Visible := ShowEndOfPage;
+    if not ShowEndOfPage then
+      laSearchState.Tag := 0
+    else
+      laSearchState.Tag := 1;
+  end
+  else begin
+    edSearch.Color := $008080FF;
+    laSearchState.Visible := True;
+    laSearchState.Caption := TranslateWideW('Phrase not found');
+    laSearchState.Tag := 2;
+    paSearchStatus.Visible := True;
+  end;
+  pbSearchState.Repaint;
 end;
 
 procedure THistoryFrm.SearchNext(Rev: Boolean; Warp: Boolean = True);
@@ -1531,7 +1706,7 @@ var
   mcase,down: Boolean;
   WndHandle: HWND;
 begin
-  if LastSearch = lsNone then exit;
+  {if LastSearch = lsNone then exit;
   if LastSearch = lsHotSearch then begin
     stext := HotString;
     mcase := False;
@@ -1567,12 +1742,18 @@ begin
     end else begin
       // not warped
       hgState(Self,gsIdle);
-      { 25.03.03 OXY: FindDialog looses focus when
-      calling ShowMessage, using MessageBox instead }
+      // 25.03.03 OXY: FindDialog looses focus when
+      // calling ShowMessage, using MessageBox instead
       t := TranslateWideW('"%s" not found');
       HppMessageBox(WndHandle, WideFormat(t,[stext]),tCap, MB_OK or MB_DEFBUTTON1 or 0);
     end;
-  end;
+  end;}
+end;
+
+procedure THistoryFrm.RecentOnTop1Click(Sender: TObject);
+begin
+  RecentOnTop1.Checked := not RecentOnTop1.Checked;
+  SetRecentEventsPosition(RecentOnTop1.Checked);
 end;
 
 procedure THistoryFrm.ReplyQuoted(Item: Integer);
@@ -1626,7 +1807,7 @@ begin
   end;
 end;
 
-procedure THistoryFrm.SaveasXML1Click(Sender: TObject);
+procedure THistoryFrm.SaveasXML2Click(Sender: TObject);
 var
   t: String;
 begin
@@ -1638,12 +1819,11 @@ begin
   SaveDialog.FileName := t;
   if not SaveDialog.Execute then exit;
   hg.SaveAll(SaveDialog.Files[0],sfXML);
-  //hg.SaveAll(SaveDialog.FileName,sfXML);
   RecentFormat := sfXML;
   WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
 end;
 
-procedure THistoryFrm.SaveasText1Click(Sender: TObject);
+procedure THistoryFrm.SaveasText2Click(Sender: TObject);
 var
   t: String;
   SaveFormat: TSaveFormat;
@@ -1853,23 +2033,17 @@ enb: Boolean;
 begin
 FPasswordMode := Value;
 enb := not Value;
-laFilter.Enabled := enb;
-cbFilter.Enabled := enb;
-//label2.Enabled := enb;
-cbSort.Enabled := enb;
-bnSearch.Enabled := enb;
-bnDelete.Enabled := enb;
-bnFilter.Enabled := enb;
-SaveAsHTML1.Enabled := enb;
-SaveAsXML1.Enabled := enb;
-SaveAsText1.Enabled := enb;
-DeleteAll1.Enabled := enb;
-ConversationLog1.Enabled := enb;
 hgState(hg,hg.State);
 hg.Enabled := enb;
 hg.Visible := enb;
-paPassword.Enabled := not enb;
-paPassword.Visible := not enb;
+paClient.Enabled := enb;
+paClient.Visible := enb;
+
+if Value then paPassHolder.Align := alClient;
+paPassHolder.Enabled := not enb;
+paPassHolder.Visible := not enb;
+//paPassword.Enabled := not enb;
+//paPassword.Visible := not enb;
 if value = true then begin
   paPassword.Left := (paGrid.ClientWidth-paPassword.Width) div 2;
   paPassword.Top := (paGrid.ClientHeight - paPassword.Height) div 2;
@@ -1880,9 +2054,7 @@ if value = true then begin
     Self.ActiveControl := edPass;
   end
 else begin
-  ShowSessions(ShowSessionsAfterPassword);
-  if ShowSessionsAfterPassword then
-    hg.MakeVisible(hg.Selected);
+  hg.MakeVisible(hg.Selected);
   if Self.Visible then
     hg.SetFocus
   else
@@ -1890,17 +2062,30 @@ else begin
   end;
 end;
 
+procedure THistoryFrm.SetRecentEventsPosition(OnTop: Boolean);
+begin
+  RecentOnTop1.Checked := OnTop;
+  hg.Reversed := not OnTop;
+  LoadButtonIcons;
+end;
+
 procedure THistoryFrm.ShowSessions(Show: Boolean);
+var
+  Lock: Boolean;
 begin
   if (hContact = 0) or (HistoryLength = 0) then Show := False;
-  if PasswordMode then begin
-    ShowSessionsAfterPassword := Show;
-    exit;
+  tbSessions.Down := Show;
+  
+  hg.BeginUpdate;
+  if Visible then Lock := LockWindowUpdate(Handle);
+  try
+    paSess.Visible := Show;
+    spSess.Visible := Show;
+    spSess.Left := paSess.Left + paSess.Width + 1;
+  finally
+    if Visible and Lock then LockWindowUpdate(0);
+    hg.EndUpdate;
   end;
-
-  paSess.Visible := Show;
-  spSess.Visible := Show;
-  spSess.Left := paSess.Left + paSess.Width + 1;
 end;
 
 procedure THistoryFrm.SMFinished(var M: TMessage);
@@ -1919,19 +2104,52 @@ else
   TranslateWideW('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
 end;
 
-procedure THistoryFrm.paGridResize(Sender: TObject);
-begin
-if PasswordMode = true then begin
-  paPassword.Left := (paGrid.ClientWidth-paPassword.Width) div 2;
-  paPassword.Top := (paGrid.ClientHeight - paPassword.Height) div 2;
-  end;
-  inherited;
-end;
-
 procedure THistoryFrm.edPassKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 ;
+end;
+
+procedure THistoryFrm.edSearchChange(Sender: TObject);
+begin
+  Search(True,False);
+end;
+
+procedure THistoryFrm.edSearchKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Shift = []) and (Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR]) then begin
+    SendMessage(hg.Handle,WM_KEYDOWN,Key,0);
+    Key := 0;
+    exit;
+  end;
+
+  if (Shift = [ssCtrl]) and (Key in [VK_UP,VK_DOWN]) then begin
+    if hg.Reversed then begin
+      if Key = VK_UP then
+        sbSearchNext.Click
+      else
+        sbSearchPrev.Click;
+    end
+    else begin
+      if Key = VK_UP then
+        sbSearchPrev.Click
+      else
+        sbSearchNext.Click;
+    end;
+    Key := 0;
+    exit;
+  end;
+end;
+
+procedure THistoryFrm.edSearchKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_RETURN then begin
+    hg.SetFocus;
+    //sbSearchClose.Click;
+    key := 0;
+  end;
 end;
 
 procedure THistoryFrm.edPassKeyPress(Sender: TObject; var Key: Char);
@@ -1946,15 +2164,29 @@ end;
 
 procedure THistoryFrm.PostLoadHistory;
 begin
-  LoadPosition;
   ProcessPassword;
   if hContact = 0 then paTop.Visible := False;
-  ShowSessions(ShowSessionsAfterPassword);
+  // set reversed here, after Allocate, because of some scrollbar
+  // "features", we'll load end of the list if put before Allocate
+  SetRecentEventsPosition(GetDBInt(hppDBName,'SortOrder',0) <> 0);
   HookEvents;
+  ChangeSearchMode(False);
 end;
 
 procedure THistoryFrm.PreLoadHistory;
 begin
+  LoadPosition;
+  hg.ShowHeaders := (hContact <> 0);
+  if hContact = 0 then begin
+    tbIncoming.Enabled := False;
+    tbOutgoing.Enabled := False;
+    tbMessage.Enabled := False;
+    tbFile.Enabled := False;
+    tbURL.Enabled := False;
+    tbStatus.Enabled := False;
+    tbSessions.Enabled := False;
+  end;
+
   SessThread := TSessionsThread.Create(True);
   SessThread.ParentHandle := Self.Handle;
   SessThread.Contact := hContact;
@@ -1969,11 +2201,6 @@ begin
     PasswordMode := True;
 end;
 
-procedure THistoryFrm.Setpassword1Click(Sender: TObject);
-begin
-  OpenPassword;
-end;
-
 procedure THistoryFrm.OpenPassword;
 begin
   RunPassForm;
@@ -1986,6 +2213,32 @@ begin
   // Other form-modifying routines are better be kept at PostHistoryLoad for
   // speed too.
   hg.EndUpdate;
+end;
+
+procedure THistoryFrm.paFilterResize(Sender: TObject);
+begin
+  edFilter.Width := paFilter.ClientWidth - edFilter.Left;
+end;
+
+procedure THistoryFrm.paPassHolderResize(Sender: TObject);
+begin
+  if PasswordMode = true then begin
+    paPassword.Left := (ClientWidth-paPassword.Width) div 2;
+    paPassword.Top := (ClientHeight - paPassword.Height) div 2;
+  end;
+end;
+
+procedure THistoryFrm.paSearchResize(Sender: TObject);
+begin
+  {sbSearchClose.Left := paSearch.ClientWidth - sbSearchClose.Width;
+  sbSearchNext.Left := sbSearchClose.Left - sbSearchNext.Width - 2;
+  sbSearchPrev.Left := sbSearchNext.Left - sbSearchPrev.Width;
+  edSearch.Width :=  - edSearch.Left + sbSearchPrev.Left;}
+end;
+
+procedure THistoryFrm.PassordProtection1Click(Sender: TObject);
+begin
+  OpenPassword;
 end;
 
 procedure THistoryFrm.TranslateForm;
@@ -2023,12 +2276,6 @@ begin
   for i := 0 to cbSort.Items.Count-1 do
     cbSort.Items[i] := TranslateWideW(cbSort.Items[i]);
 
-  bnSearch.Caption := TranslateWideW(bnSearch.Caption);
-  bnDelete.Caption := TranslateWideW(bnDelete.Caption);
-  bbAddit.Caption := TranslateWideW(bbAddit.Caption);
-  bnFilter.Caption := TranslateWideW(bnFilter.Caption);
-  bnClose.Caption := TranslateWideW(bnClose.Caption);
-
   sbClearFilter.Hint := TranslateWideW(sbClearFilter.Hint);
 
   bnPass.Caption := TranslateWideW(bnPass.Caption);
@@ -2039,7 +2286,7 @@ begin
   SaveDialog.Title := Translate(PAnsiChar(SaveDialog.Title));
 
   TranslateMenu(pmOptions.Items);
-  TranslateMenu(pmAdd.Items);
+  TranslateMenu(pmSaveAll.Items);
   TranslateMenu(pmGrid.Items);
   TranslateMenu(pmGridInline.Items);
   TranslateMenu(pmLink.Items);
@@ -2486,6 +2733,39 @@ begin
   PluginLink.CallService(MS_USERINFO_SHOWDIALOG,hContact,0);
 end;
 
+procedure THistoryFrm.ChangeSearchMode(Filter: Boolean);
+var
+  edit: TTntEdit;
+  ToHide,ToShow: TTntPanel;
+  Lock: Boolean;
+begin
+  tbFilter.Down := Filter;
+  tbSearch.Down := not Filter;
+  if Filter then begin
+    ToHide := paSearch;
+    ToShow := paFilter;
+    edit := edFilter;
+  end
+  else begin
+    ToHide := paFilter;
+    ToShow := paSearch;
+    edit := edSearch;
+  end;
+
+  hg.BeginUpdate;
+  if Visible then Lock := LockWindowUpdate(Handle);
+  try
+    ToHide.Visible := False;
+    ToShow.Visible := True;
+  finally
+    hg.EndUpdate;
+    if Visible and Lock then LockWindowUpdate(0);
+  end;
+
+  if Self.Visible then
+    edit.SetFocus;
+end;
+
 procedure THistoryFrm.CodepageChangeClick(Sender: TObject);
 var
   val: Cardinal;
@@ -2518,6 +2798,24 @@ begin
 
   DrawIconEx(pbFilter.Canvas.Handle,0,0,ic,
     16,16,0,pbFilter.Canvas.Brush.Handle,DI_NORMAL);
+end;
+
+procedure THistoryFrm.pbSearchPaint(Sender: TObject);
+begin
+  DrawIconEx(pbSearch.Canvas.Handle,0,0,hppIcons[HPP_ICON_HOTSEARCH].Handle,
+    16,16,0,pbSearch.Canvas.Brush.Handle,DI_NORMAL);
+end;
+
+procedure THistoryFrm.pbSearchStatePaint(Sender: TObject);
+begin
+  case laSearchState.Tag of
+    1: DrawIconEx(pbSearchState.Canvas.Handle,0,0,hppIcons[HPP_ICON_HOTSEARCH].Handle,
+       16,16,0,pbSearchState.Canvas.Brush.Handle,DI_NORMAL);
+    2: DrawIconEx(pbSearchState.Canvas.Handle,0,0,hppIcons[HPP_ICON_HOTSEARCH].Handle,
+       16,16,0,pbSearchState.Canvas.Brush.Handle,DI_NORMAL)
+  else
+    pbSearchState.Canvas.FillRect(pbSearchState.Canvas.ClipRect);
+  end;
 end;
 
 procedure THistoryFrm.edFilterChange(Sender: TObject);
@@ -2568,6 +2866,91 @@ begin
     pbFilter.Tag := 0;
     pbFilter.Repaint;
   end;
+  if hg.Selected = -1 then
+    edFilter.Color := $008080FF
+  else
+    edFilter.Color := clWindow;
+end;
+
+procedure THistoryFrm.tbDeleteAllClick(Sender: TObject);
+begin
+  if HppMessageBox(Handle,
+    WideFormat(TranslateWideW('Do you really want to delete ALL items (%.0f) for this contact?')+
+    #10#13+''+#10#13+TranslateWideW('Note: It can take several minutes for large history.'),
+    [hg.Count/1]), TranslateWideW('Empty History'), MB_YESNO or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) = IDNO then exit;
+
+  SetSafetyMode(False);
+  try
+    hg.DeleteAll;
+  finally
+    SetSafetyMode(True);
+    end;
+end;
+
+procedure THistoryFrm.tbDeleteClick(Sender: TObject);
+begin
+  Delete1.Click;
+end;
+
+procedure THistoryFrm.tbFilterClick(Sender: TObject);
+begin
+  ChangeSearchMode(tbFilter.Down);
+end;
+
+procedure THistoryFrm.tbMessageClick(Sender: TObject);
+var
+  UpCount: Integer;
+  CurButton: TTntToolButton;
+  fil: TMessageTypes;
+begin
+  UpCount := 0;
+  if not tbMessage.Down then Inc(UpCount);
+  if not tbFile.Down then Inc(UpCount);
+  if not tbURL.Down then Inc(UpCount);
+  if not tbStatus.Down then Inc(UpCount);
+  if (UpCount = 0) then begin
+    // when all unselected, select all
+    tbMessage.Down := False;
+    tbFile.Down := False;
+    tbURL.Down := False;
+    tbStatus.Down := False;
+  end;
+  fil := [mtIncoming,mtOutgoing];
+  if not tbMessage.Down then fil := fil + [mtMessage];
+  if not tbFile.Down then fil := fil + [mtFile];
+  if not tbUrl.Down then fil := fil + [mtUrl];
+  if not tbStatus.Down then fil := fil + [mtStatus];
+  hg.Filter := fil;
+end;
+
+procedure THistoryFrm.tbSaveAllClick(Sender: TObject);
+var
+  t: String;
+  SaveFormat: TSaveFormat;
+begin
+  RecentFormat := TSaveFormat(GetDBInt(hppDBName,'ExportFormat',0));
+  SaveFormat := RecentFormat;
+  PrepareSaveDialog(SaveDialog,SaveFormat,True);
+  t := Translate('Full History [%s] - [%s]');
+  t := Format(t,[WideToAnsiString(hg.ProfileName,CP_ACP),WideToAnsiString(hg.ContactName,CP_ACP)]);
+  t := MakeFileName(t);
+  SaveDialog.FileName := t;
+  if not SaveDialog.Execute then exit;
+  case SaveDialog.FilterIndex of
+    1: SaveFormat := sfHtml;
+    2: SaveFormat := sfXml;
+    3: SaveFormat := sfRTF;
+    4: SaveFormat := sfUnicode;
+    5: SaveFormat := sfText;
+  end;
+  RecentFormat := SaveFormat;
+  hg.SaveAll(SaveDialog.Files[0],sfXML);
+  WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
+end;
+
+procedure THistoryFrm.tbSessionsClick(Sender: TObject);
+begin
+  ShowSessions(tbSessions.Down);
 end;
 
 procedure THistoryFrm.tiFilterTimer(Sender: TObject);
@@ -2575,16 +2958,7 @@ begin
   EndHotFilterTimer;
 end;
 
-procedure THistoryFrm.bnFilterClick(Sender: TObject);
-begin
-  paFilter.Visible := not paFilter.Visible;
-  if paFilter.Visible then
-    edFilter.SetFocus
-  else
-    sbClearFilterClick(Self);
-end;
-
-procedure THistoryFrm.SaveasRTF1Click(Sender: TObject);
+procedure THistoryFrm.SaveasRTF2Click(Sender: TObject);
 var
   t: String;
 begin

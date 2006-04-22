@@ -65,7 +65,8 @@ uses
   hpp_bookmarks in 'hpp_bookmarks.pas',
   hpp_sessionsthread in 'hpp_sessionsthread.pas',
   hpp_arrays in 'hpp_arrays.pas',
-  hpp_strparser in 'hpp_strparser.pas';
+  hpp_strparser in 'hpp_strparser.pas',
+  hpp_forms in 'hpp_forms';
 
 var
   hookModulesLoad,
@@ -282,10 +283,15 @@ begin
 end;}
 
 function OnIconChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
+var
+  i: Integer;
 begin
   Result := 0;
   if not GridOptions.ShowIcons then exit;
   LoadIcons;
+  for i := 0 to HstWindowList.Count - 1 do begin
+    THistoryFrm(HstWindowList[i]).LoadToolbarIcons;
+  end;
 end;
 
 function OnIcon2Changed(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
@@ -308,6 +314,8 @@ begin
   for i:=0 to HstWindowList.Count-1 do begin
     THistoryFrm(HstWindowList[i]).Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
     THistoryFrm(HstWindowList[i]).LoadSessionIcons;
+    THistoryFrm(HstWindowList[i]).LoadToolbarIcons;
+    THistoryFrm(HstWindowList[i]).LoadButtonIcons;
     THistoryFrm(HstWindowList[i]).pbFilter.Repaint;
     if Assigned(THistoryFrm(HstWindowList[i]).EventDetailFrom) then
       THistoryFrm(HstWindowList[i]).EventDetailFrom.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
@@ -334,7 +342,7 @@ begin
   FreeLibrary(GetModuleHandle('oleaut32.dll'));
 
   TntSystem.InstallTntSystemUpdates;
-  Forms.HintWindowClass := TntControls.TTntHintWindow;
+  Forms.HintWindowClass := THppHintWindow;
 
   {$IFDEF REPORT_LEAKS}
   // TThemeServices leaks on exit, looks like it's ok

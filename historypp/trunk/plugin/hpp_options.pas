@@ -74,8 +74,21 @@ const
   HPP_ICON_HOTFILTER         = 9;
   HPP_ICON_HOTFILTERWAIT     = 10;
   HPP_ICON_SEARCH_ALLRESULTS = 11;
+  HPP_ICON_OVERLAY_HIDE      = 12;
+  HPP_ICON_OVERLAY_INC       = 13;
+  HPP_ICON_OVERLAY_OUT       = 14;
+  HPP_ICON_TOOL_SAVEALL      = 15;
+  HPP_ICON_HOTSEARCH         = 16;
+  HPP_ICON_SEARCHUP          = 17;
+  HPP_ICON_SEARCHDOWN        = 18;
+  HPP_ICON_TOOL_DELETEALL    = 19;
+  HPP_ICON_TOOL_DELETE       = 20;
+  HPP_ICON_TOOL_OPTIONS      = 21;
+  HPP_ICON_TOOL_SESSIONS     = 22;
+  HPP_ICON_TOOL_SAVE         = 23;
+  HPP_ICON_TOOL_COPY         = 24;
 
-  hppIcons : array[0..11] of ThppIconsRec = (
+  hppIcons : array[0..24] of ThppIconsRec = (
     (name:'historypp_00'; desc:'Contact history'; i:0; handle:0),
     (name:'historypp_01'; desc:'History search'; i:1; handle:0),
     (name:'historypp_02'; desc:'Conversation divider'; i:2; handle:0),
@@ -87,7 +100,20 @@ const
     (name:'historypp_08'; desc:'Conversation year'; i:8; handle:0),
     (name:'historypp_09'; desc:'In-place filter'; i:9; handle:0),
     (name:'historypp_10'; desc:'In-place filter wait'; i:10; handle:0),
-    (name:'historypp_11'; desc:'Search All Results'; i:11; handle:0)
+    (name:'historypp_11'; desc:'Search All Results'; i:11; handle:0),
+    (name:'historypp_12'; desc:'Mark Hide Messages'; i:12; handle:0),
+    (name:'historypp_13'; desc:'Mark Incoming Messages'; i:13; handle:0),
+    (name:'historypp_14'; desc:'Mark Outgoing Messages'; i:14; handle:0),
+    (name:'historypp_15'; desc:'Save All'; i:15; handle:0),
+    (name:'historypp_16'; desc:'In-place Search'; i:16; handle:0),
+    (name:'historypp_17'; desc:'Search Up'; i:17; handle:0),
+    (name:'historypp_18'; desc:'Search Down'; i:18; handle:0),
+    (name:'historypp_19'; desc:'Delete All'; i:19; handle:0),
+    (name:'historypp_20'; desc:'Delete'; i:20; handle:0),
+    (name:'historypp_21'; desc:'Options'; i:21; handle:0),
+    (name:'historypp_22'; desc:'Conversations'; i:22; handle:0),
+    (name:'historypp_23'; desc:'Save'; i:23; handle:0),
+    (name:'historypp_24'; desc:'Copy'; i:24; handle:0)
   );
 
   hppFontItems: array[0..15] of ThppFontsRec = (
