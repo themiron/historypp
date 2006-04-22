@@ -475,6 +475,8 @@ type
     function GetDown(Item: Integer): Integer;
     function GetPrev(Item: Integer; Force: Boolean = False): Integer;
     function GetUp(Item: Integer): Integer;
+    function GetTopItem: Integer;
+    function GetBottomItem: Integer;
     property State: TGridState read FState write SetState;
     function GetFirstVisible: Integer;
     procedure UpdateFilter;
@@ -558,6 +560,8 @@ const
 procedure Register;
 
 implementation
+
+{$I compilers.inc}
 
 uses
   hpp_options, hpp_arrays, hpp_strparser;
@@ -776,6 +780,14 @@ if Assigned(Options) then
   FClient.Free;
   Finalize(FItems);
 inherited;
+end;
+
+function THistoryGrid.GetBottomItem: Integer;
+begin
+  if Reversed then
+    Result := GetUp(-1)
+  else
+    Result := GetUp(Count);
 end;
 
 function THistoryGrid.GetCount: Integer;
@@ -2236,6 +2248,14 @@ else
   Result := '';
 end;
 
+function THistoryGrid.GetTopItem: Integer;
+begin
+  if Reversed then
+    Result := GetDown(Count)
+  else
+    Result := GetDown(-1);
+end;
+
 function THistoryGrid.GetUp(Item: Integer): Integer;
 begin
   Result := GetPrev(Item,False);
@@ -2968,8 +2988,12 @@ if Selected = -1 then begin
   FromNext := False;
   end;
 
-if FromStart then
-  StartItem := GetNext(-1, True)
+if FromStart then begin
+  if Down then
+    StartItem := GetTopItem
+  else
+    StartItem := GetBottomItem;
+end
 else if FromNext then begin
   if Down then
     StartItem := GetNext(Selected)
@@ -4477,6 +4501,7 @@ constructor TRichCache.Create(AGrid: THistoryGrid);
 var
   i: Integer;
   RichItem: PRichItem;
+  dc: HDC;
 begin
   inherited Create;
 
@@ -4485,8 +4510,12 @@ begin
   // cache size:
   SetLength(Items,20);
 
-  RichEventMasks := EN_LINK;
-  RichEventMasks := ENM_CHANGE or ENM_SELCHANGE or ENM_PROTECTED or ENM_LINK;
+  RichEventMasks := ENM_LINK;
+
+  dc := GetDC(0);
+  LogX := GetDeviceCaps(dc, LOGPIXELSX);
+  LogY := GetDeviceCaps(dc, LOGPIXELSY);
+  ReleaseDC(0,dc);
 
   for i := 0 to Length(Items) - 1 do begin
     New(RichItem);
@@ -4582,7 +4611,7 @@ var
   Range: TFormatRange;
   str: String;
 begin
-  {$IFDEF DELPHI_7}
+  {$IFDEF DELPHI_9_UP}
   Item.Bitmap.SetSize(Item.Rich.Width,Item.Height);
   {$ELSE}
   Item.Bitmap.Width := Item.Rich.Width;
@@ -4601,9 +4630,6 @@ begin
   Item.Rich.Perform(EM_SETBKGNDCOLOR, 0, BkColor);
   Item.Bitmap.Canvas.Brush.Color := BkColor;
   Item.Bitmap.Canvas.FillRect(rc);
-
-  LogX := GetDeviceCaps(Item.Bitmap.Canvas.Handle, LOGPIXELSX);
-  LogY := GetDeviceCaps(Item.Bitmap.Canvas.Handle, LOGPIXELSY);
 
   rc.Left := rc.left * 1440 div LogX;
   rc.Top := rc.Top * 1440 div LogY;
