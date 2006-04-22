@@ -10,4 +10,17 @@ historypp_08 Icon res\sess_year.ico
 historypp_09 Icon res\historypp_hotfilter.ico
 historypp_10 Icon res\historypp_hotfilterwait.ico
 historypp_11 Icon res\historypp_search_allresults.ico
+historypp_12 Icon res\overlay_hide.ico
+historypp_13 Icon res\overlay_inc.ico
+historypp_14 Icon res\overlay_out.ico
+historypp_15 Icon res\toolbar_saveall.ico
+historypp_16 Icon res\historypp_hotsearch.ico
+historypp_17 Icon res\historypp_searchup.ico
+historypp_18 Icon res\historypp_searchdown.ico
+historypp_19 Icon res\toolbar_deleteall.ico
+historypp_20 Icon res\toolbar_delete.ico
+historypp_21 Icon res\toolbar_options.ico
+historypp_22 Icon res\toolbar_sessions.ico
+historypp_23 Icon res\toolbar_save.ico
+historypp_24 Icon res\toolbar_copy.ico
 CR_HAND Cursor res\cr_hand.cur

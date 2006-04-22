@@ -76,6 +76,7 @@ const
   hppHomePageURL = 'http://slav.pp.ru/miranda/';
 
   hppLoadBlock  = 4096;
+  hppFirstLoadBlock = 200;
 
   EVENTTYPE_STATUSCHANGE = 25368; // from srmm's
 

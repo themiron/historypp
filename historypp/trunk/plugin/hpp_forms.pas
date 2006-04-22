@@ -2,7 +2,13 @@ unit hpp_forms;
 
 interface
 
-uses Graphics, Windows, Forms, TntStdCtrls, StdCtrls, Controls;
+uses Graphics, Windows, Forms, TntStdCtrls, StdCtrls, Controls, TntControls;
+
+type
+  THppHintWindow = class (TTntHintWindow)
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
+  end;
 
 procedure MakeFontsParent(Control: TControl);
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
@@ -52,6 +58,16 @@ begin
       MakeFontsParent(TControl(Control.Components[i]));
     end;
   end;
+end;
+
+{ THppHintWindow }
+
+procedure THppHintWindow.CreateParams(var Params: TCreateParams);
+begin
+  // standard delphi's hint window leaves shadow border after hint
+  // closes, this is workaround until real fix is found
+  inherited CreateParams(Params);
+  Params.WindowClass.Style := Params.WindowClass.style and not CS_DROPSHADOW;
 end;
 
 end.

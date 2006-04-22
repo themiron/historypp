@@ -109,6 +109,7 @@ function OpenContactHistory(hContact: THandle; index: integer = -1): THistoryFrm
 var
   wHistory: THistoryFrm;
   Lock: Boolean;
+  r: TRect;
 begin
   //check if window exists, otherwise create one
   wHistory := FindContactWindow(hContact);
@@ -128,8 +129,10 @@ begin
         if wHistory.hg.Count > 0 then
           wHistory.hg.Selected := 0;
       end;
+      //wHistory.hg.EndUpdate;
+      //if not wHistory.PasswordMode then
+      //  wHistory.hg.PrePaintWindow;
       wHistory.Show;
-      wHistory.ApplyFilter(index = -1);
     finally
       if Lock then LockWindowUpdate(0);
     end;

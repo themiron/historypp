@@ -239,6 +239,7 @@ object fmGlobalSearch: TfmGlobalSearch
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         MultiSelect = True
+        ShowHeaders = False
         TxtStartup = 'Starting up...'
         TxtNoItems = 'No items found'
         TxtNoSuch = 'No items for your current filter'
@@ -275,7 +276,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Height = 28
         Align = alBottom
         BevelOuter = bvNone
-        TabOrder = 2
+        TabOrder = 1
         DesignSize = (
           385
           28)
