@@ -4645,7 +4645,6 @@ begin
     ApplyItemToRich(Result);
     Result.Height := FRichHeight;
     Result.BitmapDrawn := False;
-   // PaintRichToBitmap(Result);
   end;
   MoveToTop(idx);
 end;
