@@ -2703,12 +2703,13 @@ var
   r: TRect;
 begin
   CheckBusy;
-  if selected <> -1 then begin
-  if IsVisible(Selected) then begin
-    r := GetItemRect(Selected);
-    InvalidateRect(Handle,@r,False);
+  if Message.FocusedWnd <> FRich.Handle then
+    if selected <> -1 then begin
+      if IsVisible(Selected) then begin
+        r := GetItemRect(Selected);
+        InvalidateRect(Handle,@r,False);
+      end;
     end;
-  end;
   inherited;
 end;
 
@@ -2754,12 +2755,13 @@ var
   r: TRect;
 begin
   CheckBusy;
-  if selected <> -1 then begin
-    if IsVisible(Selected) then begin
-      r := GetItemRect(Selected);
-      InvalidateRect(Handle,@r,False);
+  if Message.FocusedWnd <> FRich.Handle then
+    if selected <> -1 then begin
+      if IsVisible(Selected) then begin
+        r := GetItemRect(Selected);
+        InvalidateRect(Handle,@r,False);
+      end;
     end;
-  end;
   inherited;
 end;
 
