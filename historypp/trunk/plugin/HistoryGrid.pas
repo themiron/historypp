@@ -4738,12 +4738,18 @@ end;
 procedure TRichCache.SetHandles;
 var
   i: Integer;
+  exstyle: DWord;
 begin
   for i := 0 to Length(Items) - 1 do begin
     Items[i].Rich.ParentWindow := Grid.Handle;
     SendMessage(Items[i].Rich.Handle,EM_SETEVENTMASK, 0, RichEventMasks);
     Items[i].Rich.Perform(EM_AUTOURLDETECT, DWord(True), 0);
     Items[i].Rich.Perform(EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
+    // make richedit transparent:
+    exstyle := GetWindowLong(Items[i].Rich.Handle,GWL_EXSTYLE);
+    exstyle := exstyle or WS_EX_TRANSPARENT;
+    SetWindowLong(Items[i].Rich.Handle,GWL_EXSTYLE,exstyle);
+    Items[i].Rich.Brush.Style := bsClear;
   end;
 end;
 
