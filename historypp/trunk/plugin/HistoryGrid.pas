@@ -984,7 +984,6 @@ begin
     Message.Result := 1;
     exit;
   end;
-  OutputDebugString('Paint');
   BeginPaint(Handle,ps);
   dc := ps.HDC;
   ClipRect := ps.rcPaint;
@@ -4498,9 +4497,6 @@ var
   str: String;
 begin
   Grid.ApplyItemToRich(Item.GridItem,Item.Rich);
-
-  if Item.GridItem = 0 then
-    str := '';
 
   //str := 'Apply item ['+IntToStr(Item.GridItem)+'] for "'+Copy(Item.Rich.Text,1,15)+'"';
   //OutputDebugString(PChar(str));
