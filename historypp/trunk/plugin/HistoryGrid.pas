@@ -1245,7 +1245,6 @@ begin
     if Icon <> nil then begin
       IconOffset := 16+Padding;
       // canvas. draw here can sometimes draw 32x32 icon (sic!)
-      //if Options.RTLEnabled then
       if RTL then
         DrawIconEx(Canvas.Handle,ItemRect.Right-16,ItemRect.Top,Icon.Handle,16,16,0,0,DI_NORMAL)
       else
@@ -1264,7 +1263,6 @@ begin
 
   Canvas.Font := timestampFont;
   if sel then Canvas.Font.Color := Options.ColorSelectedText;
-  //if Options.RTLEnabled then
   if RTL then
     WideCanvasTextOut(Canvas,ItemRect.Left,ItemRect.Top,TimeStamp)
   else begin
@@ -1280,55 +1278,11 @@ begin
   Inc(ItemRect.Top,hh);
 
   ApplyItemToRich(Index);
-  //if Sel then ApplyItemToRich(Index,FRichSelected);
-  {
-  LogX := GetDeviceCaps(Canvas.Handle, LOGPIXELSX);
-  LogY := GetDeviceCaps(Canvas.Handle, LOGPIXELSY);
-
-  // fixed bug with scrolling by pixels
-  // it's richedit who decides that it wants to draw anywhere he wants
-  // and not where we told him
-  RichBMP := TBitmap.Create;
-  RichBMP.Width := ItemRect.Right - ItemRect.Left;
-  RichBMP.Height := ItemRect.Bottom - ItemRect.Top;
-  rc := RichBMP.Canvas.ClipRect;
-  //rc := ItemRect;
-  rc.Left := rc.left * 1440 div LogX;
-  rc.Top := rc.Top * 1440 div LogY;
-  rc.Right := rc.Right * 1440 div LogX;
-  rc.Bottom := rc.Bottom * 1440 div LogY;
-
-  Range.hdc := RichBMP.Canvas.Handle;
-  Range.hdcTarget := RichBMP.Canvas.Handle;
-  Range.rc := rc;
-  Range.rcPage := rc;
-  Range.chrg.cpMin := 0;
-  Range.chrg.cpMax := -1;
-
-  //FRich.SelectAll;
-  //FRich.HideSelection := False;
-  //SendMessage(FRich.Handle,WM_SETFOCUS,0,0);
-
-  //SendMessage(FRich.Handle, EM_HIDESELECTION, 0, 0);
-  //SendMessage(FRich.Handle, EM_EXSETSEL, 0, integer(@Range.chrg));
-
-  //if Sel then SendMessage(FRichSelected.Handle, EM_FORMATRANGE, 1, Longint(@Range))
-  //       else SendMessage(FRich.Handle, EM_FORMATRANGE, 1, Longint(@Range));
-
-  //SendMessage(FRich.Handle, EM_FORMATRANGE, 1, Longint(@Range));
-  FRich.Perform(EM_FORMATRANGE, 1, Longint(@Range));
-  }
   RichBMP := FRichCache.GetItemRichBitmap(Index);
   BitBlt(Canvas.Handle,ItemRect.Left,ItemRect.Top,RichBMP.Width,RichBMP.Height,
     RichBMP.Canvas.Handle,0,0,SRCCOPY);
-  //RichBMP.Free;
-
-  // Free cached information
-  //SendMessage(FRich.Handle, EM_FORMATRANGE, 0,0);
 
   if (Focused or WindowPrePainting) and (Index = Selected) then begin
-    //InflateRect(ItemRect,Padding,Padding);
-    //Dec(ItemRect.Top,hh);
     DrawFocusRect(Canvas.Handle,OrgRect);
   end;
 end;
