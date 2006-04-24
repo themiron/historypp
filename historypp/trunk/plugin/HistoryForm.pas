@@ -179,6 +179,8 @@ type
     tvSess: TTntTreeView;
     tbSave: TTntToolButton;
     tbCopy: TTntToolButton;
+    TntToolButton6: TTntToolButton;
+    TntToolButton8: TTntToolButton;
     procedure tbSaveAllClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -2915,7 +2917,11 @@ begin
     tbURL.Down := False;
     tbStatus.Down := False;
   end;
-  fil := [mtIncoming,mtOutgoing];
+  //if tbIncoming.Down then tbOutgoing.Down := false;
+  //if tbOutgoing.Down then tbIncoming.Down := false;
+  fil := [];
+  if not tbIncoming.Down then fil := fil + [mtIncoming];
+  if not tbOutgoing.Down then fil := fil + [mtOutgoing];
   if not tbMessage.Down then fil := fil + [mtMessage];
   if not tbFile.Down then fil := fil + [mtFile];
   if not tbUrl.Down then fil := fil + [mtUrl];

@@ -1,13 +1,13 @@
 object HistoryFrm: THistoryFrm
   Left = 230
   Top = 130
+  Width = 586
+  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
-  ClientHeight = 391
-  ClientWidth = 578
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -37,20 +37,17 @@ object HistoryFrm: THistoryFrm
     TabOrder = 0
     object spSess: TTntSplitter
       Left = 158
-      Top = 58
-      Height = 262
+      Top = 59
+      Height = 261
       AutoSnap = False
       MinSize = 100
       Visible = False
-      ExplicitLeft = 160
-      ExplicitTop = 35
-      ExplicitHeight = 272
     end
     object paGrid: TPanel
       Left = 161
-      Top = 58
+      Top = 59
       Width = 415
-      Height = 262
+      Height = 261
       Align = alClient
       BevelOuter = bvNone
       BorderStyle = bsSingle
@@ -59,7 +56,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 0
         Width = 411
-        Height = 258
+        Height = 257
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         MultiSelect = True
@@ -103,7 +100,7 @@ object HistoryFrm: THistoryFrm
     end
     object paTop: TPanel
       Left = 2
-      Top = 27
+      Top = 28
       Width = 574
       Height = 31
       Align = alTop
@@ -155,9 +152,9 @@ object HistoryFrm: THistoryFrm
     end
     object paSess: TPanel
       Left = 2
-      Top = 58
+      Top = 59
       Width = 156
-      Height = 262
+      Height = 261
       Align = alLeft
       BevelOuter = bvLowered
       TabOrder = 2
@@ -201,7 +198,7 @@ object HistoryFrm: THistoryFrm
         Left = 1
         Top = 22
         Width = 154
-        Height = 239
+        Height = 238
         Align = alClient
         BevelInner = bvNone
         BorderStyle = bsNone
@@ -290,11 +287,17 @@ object HistoryFrm: THistoryFrm
       Left = 2
       Top = 2
       Width = 574
-      Height = 25
+      Height = 26
+      BorderWidth = 1
+      EdgeBorders = []
+      EdgeInner = esNone
+      EdgeOuter = esNone
+      Flat = True
       Images = ilToolbar
       ParentShowHint = False
       ShowHint = True
       TabOrder = 4
+      Transparent = True
       object tbSessions: TTntToolButton
         Left = 0
         Top = 0
@@ -334,13 +337,19 @@ object HistoryFrm: THistoryFrm
         Left = 85
         Top = 0
         Hint = 'Hide incoming'
+        AllowAllUp = True
+        Grouped = True
         Style = tbsCheck
+        OnClick = tbMessageClick
       end
       object tbOutgoing: TTntToolButton
         Left = 108
         Top = 0
         Hint = 'Hide outgoing'
+        AllowAllUp = True
+        Grouped = True
         Style = tbsCheck
+        OnClick = tbMessageClick
       end
       object TntToolButton4: TTntToolButton
         Left = 131
@@ -430,6 +439,16 @@ object HistoryFrm: THistoryFrm
         Hint = 'Options'
         DropdownMenu = pmOptions
       end
+      object TntToolButton6: TTntToolButton
+        Left = 406
+        Top = 0
+        Caption = 'TntToolButton6'
+      end
+      object TntToolButton8: TTntToolButton
+        Left = 429
+        Top = 0
+        Caption = 'TntToolButton8'
+      end
     end
     object paSearch: TTntPanel
       Left = 2
@@ -482,6 +501,7 @@ object HistoryFrm: THistoryFrm
           Top = 4
           Width = 21
           Height = 21
+          AllowAllUp = True
           Anchors = [akTop, akRight]
           Flat = True
           Layout = blGlyphTop
