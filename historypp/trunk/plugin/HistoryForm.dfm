@@ -835,6 +835,7 @@ object HistoryFrm: THistoryFrm
     end
   end
   object pmOptions: TTntPopupMenu
+    OnPopup = pmPopup
     Left = 340
     Top = 19
     object IconsEnabled1: TTntMenuItem
