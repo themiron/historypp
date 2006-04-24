@@ -23,4 +23,6 @@ historypp_21 Icon res\toolbar_options.ico
 historypp_22 Icon res\toolbar_sessions.ico
 historypp_23 Icon res\toolbar_save.ico
 historypp_24 Icon res\toolbar_copy.ico
+historypp_25 Icon res\search_endofpage.ico
+historypp_26 Icon res\search_notfound.ico
 CR_HAND Cursor res\cr_hand.cur

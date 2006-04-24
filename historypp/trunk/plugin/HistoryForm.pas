@@ -169,11 +169,9 @@ type
     N3: TTntMenuItem;
     paSearchStatus: TTntPanel;
     laSearchState: TTntLabel;
-    pbSearchState: TPaintBox;
     TntPanel2: TTntPanel;
     sbSearchNext: TTntSpeedButton;
     sbSearchPrev: TTntSpeedButton;
-    sbSearchClose: TTntSpeedButton;
     edSearch: TTntEdit;
     pbSearch: TPaintBox;
     tvSess: TTntTreeView;
@@ -181,6 +179,8 @@ type
     tbCopy: TTntToolButton;
     TntToolButton6: TTntToolButton;
     tbHistorySearch: TTntToolButton;
+    imSearchEndOfPage: TTntImage;
+    imSearchNotFound: TTntImage;
     procedure tbSaveAllClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -199,7 +199,6 @@ type
     procedure edSearchKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure edSearchKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure sbSearchCloseClick(Sender: TObject);
     procedure tbFilterClick(Sender: TObject);
     procedure paSearchResize(Sender: TObject);
     procedure pbSearchPaint(Sender: TObject);
@@ -982,6 +981,9 @@ begin
     DrawiconEx(Canvas.Handle,0,0,
       nextic,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
+
+  imSearchNotFound.Picture.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_SEARCH_NOTFOUND].handle);
+  imSearchEndOfPage.Picture.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_SEARCH_ENDOFPAGE].handle);
 end;
 
 procedure THistoryFrm.LoadPendingHeaders(rowidx: integer; count: integer);
@@ -1334,12 +1336,6 @@ begin
   ShowSessions(False);
 end;
 
-procedure THistoryFrm.sbSearchCloseClick(Sender: TObject);
-begin
-  ChangeSearchMode(True);
-  hg.SetFocus;
-end;
-
 procedure THistoryFrm.sbSearchNextClick(Sender: TObject);
 begin
   Search(True,True);
@@ -1664,12 +1660,11 @@ var
   Down: Boolean;
   item: Integer;
   ShowEndOfPage: Boolean;
+  ShowNotFound: Boolean;
+  w: Integer;
 begin
   if edSearch.Text = '' then begin
     paSearchStatus.Visible := False;
-    laSearchState.Visible := ShowEndOfPage;
-    laSearchState.Tag := 0;
-    pbSearchState.Repaint;
     edSearch.Color := clWindow;
     exit;
   end;
@@ -1686,22 +1681,34 @@ begin
   if item <> -1 then begin
     hg.Selected := item;
     edSearch.Color := clWindow;
-    laSearchState.Caption := TranslateWideW('Started from the beginning');
-    laSearchState.Visible := ShowEndOfPage;
-    paSearchStatus.Visible := ShowEndOfPage;
-    if not ShowEndOfPage then
-      laSearchState.Tag := 0
-    else
-      laSearchState.Tag := 1;
   end
   else begin
     edSearch.Color := $008080FF;
-    laSearchState.Visible := True;
-    laSearchState.Caption := TranslateWideW('Phrase not found');
-    laSearchState.Tag := 2;
-    paSearchStatus.Visible := True;
+    ShowEndOfPage := False;
+    ShowNotFound := True;
   end;
-  pbSearchState.Repaint;
+
+  if ShowNotFound or ShowEndOfPage then begin
+    imSearchNotFound.Visible := ShowNotFound;
+    imSearchEndOfPage.Visible := ShowEndOfPage;
+    if ShowEndOfPage then begin
+      if Down then
+        laSearchState.Caption := TranslateWideW('Continued from the top')
+      else
+        laSearchState.Caption := TranslateWideW('Continued from the bottom');
+    end;
+    if ShowNotFound then begin
+      laSearchState.Caption := TranslateWideW('Phrase not found');
+    end;
+    // calculate a bit wider width so we have some whitespace at the right
+    w := laSearchState.Canvas.TextWidth(laSearchState.Caption+'  ');
+    laSearchState.Width := w;
+    paSearchStatus.Width := laSearchState.Left + w;
+    paSearchStatus.Visible := True;
+  end
+  else begin
+    paSearchStatus.Visible := False;
+  end;
 end;
 
 procedure THistoryFrm.SearchNext(Rev: Boolean; Warp: Boolean = True);
@@ -2152,7 +2159,6 @@ procedure THistoryFrm.edSearchKeyUp(Sender: TObject; var Key: Word;
 begin
   if Key = VK_RETURN then begin
     hg.SetFocus;
-    //sbSearchClose.Click;
     key := 0;
   end;
 end;
@@ -2825,14 +2831,14 @@ end;
 
 procedure THistoryFrm.pbSearchStatePaint(Sender: TObject);
 begin
-  case laSearchState.Tag of
+  {case laSearchState.Tag of
     1: DrawIconEx(pbSearchState.Canvas.Handle,0,0,hppIcons[HPP_ICON_HOTSEARCH].Handle,
        16,16,0,pbSearchState.Canvas.Brush.Handle,DI_NORMAL);
     2: DrawIconEx(pbSearchState.Canvas.Handle,0,0,hppIcons[HPP_ICON_HOTSEARCH].Handle,
        16,16,0,pbSearchState.Canvas.Brush.Handle,DI_NORMAL)
   else
     pbSearchState.Canvas.FillRect(pbSearchState.Canvas.ClipRect);
-  end;
+  end;}
 end;
 
 procedure THistoryFrm.edFilterChange(Sender: TObject);
