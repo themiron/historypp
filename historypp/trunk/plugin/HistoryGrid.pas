@@ -3425,7 +3425,7 @@ procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; C
     col: longint;
   begin
     // header
-    WriteString(Stream,'{\rtf1\ansi\ansicpg1251\deff0\deflang1049'+#13#10);
+    WriteString(Stream,'{\rtf1\ansi\ansicpg1251\uc1\deflang1049'+#13#10);
     // fonts
     WriteString(Stream,'{\fonttbl'+#13#10);
     WriteString(Stream,FontToRTF(0,Options.FontContact)+#13#10);
@@ -3435,21 +3435,36 @@ procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; C
       WriteString(Stream,FontToRTF(3+i,Options.ItemOptions[i].textFont)+#13#10);
     // colors
     WriteString(Stream,'}{\colortbl;'+#13#10);
-    WriteString(Stream,ColorToRtf(0,Options.FontContact.Color)+#13#10);
-    WriteString(Stream,ColorToRtf(1,Options.FontProfile.Color)+#13#10);
-    WriteString(Stream,ColorToRtf(2,Options.FontTimeStamp.Color)+#13#10);
-    WriteString(Stream,ColorToRtf(3,Options.ColorDivider)+#13#10);
+    WriteString(Stream,'\red0\green0\blue0;'+#13#10);
+    WriteString(Stream,'\red0\green0\blue255'+#13#10);
+    WriteString(Stream,'\red0\green255\blue255;'+#13#10);
+    WriteString(Stream,'\red0\green255\blue0;'+#13#10);
+    WriteString(Stream,'\red255\green0\blue255;'+#13#10);
+    WriteString(Stream,'\red255\green0\blue0;'+#13#10);
+    WriteString(Stream,'\red255\green255\blue0;'+#13#10);
+    WriteString(Stream,'\red255\green255\blue255;'+#13#10);
+    WriteString(Stream,'\red0\green0\blue128;'+#13#10);
+    WriteString(Stream,'\red0\green128\blue128;'+#13#10);
+    WriteString(Stream,'\red0\green128\blue0;'+#13#10);
+    WriteString(Stream,'\red128\green0\blue128;'+#13#10);
+    WriteString(Stream,'\red128\green0\blue0;'+#13#10);
+    WriteString(Stream,'\red128\green128\blue0;'+#13#10);
+    WriteString(Stream,'\red128\green128\blue128;'+#13#10);
+    WriteString(Stream,ColorToRtf(15,Options.FontContact.Color)+#13#10);
+    WriteString(Stream,ColorToRtf(16,Options.FontProfile.Color)+#13#10);
+    WriteString(Stream,ColorToRtf(17,Options.FontTimeStamp.Color)+#13#10);
+    WriteString(Stream,ColorToRtf(18,Options.ColorDivider)+#13#10);
     for i := 0 to High(Options.ItemOptions) do begin
-      WriteString(Stream,ColorToRtf(4+i*2,Options.ItemOptions[i].textFont.Color)+#13#10);
-      WriteString(Stream,ColorToRtf(5+i*2,Options.ItemOptions[i].textColor)+#13#10);
+      WriteString(Stream,ColorToRtf(19+i*2,Options.ItemOptions[i].textFont.Color)+#13#10);
+      WriteString(Stream,ColorToRtf(20+i*2,Options.ItemOptions[i].textColor)+#13#10);
     end;
     // styles
     WriteString(Stream,'}{\stylesheet'+#13#10);
-    WriteString(Stream,StyleToRTF(0,Options.FontContact,0,0)+#13#10);
-    WriteString(Stream,StyleToRTF(1,Options.FontProfile,1,1)+#13#10);
-    WriteString(Stream,StyleToRTF(2,Options.FontTimeStamp,2,2)+#13#10);
+    WriteString(Stream,StyleToRTF(0,Options.FontContact,0,15)+#13#10);
+    WriteString(Stream,StyleToRTF(1,Options.FontProfile,1,16)+#13#10);
+    WriteString(Stream,StyleToRTF(2,Options.FontTimeStamp,2,17)+#13#10);
     for i := 0 to High(Options.ItemOptions) do begin
-      WriteString(Stream,StyleToRTF(3+i,Options.ItemOptions[i].textFont,i+3,4+i*2)+#13#10);
+      WriteString(Stream,StyleToRTF(3+i,Options.ItemOptions[i].textFont,i+3,19+i*2)+#13#10);
     end;
     WriteString(Stream,'}'+#13#10);
     // document info
@@ -3637,14 +3652,16 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
                                               else name := ProfileName;
     date := GetTime(FItems[Item].Time);
     MesTypeToRTF(FItems[Item].MessageType,mes_id);
-    WriteString(Stream,'\viewkind4\uc1\pard \cb'+intToStr(5+mes_id*2));
-    WriteString(Stream,'\s2 ['+date+']');
-    if mtIncoming in FItems[Item].MessageType then
-      WriteString(Stream,'\s0  '+TextToRTF(ContactName))
-    else
-      WriteString(Stream,'\s1  '+TextToRTF(ProfileName));
-    WriteString(Stream,':\par \s'+intToStr(mes_id+3));
-    WriteString(Stream,TextToRTF(FItems[Item].Text));
+    WriteString(Stream,'\viewkind4\uc1\pard ');
+    WriteString(Stream,'\cb'+intToStr(20+mes_id*2));
+    WriteString(Stream,'{\s2 ['+date+']}');
+    if mtIncoming in FItems[Item].MessageType then begin
+      WriteString(Stream,' {\s0 '+TextToRTF(ContactName)+':}')
+    end else begin
+      WriteString(Stream,' {\s1 '+TextToRTF(ProfileName)+':}')
+    end;
+    WriteString(Stream,'\par');
+    WriteString(Stream,'{\s'+intToStr(mes_id+3)+' '+TextToRTF(FItems[Item].Text)+'}');
     WriteString(Stream,'\par');
   end;
 
