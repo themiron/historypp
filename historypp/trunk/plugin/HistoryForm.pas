@@ -1482,8 +1482,8 @@ begin
     gsDelete: t := TranslateWideW('Deleting...');
   end;
   if PasswordMode then
-    t := TranslateWideW('Enter password');
-  //sb.SimpleText := AnsiToWideString(t,hppCodepage);
+    t := '';
+
   sb.SimpleText := t;
 end;
 
