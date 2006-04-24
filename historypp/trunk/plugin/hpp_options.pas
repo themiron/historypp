@@ -89,8 +89,9 @@ const
   HPP_ICON_TOOL_COPY         = 24;
   HPP_ICON_SEARCH_ENDOFPAGE  = 25;
   HPP_ICON_SEARCH_NOTFOUND   = 26;
+  HPP_ICON_HOTFILTERCLEAR    = 27;
 
-  hppIcons : array[0..26] of ThppIconsRec = (
+  hppIcons : array[0..27] of ThppIconsRec = (
     (name:'historypp_00'; desc:'Contact history'; i:HPP_ICON_CONTACTHISTORY; handle:0),
     (name:'historypp_01'; desc:'History search'; i:HPP_ICON_GLOBALSEARCH; handle:0),
     (name:'historypp_02'; desc:'Conversation divider'; i:HPP_ICON_SESS_DIVIDER; handle:0),
@@ -117,7 +118,8 @@ const
     (name:'historypp_23'; desc:'Save'; i:HPP_ICON_TOOL_SAVE; handle:0),
     (name:'historypp_24'; desc:'Copy'; i:HPP_ICON_TOOL_COPY; handle:0),
     (name:'historypp_25'; desc:'End of page'; i:HPP_ICON_SEARCH_ENDOFPAGE; handle:0),
-    (name:'historypp_26'; desc:'Phrase not found'; i:HPP_ICON_SEARCH_NOTFOUND; handle:0)
+    (name:'historypp_26'; desc:'Phrase not found'; i:HPP_ICON_SEARCH_NOTFOUND; handle:0),
+    (name:'historypp_27'; desc:'Clear in-place filter'; i:HPP_ICON_HOTFILTERCLEAR; handle:0)
   );
 
   hppFontItems: array[0..15] of ThppFontsRec = (

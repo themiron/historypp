@@ -212,6 +212,9 @@ type
     function GetSearchItem(GridIndex: Integer): TSearchItem;
     procedure DisableFilter;
     procedure FilterOnContact(hContact: Integer);
+
+    procedure LoadButtonIcons;
+    procedure LoadContactsIcons;
   public
     { Public declarations }
   end;
@@ -276,7 +279,11 @@ begin
 
   ContactList := TObjectList.Create;
   hg.Codepage := hppCodepage;
- end;
+
+  ilContacts.Handle := PluginLink.CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
+  LoadButtonIcons;
+  LoadContactsIcons;
+end;
 
 procedure TfmGlobalSearch.SMFinished(var M: TMessage);
 var
@@ -728,6 +735,30 @@ begin
   //edSearch.SelectAll;
 end;
 
+procedure TfmGlobalSearch.LoadButtonIcons;
+begin
+  with sbClearFilter.Glyph do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := paFilter.Color;
+    Canvas.FillRect(Canvas.ClipRect);
+    DrawiconEx(Canvas.Handle,0,0,
+      hppIcons[HPP_ICON_HOTFILTERCLEAR].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
+end;
+
+procedure TfmGlobalSearch.LoadContactsIcons;
+begin
+  lvContacts.Items.BeginUpdate;
+
+  if GlobalSearchAllResultsIcon = -1 then
+    GlobalSearchAllResultsIcon := ImageList_AddIcon(ilContacts.Handle,hppIcons[HPP_ICON_SEARCH_ALLRESULTS].Handle)
+  else
+    ImageList_ReplaceIcon(ilContacts.Handle,GlobalSearchAllResultsIcon,hppIcons[HPP_ICON_SEARCH_ALLRESULTS].Handle);
+
+  lvContacts.Items.EndUpdate;
+end;
+
 procedure TfmGlobalSearch.LoadWindowPosition;
 var
   n: Integer;
@@ -998,10 +1029,6 @@ begin
 
   TranslateForm;
   LoadWindowPosition;
-
-  ilContacts.Handle := PluginLink.CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
-  if GlobalSearchAllResultsIcon = -1 then
-    GlobalSearchAllResultsIcon := ImageList_AddIcon(ilContacts.Handle,hppIcons[HPP_ICON_SEARCH_ALLRESULTS].Handle);
 
   HookEvents;
 
