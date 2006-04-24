@@ -1323,8 +1323,17 @@ begin
 end;
 
 procedure THistoryGrid.SetShowHeaders(const Value: Boolean);
+var
+  i: Integer;
 begin
+  if FShowHeaders = Value then exit;
   FShowHeaders := Value;
+  for i := 0 to Length(FItems) - 1 do begin
+    if FItems[i].HasHeader then begin
+      FItems[i].Height := -1;
+      FRichCache.ResetItem(i);
+    end;
+  end;
 end;
 
 procedure THistoryGrid.AddSelected(Item: Integer);
