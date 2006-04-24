@@ -10,6 +10,7 @@ ini_set("register_argc_argv","1");
 
 $detailed_file = false;
 $ignore_menuitems = true;
+$ignore_tbitems = true;
 
 
 // empty captions and captions consiting from
@@ -58,7 +59,7 @@ $dfm_prop = array();
 $dfm_noadd = array();
 
 function parse_object() {
-  global $ignore_menuitems,$lines, $lineid, $dfm_str, $dfm_prop, $dfm_noadd, $no_add;
+  global $ignore_menuitems, $ignore_tbitems, $lines, $lineid, $dfm_str, $dfm_prop, $dfm_noadd, $no_add;
   $in_strings = false;
   $in_str_count = 0;
   $in_str_name = '';
@@ -74,7 +75,8 @@ function parse_object() {
   while(false == (preg_match('/\s*end$/',rtrim($lines[$lineid])))) {
     $lines[$lineid] = rtrim($lines[$lineid]);
     if (preg_match('/^(\s)*object (.*): (.*)$/',$lines[$lineid],$matches)) {
-      if ($ignore_menuitems && (($matches[3] == "TMenuItem")||($matches[3] == "TTntMenuItem"))) {
+      if (($ignore_menuitems && (($matches[3] == "TMenuItem")||($matches[3] == "TTntMenuItem"))) ||
+          ($ignore_tbitems && (($matches[3] == "TTntToolButton")||($matches[3] == "TToolButton")))) {
         $no_add = true;
         parse_object();
         $no_add = false;
