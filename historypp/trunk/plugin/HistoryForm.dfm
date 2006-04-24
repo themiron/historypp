@@ -1,13 +1,13 @@
 object HistoryFrm: THistoryFrm
   Left = 231
   Top = 160
-  Width = 586
-  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
+  ClientHeight = 391
+  ClientWidth = 578
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -170,11 +170,14 @@ object HistoryFrm: THistoryFrm
           154
           21)
         object laSess: TTntLabel
-          Left = 8
-          Top = 4
-          Width = 67
-          Height = 13
+          Left = 6
+          Top = 2
+          Width = 126
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
+          AutoSize = False
           Caption = 'Conversations'
+          Layout = tlCenter
         end
         object sbCloseSess: TTntSpeedButton
           Left = 133
@@ -289,10 +292,8 @@ object HistoryFrm: THistoryFrm
       Width = 574
       Height = 26
       BorderWidth = 1
-      EdgeBorders = []
       EdgeInner = esNone
       EdgeOuter = esNone
-      Flat = True
       Images = ilToolbar
       ParentShowHint = False
       ShowHint = True
@@ -468,23 +469,30 @@ object HistoryFrm: THistoryFrm
         Width = 181
         Height = 25
         Align = alRight
+        Anchors = [akLeft, akTop, akBottom]
         BevelOuter = bvNone
         TabOrder = 0
         Visible = False
         object laSearchState: TTntLabel
           Left = 31
-          Top = 7
+          Top = 4
           Width = 12
-          Height = 13
+          Height = 19
+          AutoSize = False
           Caption = '>>'
-          Visible = False
+          Layout = tlCenter
         end
-        object pbSearchState: TPaintBox
+        object imSearchEndOfPage: TTntImage
           Left = 9
           Top = 6
           Width = 16
           Height = 16
-          OnPaint = pbSearchStatePaint
+        end
+        object imSearchNotFound: TTntImage
+          Left = 9
+          Top = 6
+          Width = 16
+          Height = 16
         end
       end
       object TntPanel2: TTntPanel
@@ -522,26 +530,6 @@ object HistoryFrm: THistoryFrm
           ParentShowHint = False
           ShowHint = True
           OnClick = sbSearchPrevClick
-        end
-        object sbSearchClose: TTntSpeedButton
-          Left = 310
-          Top = -3
-          Width = 21
-          Height = 21
-          Hint = 'Close Search'
-          Flat = True
-          Glyph.Data = {
-            BE000000424DBE0000000000000076000000280000000A000000090000000100
-            04000000000048000000C40E0000C40E00001000000000000000000000000000
-            80000080000000808000800000008000800080800000C0C0C000808080000000
-            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777700
-            0000700777700700000077007700770000007770000777000000777700777700
-            0000777000077700000077007700770000007007777007000000777777777700
-            0000}
-          ParentShowHint = False
-          ShowHint = True
-          Visible = False
-          OnClick = sbSearchCloseClick
         end
         object pbSearch: TPaintBox
           Left = 2
