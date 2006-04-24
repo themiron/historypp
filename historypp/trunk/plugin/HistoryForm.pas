@@ -180,7 +180,7 @@ type
     tbSave: TTntToolButton;
     tbCopy: TTntToolButton;
     TntToolButton6: TTntToolButton;
-    TntToolButton8: TTntToolButton;
+    tbHistorySearch: TTntToolButton;
     procedure tbSaveAllClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -286,6 +286,7 @@ type
     procedure StartHotFilterTimer;
     procedure EndHotFilterTimer;
     procedure tiFilterTimer(Sender: TObject);
+    procedure tbHistorySearchClick(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -744,6 +745,8 @@ begin
     tbSave.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_COPY].Handle);
     tbCopy.ImageIndex := ii;
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_GLOBALSEARCH].Handle);
+    tbHistorySearch.ImageIndex := ii;
 
   finally
     //Toolbar.Be
@@ -2258,6 +2261,15 @@ var
       end;
   end;
 
+  procedure TranslateToolbar(const tb: TTntToolBar);
+  var
+    i: integer;
+  begin
+    for i := 0 to tb.ButtonCount-1 do
+      if tb.Buttons[i].Style <> tbsSeparator then
+        tb.Buttons[i].Hint := TranslateWideW(tb.Buttons[i].Hint{TRANSLATE-IGNORE});
+  end;
+
 begin
   Caption := TranslateWideW(Caption);
 
@@ -2279,6 +2291,7 @@ begin
     cbSort.Items[i] := TranslateWideW(cbSort.Items[i]);
 
   sbClearFilter.Hint := TranslateWideW(sbClearFilter.Hint);
+  sbSearchClose.Hint := TranslateWideW(sbSearchClose.Hint);
 
   bnPass.Caption := TranslateWideW(bnPass.Caption);
   laPass.Caption := TranslateWideW(laPass.Caption);
@@ -2286,6 +2299,8 @@ begin
   laSess.Caption := TranslateWideW(laSess.Caption);
 
   SaveDialog.Title := Translate(PAnsiChar(SaveDialog.Title));
+
+  TranslateToolbar(Toolbar);
 
   TranslateMenu(pmOptions.Items);
   TranslateMenu(pmSaveAll.Items);
@@ -2978,6 +2993,11 @@ begin
   hg.SaveAll(SaveDialog.Files[0],sfRTF);
   RecentFormat := sfRTF;
   WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
+end;
+
+procedure THistoryFrm.tbHistorySearchClick(Sender: TObject);
+begin
+  PluginLink.CallService(MS_HPP_SHOWGLOBALSEARCH,0,0);
 end;
 
 end.
