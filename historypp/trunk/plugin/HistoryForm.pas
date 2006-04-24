@@ -2297,7 +2297,6 @@ begin
     cbSort.Items[i] := TranslateWideW(cbSort.Items[i]);
 
   sbClearFilter.Hint := TranslateWideW(sbClearFilter.Hint);
-  sbSearchClose.Hint := TranslateWideW(sbSearchClose.Hint);
 
   bnPass.Caption := TranslateWideW(bnPass.Caption);
   laPass.Caption := TranslateWideW(laPass.Caption);
