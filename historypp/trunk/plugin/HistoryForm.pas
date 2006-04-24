@@ -2050,12 +2050,9 @@ paClient.Visible := enb;
 if Value then paPassHolder.Align := alClient;
 paPassHolder.Enabled := not enb;
 paPassHolder.Visible := not enb;
-//paPassword.Enabled := not enb;
-//paPassword.Visible := not enb;
 if value = true then begin
-  paPassword.Left := (paGrid.ClientWidth-paPassword.Width) div 2;
-  paPassword.Top := (paGrid.ClientHeight - paPassword.Height) div 2;
-  //laPass.Caption := Format('You need password to access history for %s
+  paPassword.Left := (paPassHolder.ClientWidth-paPassword.Width) div 2;
+  paPassword.Top := (paPassHolder.ClientHeight - paPassword.Height) div 2;
   if Self.Visible then
     edPass.SetFocus
   else
