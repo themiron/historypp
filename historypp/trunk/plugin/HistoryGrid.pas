@@ -930,10 +930,10 @@ begin
   end;
 
   // leave divider lines:
-  Inc(ItemRect.Top);
-  Dec(ItemRect.Bottom,2);
+  //Inc(ItemRect.Top);
+  Dec(ItemRect.Bottom,1);
 
-  Canvas.Brush.Color := clWindow;
+  Canvas.Brush.Color := $00D7FDFF;//$00C7FCFF;
   Canvas.FillRect(ItemRect);
 
   InflateRect(ItemRect,-3,-3);
@@ -3829,7 +3829,7 @@ begin
   // find heighest and don't forget about icons
   PHeaderHeight := Max(ph,th);
   CHeaderHeight := Max(ch,th);
-  SessHeaderHeight := th+1+3*2+2;
+  SessHeaderHeight := th+1+3*2;
   if Options.ShowIcons then begin
     CHeaderHeight := Max(CHeaderHeight,16);
     PHeaderHeight := Max(PHeaderHeight,16);
