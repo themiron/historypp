@@ -141,6 +141,7 @@ begin
     // restore even if minimized
     // and we ain't have no double hooks
     ShowWindow(wHistory.Handle,SW_SHOWNORMAL);
+    wHistory.BringToFront;
     wHistory.ApplyFilter(index = -1);
   end;
   Result := wHistory;
@@ -170,6 +171,7 @@ begin
     fmGlobalSearch.Show;
   end;
   ShowWindow(fmGlobalSearch.Handle,SW_SHOWNORMAL);
+  fmGlobalSearch.BringToFront;
   Result := 0;
 end;
 
