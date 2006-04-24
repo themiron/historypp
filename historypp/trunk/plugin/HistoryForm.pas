@@ -977,6 +977,14 @@ begin
     DrawiconEx(Canvas.Handle,0,0,
       nextic,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
+  with sbClearFilter.Glyph do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := paFilter.Color;
+    Canvas.FillRect(Canvas.ClipRect);
+    DrawiconEx(Canvas.Handle,0,0,
+      hppIcons[HPP_ICON_HOTFILTERCLEAR].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
 
   imSearchNotFound.Picture.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_SEARCH_NOTFOUND].handle);
   imSearchEndOfPage.Picture.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_SEARCH_ENDOFPAGE].handle);
