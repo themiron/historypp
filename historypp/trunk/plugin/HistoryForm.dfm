@@ -1,6 +1,6 @@
 object HistoryFrm: THistoryFrm
-  Left = 230
-  Top = 130
+  Left = 231
+  Top = 160
   Width = 586
   Height = 418
   VertScrollBar.Tracking = True
@@ -442,12 +442,14 @@ object HistoryFrm: THistoryFrm
       object TntToolButton6: TTntToolButton
         Left = 406
         Top = 0
-        Caption = 'TntToolButton6'
+        Width = 8
+        Style = tbsSeparator
       end
-      object TntToolButton8: TTntToolButton
-        Left = 429
+      object tbHistorySearch: TTntToolButton
+        Left = 414
         Top = 0
-        Caption = 'TntToolButton8'
+        Hint = 'History Search'
+        OnClick = tbHistorySearchClick
       end
     end
     object paSearch: TTntPanel
@@ -972,6 +974,7 @@ object HistoryFrm: THistoryFrm
     end
     object SaveasRTF2: TTntMenuItem
       Caption = 'Save All as &RTF'
+      Enabled = False
       OnClick = SaveasRTF2Click
     end
     object SaveasText2: TTntMenuItem

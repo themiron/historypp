@@ -223,10 +223,6 @@ Password set
 History is empty
 [No such items]
 No such items
-[You need password to access this history]
-You need password to access this history
-[Enter]
-Enter
 [Show]
 Show
 [All Items]
@@ -245,32 +241,52 @@ Status Changes
 Recent at bottom
 [Recent on top]
 Recent on top
-[&Search...]
-&Search...
-[&Delete]
-&Delete
-[&Additional]
-&Additional
-[&Filter...]
-&Filter...
 [Conversations]
 Conversations
+[Show conversations (F4)]
+Show conversations (F4)
+[Find]
+Find
+[Filter]
+Filter
+[Hide incoming]
+Hide incoming
+[Hide outgoing]
+Hide outgoing
+[Hide messages]
+Hide messages
+[Hide files]
+Hide files
+[Hide link URLs]
+Hide link URLs
+[Hide status messages]
+Hide status messages
+[Copy]
+Copy
+[Delete]
+Delete
+[Save]
+Save
+[Save all]
+Save all
+[Empty history]
+Empty history
+[Options]
+Options
+[History Search]
+History Search
+[Close Search]
+Close Search
+[You need password to access this history]
+You need password to access this history
+[Enter]
+Enter
 [&Open]
 &Open
 [User &Details]
 User &Details
-[Save All as &HTML...]
-Save All as &HTML...
-[Save All as &XML...]
-Save All as &XML...
-[Save All as &RTF...]
-Save All as &RTF...
-[Save All as &Text...]
-Save All as &Text...
-[&Delete All]
-&Delete All
-[&Password Protection...]
-&Password Protection...
+[&Delete]
+&Delete
 [Open &Link]
 Open &Link
 [Open Link in New &Window]
@@ -279,8 +295,6 @@ Open Link in New &Window
 Open &File
 [Open File Fo&lder]
 Open File Fo&lder
-[&Options]
-&Options
 [Show event icons]
 Show event icons
 [Enable smiley support]
@@ -291,10 +305,6 @@ Enable BBCodes support
 Enable MathModule support
 [Use RTL by default]
 Use RTL by default
-[ANSI Encoding]
-ANSI Encoding
-[System default codepage]
-System default codepage
 [Text direction]
 Text direction
 [Default]
@@ -303,14 +313,28 @@ Default
 Always RTL
 [Always LTR]
 Always LTR
+[ANSI Encoding]
+ANSI Encoding
+[System default codepage]
+System default codepage
 [Conversation log]
 Conversation log
-[Copy]
-Copy
+[Recent events on top]
+Recent events on top
+[Passord Protection...]
+Passord Protection...
 [Copy all]
 Copy all
 [Select all]
 Select all
+[Save All as &HTML]
+Save All as &HTML
+[Save All as &XML]
+Save All as &XML
+[Save All as &RTF]
+Save All as &RTF
+[Save All as &Text]
+Save All as &Text
 ;; Text found in ..\plugin\HistoryForm.pas:
 [Do you really want to delete selected items (%.0f)?]
 Do you really want to delete selected items (%.0f)?
@@ -318,18 +342,14 @@ Do you really want to delete selected items (%.0f)?
 Delete Selected
 [Do you really want to delete selected item?]
 Do you really want to delete selected item?
-[Delete]
-Delete
 [%.0n items in history]
 %.0n items in history
-[Do you really want to delete ALL items (%.0f) for this contact?]
-Do you really want to delete ALL items (%.0f) for this contact?
-[Note: It can take several minutes for large history.]
-Note: It can take several minutes for large history.
-[Delete All]
-Delete All
 [Full History [%s] - [%s]]
 Full History [%s] - [%s]
+[Started from the beginning]
+Started from the beginning
+[Phrase not found]
+Phrase not found
 [Search: %s (F3 to find next)]
 Search: %s (F3 to find next)
 ["%s" not found]
@@ -340,7 +360,17 @@ You have entered the wrong password
 %d event
 [%0.n events (%s)]
 %0.n events (%s)
+[Do you really want to delete ALL items (%.0f) for this contact?]
+Do you really want to delete ALL items (%.0f) for this contact?
+[Note: It can take several minutes for large history.]
+Note: It can take several minutes for large history.
+[Empty History]
+Empty History
 ;; Text from variables in ..\plugin\HistoryForm.pas:
+[Search Up (Ctrl+Up)]
+Search Up (Ctrl+Up)
+[Search Down (Ctrl+Down)]
+Search Down (Ctrl+Down)
 [HTML file (*.html; *.htm)|*.html;*.htm]
 HTML file (*.html; *.htm)|*.html;*.htm
 [XML file (*.xml)|*.xml]
