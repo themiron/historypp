@@ -636,10 +636,6 @@ begin
   l := GetDBInt(hppDBName,'HistoryWindow.x',(Screen.Width-Self.Width) div 2);
   t := GetDBInt(hppDBName,'HistoryWindow.y',(Screen.Height - Self.Height) div 2);
   Self.SetBounds(l,t,w,h);
-
-  //cbSort.ItemIndex:=GetDBInt(hppDBName,'SortOrder',0);
-  ShowSessions(GetDBBool(hppDBName,'ShowSessions',False));
-  paSess.Width := GetDBInt(hppDBName,'SessionsWidth',150);
 end;
 
 procedure THistoryFrm.LoadSessionIcons;
@@ -2180,6 +2176,10 @@ begin
   // set reversed here, after Allocate, because of some scrollbar
   // "features", we'll load end of the list if put before Allocate
   SetRecentEventsPosition(GetDBInt(hppDBName,'SortOrder',0) <> 0);
+  // set ShowSessions here because we check for empty history
+  ShowSessions(GetDBBool(hppDBName,'ShowSessions',False));
+  paSess.Width := GetDBInt(hppDBName,'SessionsWidth',150);
+  
   HookEvents;
   ChangeSearchMode(False);
 end;
