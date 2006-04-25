@@ -108,7 +108,7 @@ type
   TOnProcessRichText = procedure(Sender: TObject; Handle: THandle; Item: Integer) of object;
   TOnSearchItem = procedure(Sender: TObject; Item: Integer; ID: Integer; var Found: Boolean) of object;
 
-  TGridHitTest = (ghtItem, ghtHeader, ghtText, ghtLink);
+  TGridHitTest = (ghtItem, ghtHeader, ghtText, ghtLink, ghtSession, ghtSessHideButton, ghtSessShowButton);
   TGridHitTests = set of TGridHitTest;
 
   TOnEvent = procedure;
@@ -348,6 +348,7 @@ type
     FOnChar: TOnChar;
     WindowPrePainting: Boolean;
     WindowPrePainted: Boolean;
+    FExpandHeaders: Boolean;
     procedure SetCodepage(const Value: Cardinal);
     procedure SetShowHeaders(const Value: Boolean);
     function GetIdx(Index: Integer): Integer;
@@ -417,6 +418,7 @@ type
     procedure HandleRichEditMouse(Message: DWord; X,Y: Integer);
     {$ENDIF}
     procedure SetRTLMode(const Value: TRTLMode);
+    procedure SetExpandHeaders(const Value: Boolean);
   protected
     procedure CreateWindowHandle(const Params: TCreateParams); override;
     procedure CreateParams(var Params: TCreateParams); override;
@@ -513,7 +515,7 @@ type
   published
     property MultiSelect: Boolean read FMultiSelect write SetMultiSelect;
     property ShowHeaders: Boolean read FShowHeaders write SetShowHeaders;
-
+    property ExpandHeaders: Boolean read FExpandHeaders write SetExpandHeaders default True;
     property TxtStartup: WideString read FTxtStartup write FTxtStartup;
     property TxtNoItems: WideString read FTxtNoItems write FTxtNoItems;
     property TxtNoSuch: WideString read FTxtNoSuch write FTxtNoSuch;
@@ -717,7 +719,8 @@ begin
 
   CHeaderHeight := -1;
   PHeaderHeight := -1;
-
+  FExpandHeaders := True;
+  
   TabStop := True;
   MultiSelect := True;
 
@@ -880,7 +883,7 @@ begin
     if DoRectsIntersect(ClipRect,TextRect) then begin
       Canvas.Brush.Color := Options.ColorDivider;
       Canvas.FillRect(TextRect);
-      if (FItems[idx].HasHeader) and (ShowHeaders) then begin
+      if (FItems[idx].HasHeader) and (ShowHeaders) and (ExpandHeaders) then begin
         if Reversed then begin
           TextRect := Rect(0,SumHeight,cw,SumHeight+SessHeaderHeight);
           PaintHeader(idx,TextRect);
@@ -915,7 +918,8 @@ procedure THistoryGrid.PaintHeader(Index: Integer; ItemRect: TRect);
 var
   text: WideString;
   RTL: Boolean;
-  IconOffset, IconTop: Integer;
+  RIconOffset,IconOffset, IconTop: Integer;
+  ArrIcon: Integer;
   //BackColor: TColor;
   //TextFont: TFont;
 begin
@@ -939,20 +943,33 @@ begin
   InflateRect(ItemRect,-3,-3);
 
   IconOffset := 0;
-  if hppIcons[HPP_ICON_SESS_DIVIDER].Handle <> 0 then begin
-    IconTop := ((ItemRect.Bottom-ItemRect.Top-16) div 2);
-    IconOffset := 16 + 2;
+  RIconOffset := 0;
+  IconTop := ((ItemRect.Bottom-ItemRect.Top-16) div 2);
+
+  if (ShowHeaders) and (FItems[Index].HasHeader) and (ExpandHeaders)  then begin
     if RTL then
+      DrawIconEx(Canvas.Handle,ItemRect.Left,ItemRect.Top + IconTop,
+        hppIcons[HPP_ICON_SESS_HIDE].Handle,16,16,0,0,DI_NORMAL)
+    else
       DrawIconEx(Canvas.Handle,ItemRect.Right-16,ItemRect.Top + IconTop,
+        hppIcons[HPP_ICON_SESS_HIDE].Handle,16,16,0,0,DI_NORMAL);
+    Inc(RIconOffset,16 + Padding);
+  end;
+
+  if hppIcons[HPP_ICON_SESS_DIVIDER].Handle <> 0 then begin
+    if RTL then
+      DrawIconEx(Canvas.Handle,ItemRect.Right-16-IconOffset,ItemRect.Top + IconTop,
         hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL)
     else
-      DrawIconEx(Canvas.Handle,ItemRect.Left,ItemRect.Top + IconTop,
+      DrawIconEx(Canvas.Handle,ItemRect.Left+IconOffset,ItemRect.Top + IconTop,
         hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL);
+    Inc(IconOffset,16 + Padding);
   end;
 
   text := WideFormat(TranslateWideW('Conversation started at %s'),[GetTime(Items[Index].Time)]);
   Canvas.Font := Options.FontTimeStamp;
   Inc(ItemRect.Left,IconOffset);
+  Dec(ItemRect.Right,RIconOffset);
   WideCanvasTextRect(Canvas,ItemRect,ItemRect.Left,ItemRect.Top,text);
 end;
 
@@ -966,6 +983,23 @@ procedure THistoryGrid.SetContact(const Value: THandle);
 begin
   if FContact = Value then exit;
   FContact := Value;
+end;
+
+procedure THistoryGrid.SetExpandHeaders(const Value: Boolean);
+var
+  i: Integer;
+begin
+  if FExpandHeaders = Value then exit;
+  FExpandHeaders := Value;
+  for i := 0 to Length(FItems) - 1 do begin
+    if FItems[i].HasHeader then begin
+      FItems[i].Height := -1;
+      FRichCache.ResetItem(i);
+    end;
+  end;
+  BarAdjusted := False;
+  AdjustScrollBar;
+  Invalidate;
 end;
 
 procedure THistoryGrid.WMEraseBkgnd(var Message: TWMEraseBkgnd);
@@ -1233,6 +1267,16 @@ begin
 
   IconOffset := 0;
 
+  if (FItems[Index].HasHeader) and (ShowHeaders) and (not ExpandHeaders) then begin
+    if RTL then
+      DrawIconEx(Canvas.Handle,ItemRect.Right-16-IconOffset,ItemRect.Top,
+        hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL)
+    else
+      DrawIconEx(Canvas.Handle,ItemRect.Left+IconOffset,ItemRect.Top,
+        hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL);
+    Inc(IconOffset,16+Padding);
+  end;
+
   if Options.ShowIcons then begin
     if (mtFile in FItems[Index].MessageType) then
       Icon := Options.IconFile
@@ -1243,12 +1287,12 @@ begin
     else
       Icon := Options.IconOther;
     if Icon <> nil then begin
-      IconOffset := 16+Padding;
       // canvas. draw here can sometimes draw 32x32 icon (sic!)
       if RTL then
-        DrawIconEx(Canvas.Handle,ItemRect.Right-16,ItemRect.Top,Icon.Handle,16,16,0,0,DI_NORMAL)
+        DrawIconEx(Canvas.Handle,ItemRect.Right-16-IconOffset,ItemRect.Top,Icon.Handle,16,16,0,0,DI_NORMAL)
       else
-        DrawIconEx(Canvas.Handle,ItemRect.Left,ItemRect.Top,Icon.Handle,16,16,0,0,DI_NORMAL);
+        DrawIconEx(Canvas.Handle,ItemRect.Left+IconOffset,ItemRect.Top,Icon.Handle,16,16,0,0,DI_NORMAL);
+      Inc(IconOffset,16+Padding);
     end;
   end;
 
@@ -1334,6 +1378,9 @@ begin
       FRichCache.ResetItem(i);
     end;
   end;
+  BarAdjusted := False;
+  AdjustScrollBar;
+  Invalidate;
 end;
 
 procedure THistoryGrid.AddSelected(Item: Integer);
@@ -1504,6 +1551,7 @@ var
 procedure THistoryGrid.DoLButtonDown(X, Y: Integer; Keys: TMouseMoveKeys);
 var
   Item: Integer;
+  ht: TGridHitTests;
 begin
   WasDownOnGrid := True;
   SearchPattern := '';
@@ -1511,6 +1559,10 @@ begin
   if Count = 0 then exit;
 
   Item := FindItemAt(x,y);
+
+  ht := GetHitTests(x,y);
+  if (ghtSessShowButton in ht) or (ghtSessHideButton in ht) then
+    exit; // we'll hide/show session headers on button up, don't select item
 
   if Item <> -1 then begin
     if (mmkControl in Keys) then begin
@@ -1728,7 +1780,15 @@ end;
 procedure THistoryGrid.DoLButtonUp(X, Y: Integer; Keys: TMouseMoveKeys);
 var
   Item: Integer;
+  ht: TGridHitTests;
 begin
+  ht := GetHitTests(x,y);
+  if ((ghtSessHideButton in ht) or (ghtSessShowButton in ht)) and (WasDownOnGrid) then begin
+    ExpandHeaders := (ghtSessShowButton in ht);
+    WasDownOnGrid := False;
+    exit;
+  end;
+
   WasDownOnGrid := False;
   if OverURL then begin
     if Assigned(FOnUrlClick) then begin
@@ -1751,6 +1811,8 @@ end;
 procedure THistoryGrid.DoMouseMove(X, Y: Integer; Keys: TMouseMoveKeys);
 var
   Item: Integer;
+  ht: TGridHitTests;
+  NewCursor: TCursor;
 begin
   CheckBusy;
   if Count = 0 then exit;
@@ -1771,10 +1833,16 @@ begin
     exit;
   end;
 
-  OverURL := False;
-  HandleRichEditMouse(WM_MOUSEMOVE,X,Y);
-  if OverURL then Cursor := crHandPoint
-             else Cursor := crDefault;
+  ht := GetHitTests(x,y);
+  NewCursor := crDefault;
+  if ghtText in ht then begin
+    OverURL := False;
+    HandleRichEditMouse(WM_MOUSEMOVE,X,Y);
+    if OverURL then NewCursor := crHandPoint
+  end
+  else if (ghtSessHideButton in ht) or (ghtSessShowButton in ht) then
+    NewCursor := crHandPoint;
+  Cursor := NewCursor;
 end;
 
 procedure THistoryGrid.WMLButtonDblClick(var Message: TWMLButtonDblClk);
@@ -1830,8 +1898,12 @@ begin
   // text height
   // + HEADER_HEIGHT header
   Result := 1 + 2*Padding + h + hh;
-  if (FItems[Item].HasHeader) and (ShowHeaders) then
-    Inc(Result,SessHeaderHeight);
+  if (FItems[Item].HasHeader) and (ShowHeaders) then begin
+    if ExpandHeaders then
+      Inc(Result,SessHeaderHeight)
+    else
+      Inc(Result,0);
+  end;
 end;
 
 procedure THistoryGrid.SetFilter(const Value: TMessageTypes);
@@ -3981,9 +4053,11 @@ function THistoryGrid.GetHitTests(X, Y: Integer): TGridHitTests;
 var
   Item: Integer;
   ItemRect: TRect;
-  ItemFont: TFont;
-  ItemColor: TColor;
-  //t: String;
+  HeaderHeight: Integer;
+  HeaderRect,SessRect: TRect;
+  ButtonRect: TRect;
+  p: TPoint;
+  RTL: Boolean;
 begin
   Result := [];
   Item := FindItemAt(X,Y);
@@ -3992,15 +4066,53 @@ begin
   else
     exit;
   ItemRect := GetItemRect(Item);
-  InflateRect(ItemRect,-Padding,-Padding); // paddings
+  RTL := GetItemRTL(Item);
+  p := Point(x,y);
+
+  if (ShowHeaders) and (ExpandHeaders) and (FItems[Item].HasHeader) then begin
+    if Reversed then begin
+      SessRect := Rect(ItemRect.Left,ItemRect.Top,ItemRect.Right,ItemRect.Top+SessHeaderHeight);
+      Inc(ItemRect.Top,SessHeaderHeight);
+    end
+    else begin
+      SessRect := Rect(ItemRect.Left,ItemRect.Bottom - SessHeaderHeight-1,ItemRect.Right,ItemRect.Bottom-1);
+      Dec(ItemRect.Bottom,SessHeaderHeight);
+    end;
+    if PtInRect(SessRect,p) then begin
+      Include(Result,ghtSession);
+      InflateRect(SessRect,-3,-3);
+      if RTL then
+        ButtonRect := Rect(SessRect.Left,SessRect.Top,SessRect.Left+16,SessRect.Bottom)
+      else
+        ButtonRect := Rect(SessRect.Right-16,SessRect.Top,SessRect.Right,SessRect.Bottom);
+      if PtInRect(ButtonRect,p) then
+        Include(Result,ghtSessHideButton);
+    end;
+  end;
+
   Dec(ItemRect.Bottom); // divider
+  InflateRect(ItemRect,-Padding,-Padding); // paddings
+
   if mtIncoming in FItems[Item].MessageType then
-    Inc(ItemRect.Top,CHeaderHeight)
+    HeaderHeight := CHeaderHeight
   else
-    Inc(ItemRect.Top,PHeaderHeight);
-  if not PointInRect(Point(x,y),ItemRect) then
-    Include(Result,ghtHeader)
-  else
+    HeaderHeight := PHeaderHeight;
+
+  HeaderRect := Rect(ItemRect.Left,ItemRect.Top,ItemRect.Right,ItemRect.Top + HeaderHeight);
+  Inc(ItemRect.Top,HeaderHeight);
+  if PtInRect(HeaderRect,p) then begin
+    Include(Result,ghtHeader);
+    if (ShowHeaders) and (not ExpandHeaders) and (FItems[Item].HasHeader) then begin
+      if RTL then
+        ButtonRect := Rect(HeaderRect.Right-16,HeaderRect.Top,HeaderRect.Right,HeaderRect.Bottom)
+      else
+        ButtonRect := Rect(HeaderRect.Left,HeaderRect.Top,HeaderRect.Left+16,HeaderRect.Bottom);
+      if PtInRect(ButtonRect,p) then
+        Include(Result,ghtSessShowButton);
+    end;
+  end;
+
+  if PtInRect(ItemRect,p) then
     Include(Result,ghtText);
 end;
 
@@ -4152,7 +4264,7 @@ begin
     hh := PHeaderHeight;
   Inc(Result.Top,hh+Padding);
   Dec(Result.Bottom,Padding+1);
-  if (Items[Item].HasHeader) and (ShowHeaders) then
+  if (Items[Item].HasHeader) and (ShowHeaders) and (ExpandHeaders) then
     Inc(Result.Top,SessHeaderHeight);
   IntersectRect(r,ClientRect,Result);
   Result := r;
