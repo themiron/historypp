@@ -2665,7 +2665,7 @@ var
   r: TRect;
 begin
   CheckBusy;
-  if Message.FocusedWnd <> FRich.Handle then
+  if (FRich = nil) or (Message.FocusedWnd <> FRich.Handle) then
     if selected <> -1 then begin
       if IsVisible(Selected) then begin
         r := GetItemRect(Selected);
@@ -2717,7 +2717,7 @@ var
   r: TRect;
 begin
   CheckBusy;
-  if Message.FocusedWnd <> FRich.Handle then
+  if (FRich = nil) or (Message.FocusedWnd <> FRich.Handle) then
     if selected <> -1 then begin
       if IsVisible(Selected) then begin
         r := GetItemRect(Selected);
