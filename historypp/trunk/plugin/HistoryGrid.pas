@@ -3551,6 +3551,11 @@ procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; C
     // document info
   end;
 
+  procedure SaveRTF2;
+  begin
+    WriteString(Stream,'{\rtf1'+#13#10);
+  end;
+
 begin
   case SaveFormat of
     sfHTML: SaveHTML;
@@ -3590,6 +3595,11 @@ procedure THistoryGrid.SaveEnd(Stream: TFileStream; SaveFormat: TSaveFormat);
     WriteString(Stream,'}');
   end;
 
+  procedure SaveRTF2;
+  begin
+    WriteString(Stream,'}');
+  end;
+
 begin
   case SaveFormat of
     sfHTML: SaveHTML;
@@ -3599,6 +3609,20 @@ begin
     sfText: SaveText;
   end;
 end;
+
+  function RichEditStreamSave(dwCookie: Longint; pbBuff: PByte;
+    cb: Longint; var pcb: Longint): Longint; stdcall;
+  var
+    t: PString;
+    prevlen: Integer;
+  begin
+    t := PString(dwCookie);
+    prevlen := Length(t^);
+    SetLength(t^,prevlen+cb);
+    Move(pbBuff^,t^[prevlen+1],cb);
+    pcb := cb;
+    Result := 0;
+  end;
 
 procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: TSaveFormat);
 
@@ -3744,6 +3768,24 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     WriteString(Stream,'\par');
     WriteString(Stream,'{\s'+intToStr(mes_id+3)+' '+TextToRTF(FItems[Item].Text)+'}');
     WriteString(Stream,'\par');
+  end;
+
+  procedure SaveRTF2;
+  var
+    es: TEditStream;
+    ss: TStringStream;
+    t: String;
+  begin
+    ApplyItemToRich(Item,FRich);
+    es.dwCookie := Integer(@t);
+    es.dwError := 0;
+    es.pfnCallback := @RichEditStreamSave;
+    SendMessage(FRich.Handle,EM_STREAMOUT,SF_RTF,Longint(@es));
+    if Length(t) > 0 then
+      SetLength(t,Length(t)-1); // remove trailing #0
+    if Pos('\rtf1',t) = 2 then
+      System.Delete(t,2,5);
+    WriteString(Stream,t);
   end;
 
 begin
