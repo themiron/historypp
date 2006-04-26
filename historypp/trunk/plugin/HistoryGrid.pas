@@ -3461,10 +3461,9 @@ procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; C
     WriteString(Stream,'###'#13#10);
     if Caption = '' then
       Caption := TxtHistExport;
-    // bug there if cp_acp <> user_codepage !!!
-    WriteString(Stream,WideToAnsiString(WideFormat('### %s'#13#10,[Caption]),CP_ACP));
-    WriteString(Stream,WideToAnsiString(WideFormat('### %s - %s'#13#10,[ProfileName,ContactName]),CP_ACP));
-    WriteString(Stream,TxtGenHist1+#13#10);
+    WriteString(Stream,WideToAnsiString(WideFormat('### %s'#13#10,[Caption]),Codepage));
+    WriteString(Stream,WideToAnsiString(WideFormat('### %s - %s'#13#10,[ProfileName,ContactName]),Codepage));
+    WriteString(Stream,WideToAnsiString(TxtGenHist1+#13#10,Codepage));
     WriteString(Stream,'###'#13#10#13#10);
   end;
 
@@ -3709,12 +3708,11 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
   var
     date,cnt: String;
   begin
-    // bug there if cp_acp <> user codepage
-    if mtIncoming in FItems[Item].MessageType then cnt := WideToAnsiString(ContactName,CP_ACP)
-                                              else cnt := WideToAnsiString(ProfileName,CP_ACP);
-    date := WideToAnsiString(GetTime(FItems[Item].Time),CP_ACP);
+    if mtIncoming in FItems[Item].MessageType then cnt := WideToAnsiString(ContactName,Codepage)
+                                              else cnt := WideToAnsiString(ProfileName,Codepage);
+    date := WideToAnsiString(GetTime(FItems[Item].Time),Codepage);
     WriteString(Stream,Format('[%s] %s:'#13#10,[date,cnt]));
-    WriteString(Stream,WideToAnsiString(FItems[Item].Text,CP_ACP)+#13#10+#13#10);
+    WriteString(Stream,WideToAnsiString(FItems[Item].Text,Codepage)+#13#10+#13#10);
   end;
 
   procedure MesTypeToRTF(mt: TMessageTypes; out mes_id: integer);
