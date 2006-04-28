@@ -1,13 +1,13 @@
 object HistoryFrm: THistoryFrm
-  Left = 231
-  Top = 160
+  Left = 252
+  Top = 177
+  Width = 586
+  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
-  ClientHeight = 391
-  ClientWidth = 578
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -291,14 +291,17 @@ object HistoryFrm: THistoryFrm
       Top = 2
       Width = 574
       Height = 26
+      Anchors = [akLeft, akTop, akRight, akBottom]
+      AutoSize = True
       BorderWidth = 1
       ButtonWidth = 43
       EdgeInner = esNone
       EdgeOuter = esNone
+      Flat = True
       Images = ilToolbar
       List = True
       ParentShowHint = False
-      AllowTextButtons = True
+      ShowCaptions = True
       ShowHint = True
       TabOrder = 4
       Transparent = True
@@ -306,104 +309,114 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 0
         Hint = 'Show conversations (F4)'
+        AutoSize = True
         Style = tbsCheck
         OnClick = tbSessionsClick
       end
       object TntToolButton7: TTntToolButton
-        Left = 43
+        Left = 7
         Top = 0
-        Width = 8
+        Width = 7
         Style = tbsSeparator
       end
       object tbSearch: TTntToolButton
-        Left = 51
+        Left = 14
         Top = 0
         Hint = 'Find'
+        AutoSize = True
         Grouped = True
         Style = tbsCheck
         OnClick = tbFilterClick
       end
       object tbFilter: TTntToolButton
-        Left = 94
+        Left = 21
         Top = 0
         Hint = 'Filter'
+        AutoSize = True
         Grouped = True
         Style = tbsCheck
         OnClick = tbFilterClick
       end
       object TntToolButton3: TTntToolButton
-        Left = 137
+        Left = 28
         Top = 0
-        Width = 8
+        Width = 7
         Style = tbsSeparator
       end
       object tbCopy: TTntToolButton
-        Left = 145
+        Left = 35
         Top = 0
         Hint = 'Copy'
+        AutoSize = True
       end
       object tbDelete: TTntToolButton
-        Left = 188
+        Left = 42
         Top = 0
         Hint = 'Delete'
+        AutoSize = True
         OnClick = tbDeleteClick
       end
       object tbSave: TTntToolButton
-        Left = 231
+        Left = 49
         Top = 0
         Hint = 'Save'
+        AutoSize = True
         Visible = False
       end
       object TntToolButton2: TTntToolButton
-        Left = 274
+        Left = 56
         Top = 0
-        Width = 8
+        Width = 7
         Style = tbsSeparator
       end
       object tbEventsFilter: TTntToolButton
-        Left = 282
+        Left = 63
         Top = 0
+        AutoSize = True
         DropdownMenu = pmEventsFilter
-        Style = tbsTextButton
+        Style = tbsDropDown
+        OnClick = tbEventsFilterClick
       end
       object TntToolButton4: TTntToolButton
-        Left = 289
+        Left = 83
         Top = 0
-        Width = 8
-        Caption = 'TntToolButton4'
+        Width = 7
         Style = tbsSeparator
       end
       object tbHistory: TTntToolButton
-        Left = 297
+        Left = 90
         Top = 0
         Hint = 'History'
+        AutoSize = True
         DropdownMenu = pmHistory
         Style = tbsDropDown
         OnClick = tbHistoryClick
       end
       object TntToolButton5: TTntToolButton
-        Left = 310
+        Left = 110
         Top = 0
-        Width = 8
+        Width = 7
         Style = tbsSeparator
       end
       object tbOptions: TTntToolButton
-        Left = 318
+        Left = 117
         Top = 0
         Hint = 'Options'
+        AutoSize = True
         DropdownMenu = pmOptions
       end
       object TntToolButton6: TTntToolButton
-        Left = 361
+        Left = 124
         Top = 0
-        Width = 8
+        Width = 7
         Style = tbsSeparator
         Visible = False
       end
       object tbHistorySearch: TTntToolButton
-        Left = 369
+        Left = 131
         Top = 0
         Hint = 'History Search'
+        AutoSize = True
         Visible = False
         OnClick = tbHistorySearchClick
       end
