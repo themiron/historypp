@@ -115,7 +115,6 @@ type
     RTLDisabled2: TTntMenuItem;
     RTLEnabled2: TTntMenuItem;
     RTLDefault2: TTntMenuItem;
-    ConversationLog1: TTntMenuItem;
     SystemCodepage1: TTntMenuItem;
     paFilter: TTntPanel;
     sbClearFilter: TTntSpeedButton;
@@ -124,15 +123,7 @@ type
     tiFilter: TTimer;
     ilToolbar: TImageList;
     Toolbar: TTntToolBar;
-    tbIncoming: TTntToolButton;
-    tbOutgoing: TTntToolButton;
-    TntToolButton4: TTntToolButton;
-    tbMessage: TTntToolButton;
-    tbFile: TTntToolButton;
-    tbURL: TTntToolButton;
-    tbStatus: TTntToolButton;
-    TntToolButton1: TTntToolButton;
-    tbSaveAll: TTntToolButton;
+    tbHistory: TTntToolButton;
     paPassHolder: TTntPanel;
     paPassword: TPanel;
     laPass: TTntLabel;
@@ -140,7 +131,7 @@ type
     laPass2: TTntLabel;
     edPass: TPasswordEdit;
     bnPass: TTntButton;
-    pmSaveAll: TTntPopupMenu;
+    pmHistory: TTntPopupMenu;
     SaveasRTF2: TTntMenuItem;
     SaveasXML2: TTntMenuItem;
     SaveasHTML2: TTntMenuItem;
@@ -151,12 +142,10 @@ type
     paSearch: TTntPanel;
     tbFilter: TTntToolButton;
     tbDelete: TTntToolButton;
-    tbDeleteAll: TTntToolButton;
     TntToolButton5: TTntToolButton;
     tbOptions: TTntToolButton;
     tbSessions: TTntToolButton;
     TntToolButton7: TTntToolButton;
-    PassordProtection1: TTntMenuItem;
     IconsEnabled1: TTntMenuItem;
     SmileysEnabled1: TTntMenuItem;
     BBCodesEnabled1: TTntMenuItem;
@@ -181,16 +170,23 @@ type
     tbHistorySearch: TTntToolButton;
     imSearchEndOfPage: TTntImage;
     imSearchNotFound: TTntImage;
-    procedure tbSaveAllClick(Sender: TObject);
+    tbEventsFilter: TTntToolButton;
+    TntToolButton4: TTntToolButton;
+    N4: TTntMenuItem;
+    Emptyhistory1: TTntMenuItem;
+    pmEventsFilter: TTntPopupMenu;
+    Showall1: TTntMenuItem;
+    Customize1: TTntMenuItem;
+    N6: TTntMenuItem;
+    Passwordprotection1: TTntMenuItem;
+    procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
     procedure SaveasXML2Click(Sender: TObject);
     procedure SaveasHTML2Click(Sender: TObject);
     procedure RecentOnTop1Click(Sender: TObject);
-    procedure PassordProtection1Click(Sender: TObject);
     procedure tbSessionsClick(Sender: TObject);
     procedure pbSearchStatePaint(Sender: TObject);
-    procedure tbDeleteAllClick(Sender: TObject);
     procedure tbDeleteClick(Sender: TObject);
     procedure sbSearchPrevClick(Sender: TObject);
     procedure sbSearchNextClick(Sender: TObject);
@@ -204,7 +200,6 @@ type
     procedure pbSearchPaint(Sender: TObject);
     procedure paFilterResize(Sender: TObject);
     procedure paPassHolderResize(Sender: TObject);
-    procedure tbMessageClick(Sender: TObject);
     procedure TntFormShow(Sender: TObject);
     procedure tvSessMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
@@ -274,7 +269,6 @@ type
     procedure ReplyQuoted1Click(Sender: TObject);
     procedure UserDetails1Click(Sender: TObject);
     procedure CodepageChangeClick(Sender: TObject);
-    procedure ConversationLog1Click(Sender: TObject);
     procedure sbClearFilterClick(Sender: TObject);
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterChange(Sender: TObject);
@@ -286,6 +280,9 @@ type
     procedure EndHotFilterTimer;
     procedure tiFilterTimer(Sender: TObject);
     procedure tbHistorySearchClick(Sender: TObject);
+    procedure Emptyhistory1Click(Sender: TObject);
+    procedure EventsFilterItemClick(Sender: TObject);
+    procedure Passwordprotection1Click(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -355,6 +352,10 @@ type
     procedure SetRecentEventsPosition(OnTop: Boolean);
     procedure ChangeSearchMode(Filter: Boolean);
     procedure Search(Next: Boolean; FromNext: Boolean = False);
+
+    procedure ShowAllEvents;
+    procedure SetEventFilter(FilterIndex: Integer);
+    procedure CreateEventsFilterMenu;
   protected
     procedure LoadPendingHeaders(rowidx: integer; count: integer);
   published
@@ -364,8 +365,23 @@ type
     property hContact: THandle read FhContact write SethContact;
   end;
 
+  ThppEventFilter = record
+    Name: WideString;
+    Events: TMessageTypes;
+  end;
+
 var
   HistoryFrm: THistoryFrm;
+
+const
+  hppEventFilters: array[0..5] of ThppEventFilter = (
+    (Name: 'Show all events'; Events: filAll),
+    (Name: 'Messages'; Events: [mtMessage,mtIncoming,mtOutgoing]),
+    (Name: 'Recieved links'; Events: [mtUrl,mtIncoming]),
+    (Name: 'Link URLs'; Events: [mtUrl,mtIncoming,mtOutgoing]),
+    (Name: 'Files'; Events: [mtFile,mtIncoming,mtOutgoing]),
+    (Name: 'All except status'; Events: filAll - [mtStatus])
+    );
 
 procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
 function ParseUrlItem(Item: THistoryItem; out Url,Mes: WideString): Boolean;
@@ -678,60 +694,15 @@ begin
       il := ilToolbar.Handle;
     Toolbar.Images := ilToolbar;
 
-    // add overlay images
-    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_OVERLAY_HIDE].Handle);
-    ImageList_SetOverlayImage(il,ii,1);
-    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_OVERLAY_INC].Handle);
-    ImageList_SetOverlayImage(il,ii,2);
-    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_OVERLAY_OUT].Handle);
-    ImageList_SetOverlayImage(il,ii,3);
-    // add incoming icon
-    ii := ImageList_AddIcon(il,GridOptions.IconMessage.Handle);
-    ic := ImageList_GetIcon(il,ii,ILD_TRANSPARENT or IndexToOverlayMask(2));
-    ImageList_ReplaceIcon(il,ii,ic);
-    DestroyIcon(ic);
-    tbIncoming.ImageIndex := ii;
-    // add incoming icon
-    ii := ImageList_AddIcon(il,GridOptions.IconMessage.Handle);
-    ic := ImageList_GetIcon(il,ii,ILD_TRANSPARENT or IndexToOverlayMask(3));
-    ImageList_ReplaceIcon(il,ii,ic);
-    DestroyIcon(ic);
-    tbOutgoing.ImageIndex := ii;
-    // add messages icon
-    ii := ImageList_AddIcon(il,GridOptions.IconMessage.Handle);
-    ic := ImageList_GetIcon(il,ii,ILD_TRANSPARENT or IndexToOverlayMask(1));
-    ImageList_ReplaceIcon(il,ii,ic);
-    DestroyIcon(ic);
-    tbMessage.ImageIndex := ii;
-    // add file icon
-    ii := ImageList_AddIcon(il,GridOptions.IconFile.Handle);
-    ic := ImageList_GetIcon(il,ii,ILD_TRANSPARENT or IndexToOverlayMask(1));
-    ImageList_ReplaceIcon(il,ii,ic);
-    DestroyIcon(ic);
-    tbFile.ImageIndex := ii;
-    /// add url icon
-    ii := ImageList_AddIcon(il,GridOptions.IconUrl.Handle);
-    ic := ImageList_GetIcon(il,ii,ILD_TRANSPARENT or IndexToOverlayMask(1));
-    ImageList_ReplaceIcon(il,ii,ic);
-    DestroyIcon(ic);
-    tbURL.ImageIndex := ii;
-    // add status icon
-    ii := ImageList_AddIcon(il,GridOptions.IconOther.Handle);
-    ic := ImageList_GetIcon(il,ii,ILD_TRANSPARENT or IndexToOverlayMask(1));
-    ImageList_ReplaceIcon(il,ii,ic);
-    DestroyIcon(ic);
-    tbStatus.ImageIndex := ii;
     // add other icons without processing
-    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_SAVEALL].Handle);
-    tbSaveAll.ImageIndex := ii;
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_CONTACTHISTORY].Handle);
+    tbHistory.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_HOTFILTER].Handle);
     tbFilter.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_HOTSEARCH].Handle);
     tbSearch.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_DELETE].Handle);
     tbDelete.ImageIndex := ii;
-    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_DELETEALL].Handle);
-    tbDeleteAll.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_OPTIONS].Handle);
     tbOptions.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_SESSIONS].Handle);
@@ -742,6 +713,8 @@ begin
     tbCopy.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_GLOBALSEARCH].Handle);
     tbHistorySearch.ImageIndex := ii;
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle);
+    tbEventsFilter.ImageIndex := ii;
 
   finally
     //Toolbar.Be
@@ -2082,6 +2055,23 @@ begin
   LoadButtonIcons;
 end;
 
+procedure THistoryFrm.EventsFilterItemClick(Sender: TObject);
+begin
+  SetEventFilter(TTntMenuItem(Sender).Tag);
+end;
+
+procedure THistoryFrm.ShowAllEvents;
+begin
+  // TODO
+  // we run UpdateFilter two times here, one when set
+  // Filter property in SetEventFilter, one when reset hot filter
+  // make Begin/EndUpdate support batch UpdateFilter requests
+  // so we can make it run only one time on EndUpdate
+  SetEventFilter(0);
+  edFilter.Text := '';
+  EndHotFilterTimer;
+end;
+
 procedure THistoryFrm.ShowSessions(Show: Boolean);
 var
   Lock: Boolean;
@@ -2187,6 +2177,8 @@ begin
   
   HookEvents;
   ChangeSearchMode(False);
+  CreateEventsFilterMenu;
+  SetEventFilter(0);
 end;
 
 procedure THistoryFrm.PreLoadHistory;
@@ -2194,12 +2186,7 @@ begin
   LoadPosition;
   hg.ShowHeaders := (hContact <> 0);
   if hContact = 0 then begin
-    tbIncoming.Enabled := False;
-    tbOutgoing.Enabled := False;
-    tbMessage.Enabled := False;
-    tbFile.Enabled := False;
-    tbURL.Enabled := False;
-    tbStatus.Enabled := False;
+    tbEventsFilter.Enabled := False;
     tbSessions.Enabled := False;
   end;
 
@@ -2252,7 +2239,7 @@ begin
   edSearch.Width :=  - edSearch.Left + sbSearchPrev.Left;}
 end;
 
-procedure THistoryFrm.PassordProtection1Click(Sender: TObject);
+procedure THistoryFrm.Passwordprotection1Click(Sender: TObject);
 begin
   OpenPassword;
 end;
@@ -2313,7 +2300,7 @@ begin
   TranslateToolbar(Toolbar);
 
   TranslateMenu(pmOptions.Items);
-  TranslateMenu(pmSaveAll.Items);
+  TranslateMenu(pmHistory.Items);
   TranslateMenu(pmGrid.Items);
   TranslateMenu(pmGridInline.Items);
   TranslateMenu(pmLink.Items);
@@ -2442,6 +2429,27 @@ begin
   CopyToClip(hg.FormatSelected(hg.Options.ClipCopyTextFormat),Handle,UserCodePage);
 end;
 
+procedure THistoryFrm.CreateEventsFilterMenu;
+var
+  i: Integer;
+  mi: TTntMenuItem;
+begin
+  for i := pmEventsFilter.Items.Count - 1 downto 0 do
+    if pmEventsFilter.Items[i].RadioItem then
+      pmEventsFilter.Items.Delete(i);
+
+  for i := 0 to Length(hppEventFilters) - 1 do begin
+    mi := TTntMenuItem.Create(pmEventsFilter);
+    mi.Caption := Tnt_WideStringReplace(hppEventFilters[i].Name,'&','&&',[rfReplaceAll]);
+    mi.GroupIndex := 1;
+    mi.RadioItem := True;
+    mi.Tag := i;
+    mi.OnClick := EventsFilterItemClick;
+    if i = 0 then mi.Default := True;
+    pmEventsFilter.Items.Insert(i,mi);
+  end;
+end;
+
 procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
 var
   bNewWindow: Integer;
@@ -2519,7 +2527,6 @@ begin
   if hContact = 0 then begin
     ContactRTLmode1.Visible := False;
     ANSICodepage1.Visible := False;
-    ConversationLog1.Visible := False;
   end else begin
     case hg.RTLMode of
       hppRTLDefault: Self.RTLDefault2.Checked := true;
@@ -2537,7 +2544,20 @@ begin
   BBCodesEnabled1.Checked := hg.Options.BBCodesEnabled;
   //MathModuleEnabled1.Enabled := MathModuleEnabled;
   //MathModuleEnabled1.Checked  := hg.Options.MathModuleEnabled;
-  ConversationLog1.Checked := paSess.Visible;
+end;
+
+procedure THistoryFrm.SetEventFilter(FilterIndex: Integer);
+var
+  name: WideString;
+  i: Integer;
+begin
+  name := hppEventFilters[FilterIndex].Name;
+  name := Tnt_WideStringReplace(name,'&','&&',[rfReplaceAll]);
+  tbEventsFilter.Caption := name;
+  for i := 0 to pmHistory.Items.Count-1 do
+    if pmEventsFilter.Items[i].RadioItem then
+      pmEventsFilter.Items[i].Checked := (pmEventsFilter.Items[i].Tag = FilterIndex);
+  hg.Filter := hppEventFilters[FilterIndex].Events;
 end;
 
 procedure THistoryFrm.SethContact(const Value: THandle);
@@ -2802,11 +2822,6 @@ begin
   UserCodepage := val;
 end;
 
-procedure THistoryFrm.ConversationLog1Click(Sender: TObject);
-begin
-  ShowSessions(not paSess.Visible);
-end;
-
 procedure THistoryFrm.sbClearFilterClick(Sender: TObject);
 begin
   edFilter.Text := '';
@@ -2884,6 +2899,21 @@ begin
   end;
 end;
 
+procedure THistoryFrm.Emptyhistory1Click(Sender: TObject);
+begin
+  if HppMessageBox(Handle,
+    WideFormat(TranslateWideW('Do you really want to delete ALL items (%.0f) for this contact?')+
+    #10#13+''+#10#13+TranslateWideW('Note: It can take several minutes for large history.'),
+    [hg.Count/1]), TranslateWideW('Empty History'), MB_YESNO or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) = IDNO then exit;
+
+  SetSafetyMode(False);
+  try
+    hg.DeleteAll;
+  finally
+    SetSafetyMode(True);
+    end;
+end;
+
 procedure THistoryFrm.EndHotFilterTimer;
 begin
   tiFilter.Enabled := False;
@@ -2899,21 +2929,6 @@ begin
     edFilter.Color := clWindow;
 end;
 
-procedure THistoryFrm.tbDeleteAllClick(Sender: TObject);
-begin
-  if HppMessageBox(Handle,
-    WideFormat(TranslateWideW('Do you really want to delete ALL items (%.0f) for this contact?')+
-    #10#13+''+#10#13+TranslateWideW('Note: It can take several minutes for large history.'),
-    [hg.Count/1]), TranslateWideW('Empty History'), MB_YESNO or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) = IDNO then exit;
-
-  SetSafetyMode(False);
-  try
-    hg.DeleteAll;
-  finally
-    SetSafetyMode(True);
-    end;
-end;
-
 procedure THistoryFrm.tbDeleteClick(Sender: TObject);
 begin
   Delete1.Click;
@@ -2924,42 +2939,13 @@ begin
   ChangeSearchMode(tbFilter.Down);
 end;
 
-procedure THistoryFrm.tbMessageClick(Sender: TObject);
-var
-  UpCount: Integer;
-  CurButton: TTntToolButton;
-  fil: TMessageTypes;
-begin
-  UpCount := 0;
-  if not tbMessage.Down then Inc(UpCount);
-  if not tbFile.Down then Inc(UpCount);
-  if not tbURL.Down then Inc(UpCount);
-  if not tbStatus.Down then Inc(UpCount);
-  if (UpCount = 0) then begin
-    // when all unselected, select all
-    tbMessage.Down := False;
-    tbFile.Down := False;
-    tbURL.Down := False;
-    tbStatus.Down := False;
-  end;
-  //if tbIncoming.Down then tbOutgoing.Down := false;
-  //if tbOutgoing.Down then tbIncoming.Down := false;
-  fil := [];
-  if not tbIncoming.Down then fil := fil + [mtIncoming];
-  if not tbOutgoing.Down then fil := fil + [mtOutgoing];
-  if not tbMessage.Down then fil := fil + [mtMessage];
-  if not tbFile.Down then fil := fil + [mtFile];
-  if not tbUrl.Down then fil := fil + [mtUrl];
-  if not tbStatus.Down then fil := fil + [mtStatus];
-  hg.Filter := fil;
-end;
-
-procedure THistoryFrm.tbSaveAllClick(Sender: TObject);
+procedure THistoryFrm.tbHistoryClick(Sender: TObject);
 var
   t: String;
   SaveFormat: TSaveFormat;
 begin
-  RecentFormat := TSaveFormat(GetDBInt(hppDBName,'ExportFormat',0));
+  tbHistory.CheckMenuDropdown;
+  {RecentFormat := TSaveFormat(GetDBInt(hppDBName,'ExportFormat',0));
   SaveFormat := RecentFormat;
   PrepareSaveDialog(SaveDialog,SaveFormat,True);
   t := Translate('Full History [%s] - [%s]');
@@ -2976,7 +2962,7 @@ begin
   end;
   RecentFormat := SaveFormat;
   hg.SaveAll(SaveDialog.Files[0],sfXML);
-  WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
+  WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));}
 end;
 
 procedure THistoryFrm.tbSessionsClick(Sender: TObject);

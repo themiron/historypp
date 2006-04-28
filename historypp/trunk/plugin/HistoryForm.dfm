@@ -292,10 +292,13 @@ object HistoryFrm: THistoryFrm
       Width = 574
       Height = 26
       BorderWidth = 1
+      ButtonWidth = 43
       EdgeInner = esNone
       EdgeOuter = esNone
       Images = ilToolbar
+      List = True
       ParentShowHint = False
+      AllowTextButtons = True
       ShowHint = True
       TabOrder = 4
       Transparent = True
@@ -307,13 +310,13 @@ object HistoryFrm: THistoryFrm
         OnClick = tbSessionsClick
       end
       object TntToolButton7: TTntToolButton
-        Left = 23
+        Left = 43
         Top = 0
         Width = 8
         Style = tbsSeparator
       end
       object tbSearch: TTntToolButton
-        Left = 31
+        Left = 51
         Top = 0
         Hint = 'Find'
         Grouped = True
@@ -321,7 +324,7 @@ object HistoryFrm: THistoryFrm
         OnClick = tbFilterClick
       end
       object tbFilter: TTntToolButton
-        Left = 54
+        Left = 94
         Top = 0
         Hint = 'Filter'
         Grouped = True
@@ -329,127 +332,79 @@ object HistoryFrm: THistoryFrm
         OnClick = tbFilterClick
       end
       object TntToolButton3: TTntToolButton
-        Left = 77
-        Top = 0
-        Width = 8
-        Style = tbsSeparator
-      end
-      object tbIncoming: TTntToolButton
-        Left = 85
-        Top = 0
-        Hint = 'Hide incoming'
-        AllowAllUp = True
-        Grouped = True
-        Style = tbsCheck
-        OnClick = tbMessageClick
-      end
-      object tbOutgoing: TTntToolButton
-        Left = 108
-        Top = 0
-        Hint = 'Hide outgoing'
-        AllowAllUp = True
-        Grouped = True
-        Style = tbsCheck
-        OnClick = tbMessageClick
-      end
-      object TntToolButton4: TTntToolButton
-        Left = 131
-        Top = 0
-        Width = 8
-        Style = tbsSeparator
-      end
-      object tbMessage: TTntToolButton
-        Left = 139
-        Top = 0
-        Hint = 'Hide messages'
-        Style = tbsCheck
-        OnClick = tbMessageClick
-      end
-      object tbFile: TTntToolButton
-        Left = 162
-        Top = 0
-        Hint = 'Hide files'
-        Style = tbsCheck
-        OnClick = tbMessageClick
-      end
-      object tbURL: TTntToolButton
-        Left = 185
-        Top = 0
-        Hint = 'Hide link URLs'
-        Style = tbsCheck
-        OnClick = tbMessageClick
-      end
-      object tbStatus: TTntToolButton
-        Left = 208
-        Top = 0
-        Hint = 'Hide status messages'
-        Style = tbsCheck
-        OnClick = tbMessageClick
-      end
-      object TntToolButton1: TTntToolButton
-        Left = 231
+        Left = 137
         Top = 0
         Width = 8
         Style = tbsSeparator
       end
       object tbCopy: TTntToolButton
-        Left = 239
+        Left = 145
         Top = 0
         Hint = 'Copy'
       end
       object tbDelete: TTntToolButton
-        Left = 262
+        Left = 188
         Top = 0
         Hint = 'Delete'
         OnClick = tbDeleteClick
       end
       object tbSave: TTntToolButton
-        Left = 285
+        Left = 231
         Top = 0
         Hint = 'Save'
+        Visible = False
       end
       object TntToolButton2: TTntToolButton
-        Left = 308
+        Left = 274
         Top = 0
         Width = 8
         Style = tbsSeparator
       end
-      object tbSaveAll: TTntToolButton
-        Left = 316
+      object tbEventsFilter: TTntToolButton
+        Left = 282
         Top = 0
-        Hint = 'Save all'
-        DropdownMenu = pmSaveAll
-        Style = tbsDropDown
-        OnClick = tbSaveAllClick
+        DropdownMenu = pmEventsFilter
+        Style = tbsTextButton
       end
-      object tbDeleteAll: TTntToolButton
-        Left = 352
+      object TntToolButton4: TTntToolButton
+        Left = 289
         Top = 0
-        Hint = 'Empty history'
-        OnClick = tbDeleteAllClick
+        Width = 8
+        Caption = 'TntToolButton4'
+        Style = tbsSeparator
+      end
+      object tbHistory: TTntToolButton
+        Left = 297
+        Top = 0
+        Hint = 'History'
+        DropdownMenu = pmHistory
+        Style = tbsDropDown
+        OnClick = tbHistoryClick
       end
       object TntToolButton5: TTntToolButton
-        Left = 375
+        Left = 310
         Top = 0
         Width = 8
         Style = tbsSeparator
       end
       object tbOptions: TTntToolButton
-        Left = 383
+        Left = 318
         Top = 0
         Hint = 'Options'
         DropdownMenu = pmOptions
       end
       object TntToolButton6: TTntToolButton
-        Left = 406
+        Left = 361
         Top = 0
         Width = 8
         Style = tbsSeparator
+        Visible = False
       end
       object tbHistorySearch: TTntToolButton
-        Left = 414
+        Left = 369
         Top = 0
         Hint = 'History Search'
+        Visible = False
         OnClick = tbHistorySearchClick
       end
     end
@@ -824,8 +779,8 @@ object HistoryFrm: THistoryFrm
   end
   object pmOptions: TTntPopupMenu
     OnPopup = pmPopup
-    Left = 340
-    Top = 19
+    Left = 364
+    Top = 27
     object IconsEnabled1: TTntMenuItem
       Caption = 'Show event icons'
       Checked = True
@@ -891,23 +846,12 @@ object HistoryFrm: THistoryFrm
     object N14: TTntMenuItem
       Caption = '-'
     end
-    object ConversationLog1: TTntMenuItem
-      Caption = 'Conversation log'
-      Checked = True
-      ShortCut = 115
-      Visible = False
-      OnClick = ConversationLog1Click
-    end
     object RecentOnTop1: TTntMenuItem
       Caption = 'Recent events on top'
       OnClick = RecentOnTop1Click
     end
     object N15: TTntMenuItem
       Caption = '-'
-    end
-    object PassordProtection1: TTntMenuItem
-      Caption = 'Passord Protection...'
-      OnClick = PassordProtection1Click
     end
   end
   object pmGridInline: TTntPopupMenu
@@ -950,25 +894,50 @@ object HistoryFrm: THistoryFrm
     ShareImages = True
     Left = 460
   end
-  object pmSaveAll: TTntPopupMenu
-    Left = 212
-    Top = 20
+  object pmHistory: TTntPopupMenu
+    Left = 224
+    Top = 32
     object SaveasHTML2: TTntMenuItem
-      Caption = 'Save All as &HTML'
+      Caption = 'Export as &HTML...'
       OnClick = SaveasHTML2Click
     end
     object SaveasXML2: TTntMenuItem
-      Caption = 'Save All as &XML'
+      Caption = 'Export as &XML...'
       OnClick = SaveasXML2Click
     end
     object SaveasRTF2: TTntMenuItem
-      Caption = 'Save All as &RTF'
+      Caption = 'Export as &RTF...'
       Enabled = False
       OnClick = SaveasRTF2Click
     end
     object SaveasText2: TTntMenuItem
-      Caption = 'Save All as &Text'
+      Caption = 'Export as &Text...'
       OnClick = SaveasText2Click
+    end
+    object N4: TTntMenuItem
+      Caption = '-'
+    end
+    object Emptyhistory1: TTntMenuItem
+      Caption = 'Empty history...'
+      OnClick = Emptyhistory1Click
+    end
+    object N6: TTntMenuItem
+      Caption = '-'
+    end
+    object Passwordprotection1: TTntMenuItem
+      Caption = 'Password protection...'
+      OnClick = Passwordprotection1Click
+    end
+  end
+  object pmEventsFilter: TTntPopupMenu
+    Left = 160
+    Top = 28
+    object Showall1: TTntMenuItem
+      Caption = '-'
+    end
+    object Customize1: TTntMenuItem
+      Caption = 'Customize'
+      Enabled = False
     end
   end
 end
