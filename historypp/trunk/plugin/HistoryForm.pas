@@ -2948,11 +2948,14 @@ begin
 end;
 
 procedure THistoryFrm.tbHistoryClick(Sender: TObject);
-var
+{var
   t: String;
-  SaveFormat: TSaveFormat;
+  SaveFormat: TSaveFormat;}
 begin
-  tbHistory.CheckMenuDropdown;
+  if hg.SelCount > 1 then
+    Self.SaveSelected1Click(Self)
+  else
+    tbHistory.CheckMenuDropdown;
   {RecentFormat := TSaveFormat(GetDBInt(hppDBName,'ExportFormat',0));
   SaveFormat := RecentFormat;
   PrepareSaveDialog(SaveDialog,SaveFormat,True);
