@@ -137,12 +137,12 @@ begin
       if Lock then LockWindowUpdate(0);
     end;
   end else begin
+    wHistory.ShowAllEvents;
     if index <> -1 then wHistory.hg.Selected := index;
     // restore even if minimized
     // and we ain't have no double hooks
     ShowWindow(wHistory.Handle,SW_SHOWNORMAL);
     wHistory.BringToFront;
-    wHistory.ApplyFilter(index = -1);
   end;
   Result := wHistory;
 end;
