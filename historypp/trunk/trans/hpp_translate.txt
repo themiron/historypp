@@ -195,25 +195,6 @@ Searching...
 [Deleting...]
 Deleting...
 
-;; PassForm.trans.txt file 
-
-;; Text found in ..\plugin\PassForm.dfm:
-[Password Options]
-Password Options
-[Protect all contacts]
-Protect all contacts
-[Protect only selected contacts]
-Protect only selected contacts
-[Password...]
-Password...
-[&Refresh List]
-&Refresh List
-;; Text found in ..\plugin\PassForm.pas:
-[Password not set]
-Password not set
-[Password set]
-Password set
-
 ;; HistoryForm.trans.txt file 
 
 ;; Text found in ..\plugin\HistoryForm.dfm:
@@ -249,34 +230,18 @@ Show conversations (F4)
 Find
 [Filter]
 Filter
-[Hide incoming]
-Hide incoming
-[Hide outgoing]
-Hide outgoing
-[Hide messages]
-Hide messages
-[Hide files]
-Hide files
-[Hide link URLs]
-Hide link URLs
-[Hide status messages]
-Hide status messages
 [Copy]
 Copy
 [Delete]
 Delete
 [Save]
 Save
-[Save all]
-Save all
-[Empty history]
-Empty history
+[History]
+History
 [Options]
 Options
 [History Search]
 History Search
-[Close Search]
-Close Search
 [You need password to access this history]
 You need password to access this history
 [Enter]
@@ -317,24 +282,26 @@ Always LTR
 ANSI Encoding
 [System default codepage]
 System default codepage
-[Conversation log]
-Conversation log
 [Recent events on top]
 Recent events on top
-[Passord Protection...]
-Passord Protection...
 [Copy all]
 Copy all
 [Select all]
 Select all
-[Save All as &HTML]
-Save All as &HTML
-[Save All as &XML]
-Save All as &XML
-[Save All as &RTF]
-Save All as &RTF
-[Save All as &Text]
-Save All as &Text
+[Export as &HTML...]
+Export as &HTML...
+[Export as &XML...]
+Export as &XML...
+[Export as &RTF...]
+Export as &RTF...
+[Export as &Text...]
+Export as &Text...
+[Empty history...]
+Empty history...
+[Password protection...]
+Password protection...
+[Customize]
+Customize
 ;; Text found in ..\plugin\HistoryForm.pas:
 [Do you really want to delete selected items (%.0f)?]
 Do you really want to delete selected items (%.0f)?
@@ -346,8 +313,10 @@ Do you really want to delete selected item?
 %.0n items in history
 [Full History [%s] - [%s]]
 Full History [%s] - [%s]
-[Started from the beginning]
-Started from the beginning
+[Continued from the top]
+Continued from the top
+[Continued from the bottom]
+Continued from the bottom
 [Phrase not found]
 Phrase not found
 [Search: %s (F3 to find next)]
@@ -383,3 +352,22 @@ Unicode text file (*.txt)|*.txt
 Text file (*.txt)|*.txt
 [All files (*.*)|*.*]
 All files (*.*)|*.*
+
+;; PassForm.trans.txt file 
+
+;; Text found in ..\plugin\PassForm.dfm:
+[Password Options]
+Password Options
+[Protect all contacts]
+Protect all contacts
+[Protect only selected contacts]
+Protect only selected contacts
+[Password...]
+Password...
+[&Refresh List]
+&Refresh List
+;; Text found in ..\plugin\PassForm.pas:
+[Password not set]
+Password not set
+[Password set]
+Password set

@@ -283,6 +283,7 @@ type
     procedure Emptyhistory1Click(Sender: TObject);
     procedure EventsFilterItemClick(Sender: TObject);
     procedure Passwordprotection1Click(Sender: TObject);
+    procedure tbEventsFilterClick(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -354,7 +355,7 @@ type
     procedure Search(Next: Boolean; FromNext: Boolean = False);
 
     procedure ShowAllEvents;
-    procedure SetEventFilter(FilterIndex: Integer);
+    procedure SetEventFilter(FilterIndex: Integer = -1);
     procedure CreateEventsFilterMenu;
   protected
     procedure LoadPendingHeaders(rowidx: integer; count: integer);
@@ -2057,6 +2058,7 @@ end;
 
 procedure THistoryFrm.EventsFilterItemClick(Sender: TObject);
 begin
+  //tbEventsFilter.Caption := TTntMenuItem(Sender).Caption;
   SetEventFilter(TTntMenuItem(Sender).Tag);
 end;
 
@@ -2440,7 +2442,7 @@ begin
 
   for i := 0 to Length(hppEventFilters) - 1 do begin
     mi := TTntMenuItem.Create(pmEventsFilter);
-    mi.Caption := Tnt_WideStringReplace(hppEventFilters[i].Name,'&','&&',[rfReplaceAll]);
+    mi.Caption := Tnt_WideStringReplace(TranslateWideW(hppEventFilters[i].Name),'&','&&',[rfReplaceAll]);
     mi.GroupIndex := 1;
     mi.RadioItem := True;
     mi.Tag := i;
@@ -2546,18 +2548,24 @@ begin
   //MathModuleEnabled1.Checked  := hg.Options.MathModuleEnabled;
 end;
 
-procedure THistoryFrm.SetEventFilter(FilterIndex: Integer);
+procedure THistoryFrm.SetEventFilter(FilterIndex: Integer = -1);
 var
   name: WideString;
-  i: Integer;
+  i,fi: Integer;
 begin
-  name := hppEventFilters[FilterIndex].Name;
+  if FilterIndex = -1 then begin
+    fi := tbEventsFilter.Tag+1;
+    if fi > High(hppEventFilters) then fi := 0;
+  end else
+    fi := FilterIndex;
+  name := TranslateWideW(hppEventFilters[fi].Name);
   name := Tnt_WideStringReplace(name,'&','&&',[rfReplaceAll]);
   tbEventsFilter.Caption := name;
+  tbEventsFilter.Tag := fi;
   for i := 0 to pmHistory.Items.Count-1 do
     if pmEventsFilter.Items[i].RadioItem then
-      pmEventsFilter.Items[i].Checked := (pmEventsFilter.Items[i].Tag = FilterIndex);
-  hg.Filter := hppEventFilters[FilterIndex].Events;
+      pmEventsFilter.Items[i].Checked := (pmEventsFilter.Items[i].Tag = fi);
+  hg.Filter := hppEventFilters[fi].Events;
 end;
 
 procedure THistoryFrm.SethContact(const Value: THandle);
@@ -2994,6 +3002,11 @@ end;
 procedure THistoryFrm.tbHistorySearchClick(Sender: TObject);
 begin
   PluginLink.CallService(MS_HPP_SHOWGLOBALSEARCH,0,0);
+end;
+
+procedure THistoryFrm.tbEventsFilterClick(Sender: TObject);
+begin
+  SetEventFilter(-1);
 end;
 
 end.

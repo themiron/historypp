@@ -22,20 +22,12 @@ Clear Search
 Show conversations (F4)
 Find
 Filter
-Hide incoming
-Hide outgoing
-Hide messages
-Hide files
-Hide link URLs
-Hide status messages
 Copy
 Delete
 Save
-Save all
-Empty history
+History
 Options
 History Search
-Close Search
 You need password to access this history
 Password:
 Enter
@@ -65,17 +57,18 @@ Always RTL
 Always LTR
 ANSI Encoding
 System default codepage
-Conversation log
 Recent events on top
-Passord Protection...
 Copy
 Copy all
 Select all
 Cancel
-Save All as &HTML
-Save All as &XML
-Save All as &RTF
-Save All as &Text
+Export as &HTML...
+Export as &XML...
+Export as &RTF...
+Export as &Text...
+Empty history...
+Password protection...
+Customize
 ;; Text found in ..\plugin\HistoryForm.pas:
 System History
 HotSearch: %s (F3 to find next)
@@ -89,9 +82,9 @@ Loading...
 Saving...
 Searching...
 Deleting...
-Enter password
 Full History [%s] - [%s]
-Started from the beginning
+Continued from the top
+Continued from the bottom
 Phrase not found
 Search: %s (F3 to find next)
 HotSearch: %s (F3 to find next)
