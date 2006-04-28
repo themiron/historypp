@@ -195,6 +195,25 @@ Searching...
 [Deleting...]
 Deleting...
 
+;; PassForm.trans.txt file 
+
+;; Text found in ..\plugin\PassForm.dfm:
+[Password Options]
+Password Options
+[Protect all contacts]
+Protect all contacts
+[Protect only selected contacts]
+Protect only selected contacts
+[Password...]
+Password...
+[&Refresh List]
+&Refresh List
+;; Text found in ..\plugin\PassForm.pas:
+[Password not set]
+Password not set
+[Password set]
+Password set
+
 ;; HistoryForm.trans.txt file 
 
 ;; Text found in ..\plugin\HistoryForm.dfm:
@@ -352,22 +371,3 @@ Unicode text file (*.txt)|*.txt
 Text file (*.txt)|*.txt
 [All files (*.*)|*.*]
 All files (*.*)|*.*
-
-;; PassForm.trans.txt file 
-
-;; Text found in ..\plugin\PassForm.dfm:
-[Password Options]
-Password Options
-[Protect all contacts]
-Protect all contacts
-[Protect only selected contacts]
-Protect only selected contacts
-[Password...]
-Password...
-[&Refresh List]
-&Refresh List
-;; Text found in ..\plugin\PassForm.pas:
-[Password not set]
-Password not set
-[Password set]
-Password set
