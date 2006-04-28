@@ -79,7 +79,7 @@ cd build\src
 call build.bat
 if errorlevel 1 goto builderr
 
-%UPXPATH% --force --best --crp-ms=999999 --nrv2d --no-backup --overlay=copy --compress-exports=0 --compress-resources=0 --strip-relocs=0 historypp.dll
+%UPXPATH% --force --best --all-methods --crp-ms=999999 --no-backup --overlay=copy --compress-exports=0 --compress-resources=0 --strip-relocs=0 historypp.dll
 if errorlevel 1 goto upxerr
 
 md ..\bin
