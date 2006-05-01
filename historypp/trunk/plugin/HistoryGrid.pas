@@ -1872,14 +1872,9 @@ begin
   if IsUnknown(Item) then exit;
 
   ApplyItemToRich(Item);
-  // look like it solves the next hack
-  // at least it helps if the first string we calculate is empty
-  if FRichHeight = 0 then begin
-    FRich.Text := FRich.Text + 'sasme/m,ds ad34!a9-1da'; // any junk here
-    ApplyItemToRich(Item);
-  end;
   Assert(FRichHeight <> 0, 'CalcItemHeight: rich is still 0 height');
   // rude hack, but what the fuck??? First item with rtl chars is 1 line heighted always
+  // probably fixed, see RichCache.ApplyItemToRich
   if FRichHeight = 0 then exit
                      else h := FRichHeight;
 
@@ -4636,12 +4631,15 @@ begin
   // force to send the size:
   SendMessage(Item.Rich.Handle,EM_SETEVENTMASK, 0, ENM_REQUESTRESIZE);
   SendMessage(Item.Rich.Handle,EM_REQUESTRESIZE,0, 0);
-  SendMessage(Item.Rich.Handle,EM_SETEVENTMASK, 0, RichEventMasks);
-  {if FRichHeight = 0 then begin
+  if FRichHeight = 0 then begin
+    // try to "update" richedit here
     Item.Rich.Text := Item.Rich.Text + 'sasme/m,ds ad34!a9-1da'; // any junk here
+    Item.Rich.Text := Item.Rich.Text;
     Grid.ApplyItemToRich(Item.GridItem,Item.Rich);
-  end;}
-  Assert(FRichHeight <> 0, 'CalcItemHeight: rich is still 0 height');
+    SendMessage(Item.Rich.Handle,EM_REQUESTRESIZE,0, 0);
+  end;
+  SendMessage(Item.Rich.Handle,EM_SETEVENTMASK, 0, RichEventMasks);
+  Assert(FRichHeight <> 0, 'RichCache.ApplyItemToRich: rich is still 0 height');
 end;
 
 function TRichCache.CalcItemHeight(GridItem: Integer): Integer;
