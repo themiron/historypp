@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.3                                                       }
+{        Version: 2.2.4                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -218,11 +218,12 @@ type
     FDataSave: AnsiString;
     procedure BeginEditing;
     procedure DataChange(Sender: TObject);
-    function GetDataField: string{TNT-ALLOW string};
+    procedure EditingChange(Sender: TObject);
+    function GetDataField: WideString;
     function GetDataSource: TDataSource;
     function GetField: TField;
     function GetReadOnly: Boolean;
-    procedure SetDataField(const Value: string{TNT-ALLOW string});
+    procedure SetDataField(const Value: WideString);
     procedure SetDataSource(Value: TDataSource);
     procedure SetReadOnly(Value: Boolean);
     procedure SetAutoDisplay(Value: Boolean);
@@ -267,7 +268,7 @@ type
     property Color;
     property Constraints;
     property Ctl3D;
-    property DataField: string{TNT-ALLOW string} read GetDataField write SetDataField;
+    property DataField: WideString read GetDataField write SetDataField;
     property DataSource: TDataSource read GetDataSource write SetDataSource;
     property DragCursor;
     property DragKind;
@@ -308,7 +309,14 @@ type
     property OnKeyDown;
     property OnKeyPress;
     property OnKeyUp;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnResizeRequest;
@@ -329,11 +337,12 @@ type
     FMemoLoaded: Boolean;
     FPaintControl: TTntPaintControl;
     procedure DataChange(Sender: TObject);
-    function GetDataField: string{TNT-ALLOW string};
+    procedure EditingChange(Sender: TObject);
+    function GetDataField: WideString;
     function GetDataSource: TDataSource;
     function GetField: TField;
     function GetReadOnly: Boolean;
-    procedure SetDataField(const Value: string{TNT-ALLOW string});
+    procedure SetDataField(const Value: WideString);
     procedure SetDataSource(Value: TDataSource);
     procedure SetReadOnly(Value: Boolean);
     procedure SetAutoDisplay(Value: Boolean);
@@ -378,7 +387,7 @@ type
     property Color;
     property Constraints;
     property Ctl3D;
-    property DataField: string{TNT-ALLOW string} read GetDataField write SetDataField;
+    property DataField: WideString read GetDataField write SetDataField;
     property DataSource: TDataSource read GetDataSource write SetDataSource;
     property DragCursor;
     property DragKind;
@@ -417,7 +426,14 @@ type
     property OnKeyDown;
     property OnKeyPress;
     property OnKeyUp;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnStartDock;
@@ -435,12 +451,12 @@ type
     FOnChange: TNotifyEvent;
     procedure DataChange(Sender: TObject);
     procedure UpdateData(Sender: TObject);
-    function GetDataField: string{TNT-ALLOW string};
+    function GetDataField: WideString;
     function GetDataSource: TDataSource;
     function GetField: TField;
     function GetReadOnly: Boolean;
     function GetButtonValue(Index: Integer): WideString;
-    procedure SetDataField(const Value: string{TNT-ALLOW string});
+    procedure SetDataField(const Value: WideString);
     procedure SetDataSource(Value: TDataSource);
     procedure SetReadOnly(Value: Boolean);
     procedure SetValue(const Value: WideString);
@@ -473,7 +489,7 @@ type
     property Columns;
     property Constraints;
     property Ctl3D;
-    property DataField: string{TNT-ALLOW string} read GetDataField write SetDataField;
+    property DataField: WideString read GetDataField write SetDataField;
     property DataSource: TDataSource read GetDataSource write SetDataSource;
     property DragCursor;
     property DragKind;
@@ -481,6 +497,9 @@ type
     property Enabled;
     property Font;
     property Items write SetItems;
+    {$IFDEF COMPILER_7_UP}
+    property ParentBackground;
+    {$ENDIF}
     property ParentBiDiMode;
     property ParentColor;
     property ParentCtl3D;
@@ -502,6 +521,10 @@ type
     property OnEndDrag;
     property OnEnter;
     property OnExit;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnStartDock;
     property OnStartDrag;
   end;
@@ -1388,10 +1411,12 @@ end;
 constructor TTntDBRichEdit.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  inherited ReadOnly := True;
   FAutoDisplay := True;
   FDataLink := TFieldDataLink.Create;
   FDataLink.Control := Self;
   FDataLink.OnDataChange := DataChange;
+  FDataLink.OnEditingChange := EditingChange;
   FDataLink.OnUpdateData := UpdateData;
 end;
 
@@ -1471,7 +1496,7 @@ end;
 
 procedure TTntDBRichEdit.Change;
 begin
-  if FMemoLoaded and (not ReadOnly) then
+  if FMemoLoaded then
     FDataLink.Modified;
   FMemoLoaded := True;
   inherited Change;
@@ -1495,12 +1520,12 @@ begin
   if Value <> nil then Value.FreeNotification(Self);
 end;
 
-function TTntDBRichEdit.GetDataField: string{TNT-ALLOW string};
+function TTntDBRichEdit.GetDataField: WideString;
 begin
   Result := FDataLink.FieldName;
 end;
 
-procedure TTntDBRichEdit.SetDataField(const Value: string{TNT-ALLOW string});
+procedure TTntDBRichEdit.SetDataField(const Value: WideString);
 begin
   FDataLink.FieldName := Value;
 end;
@@ -1512,7 +1537,6 @@ end;
 
 procedure TTntDBRichEdit.SetReadOnly(Value: Boolean);
 begin
-  inherited ReadOnly := Value;
   FDataLink.ReadOnly := Value;
 end;
 
@@ -1525,11 +1549,15 @@ procedure TTntDBRichEdit.InternalLoadMemo;
 var
   Stream: TStringStream{TNT-ALLOW TStringStream};
 begin
-  Stream := TStringStream{TNT-ALLOW TStringStream}.Create(Field.AsString{TNT-ALLOW AsString});
-  try
-    Lines.LoadFromStream(Stream);
-  finally
-    Stream.Free;
+  if PlainText then
+    Text := GetAsWideString(Field)
+  else begin
+    Stream := TStringStream{TNT-ALLOW TStringStream}.Create(Field.AsString{TNT-ALLOW AsString});
+    try
+      Lines.LoadFromStream(Stream);
+    finally
+      Stream.Free;
+    end;
   end;
 end;
 
@@ -1545,6 +1573,7 @@ begin
       on E:EOutOfResources do
         Lines.Text := WideFormat('(%s)', [E.Message]);
     end;
+    EditingChange(Self);
   end;
 end;
 
@@ -1561,7 +1590,7 @@ begin
         LoadMemo;
       end else
       begin
-        Text := WideFormat('(%s)', [GetWideDisplayLabel(Field)]);
+        Text := WideFormat('(%s)', [Field.DisplayName]);
         FMemoLoaded := False;
       end;
     end else
@@ -1581,16 +1610,25 @@ begin
     RedrawWindow(Handle, nil, 0, RDW_INVALIDATE or RDW_ERASE or RDW_FRAME);
 end;
 
+procedure TTntDBRichEdit.EditingChange(Sender: TObject);
+begin
+  inherited ReadOnly := not (FDataLink.Editing and FMemoLoaded);
+end;
+
 procedure TTntDBRichEdit.InternalSaveMemo;
 var
   Stream: TStringStream{TNT-ALLOW TStringStream};
 begin
-  Stream := TStringStream{TNT-ALLOW TStringStream}.Create('');
-  try
-    Lines.SaveToStream(Stream);
-    Field.AsString{TNT-ALLOW AsString} := Stream.DataString;
-  finally
-    Stream.Free;
+  if PlainText then
+    SetAsWideString(Field, Text)
+  else begin
+    Stream := TStringStream{TNT-ALLOW TStringStream}.Create('');
+    try
+      Lines.SaveToStream(Stream);
+      Field.AsString{TNT-ALLOW AsString} := Stream.DataString;
+    finally
+      Stream.Free;
+    end;
   end;
 end;
 
@@ -1678,11 +1716,13 @@ end;
 constructor TTntDBMemo.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  inherited ReadOnly := True;
   ControlStyle := ControlStyle + [csReplicatable];
   FAutoDisplay := True;
   FDataLink := TFieldDataLink.Create;
   FDataLink.Control := Self;
   FDataLink.OnDataChange := DataChange;
+  FDataLink.OnEditingChange := EditingChange;
   FDataLink.OnUpdateData := UpdateData;
   FPaintControl := TTntPaintControl.Create(Self, 'EDIT');
 end;
@@ -1750,8 +1790,7 @@ end;
 
 procedure TTntDBMemo.Change;
 begin
-  if FMemoLoaded and (not ReadOnly) then
-    FDataLink.Modified;
+  if FMemoLoaded then FDataLink.Modified;
   FMemoLoaded := True;
   inherited Change;
 end;
@@ -1768,12 +1807,12 @@ begin
   if Value <> nil then Value.FreeNotification(Self);
 end;
 
-function TTntDBMemo.GetDataField: string{TNT-ALLOW string};
+function TTntDBMemo.GetDataField: WideString;
 begin
   Result := FDataLink.FieldName;
 end;
 
-procedure TTntDBMemo.SetDataField(const Value: string{TNT-ALLOW string});
+procedure TTntDBMemo.SetDataField(const Value: WideString);
 begin
   FDataLink.FieldName := Value;
 end;
@@ -1785,7 +1824,6 @@ end;
 
 procedure TTntDBMemo.SetReadOnly(Value: Boolean);
 begin
-  inherited ReadOnly := Value;
   FDataLink.ReadOnly := Value;
 end;
 
@@ -1806,6 +1844,7 @@ begin
       on E:EInvalidOperation do
         Lines.Text := WideFormat('(%s)', [E.Message]);
     end;
+    EditingChange(Self);
   end;
 end;
 
@@ -1820,8 +1859,9 @@ begin
         LoadMemo;
       end else
       begin
-        Text := WideFormat('(%s)', [GetWideDisplayLabel(FDataLink.Field)]);
+        Text := WideFormat('(%s)', [FDataLink.Field.DisplayName]);
         FMemoLoaded := False;
+        EditingChange(Self);
       end;
     end else
     begin
@@ -1838,6 +1878,11 @@ begin
   end;
   if HandleAllocated then
     RedrawWindow(Handle, nil, 0, RDW_INVALIDATE or RDW_ERASE or RDW_FRAME);
+end;
+
+procedure TTntDBMemo.EditingChange(Sender: TObject);
+begin
+  inherited ReadOnly := not (FDataLink.Editing and FMemoLoaded);
 end;
 
 procedure TTntDBMemo.UpdateData(Sender: TObject);
@@ -1930,7 +1975,7 @@ begin
       begin
         if FAutoDisplay then
           S := TntAdjustLineBreaks(GetAsWideString(FDataLink.Field)) else
-          S := WideFormat('(%s)', [GetWideDisplayLabel(FDataLink.Field)]);
+          S := WideFormat('(%s)', [FDataLink.Field.DisplayName]);
       end else
         S := GetWideDisplayText(FDataLink.Field);
     if (not Win32PlatformIsUnicode) then
@@ -2012,12 +2057,12 @@ begin
   if Value <> nil then Value.FreeNotification(Self);
 end;
 
-function TTntDBRadioGroup.GetDataField: string{TNT-ALLOW string};
+function TTntDBRadioGroup.GetDataField: WideString;
 begin
   Result := FDataLink.FieldName;
 end;
 
-procedure TTntDBRadioGroup.SetDataField(const Value: string{TNT-ALLOW string});
+procedure TTntDBRadioGroup.SetDataField(const Value: WideString);
 begin
   FDataLink.FieldName := Value;
 end;

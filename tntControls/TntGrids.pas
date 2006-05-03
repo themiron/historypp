@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.3                                                       }
+{        Version: 2.2.4                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -73,6 +73,11 @@ type
   published
     property Align;
     property Anchors;
+    property BevelEdges;
+    property BevelInner;
+    property BevelKind;
+    property BevelOuter;
+    property BevelWidth;
     property BiDiMode;
     property BorderStyle;
     property Color;
@@ -121,7 +126,14 @@ type
     property OnKeyDown;
     property OnKeyPress;
     property OnKeyUp;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnMouseWheelDown;

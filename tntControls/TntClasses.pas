@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.3                                                       }
+{        Version: 2.2.4                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -43,6 +43,9 @@ function AutoDetectCharacterSet(Stream: TStream): TTntStreamCharSet;
 {TNT-WARN ExtractStrings}
 {TNT-WARN LineStart}
 {TNT-WARN TStringStream}   // TODO: Implement a TWideStringStream
+
+// A potential implementation of TWideStringStream can be found at:
+//   http://cvs.sourceforge.net/viewcvs.py/kdsxml/Global/KDSClasses.pas?view=markup
 
 procedure TntPersistent_AfterInherited_DefineProperties(Filer: TFiler; Instance: TPersistent);
 

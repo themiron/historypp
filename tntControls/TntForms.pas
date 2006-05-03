@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.3                                                       }
+{        Version: 2.2.4                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -68,9 +68,12 @@ type
     property Color nodefault;
     property Ctl3D;
     property Font;
-{$IFDEF COMPILER_7_UP}
+    {$IFDEF COMPILER_10_UP}
+    property Padding;
+    {$ENDIF}
+    {$IFDEF COMPILER_7_UP}
     property ParentBackground default True;
-{$ENDIF}
+    {$ENDIF}
     property ParentBiDiMode;
     property ParentColor;
     property ParentCtl3D;
@@ -81,6 +84,10 @@ type
     property TabOrder;
     property TabStop;
     property Visible;
+    {$IFDEF COMPILER_9_UP}
+    property OnAlignInsertBefore;
+    property OnAlignPosition;
+    {$ENDIF}
     property OnCanResize;
     property OnClick;
     property OnConstrainedResize;
@@ -95,7 +102,14 @@ type
     property OnEnter;
     property OnExit;
     property OnGetSiteInfo;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnMouseWheel;
@@ -519,7 +533,7 @@ procedure TTntApplication.SetTitle(const Value: WideString);
 begin
   if (Application.Handle <> 0) and Win32PlatformIsUnicode then begin
     if (GetTitle <> Value) or (FTitle <> '') then begin
-      DefWindowProcW(Application.Handle, WM_SETTEXT, 0, lParam(PWideChar(WideString(Value))));
+      DefWindowProcW(Application.Handle, WM_SETTEXT, 0, lParam(PWideChar(Value)));
       FTitle := '';
     end
   end else
@@ -752,6 +766,7 @@ function UnhookIsKnownToFail: Boolean;
 begin
   Result := (WideTextPos('W3WP.',    WideExtractFileName(WideParamStr(0))) = 1) // for IIS 6.0
          or (WideTextPos('DLLHOST.', WideExtractFileName(WideParamStr(0))) = 1) // for IIS 5.0
+         or (WideTextPos('miranda32.exe', WideExtractFileName(WideParamStr(0))) = 1) // for Miranda IM
          or (_IsShellProgramming);
 end;
 
@@ -839,7 +854,7 @@ finalization
     if UnhookIsKnownToFail then
       UnhookWindowsHookEx(NTGetMessageHook) // no Win32Check!
     else
-      UnhookWindowsHookEx(NTGetMessageHook); // no Win32Check!
+      Win32Check(UnhookWindowsHookEx(NTGetMessageHook));
   end;
   FreeAndNil(TntApplication);
 

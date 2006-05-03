@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.3                                                       }
+{        Version: 2.2.4                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -483,11 +483,14 @@ function GetAveCharSize(Canvas: TCanvas): TPoint;
 var
   I: Integer;
   Buffer: array[0..51] of WideChar;
+  tm: TTextMetric;
 begin
   for I := 0 to 25 do Buffer[I] := WideChar(I + Ord('A'));
   for I := 0 to 25 do Buffer[I + 26] := WideChar(I + Ord('a'));
+  GetTextMetrics(Canvas.Handle, tm);
   GetTextExtentPointW(Canvas.Handle, Buffer, 52, TSize(Result));
-  Result.X := Result.X div 52;
+  Result.X := (Result.X div 26 + 1) div 2;
+  Result.Y := tm.tmHeight;
 end;
 
 type

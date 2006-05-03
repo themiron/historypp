@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.3                                                       }
+{        Version: 2.2.4                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -58,6 +58,7 @@ type
 {TNT-WARN TEdit}
   TTntEdit = class(TTntCustomEdit)
   published
+    property Align;
     property Anchors;
     property AutoSelect;
     property AutoSize;
@@ -65,6 +66,7 @@ type
     property BevelInner;
     property BevelKind default bkNone;
     property BevelOuter;
+    property BevelWidth;
     property BiDiMode;
     property BorderStyle;
     property CharCase;
@@ -107,7 +109,14 @@ type
     property OnKeyDown;
     property OnKeyPress;
     property OnKeyUp;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnStartDock;
@@ -223,7 +232,14 @@ type
     property OnKeyDown;
     property OnKeyPress;
     property OnKeyUp;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnStartDock;
@@ -326,7 +342,11 @@ type
 {TNT-WARN TComboBox}
   TTntComboBox = class(TTntCustomComboBox)
   published
+    property Align;
     property AutoComplete default True;
+    {$IFDEF COMPILER_9_UP}
+    property AutoCompleteDelay default 500;
+    {$ENDIF}
     property AutoDropDown default False;
     {$IFDEF COMPILER_7_UP}
     property AutoCloseUp default False;
@@ -382,6 +402,10 @@ type
     property OnKeyPress;
     property OnKeyUp;
     property OnMeasureItem;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnSelect;
     property OnStartDock;
     property OnStartDrag;
@@ -455,12 +479,16 @@ type
   published
     property Style;
     property AutoComplete;
+    {$IFDEF COMPILER_9_UP}
+    property AutoCompleteDelay;
+    {$ENDIF}
     property Align;
     property Anchors;
     property BevelEdges;
     property BevelInner;
     property BevelKind default bkNone;
     property BevelOuter;
+    property BevelWidth;
     property BiDiMode;
     property BorderStyle;
     property Color;
@@ -509,7 +537,14 @@ type
     property OnKeyPress;
     property OnKeyUp;
     property OnMeasureItem;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnStartDock;
@@ -552,6 +587,9 @@ type
     property DragCursor;
     property DragKind;
     property DragMode;
+    {$IFDEF COMPILER_9_UP}
+    property EllipsisPosition;
+    {$ENDIF}
     property Enabled;
     property FocusControl;
     property Font;
@@ -573,6 +611,9 @@ type
     property OnDragOver;
     property OnEndDock;
     property OnEndDrag;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
     property OnMouseMove;
     property OnMouseUp;
@@ -627,6 +668,7 @@ type
   TTntCheckBox = class(TTntCustomCheckBox)
   published
     property Action;
+    property Align;
     property Alignment;
     property AllowGrayed;
     property Anchors;
@@ -652,9 +694,9 @@ type
     property TabOrder;
     property TabStop;
     property Visible;
-{$IFDEF COMPILER_7_UP}
+    {$IFDEF COMPILER_7_UP}
     property WordWrap;
-{$ENDIF}
+    {$ENDIF}
     property OnClick;
     property OnContextPopup;
     property OnDragDrop;
@@ -666,7 +708,14 @@ type
     property OnKeyDown;
     property OnKeyPress;
     property OnKeyUp;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnStartDock;
@@ -745,9 +794,12 @@ type
     property DragMode;
     property Enabled;
     property Font;
-{$IFDEF COMPILER_7_UP}
+    {$IFDEF COMPILER_10_UP}
+    property Padding;
+    {$ENDIF}
+    {$IFDEF COMPILER_7_UP}
     property ParentBackground default True;
-{$ENDIF}
+    {$ENDIF}
     property ParentBiDiMode;
     property ParentColor;
     property ParentCtl3D;
@@ -758,6 +810,10 @@ type
     property TabOrder;
     property TabStop;
     property Visible;
+    {$IFDEF COMPILER_9_UP}
+    property OnAlignInsertBefore;
+    property OnAlignPosition;
+    {$ENDIF}
     property OnClick;
     property OnContextPopup;
     property OnDblClick;
@@ -770,7 +826,14 @@ type
     property OnEnter;
     property OnExit;
     property OnGetSiteInfo;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnStartDock;
@@ -836,9 +899,9 @@ type
     property ShowHint;
     property TabOrder;
     property TabStop;
-{$IFDEF COMPILER_7_UP}
+    {$IFDEF COMPILER_7_UP}
     property Transparent;
-{$ENDIF}
+    {$ENDIF}
     property Visible;
     property OnClick;
     property OnContextPopup;
@@ -847,7 +910,14 @@ type
     property OnDragOver;
     property OnEndDock;
     property OnEndDrag;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnStartDock;

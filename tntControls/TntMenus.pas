@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.3                                                       }
+{        Version: 2.2.4                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -1031,7 +1031,8 @@ constructor TTntPopupMenu.Create(AOwner: TComponent);
 begin
   inherited;
   PopupList.Remove(Self);
-  TntPopupList.Add(Self);
+  if TntPopupList <> nil then
+    TntPopupList.Add(Self);
 end;
 
 {$IFDEF COMPILER_9_UP}
@@ -1043,7 +1044,8 @@ end;
 
 destructor TTntPopupMenu.Destroy;
 begin
-  TntPopupList.Remove(Self);
+  if TntPopupList <> nil then
+    TntPopupList.Remove(Self);
   PopupList.Add(Self);
   inherited;
 end;
@@ -1112,6 +1114,6 @@ initialization
   TntPopupList.SavedPopupList := Menus.PopupList;
 
 finalization
-  TntPopupList.Free;
+  FreeAndNil(TntPopupList);
 
 end.
