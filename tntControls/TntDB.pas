@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.3                                                       }
+{        Version: 2.2.4                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -165,12 +165,9 @@ type
 
 function GetTntFieldClass(FieldClass: TFieldClass): TFieldClass;
 
-{TNT-WARN DisplayName}
-function GetWideDisplayName(Field: TField): WideString;
-
-{TNT-WARN DisplayLabel}
-function GetWideDisplayLabel(Field: TField): WideString;
-procedure SetWideDisplayLabel(Field: TField; const Value: WideString);
+function GetWideDisplayName(Field: TField): WideString; deprecated; // for Unicode-enabled functionality, use Delphi 2006 or newer
+function GetWideDisplayLabel(Field: TField): WideString; deprecated; // for Unicode-enabled functionality, use Delphi 2006 or newer
+procedure SetWideDisplayLabel(Field: TField; const Value: WideString); deprecated; // for Unicode-enabled functionality, use Delphi 2006 or newer
 
 {TNT-WARN AsString}
 {TNT-WARN DisplayText}
@@ -219,79 +216,19 @@ begin
     Result := FieldClass;
 end;
 
-{$IFNDEF COMPILER_10_UP}
-{ TWideFieldHelper }
-var
-  WideFieldHelpers: TComponentList = nil;
-
-type
-  TWideFieldHelper = class(TWideComponentHelper)
-  private
-    FField: TField;
-    FWideDisplayLabel: WideString;
-    procedure SetAnsiDisplayLabel(const Value: AnsiString);
-  public
-    constructor Create(AOwner: TField); reintroduce;
-    property WideDisplayLabel: WideString read FWideDisplayLabel;
-  end;
-
-constructor TWideFieldHelper.Create(AOwner: TField);
-begin
-  inherited CreateHelper(AOwner, WideFieldHelpers);
-  FField := AOwner;
-end;
-
-procedure TWideFieldHelper.SetAnsiDisplayLabel(const Value: AnsiString);
-begin
-  FField.DisplayLabel{TNT-ALLOW DisplayLabel} := Value;
-end;
-
-function FindWideFieldHelper(Field: TField; CreateIfNotFound: Boolean = True): TWideFieldHelper;
-begin
-  Result := TWideFieldHelper(FindWideComponentHelper(WideFieldHelpers, Field));
-  if (Result = nil) and CreateIfNotFound then
-  	Result := TWideFieldHelper.Create(Field);
-end;
-{$ENDIF}
-//---------------------------------------------------------------------------------------------
-
 function GetWideDisplayName(Field: TField): WideString;
 begin
-  {$IFDEF COMPILER_10_UP}
-  Result := Field.DisplayName{TNT-ALLOW DisplayName};
-  {$ELSE}
-  if GetWideDisplayLabel(Field) <> '' then
-    Result := GetWideDisplayLabel(Field)
-  else
-    Result := Field.FieldName;
-  {$ENDIF}
+  Result := Field.DisplayName;
 end;
 
 function GetWideDisplayLabel(Field: TField): WideString;
-{$IFDEF COMPILER_10_UP}
 begin
-  Result := Field.DisplayLabel{TNT-ALLOW DisplayLabel};
+  Result := Field.DisplayLabel;
 end;
-{$ELSE}
-var
-  WideFieldHelper: TWideFieldHelper;
-begin
-  WideFieldHelper := FindWideFieldHelper(Field, False);
-  if WideFieldHelper = nil then
-    Result := Field.DisplayLabel{TNT-ALLOW DisplayLabel}
-  else
-    Result := GetSyncedWideString(WideFieldHelper.FWideDisplayLabel, Field.DisplayLabel{TNT-ALLOW DisplayLabel});
-end;
-{$ENDIF}
 
 procedure SetWideDisplayLabel(Field: TField; const Value: WideString);
 begin
-  {$IFDEF COMPILER_10_UP}
-  Field.DisplayLabel{TNT-ALLOW DisplayLabel} := Value;
-  {$ELSE}
-  with FindWideFieldHelper(Field) do
-    SetSyncedWideString(Value, FWideDisplayLabel, Field.DisplayLabel{TNT-ALLOW DisplayLabel}, SetAnsiDisplayLabel)
-  {$ENDIF}
+  Field.DisplayLabel := Value;
 end;
 
 function GetAsWideString(Field: TField): WideString;
@@ -768,14 +705,6 @@ initialization
   PFieldClass(@DefaultFieldClasses[ftFixedChar])^ := TTntStringField;
 {$ENDIF}
 
-{$IFNDEF COMPILER_10_UP}
-  WideFieldHelpers := TComponentList.Create(True);
-{$ENDIF}
-
 finalization
-{$IFNDEF COMPILER_10_UP}
-  FreeAndNil(WideFieldHelpers);
-{$ENDIF}
-
 
 end.

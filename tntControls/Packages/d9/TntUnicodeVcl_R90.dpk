@@ -66,7 +66,7 @@ contains
   TntBandActn in '..\..\TntBandActn.pas',
   TntDBLogDlg in '..\..\TntDBLogDlg.pas',
   TntFormatStrUtils in '..\..\TntFormatStrUtils.pas',
-  //TntWideStrings in '..\..\TntWideStrings.pas',
+  TntWideStrings in '..\..\TntWideStrings.pas',
   TntWideStrUtils in '..\..\TntWideStrUtils.pas';
 
 end.

@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.3                                                       }
+{        Version: 2.2.4                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -221,9 +221,19 @@ type
     property OnKeyDown;
     property OnKeyPress;
     property OnKeyUp;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
+    property OnMouseWheel;
+    property OnMouseWheelDown;
+    property OnMouseWheelUp;
     property OnStartDock;
     property OnStartDrag;
     property OnTitleClick;
@@ -249,7 +259,7 @@ var
 begin
   Field := Column.Field;
   if Assigned(Field) then
-    Result := GetWideDisplayName(Field)
+    Result := Field.DisplayName
   else
     Result := Column.FieldName;
 end;

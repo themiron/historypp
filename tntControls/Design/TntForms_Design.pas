@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.3                                                       }
+{        Version: 2.2.4                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -21,7 +21,10 @@ uses
 type HICON = LongWord;
 
 type
-  TTntNewFormWizard = class(TNotifierObject, IOTAWizard, IOTARepositoryWizard, IOTAFormWizard)
+  TTntNewFormWizard = class(TNotifierObject, IOTAWizard, IOTARepositoryWizard,
+    IOTAFormWizard
+    {$IFDEF COMPILER_6_UP}, IOTARepositoryWizard60{$ENDIF}
+    {$IFDEF COMPILER_9_UP}, IOTARepositoryWizard80{$ENDIF})
   protected
     function ThisFormName: WideString;
     function ThisFormClass: TComponentClass; virtual; abstract;
@@ -36,6 +39,15 @@ type
     function GetComment: AnsiString; virtual; abstract;
     function GetPage: AnsiString;
     function GetGlyph: HICON;
+    {$IFDEF COMPILER_6_UP}
+    // IOTARepositoryWizard60
+    function GetDesigner: AnsiString;
+    {$ENDIF}
+    {$IFDEF COMPILER_9_UP}    
+    // IOTARepositoryWizard80
+    function GetGalleryCategory: IOTAGalleryCategory; 
+    function GetPersonality: AnsiString; 
+    {$ENDIF}
   end;
 
 procedure Register;
@@ -144,6 +156,15 @@ type
     constructor Create(const FormName, AncestorName: WideString);
   end;
 
+  TTntSourceFile = class(TInterfacedObject, IOTAFile)
+  private
+    FSource: AnsiString;
+  public
+    function GetSource: AnsiString;
+    function GetAge: TDateTime;
+    constructor Create(const Source: AnsiString);
+  end;
+
 constructor TTntNewFormCreator.Create(const FormName, AncestorName: WideString);
 begin
   inherited Create;
@@ -220,8 +241,35 @@ begin
 end;
 
 function TTntNewFormCreator.NewImplSource(const ModuleIdent, FormIdent, AncestorIdent: AnsiString): IOTAFile;
-begin
-  Result := nil;
+const
+  cSource =
+    'unit %s;' + #13#10 +
+    '' + #13#10 +
+    'interface' + #13#10 +
+    '' + #13#10 +
+    'uses' + #13#10 +
+    '  Windows, Messages, SysUtils' + {$IFDEF COMPILER_6_UP}', Variants' + {$ENDIF}
+    ', Classes, Graphics, Controls, Forms,' + #13#10 + '  Dialogs, TntForms;' + #13#10 +
+    '' + #13#10 +
+    'type' + #13#10 +
+    '  T%s = class(T%s)' + #13#10 +
+    '  private' + #13#10 +
+    '    { Private declarations }' + #13#10 +
+    '  public' + #13#10 +
+    '    { Public declarations }' + #13#10 +
+    '  end;' + #13#10 +
+    '' + #13#10 +
+    'var' + #13#10 +
+    '  %s: T%s;' + #13#10 +
+    '' + #13#10 +
+    'implementation' + #13#10 +
+    '' + #13#10 +
+    '{$R *.DFM}' + #13#10 +
+    '' + #13#10 +
+    'end.';
+begin               
+  Result := TTntSourceFile.Create(Format{TNT-ALLOW Format}(cSource, [ModuleIdent, FormIdent,
+    AncestorIdent, FormIdent, FormIdent]));
 end;
 
 function TTntNewFormCreator.NewIntfSource(const ModuleIdent, FormIdent, AncestorIdent: AnsiString): IOTAFile;
@@ -267,57 +315,52 @@ begin
   Result := 'Tnt.Create_'+ThisFormName+'.Wizard';
 end;
 
-procedure AddUnitToUses(Module: IOTAModule; UnitName: WideString);
-const
-  UnitFileSize = 8192; // 8k ought to be enough for everybody! (we're dealing with a new default unit)
-var
-  Editor: IOTASourceEditor;
-  Reader: IOTAEditReader;
-  Writer: IOTAEditWriter;
-  Buffer, P: PAnsiChar;
-  StartPos: Integer;
-begin
-  (* Warning: add the necessary routines for C++Builder *)
-  Buffer := StrAlloc{TNT-ALLOW StrAlloc}(UnitFileSize);
-  Editor := (Module.GetModuleFileEditor(0)) as IOTASourceEditor;
-  try
-    Reader := Editor.CreateReader;
-    try
-      StartPos := Reader.GetText(0, Buffer, UnitFileSize);
-      P := StrPos{TNT-ALLOW StrPos}(Buffer, 'uses'); // Locate uses
-      P := StrPos{TNT-ALLOW StrPos}(P, ';'); // Locate the semi-colon afterwards
-      if Assigned(P) then
-        StartPos := Integer(P - Buffer)
-      else
-        StartPos := -1;
-    finally
-      Reader := nil; { get rid of reader before we use writer }
-    end;
-    if StartPos <> -1 then
-    begin
-      Writer := Editor.CreateWriter;
-      try
-        Writer.CopyTo(StartPos);
-        Writer.Insert(PAnsiChar(AnsiString(', ' + UnitName)));
-      finally
-        Writer := nil;
-      end;
-    end;
-  finally
-    Editor := nil;
-    StrDispose{TNT-ALLOW StrDispose}(Buffer);
-  end;
-end;
-
 procedure TTntNewFormWizard.Execute;
 var
   Module: IOTAModule;
 begin
   Module := (BorlandIDEServices as IOTAModuleServices).CreateModule(TTntNewFormCreator.Create('', ThisFormName));
-  {$IFNDEF COMPILER_9_UP}
-  {TODO: Get AddUnitToUses() working with D9.}
-  AddUnitToUses(Module, GetTypeData(PTypeInfo(ThisFormClass.ClassInfo)).UnitName);
-  {$ENDIF}
+end;
+
+{$IFDEF COMPILER_6_UP}
+function TTntNewFormWizard.GetDesigner: AnsiString;
+begin
+  Result := dVCL;
+end;
+{$ENDIF}
+
+{$IFDEF COMPILER_9_UP}
+function TTntNewFormWizard.GetGalleryCategory: IOTAGalleryCategory; 
+var
+  Manager: IOTAGalleryCategoryManager;
+begin
+  Result := nil;
+  Manager := BorlandIDEServices as IOTAGalleryCategoryManager;
+  if Assigned(Manager) then
+    Result := Manager.FindCategory(sCategoryDelphiNew);
+end;
+
+function TTntNewFormWizard.GetPersonality: AnsiString; 
+begin
+  Result := sDelphiPersonality;
+end;
+{$ENDIF}
+
+{ TTntSourceFile }
+
+constructor TTntSourceFile.Create(const Source: AnsiString);
+begin
+  FSource := Source;
+end;
+
+function TTntSourceFile.GetAge: TDateTime;
+begin
+  Result := -1;
+end;
+
+function TTntSourceFile.GetSource: AnsiString;
+begin
+  Result := FSource;
 end;
 
 { TTntNewTntFormWizard }

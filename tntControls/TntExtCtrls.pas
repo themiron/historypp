@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.3                                                       }
+{        Version: 2.2.4                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -113,7 +113,9 @@ type
     property Alignment;
     property Anchors;
     property AutoSize;
+    property BevelEdges;
     property BevelInner;
+    property BevelKind;
     property BevelOuter;
     property BevelWidth;
     property BiDiMode;
@@ -132,6 +134,9 @@ type
     property FullRepaint;
     property Font;
     property Locked;
+    {$IFDEF COMPILER_10_UP}
+    property Padding;
+    {$ENDIF}
     property ParentBiDiMode;
     {$IFDEF COMPILER_7_UP}
     property ParentBackground;
@@ -144,7 +149,14 @@ type
     property ShowHint;
     property TabOrder;
     property TabStop;
+    {$IFDEF COMPILER_9_UP}
+    property VerticalAlignment;
+    {$ENDIF}
     property Visible;
+    {$IFDEF COMPILER_9_UP}
+    property OnAlignInsertBefore;
+    property OnAlignPosition;
+    {$ENDIF}
     property OnCanResize;
     property OnClick;
     property OnConstrainedResize;
@@ -159,7 +171,14 @@ type
     property OnEnter;
     property OnExit;
     property OnGetSiteInfo;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnResize;
@@ -201,11 +220,22 @@ type
     property BorderWidth;
     property Color {$IFDEF COMPILER_7_UP} nodefault {$ENDIF};
     property Constraints;
+    {$IFDEF COMPILER_10_UP}
+    property CornerEdge;
+    {$ENDIF}
     property DockSite;
     property DragCursor;
     property DragKind;
     property DragMode;
+    {$IFDEF COMPILER_10_UP}
+    property DrawingStyle;
+    {$ENDIF}
     property Enabled;
+    {$IFDEF COMPILER_10_UP}
+    property GradientDirection;
+    property GradientEndColor;
+    property GradientStartColor;
+    {$ENDIF}
     {$IFDEF COMPILER_7_UP}
     property ParentBackground default True;
     {$ENDIF}
@@ -221,10 +251,18 @@ type
     property TabOrder;
     property TabStop;
     property Visible;
+    {$IFDEF COMPILER_9_UP}
+    property OnAlignInsertBefore;
+    property OnAlignPosition;
+    {$ENDIF}
     property OnBandDrag;
     property OnBandInfo;
     property OnBandMove;
     property OnBandPaint;
+    {$IFDEF COMPILER_9_UP}
+    property OnBeginBandMove;
+    property OnEndBandMove;
+    {$ENDIF}
     property OnCanResize;
     property OnClick;
     property OnConstrainedResize;
@@ -239,7 +277,14 @@ type
     property OnEnter;
     property OnExit;
     property OnGetSiteInfo;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnPaint;

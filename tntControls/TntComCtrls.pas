@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.3                                                       }
+{        Version: 2.2.4                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -284,7 +284,14 @@ type
     property OnKeyDown;
     property OnKeyPress;
     property OnKeyUp;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnResize;
@@ -441,7 +448,9 @@ type
     property WantReturns;
     property WordWrap;
     property OnChange;
+    property OnClick;
     property OnContextPopup;
+    property OnDblClick;
     property OnDragDrop;
     property OnDragOver;
     property OnEndDock;
@@ -451,7 +460,14 @@ type
     property OnKeyDown;
     property OnKeyPress;
     property OnKeyUp;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnMouseWheel;
@@ -543,7 +559,14 @@ type
     property OnExit;
     property OnGetImageIndex;
     property OnGetSiteInfo;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnResize;
@@ -669,7 +692,14 @@ type
     property OnClick;
     property OnEnter;
     property OnExit;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
   end;
@@ -818,14 +848,21 @@ type
     property Visible;
     property OnClick;
     property OnContextPopup;
-    property OnCreatePanelClass;
+    property OnCreatePanelClass;    
     property OnDblClick;
     property OnDragDrop;
     property OnDragOver;
     property OnEndDock;
     property OnEndDrag;
     property OnHint;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     // Required for backwards compatibility with the old event signature
@@ -927,6 +964,7 @@ type
   TTntCustomTreeView = class(_TntInternalCustomTreeView)
   private
     FSavedNodeText: TTntStrings;
+    FSavedSortType: TSortType;
     FOnEdited: TTntTVEditedEvent;
     FTestingForSortProc: Boolean;
     FEditHandle: THandle;
@@ -1058,7 +1096,14 @@ type
     property OnKeyDown;
     property OnKeyPress;
     property OnKeyUp;
+    {$IFDEF COMPILER_9_UP}
+    property OnMouseActivate;
+    {$ENDIF}
     property OnMouseDown;
+    {$IFDEF COMPILER_10_UP}
+    property OnMouseEnter;
+    property OnMouseLeave;
+    {$ENDIF}
     property OnMouseMove;
     property OnMouseUp;
     property OnStartDock;
@@ -3576,7 +3621,7 @@ procedure TTntDateTimePicker.WMLButtonDown(var Message: TWMLButtonDown);
       if (Hdr.dwFlags <> Cardinal(GDT_ERROR)) then begin
         if Hdr.dwFlags = GDT_NONE then
           ZeroMemory(@Hdr.st, SizeOf(Hdr.st));
-        Perform(CN_NOTIFY, Handle, Integer(@Hdr));
+        Perform(CN_NOTIFY, Integer(Handle), Integer(@Hdr));
       end;
     end;
 
@@ -3613,7 +3658,7 @@ begin
   Hdr.stStart := Range[1];
   SetLength(Days, Hdr.cDayState);
   Hdr.prgDayState := @Days[0];
-  SendMessage(Handle, CN_NOTIFY, Handle, Integer(@Hdr));
+  SendMessage(Handle, CN_NOTIFY, Integer(Handle), Integer(@Hdr));
   // update day state
   SendMessage(Handle, MCM_SETDAYSTATE, Hdr.cDayState, Longint(Hdr.prgDayState))
 end;
@@ -4489,13 +4534,18 @@ end;
 procedure TTntCustomTreeView.CreateWnd;
 begin
   inherited;
-  FreeAndNil(FSavedNodeText);
+  if FSavedNodeText <> nil then begin
+    FreeAndNil(FSavedNodeText);
+    SortType := FSavedSortType;
+  end;
 end;
 
 procedure TTntCustomTreeView.DestroyWnd;
 begin
   if (not (csDestroying in ComponentState)) then begin
     FSavedNodeText := TTntStringList.Create;
+    FSavedSortType := SortType;
+    SortType := stNone; // when recreating window, we are expecting items to come back in same order
     SaveNodeTextToStrings(Items, FSavedNodeText);
   end;
   inherited;
