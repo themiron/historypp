@@ -767,7 +767,7 @@ begin
     Self.Left := (Screen.Width-Self.Width) div 2;
     Self.Top := (Screen.Height - Self.Height) div 2;
   end;
-    // if we are passord-protected (cbPass.Enabled) and
+    // if we are password-protected (cbPass.Enabled) and
   // have PROTSEL (not (cbPass.Checked)) then load
   // checkbox from DB
   if (cbPass.Enabled) and not (cbPass.Checked) then begin
@@ -904,7 +904,7 @@ var
 begin
 Utils_SaveWindowPosition(Self.Handle,0,'HistoryPlusPlus','GlobalSearchWindow.');
 
-  // if we are passord-protected (cbPass.Enabled) and
+  // if we are password-protected (cbPass.Enabled) and
   // have PROTSEL (GetPassMode = PASSMODE_PROTSEL) then save
   // checkbox to DB
   if (cbPass.Enabled) and (GetPassMode = PASSMODE_PROTSEL) then
