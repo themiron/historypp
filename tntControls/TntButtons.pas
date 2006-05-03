@@ -47,6 +47,7 @@ type
     procedure DefineProperties(Filer: TFiler); override;
     function GetActionLinkClass: TControlActionLinkClass; override;
     procedure ActionChange(Sender: TObject; CheckDefaults: Boolean); override;
+    procedure WndProc(var Message: TMessage); override;
   published
     property Caption: TWideCaption read GetCaption write SetCaption stored IsCaptionStored;
     property Hint: WideString read GetHint write SetHint stored IsHintStored;
@@ -130,6 +131,13 @@ type
     FGlyph: Pointer;
     FxxxxDown: Boolean;
     FDragging: Boolean;
+    FxxxxAllowAllUp: Boolean;
+    FxxxxLayout: TButtonLayout;
+    FxxxxSpacing: Integer;
+    FxxxxTransparent: Boolean;
+    FxxxxMargin: Integer;
+    FxxxxFlat: Boolean;
+    FMouseInControl: Boolean;
   end;
 
   {$IFDEF COMPILER_6} // verified against VCL source in Delphi 6 and BCB 6
@@ -251,7 +259,7 @@ begin
       {$IFDEF COMPILER_7_UP}
       if WordWrap then
         Tnt_DrawTextW(Handle, PWideChar(Caption), Length(Caption), TextBounds,
-          DT_CENTER or DT_VCENTER or BiDiFlags or DT_WORDBREAK) 
+          DT_CENTER or DT_VCENTER or BiDiFlags or DT_WORDBREAK)
       else
       {$ENDIF}
         Tnt_DrawTextW(Handle, PWideChar(Caption), Length(Caption), TextBounds,
@@ -666,6 +674,27 @@ end;
 function TTntSpeedButton.GetActionLinkClass: TControlActionLinkClass;
 begin
   Result := TntControl_GetActionLinkClass(Self, inherited GetActionLinkClass);
+end;
+
+procedure TTntSpeedButton.WndProc(var Message: TMessage);
+var
+  P : TPoint;
+  Mic: Boolean;
+begin
+  inherited;
+  // hack to avoid buttons always hovered in deplhi 7
+  if ((Message.Msg = WM_MOUSEMOVE) or (Message.Msg = WM_NCMOUSEMOVE)) then begin
+    P := Point(Message.LParamLo, Message.LParamHi);
+    THackSpeedButton(Self).FMouseInControl := PtInRect(ClientRect,P);
+    MouseCapture := THackSpeedButton(Self).FMouseInControl;
+    if THackSpeedButton(Self).FMouseInControl then
+      //Perform(CM_MOUSEENTER,0,0)
+    else begin
+      THackSpeedButton(Self).FDragging := False;
+      FState := bsUp;
+      Perform(CM_MOUSELEAVE,0,0);
+    end;
+  end;
 end;
 
 {$IFDEF COMPILER_10_UP}

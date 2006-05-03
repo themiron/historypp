@@ -184,6 +184,7 @@ object HistoryFrm: THistoryFrm
           Top = 2
           Width = 18
           Height = 17
+          AllowAllUp = True
           Anchors = [akTop, akRight]
           Flat = True
           Glyph.Data = {
@@ -261,7 +262,6 @@ object HistoryFrm: THistoryFrm
       Top = 2
       Width = 574
       Height = 28
-      Anchors = [akLeft, akTop, akRight, akBottom]
       AutoSize = True
       BorderWidth = 1
       ButtonWidth = 43
