@@ -37,17 +37,17 @@ object HistoryFrm: THistoryFrm
     TabOrder = 0
     object spSess: TTntSplitter
       Left = 158
-      Top = 61
-      Height = 259
+      Top = 64
+      Height = 256
       AutoSnap = False
       MinSize = 100
       Visible = False
     end
     object paGrid: TPanel
       Left = 161
-      Top = 61
+      Top = 64
       Width = 415
-      Height = 259
+      Height = 256
       Align = alClient
       BevelOuter = bvNone
       BorderStyle = bsSingle
@@ -56,7 +56,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 0
         Width = 411
-        Height = 255
+        Height = 252
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         MultiSelect = True
@@ -100,7 +100,7 @@ object HistoryFrm: THistoryFrm
     end
     object paTop: TPanel
       Left = 2
-      Top = 30
+      Top = 33
       Width = 574
       Height = 31
       Align = alTop
@@ -152,9 +152,9 @@ object HistoryFrm: THistoryFrm
     end
     object paSess: TPanel
       Left = 2
-      Top = 61
+      Top = 64
       Width = 156
-      Height = 259
+      Height = 256
       Align = alLeft
       BevelOuter = bvLowered
       TabOrder = 2
@@ -202,7 +202,7 @@ object HistoryFrm: THistoryFrm
         Left = 1
         Top = 22
         Width = 154
-        Height = 236
+        Height = 233
         Align = alClient
         BevelInner = bvNone
         BorderStyle = bsNone
@@ -257,138 +257,6 @@ object HistoryFrm: THistoryFrm
         OnKeyUp = edFilterKeyUp
       end
     end
-    object Toolbar: TTntToolBar
-      Left = 2
-      Top = 2
-      Width = 574
-      Height = 28
-      AutoSize = True
-      BorderWidth = 1
-      ButtonWidth = 43
-      EdgeInner = esNone
-      EdgeOuter = esNone
-      Images = ilToolbar
-      List = True
-      ParentShowHint = False
-      ShowCaptions = True
-      ShowHint = True
-      TabOrder = 4
-      Transparent = True
-      object tbSessions: TTntToolButton
-        Left = 0
-        Top = 2
-        Hint = 'Show conversations (F4)'
-        AutoSize = True
-        Style = tbsCheck
-        OnClick = tbSessionsClick
-      end
-      object TntToolButton7: TTntToolButton
-        Left = 7
-        Top = 2
-        Width = 7
-        Style = tbsSeparator
-      end
-      object tbSearch: TTntToolButton
-        Left = 14
-        Top = 2
-        Hint = 'Find'
-        AutoSize = True
-        Grouped = True
-        Style = tbsCheck
-        OnClick = tbFilterClick
-      end
-      object tbFilter: TTntToolButton
-        Left = 21
-        Top = 2
-        Hint = 'Filter'
-        AutoSize = True
-        Grouped = True
-        Style = tbsCheck
-        OnClick = tbFilterClick
-      end
-      object TntToolButton3: TTntToolButton
-        Left = 28
-        Top = 2
-        Width = 7
-        Style = tbsSeparator
-      end
-      object tbCopy: TTntToolButton
-        Left = 35
-        Top = 2
-        Hint = 'Copy'
-        AutoSize = True
-      end
-      object tbDelete: TTntToolButton
-        Left = 42
-        Top = 2
-        Hint = 'Delete'
-        AutoSize = True
-        OnClick = tbDeleteClick
-      end
-      object tbSave: TTntToolButton
-        Left = 49
-        Top = 2
-        Hint = 'Save'
-        AutoSize = True
-        Visible = False
-      end
-      object TntToolButton2: TTntToolButton
-        Left = 56
-        Top = 2
-        Width = 7
-        Style = tbsSeparator
-      end
-      object tbEventsFilter: TTntToolButton
-        Left = 63
-        Top = 2
-        AutoSize = True
-        DropdownMenu = pmEventsFilter
-        Style = tbsDropDown
-        OnClick = tbEventsFilterClick
-      end
-      object TntToolButton4: TTntToolButton
-        Left = 83
-        Top = 2
-        Width = 7
-        Style = tbsSeparator
-      end
-      object tbHistory: TTntToolButton
-        Left = 90
-        Top = 2
-        Hint = 'History'
-        AutoSize = True
-        DropdownMenu = pmHistory
-        Style = tbsDropDown
-        OnClick = tbHistoryClick
-      end
-      object TntToolButton5: TTntToolButton
-        Left = 110
-        Top = 2
-        Width = 7
-        Style = tbsSeparator
-      end
-      object tbOptions: TTntToolButton
-        Left = 117
-        Top = 2
-        Hint = 'Options'
-        AutoSize = True
-        DropdownMenu = pmOptions
-      end
-      object TntToolButton6: TTntToolButton
-        Left = 124
-        Top = 2
-        Width = 7
-        Style = tbsSeparator
-        Visible = False
-      end
-      object tbHistorySearch: TTntToolButton
-        Left = 131
-        Top = 2
-        Hint = 'History Search'
-        AutoSize = True
-        OnClick = tbHistorySearchClick
-      end
-    end
     object paSearch: TTntPanel
       Left = 2
       Top = 320
@@ -396,7 +264,7 @@ object HistoryFrm: THistoryFrm
       Height = 25
       Align = alBottom
       BevelOuter = bvNone
-      TabOrder = 5
+      TabOrder = 4
       Visible = False
       OnResize = paSearchResize
       object paSearchStatus: TTntPanel
@@ -484,6 +352,145 @@ object HistoryFrm: THistoryFrm
           OnChange = edSearchChange
           OnKeyDown = edSearchKeyDown
           OnKeyUp = edSearchKeyUp
+        end
+      end
+    end
+    object TopPanel: TPanel
+      Left = 2
+      Top = 2
+      Width = 574
+      Height = 31
+      Align = alTop
+      AutoSize = True
+      BevelOuter = bvNone
+      TabOrder = 5
+      object laFilterText: TTntLabel
+        Left = 299
+        Top = 0
+        Width = 275
+        Height = 31
+        Align = alClient
+        Alignment = taRightJustify
+        Caption = '>>'
+        Layout = tlCenter
+        OnDblClick = tbEventsFilterClick
+      end
+      object Toolbar: TTntToolBar
+        Left = 0
+        Top = 0
+        Width = 299
+        Height = 31
+        Align = alLeft
+        AutoSize = True
+        BorderWidth = 2
+        EdgeInner = esNone
+        EdgeOuter = esNone
+        Flat = True
+        Images = ilToolbar
+        List = True
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 0
+        Transparent = True
+        Wrapable = False
+        object tbSessions: TTntToolButton
+          Left = 0
+          Top = 0
+          Hint = 'Show conversations (F4)'
+          Style = tbsCheck
+          OnClick = tbSessionsClick
+        end
+        object TntToolButton7: TTntToolButton
+          Left = 23
+          Top = 0
+          Width = 7
+          Style = tbsSeparator
+        end
+        object tbSearch: TTntToolButton
+          Left = 30
+          Top = 0
+          Hint = 'Find'
+          Grouped = True
+          Style = tbsCheck
+          OnClick = tbFilterClick
+        end
+        object tbFilter: TTntToolButton
+          Left = 53
+          Top = 0
+          Hint = 'Filter'
+          Grouped = True
+          Style = tbsCheck
+          OnClick = tbFilterClick
+        end
+        object TntToolButton3: TTntToolButton
+          Left = 76
+          Top = 0
+          Width = 7
+          Style = tbsSeparator
+        end
+        object tbCopy: TTntToolButton
+          Left = 83
+          Top = 0
+          Hint = 'Copy'
+        end
+        object tbDelete: TTntToolButton
+          Left = 106
+          Top = 0
+          Hint = 'Delete'
+          OnClick = tbDeleteClick
+        end
+        object tbSave: TTntToolButton
+          Left = 129
+          Top = 0
+          Hint = 'Save'
+          Visible = False
+        end
+        object TntToolButton2: TTntToolButton
+          Left = 152
+          Top = 0
+          Width = 7
+          Style = tbsSeparator
+        end
+        object tbEventsFilter: TTntToolButton
+          Left = 159
+          Top = 0
+          Hint = 'Event Filter'
+          DropdownMenu = pmEventsFilter
+          Marked = True
+          Style = tbsDropDown
+          OnClick = tbEventsFilterClick
+        end
+        object TntToolButton4: TTntToolButton
+          Left = 195
+          Top = 0
+          Width = 7
+          Style = tbsSeparator
+        end
+        object tbHistory: TTntToolButton
+          Left = 202
+          Top = 0
+          Hint = 'History'
+          DropdownMenu = pmHistory
+          Style = tbsDropDown
+          OnClick = tbHistoryClick
+        end
+        object tbHistorySearch: TTntToolButton
+          Left = 238
+          Top = 0
+          Hint = 'History Search'
+          OnClick = tbHistorySearchClick
+        end
+        object TntToolButton5: TTntToolButton
+          Left = 261
+          Top = 0
+          Width = 7
+          Style = tbsSeparator
+        end
+        object tbOptions: TTntToolButton
+          Left = 268
+          Top = 0
+          Hint = 'Options'
+          DropdownMenu = pmOptions
         end
       end
     end
@@ -760,8 +767,8 @@ object HistoryFrm: THistoryFrm
   end
   object pmOptions: TTntPopupMenu
     OnPopup = pmPopup
-    Left = 364
-    Top = 27
+    Left = 236
+    Top = 31
     object IconsEnabled1: TTntMenuItem
       Caption = 'Show event icons'
       Checked = True
@@ -874,10 +881,11 @@ object HistoryFrm: THistoryFrm
   object ilToolbar: TImageList
     DrawingStyle = dsFocus
     ShareImages = True
-    Left = 460
+    Left = 276
+    Top = 32
   end
   object pmHistory: TTntPopupMenu
-    Left = 224
+    Left = 200
     Top = 32
     object SaveasHTML2: TTntMenuItem
       Caption = 'Export as &HTML...'
@@ -912,8 +920,8 @@ object HistoryFrm: THistoryFrm
     end
   end
   object pmEventsFilter: TTntPopupMenu
-    Left = 160
-    Top = 28
+    Left = 168
+    Top = 32
     object Showall1: TTntMenuItem
       Caption = '-'
     end

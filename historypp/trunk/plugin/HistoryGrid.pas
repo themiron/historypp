@@ -349,6 +349,9 @@ type
     WindowPrePainting: Boolean;
     WindowPrePainted: Boolean;
     FExpandHeaders: Boolean;
+
+    FirstRun: Boolean;
+
     procedure SetCodepage(const Value: Cardinal);
     procedure SetShowHeaders(const Value: Boolean);
     function GetIdx(Index: Integer): Integer;
@@ -463,7 +466,7 @@ type
     function FindItemAt(x,y: Integer): Integer; overload;
     function GetItemRect(Item: Integer): TRect;
     function IsSelected(Item: Integer): Boolean;
-    procedure MakeVisible(Item: Integer);
+    procedure MakeVisible(Item: Integer; BottomAlign: boolean = false);
     procedure BeginUpdate;
     procedure EndUpdate;
     function IsVisible(Item: Integer): Boolean;
@@ -720,7 +723,7 @@ begin
   CHeaderHeight := -1;
   PHeaderHeight := -1;
   FExpandHeaders := True;
-  
+
   TabStop := True;
   MultiSelect := True;
 
@@ -772,6 +775,8 @@ begin
   LogY := GetDeviceCaps(dc, LOGPIXELSY);
   ReleaseDC(0,dc);
   VLineScrollSize := Round(LogY*((13*5)/96));
+
+  FirstRun := true;
 end;
 
 destructor THistoryGrid.Destroy;
@@ -1358,7 +1363,11 @@ begin
     SetLength(FSelItems,0);
   end;
   if FSelected <> -1 then begin
-    MakeVisible(Selected);
+    if FirstRun then begin
+      MakeVisible(Selected,(Value=0) and Reversed);
+      FirstRun := false;
+    end else
+      MakeVisible(Selected);
   end;
   if Assigned(FOnSelect) then
     FOnSelect(Self,Selected,OldSelected);
@@ -2217,20 +2226,24 @@ end;
 procedure THistoryGrid.MakeTopmost(Item: Integer);
 begin
   if (Item < 0) or (Item >= Count) then exit;
-  SetSBPos(GetIdx(Item));  
+  SetSBPos(GetIdx(Item));
 end;
 
-procedure THistoryGrid.MakeVisible(Item: Integer);
+procedure THistoryGrid.MakeVisible(Item: Integer; BottomAlign: boolean = false);
 var
   First: Integer;
   SumHeight: Integer;
 begin
   if Item = -1 then exit;
   // load it to make positioning correct
-  LoadItem(Item);
+  LoadItem(Item,True);
   if not IsMatched(Item) then exit;
   if Item = GetFirstVisible then begin
-    ScrollGridBy(-TopItemOffset,False);
+    if BottomAlign and (FItems[Item].Height > ClientHeight) then begin
+      TopItemOffset := 0;
+      ScrollGridBy(FItems[Item].Height - ClientHeight,False);
+    end else
+      ScrollGridBy(-TopItemOffset,False);
     exit;
   end;
   if GetIdx(Item) < GetIdx(GetFirstVisible) then
