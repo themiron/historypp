@@ -166,7 +166,6 @@ type
     tvSess: TTntTreeView;
     tbSave: TTntToolButton;
     tbCopy: TTntToolButton;
-    TntToolButton6: TTntToolButton;
     tbHistorySearch: TTntToolButton;
     imSearchEndOfPage: TTntImage;
     imSearchNotFound: TTntImage;
@@ -179,6 +178,8 @@ type
     Customize1: TTntMenuItem;
     N6: TTntMenuItem;
     Passwordprotection1: TTntMenuItem;
+    TopPanel: TPanel;
+    laFilterText: TTntLabel;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -2560,7 +2561,8 @@ begin
     fi := FilterIndex;
   name := TranslateWideW(hppEventFilters[fi].Name);
   name := Tnt_WideStringReplace(name,'&','&&',[rfReplaceAll]);
-  tbEventsFilter.Caption := name;
+  laFilterText.Caption := WideFormat(TranslateWideW('Filter: %s'),[name])+'  ';
+  //tbEventsFilter.Caption := name;
   tbEventsFilter.Tag := fi;
   for i := 0 to pmHistory.Items.Count-1 do
     if pmEventsFilter.Items[i].RadioItem then
@@ -3009,7 +3011,12 @@ end;
 
 procedure THistoryFrm.tbEventsFilterClick(Sender: TObject);
 begin
-  SetEventFilter(-1);
+  //SetEventFilter(-1);
+  //tbEventsFilter.CheckMenuDropdown;
+  if tbEventsFilter.Tag = 0 then
+    tbEventsFilter.CheckMenuDropdown
+  else
+    SetEventFilter(0);
 end;
 
 end.
