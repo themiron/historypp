@@ -137,13 +137,10 @@ begin
       if Lock then LockWindowUpdate(0);
     end;
   end else begin
-    // theMIROn: does we really need to show all events on filtered
-    // history 'couse we will lost current top item offset and
-    // positioning therefore, what looks awful and wrong for me
-    // such kind of automatization should be done in form instead
-    //
-    //wHistory.ShowAllEvents;
-    //if index <> -1 then wHistory.hg.Selected := index;
+    if index <> -1 then begin
+      wHistory.ShowAllEvents;
+      wHistory.hg.Selected := index;
+    end;
     // restore even if minimized
     // and we ain't have no double hooks
     ShowWindow(wHistory.Handle,SW_SHOWNORMAL);
