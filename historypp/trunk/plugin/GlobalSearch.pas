@@ -205,6 +205,8 @@ type
   protected
     procedure LoadWindowPosition;
     procedure SaveWindowPosition;
+  public
+    procedure SetRecentEventsPosition(OnTop: Boolean);
   published
     // fix for splitter baug:
     procedure AlignControls(Control: TControl; var ARect: TRect); override;
@@ -783,7 +785,7 @@ begin
   edFilter.Width := paFilter.Width - edFilter.Left - 2;
 
 
-  hg.Reversed := (GetDBInt(hppDBName,'SortOrder',0) = 0);
+  SetRecentEventsPosition(GetDBInt(hppDBName,'SortOrder',0) <> 0);
 
   ShowAdvancedPanel(GetDBBool(hppDBName,'GlobalSearchWindow.ShowAdvanced',False));
   case GetDBInt(hppDBName,'GlobalSearchWindow.AdvancedOptions',0) of
@@ -1243,6 +1245,11 @@ begin
     if GetSearchItem(hg.Selected).Contact.Handle = 0 then exit;
     SendMessageTo(GetSearchItem(hg.Selected).Contact.Handle);
   end;
+end;
+
+procedure TfmGlobalSearch.SetRecentEventsPosition(OnTop: Boolean);
+begin
+  hg.Reversed := not OnTop;
 end;
 
 procedure TfmGlobalSearch.FormKeyDown(Sender: TObject; var Key: Word;
