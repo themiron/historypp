@@ -98,6 +98,7 @@ object EventDetailsFrm: TEventDetailsFrm
       Align = alClient
       BiDiMode = bdLeftToRight
       ParentBiDiMode = False
+      PopupMenu = pmEText
       ReadOnly = True
       ScrollBars = ssVertical
       TabOrder = 0
@@ -307,6 +308,38 @@ object EventDetailsFrm: TEventDetailsFrm
         ReadOnly = True
         TabOrder = 1
       end
+    end
+  end
+  object pmEText: TTntPopupMenu
+    OnPopup = pmETextPopup
+    Left = 68
+    Top = 173
+    object CopyText: TTntMenuItem
+      Caption = '&Copy'
+      ShortCut = 16451
+      OnClick = CopyTextClick
+    end
+    object CopyAll: TTntMenuItem
+      Caption = 'Copy All'
+      OnClick = CopyAllClick
+    end
+    object SelectAll: TTntMenuItem
+      Caption = '&Select All'
+      ShortCut = 16449
+      OnClick = SelectAllClick
+    end
+    object N1: TTntMenuItem
+      Caption = '-'
+    end
+    object SendMessage1: TTntMenuItem
+      Caption = 'Send &Message'
+      ShortCut = 16461
+      OnClick = SendMessage1Click
+    end
+    object ReplyQuoted1: TTntMenuItem
+      Caption = '&Reply Quoted'
+      ShortCut = 16466
+      OnClick = ReplyQuoted1Click
     end
   end
 end

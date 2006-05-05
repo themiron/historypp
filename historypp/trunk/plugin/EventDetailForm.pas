@@ -38,7 +38,7 @@ uses
   TntForms,
   m_globaldefs, m_api, hpp_messages,
   hpp_global, hpp_contacts, hpp_events, hpp_forms, TntExtCtrls, ComCtrls,
-  TntComCtrls;
+  TntComCtrls, Menus, TntMenus;
 
 type
   TEventDetailsFrm = class(TTntForm)
@@ -71,6 +71,13 @@ type
     EToUIN: TTntEdit;
     EToMore: TTntButton;
     EText: TTntRichEdit;
+    pmEText: TTntPopupMenu;
+    CopyText: TTntMenuItem;
+    CopyAll: TTntMenuItem;
+    SelectAll: TTntMenuItem;
+    N1: TTntMenuItem;
+    ReplyQuoted1: TTntMenuItem;
+    SendMessage1: TTntMenuItem;
     procedure PrevBtnClick(Sender: TObject);
     procedure NextBtnClick(Sender: TObject);
     procedure EFromMoreClick(Sender: TObject);
@@ -85,6 +92,12 @@ type
     procedure FormHide(Sender: TObject);
     procedure bnReplyClick(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure pmETextPopup(Sender: TObject);
+    procedure SelectAllClick(Sender: TObject);
+    procedure CopyTextClick(Sender: TObject);
+    procedure CopyAllClick(Sender: TObject);
+    procedure SendMessage1Click(Sender: TObject);
+    procedure ReplyQuoted1Click(Sender: TObject);
   private
     //FRowIdx: integer;
     FParentForm: THistoryFrm;
@@ -259,7 +272,6 @@ procedure TEventDetailsFrm.FormCreate(Sender: TObject);
 begin
   Icon.ReleaseHandle;
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
-
   DesktopFont := True;
   MakeFontsParent(Self);
   TranslateForm;
@@ -301,7 +313,7 @@ var
 begin
   Assert(Assigned(FParentForm));
   FItem := Value;
-  
+
   EMsgType.Text := GetMsgType(FParentForm.hg.Items[FItem].MessageType,FParentForm.hg.Items[FItem].EventType);
   EDateTime.Text := TimestampToString(FParentForm.hg.Items[FItem].Time);
   FromContact := false;
@@ -365,6 +377,18 @@ begin
 end;
 
 procedure TEventDetailsFrm.TranslateForm;
+
+  procedure TranslateMenu(mi: TMenuItem);
+  var
+    i: integer;
+  begin
+    for i := 0 to mi.Count-1 do
+      if mi.Items[i].Caption <> '-' then begin
+        mi.Items[i].Caption := TranslateWideW(mi.Items[i].Caption{TRANSLATE-IGNORE});
+        if mi.Items[i].Count > 0 then TranslateMenu(mi.Items[i]);
+      end;
+  end;
+
 begin
   Caption := TranslateWideW(Caption);
   GroupBox1.Caption:=TranslateWideW(GroupBox1.Caption);
@@ -382,6 +406,51 @@ begin
   NextBtn.Caption:=TranslateWideW(NextBtn.Caption);
   CloseBtn.Caption:=TranslateWideW(CloseBtn.Caption);
   bnReply.Caption:=TranslateWideW(bnReply.Caption);
+  TranslateMenu(pmEText.Items);
+end;
+
+procedure TEventDetailsFrm.pmETextPopup(Sender: TObject);
+begin
+  CopyText.Enabled := (EText.SelLength > 0);
+  SendMessage1.Enabled := (ParentForm.hContact <> 0);
+  ReplyQuoted1.Enabled := (ParentForm.hContact <> 0);
+end;
+
+procedure TEventDetailsFrm.SelectAllClick(Sender: TObject);
+begin
+  EText.SelectAll;
+end;
+
+procedure TEventDetailsFrm.CopyTextClick(Sender: TObject);
+begin
+  EText.CopyToClipboard;
+end;
+
+procedure TEventDetailsFrm.CopyAllClick(Sender: TObject);
+var
+  ss,sl: integer;
+begin
+  //CopyToClip(EText.Lines.Text,Handle,ParentForm.UserCodepage);
+  EText.Lines.BeginUpdate;
+  ss := EText.SelStart;
+  sl := EText.SelLength;
+  EText.SelectAll;
+  EText.CopyToClipboard;
+  EText.SelStart := ss;
+  EText.SelLength := sl;
+  EText.Lines.EndUpdate;
+end;
+
+procedure TEventDetailsFrm.SendMessage1Click(Sender: TObject);
+begin
+  if ParentForm.hContact = 0 then exit;
+  SendMessageTo(ParentForm.hContact);
+end;
+
+procedure TEventDetailsFrm.ReplyQuoted1Click(Sender: TObject);
+begin
+  if ParentForm.hContact = 0 then exit;
+  FParentForm.ReplyQuoted(FItem);
 end;
 
 end.

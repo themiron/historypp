@@ -240,8 +240,8 @@ type
     FRichHeight: Integer;
 
     function FindGridItem(GridItem: Integer): Integer;
-    procedure ApplyItemToRich(Item: PRichItem);
     procedure PaintRichToBitmap(Item: PRichItem);
+    procedure ApplyItemToRich(Item: PRichItem);
 
     procedure OnRichResize(Sender: TObject; Rect: TRect);
   protected
@@ -416,7 +416,6 @@ type
     {$ENDIF}
     function GetHitTests(X,Y: Integer): TGridHitTests;
     {$IFDEF RENDER_RICH}
-    procedure ApplyItemToRich(Item: Integer; RichEdit: TTntRichEdit = nil);
     function GetRichEditRect(Item: Integer): TRect;
     procedure HandleRichEditMouse(Message: DWord; X,Y: Integer);
     {$ENDIF}
@@ -492,7 +491,8 @@ type
 
     procedure EditInline(Item: Integer);
     procedure CancelInline;
-    property InlineRichEdit: TTntRichEdit read FRichInline;
+    property InlineRichEdit: TTntRichEdit read FRichInline write FRichInline;
+    property RichEdit: TTntRichEdit read FRich write FRich;
 
     property Options: TGridOptions read FOptions write SetOptions;
     property HotString: WideString read SearchPattern;
@@ -511,6 +511,7 @@ type
     function GetItemRTL(Item: Integer): Boolean;
 
     //procedure CopyToClipSelected(const Format: WideString; ACodepage: Cardinal = CP_ACP);
+    procedure ApplyItemToRich(Item: Integer; RichEdit: TTntRichEdit = nil; UseSelection: Boolean = True);
 
     function FormatItem(Item: Integer; Format: WideString): WideString;
     function FormatItems(ItemList: array of Integer; Format: WideString): WideString;
@@ -1675,7 +1676,7 @@ begin
 end;
 
 {$IFDEF RENDER_RICH}
-procedure THistoryGrid.ApplyItemToRich(Item: Integer; RichEdit: TTntRichEdit = nil);
+procedure THistoryGrid.ApplyItemToRich(Item: Integer; RichEdit: TTntRichEdit = nil; UseSelection: Boolean = True);
 var
   textFont: TFont;
   FontColor,BackColor: TColor;
@@ -1693,7 +1694,7 @@ begin
       FRich := RichEdit;
 
   Options.GetItemOptions(FItems[Item].MessageType,textFont,BackColor);
-  if (IsSelected(Item)) and (not (RichEdit = FRichInline)) then begin
+  if (IsSelected(Item)) and (not (RichEdit = FRichInline)) and UseSelection then begin
     FontColor := Options.ColorSelectedText;
     BackColor := Options.ColorSelected;
   end else begin
@@ -1731,7 +1732,7 @@ begin
   end;
 
   // do not allow changed back and color of selection
-  if isSelected(item) and (State <> gsInline) then begin
+  if isSelected(item) and (State <> gsInline) and UseSelection then begin
     ZeroMemory(@cf,SizeOf(cf));
     cf.cbSize := SizeOf(cf);
     cf.dwMask := CFM_COLOR;
@@ -2258,9 +2259,14 @@ begin
       Inc(SumHeight,FItems[Item].Height);
       Item := GetUp(Item);
     end;
-    if GetIdx(Item) >= MaxSBPos  then
-      SetSBPos(GetIdx(Item)+1)
-    else begin
+    if GetIdx(Item) >= MaxSBPos then begin
+      SetSBPos(GetIdx(Item)+1);
+      // strange, but if last message is bigger then client,
+      // it always scrolls to down, but grid thinks, that it's
+      // aligned to top (whan entering inline mode, for ex.)
+      if Item = First then
+        TopItemOffset := 0;
+    end else begin
       SetSBPos(getIdx(Item));
       if Item <> First then
         TopItemOffset := (SumHeight + FItems[Item].Height) - ClientHeight;
@@ -2386,6 +2392,7 @@ var
   subst: WideString;
   from_nick,to_nick,nick: WideString;
   dt: TDateTime;
+  mes: WideString;
 begin
   // item MUST be loaded before calling IntFormatItem!
 
@@ -2402,6 +2409,10 @@ begin
         end;
     end
     else begin
+      if Options.BBCodesEnabled then
+        mes := DoStripBBCodes(FItems[Item].Text)
+      else
+        mes := FItems[Item].Text;
       if mtIncoming in FItems[Item].MessageType then begin
         from_nick := ContactName;
         to_nick := ProfileName;
@@ -2417,13 +2428,14 @@ begin
       // we are doing many if's here, because I don't want to pre-compose all the
       // possible tokens into array. That's because some tokens take some time to
       // be generated, and if they're not used, this time would be wasted.
-      if tok[toksp[i]] = '%mes%' then subst := FItems[Item].Text
+      if tok[toksp[i]] = '%mes%' then
+        subst := mes
       else
       if tok[toksp[i]] = '%adj_mes%' then
-        subst := WideWrapText(FItems[Item].Text,#13#10,[' ',#9,'-'],72)
+        subst := WideWrapText(mes,#13#10,[' ',#9,'-'],72)
       else
       if tok[toksp[i]] = '%quot_mes%' then
-        subst := '> '+WideWrapText(FItems[Item].Text,#13#10+'> ',[' ',#9,'-'],70)
+        subst := '> '+WideWrapText(mes,#13#10+'> ',[' ',#9,'-'],70)
       else
       if tok[toksp[i]] = '%nick%' then subst := nick
       else
@@ -3083,7 +3095,7 @@ State := gsSearch;
 try
 while (Item >= 0) and (Item < C) do begin
   if CaseSensitive then begin
-    if AnsiPos(Text,FItems[Item].Text) <> 0 then begin
+    if Pos(Text,FItems[Item].Text) <> 0 then begin
       Result := Item;
       break;
       end;
@@ -3703,24 +3715,29 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
 
   procedure SaveUnicode;
   var
-    date,cnt: WideString;
+    mes,date,cnt: WideString;
   begin
     if mtIncoming in FItems[Item].MessageType then cnt := ContactName
-    else cnt := ProfileName;
+                                              else cnt := ProfileName;
+    if Options.BBCodesEnabled then mes := DoStripBBCodes(FItems[Item].Text)
+                              else mes := FItems[Item].Text;
     date := GetTime(FItems[Item].Time);
     WriteWideString(Stream,WideFormat('[%s] %s:'#13#10,[date,cnt]));
-    WriteWideString(Stream,FItems[Item].Text+#13#10+#13#10);
+    WriteWideString(Stream,mes+#13#10+#13#10);
   end;
 
   procedure SaveText;
   var
     date,cnt: String;
+    mes: WideString;
   begin
     if mtIncoming in FItems[Item].MessageType then cnt := WideToAnsiString(ContactName,Codepage)
                                               else cnt := WideToAnsiString(ProfileName,Codepage);
+    if Options.BBCodesEnabled then mes := DoStripBBCodes(FItems[Item].Text)
+                              else mes := FItems[Item].Text;
     date := WideToAnsiString(GetTime(FItems[Item].Time),Codepage);
     WriteString(Stream,Format('[%s] %s:'#13#10,[date,cnt]));
-    WriteString(Stream,WideToAnsiString(FItems[Item].Text,Codepage)+#13#10+#13#10);
+    WriteString(Stream,WideToAnsiString(mes,Codepage)+#13#10+#13#10);
   end;
 
   procedure MesTypeToRTF(mt: TMessageTypes; out mes_id: integer);
@@ -4282,18 +4299,19 @@ end;
 
 procedure THistoryGrid.RichInlineOnKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if ((Key = VK_ESCAPE) or (Key = VK_RETURN)) then
-    FRichInline.Hide;
-  Key := 0;
+  if ((Key = VK_ESCAPE) or (Key = VK_RETURN)) then begin
+    CancelInline;
+    //FRichInline.Hide;
+    Key := 0;
+  end;
 end;
 
 procedure THistoryGrid.RichInlineOnKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if not FRichInline.Visible then begin
-    Key := 0;
     CancelInline;
-    end;
-  Key := 0;
+    Key := 0;
+  end;
 end;
 
 function THistoryGrid.GetRichEditRect(Item: Integer): TRect;
