@@ -64,13 +64,14 @@ type
   function DoSupportSmileys(wParam, lParam: DWord): Integer; cdecl;
   function DoSupportBBCodes(wParam, lParam: DWord): Integer; cdecl;
   function DoSupportBBCodesHTML(S: String): String; cdecl;
+  function DoStripBBCodes(S: WideString): WideString; cdecl;
   // math module support is out of order
   //function DoSupportMathModule(wParam, lParam: DWord): Integer; cdecl;
   function DoSupportMathModule(wParam, lParam: DWord): Integer; cdecl;
 
 implementation
 
-uses StrUtils, m_MathModule;
+uses StrUtils, TntSysUtils, m_MathModule;
 
 const
 
@@ -277,6 +278,30 @@ begin
         temp := temp1+temp2;
       end;
     until pos = 0;
+  end;
+  Result := temp;
+end;
+
+function DoStripBBCodes(S: WideString): WideString; cdecl;
+var
+  temp,temp1,temp2: WideString;
+  i,p,p2: integer;
+begin
+  temp := S;
+  for i := 0 to High(bbCodes) do begin
+    if bbCodes[i].esw = '' then
+      temp := Tnt_WideStringReplace(temp,bbCodes[i].ssw,'',[rfReplaceAll,rfIgnoreCase])
+    else repeat
+      p := Pos(bbCodes[i].ssw,temp);
+      if p > 0 then begin
+        temp1 := Copy(temp,1,p-1);
+        temp2 := Copy(temp,p,Length(temp)-p+1);
+        p2 := Pos(bbCodes[i].esw,temp2);
+        if p2 > 0 then
+          temp2 := Copy(temp2,p2+Length(bbCodes[i].esw),Length(temp2)-p2-Length(bbCodes[i].esw)+1);
+        temp := temp1+temp2;
+      end;
+    until p = 0;
   end;
   Result := temp;
 end;
