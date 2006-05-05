@@ -13,6 +13,11 @@ More...
 Event Info
 Type:
 Date/Time:
+&Copy
+Copy All
+&Select All
+Send &Message
+&Reply Quoted
 ;; Text found in ..\plugin\EventDetailForm.pas:
 Message
 URL

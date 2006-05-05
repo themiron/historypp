@@ -343,3 +343,4 @@ object EventDetailsFrm: TEventDetailsFrm
     end
   end
 end
+
