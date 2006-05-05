@@ -7,55 +7,6 @@
 ;; Trac: https://opensvn.csie.org/traccgi/historypp/trac.cgi/
 ;; 
 
-;; EventDetailForm.trans.txt file 
-
-;; Text found in ..\plugin\EventDetailForm.dfm:
-[Event Details]
-Event Details
-[Reply &Quoted]
-Reply &Quoted
-[&Close]
-&Close
-[From]
-From
-[Nick:]
-Nick:
-[ID:]
-ID:
-[More...]
-More...
-[To]
-To
-[Event Info]
-Event Info
-[Type:]
-Type:
-[Date/Time:]
-Date/Time:
-;; Text found in ..\plugin\EventDetailForm.pas:
-[Message]
-Message
-[URL]
-URL
-[File Transfer]
-File Transfer
-[Contacts]
-Contacts
-[You Were Added Message]
-You Were Added Message
-[Authorisation Request]
-Authorisation Request
-[System message]
-System message
-[SMS Message]
-SMS Message
-[WebPager]
-WebPager
-[EMail Express]
-EMail Express
-[Other event]
-Other event
-
 ;; PassCheckForm.trans.txt file 
 
 ;; Text found in ..\plugin\PassCheckForm.dfm:
@@ -139,6 +90,8 @@ Clear Search
 Sh&ow in context
 [Send &Message]
 Send &Message
+[Reply &Quoted]
+Reply &Quoted
 [&Copy]
 &Copy
 [Copy &Text]
@@ -214,6 +167,59 @@ Password not set
 [Password set]
 Password set
 
+;; EventDetailForm.trans.txt file 
+
+;; Text found in ..\plugin\EventDetailForm.dfm:
+[Event Details]
+Event Details
+[&Close]
+&Close
+[From]
+From
+[Nick:]
+Nick:
+[ID:]
+ID:
+[More...]
+More...
+[To]
+To
+[Event Info]
+Event Info
+[Type:]
+Type:
+[Date/Time:]
+Date/Time:
+[Copy All]
+Copy All
+[&Select All]
+&Select All
+[&Reply Quoted]
+&Reply Quoted
+;; Text found in ..\plugin\EventDetailForm.pas:
+[Message]
+Message
+[URL]
+URL
+[File Transfer]
+File Transfer
+[Contacts]
+Contacts
+[You Were Added Message]
+You Were Added Message
+[Authorisation Request]
+Authorisation Request
+[System message]
+System message
+[SMS Message]
+SMS Message
+[WebPager]
+WebPager
+[EMail Express]
+EMail Express
+[Other event]
+Other event
+
 ;; HistoryForm.trans.txt file 
 
 ;; Text found in ..\plugin\HistoryForm.dfm:
@@ -223,24 +229,6 @@ Password set
 History is empty
 [No such items]
 No such items
-[Show]
-Show
-[All Items]
-All Items
-[Incoming Messages]
-Incoming Messages
-[Outgoing Messages]
-Outgoing Messages
-[Files]
-Files
-[Link URLs]
-Link URLs
-[Status Changes]
-Status Changes
-[Recent at bottom]
-Recent at bottom
-[Recent on top]
-Recent on top
 [Conversations]
 Conversations
 [Show conversations (F4)]
@@ -305,10 +293,8 @@ ANSI Encoding
 System default codepage
 [Recent events on top]
 Recent events on top
-[Copy all]
-Copy all
-[Select all]
-Select all
+[Select &All]
+Select &All
 [Export as &HTML...]
 Export as &HTML...
 [Export as &XML...]
@@ -334,12 +320,12 @@ Do you really want to delete selected item?
 %.0n items in history
 [Full History [%s] - [%s]]
 Full History [%s] - [%s]
+[Phrase not found]
+Phrase not found
 [Continued from the top]
 Continued from the top
 [Continued from the bottom]
 Continued from the bottom
-[Phrase not found]
-Phrase not found
 [Search: %s (F3 to find next)]
 Search: %s (F3 to find next)
 ["%s" not found]
