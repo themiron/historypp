@@ -70,11 +70,7 @@ type
     paClient: TPanel;
     paGrid: TPanel;
     hg: THistoryGrid;
-    paTop: TPanel;
-    laFilter: TTntLabel;
-    cbFilter: TTntComboBox;
     sb: TTntStatusBar;
-    cbSort: TTntComboBox;
     pmLink: TTntPopupMenu;
     pmFile: TTntPopupMenu;
     paSess: TPanel;
@@ -116,10 +112,8 @@ type
     RTLEnabled2: TTntMenuItem;
     RTLDefault2: TTntMenuItem;
     SystemCodepage1: TTntMenuItem;
-    paFilter: TTntPanel;
     sbClearFilter: TTntSpeedButton;
     pbFilter: TPaintBox;
-    edFilter: TTntEdit;
     tiFilter: TTimer;
     ilToolbar: TImageList;
     Toolbar: TTntToolBar;
@@ -158,7 +152,7 @@ type
     N3: TTntMenuItem;
     paSearchStatus: TTntPanel;
     laSearchState: TTntLabel;
-    TntPanel2: TTntPanel;
+    paSearchPanel: TTntPanel;
     sbSearchNext: TTntSpeedButton;
     sbSearchPrev: TTntSpeedButton;
     edSearch: TTntEdit;
@@ -180,6 +174,7 @@ type
     Passwordprotection1: TTntMenuItem;
     TopPanel: TPanel;
     laFilterText: TTntLabel;
+    paSearchButtons: TTntPanel;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -197,9 +192,7 @@ type
       Shift: TShiftState);
     procedure edSearchKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tbFilterClick(Sender: TObject);
-    procedure paSearchResize(Sender: TObject);
     procedure pbSearchPaint(Sender: TObject);
-    procedure paFilterResize(Sender: TObject);
     procedure paPassHolderResize(Sender: TObject);
     procedure TntFormShow(Sender: TObject);
     procedure tvSessMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -221,7 +214,7 @@ type
     procedure hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
     procedure hgTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
     procedure hgPopup(Sender: TObject);
-    procedure cbFilterChange(Sender: TObject);
+    //procedure cbFilterChange(Sender: TObject);
     procedure hgSearchFinished(Sender: TObject; Text: WideString; Found: Boolean);
     procedure hgDblClick(Sender: TObject);
     procedure SaveSelected1Click(Sender: TObject);
@@ -231,7 +224,7 @@ type
     procedure Details1Click(Sender: TObject);
     procedure hgKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure hgState(Sender: TObject; State: TGridState);
-    procedure cbSortChange(Sender: TObject);
+    //procedure cbSortChange(Sender: TObject);
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure hgSelect(Sender: TObject; Item, OldItem: Integer);
     procedure hgXMLData(Sender: TObject; Index: Integer; var Item: TXMLItem);
@@ -272,11 +265,6 @@ type
     procedure CodepageChangeClick(Sender: TObject);
     procedure sbClearFilterClick(Sender: TObject);
     procedure pbFilterPaint(Sender: TObject);
-    procedure edFilterChange(Sender: TObject);
-    procedure edFilterKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
-    procedure edFilterKeyUp(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
     procedure StartHotFilterTimer;
     procedure EndHotFilterTimer;
     procedure tiFilterTimer(Sender: TObject);
@@ -285,6 +273,7 @@ type
     procedure EventsFilterItemClick(Sender: TObject);
     procedure Passwordprotection1Click(Sender: TObject);
     procedure tbEventsFilterClick(Sender: TObject);
+    procedure paSearchPanelResize(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -293,6 +282,7 @@ type
     FPasswordMode: Boolean;
     SavedLinkUrl: String;
     HotFilterString: WideString;
+    FilterState: Boolean;
 
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo);message WM_GetMinMaxInfo;
     //procedure WMSize(var Message: TWMSize); message WM_SIZE;
@@ -337,7 +327,7 @@ type
     function GridIndexToHistory(Index: Integer): Integer;
     function HistoryIndexToGrid(Index: Integer): Integer;
     function GetItemData(Index: Integer): THistoryItem;
-    procedure ApplyFilter(DoApply: boolean = true);
+    //procedure ApplyFilter(DoApply: boolean = true);
     procedure ReplyQuoted(Item: Integer);
     procedure OpenPassword;
 
@@ -624,7 +614,7 @@ begin
     ANSICodepage1.Add(mi);
   end;
   TranslateForm;
-  cbFilter.ItemIndex := 0;
+  //cbFilter.ItemIndex := 0;
   RecentFormat := sfHtml;
   hg.InlineRichEdit.PopupMenu := pmGridInline;
   //for i := 0 to pmOptions.Items.Count-1 do
@@ -955,7 +945,7 @@ begin
   with sbClearFilter.Glyph do begin
     Width := 16;
     Height := 16;
-    Canvas.Brush.Color := paFilter.Color;
+    Canvas.Brush.Color := paSearch.Color;
     Canvas.FillRect(Canvas.ClipRect);
     DrawiconEx(Canvas.Handle,0,0,
       hppIcons[HPP_ICON_HOTFILTERCLEAR].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
@@ -1210,7 +1200,7 @@ begin
   end;
 end;
 
-procedure THistoryFrm.cbFilterChange(Sender: TObject);
+{procedure THistoryFrm.cbFilterChange(Sender: TObject);
 var
   fil,filOthers: TMessageTypes;
 begin
@@ -1232,7 +1222,7 @@ begin
        fil := filOthers;
   end;
   hg.Filter := fil;
-end;
+end;}
 
 procedure THistoryFrm.hgSearchFinished(Sender: TObject; Text: WideString; Found: Boolean);
 var
@@ -1275,8 +1265,7 @@ end;
 
 procedure THistoryFrm.hgDblClick(Sender: TObject);
 begin
-  if hg.Selected = -1 then
-    exit;
+  if hg.Selected = -1 then exit;
   hg.EditInline(hg.Selected);
 end;
 
@@ -1592,21 +1581,21 @@ begin
   inherited;
 end;}
 
-procedure THistoryFrm.ApplyFilter(DoApply: boolean = true);
+{procedure THistoryFrm.ApplyFilter(DoApply: boolean = true);
 begin
   cbSortChange(cbSort);
   if not DoApply then cbFilter.ItemIndex := 0;
   cbFilterChange(cbFilter);
-end;
+end;}
 
-procedure THistoryFrm.cbSortChange(Sender: TObject);
+{procedure THistoryFrm.cbSortChange(Sender: TObject);
 begin
   if hg.Reversed = (cbSort.ItemIndex = 0) then exit;
   hg.Reversed := (cbSort.ItemIndex = 0);
   LastSearch := lsNone;
   LastHotIdx := -1;
   HotString := '';
-end;
+end;}
 
 procedure THistoryFrm.FormMouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
@@ -1647,12 +1636,8 @@ begin
     edSearch.Color := clWindow;
     exit;
   end;
-  
-  if Next then
-    Down := not hg.Reversed
-  else
-    Down := hg.Reversed;
-
+  if Next then Down := not hg.Reversed
+          else Down := hg.Reversed;
   item := hg.Search(edSearch.Text,False,False,False,FromNext,Down);
   ShowEndOfPage := (item = -1);
   if item = -1 then
@@ -1660,34 +1645,30 @@ begin
   if item <> -1 then begin
     hg.Selected := item;
     edSearch.Color := clWindow;
-  end
-  else begin
+  end else begin
     edSearch.Color := $008080FF;
     ShowEndOfPage := False;
     ShowNotFound := True;
   end;
-
   if ShowNotFound or ShowEndOfPage then begin
     imSearchNotFound.Visible := ShowNotFound;
     imSearchEndOfPage.Visible := ShowEndOfPage;
-    if ShowEndOfPage then begin
+    if ShowNotFound then
+      laSearchState.Caption := TranslateWideW('Phrase not found')
+    else if ShowEndOfPage then begin
       if Down then
         laSearchState.Caption := TranslateWideW('Continued from the top')
       else
         laSearchState.Caption := TranslateWideW('Continued from the bottom');
     end;
-    if ShowNotFound then begin
-      laSearchState.Caption := TranslateWideW('Phrase not found');
-    end;
-    // calculate a bit wider width so we have some whitespace at the right
-    w := laSearchState.Canvas.TextWidth(laSearchState.Caption+'  ');
-    laSearchState.Width := w;
-    paSearchStatus.Width := laSearchState.Left + w;
+    paSearchStatus.Width := 22 + laSearchState.Width + 3;
+    paSearchStatus.Left := paSearchButtons.Left - paSearchStatus.Width;
     paSearchStatus.Visible := True;
-  end
-  else begin
+  end else begin
     paSearchStatus.Visible := False;
+    //paSearchStatus.Width := 0;
   end;
+  //paSearch2.Width := paSearchButtons.Left + paSearchButtons.Width;
 end;
 
 procedure THistoryFrm.SearchNext(Rev: Boolean; Warp: Boolean = True);
@@ -1912,7 +1893,10 @@ begin
       tmp1 := '&UNK;';
     Item.Url := UTF8Encode(tmp1);
   end else begin
-    Item.Mes := UTF8Encode(MakeTextXMLedW(hg.Items[Index].Text));
+    if hg.Options.BBCodesEnabled then
+      Item.Mes := UTF8Encode(MakeTextXMLedW(DoStripBBCodes(hg.Items[Index].Text)))
+    else
+      Item.Mes := UTF8Encode(MakeTextXMLedW(hg.Items[Index].Text));
   end;
 
   {2.8.2004 OXY: Change protocol guessing order. Now
@@ -2071,7 +2055,7 @@ begin
   // make Begin/EndUpdate support batch UpdateFilter requests
   // so we can make it run only one time on EndUpdate
   SetEventFilter(0);
-  edFilter.Text := '';
+  edSearch.Text := '';
   EndHotFilterTimer;
 end;
 
@@ -2118,33 +2102,41 @@ end;
 
 procedure THistoryFrm.edSearchChange(Sender: TObject);
 begin
-  Search(True,False);
+  if FilterState then
+    StartHotFilterTimer    
+  else
+    Search(True,False);
 end;
 
 procedure THistoryFrm.edSearchKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if (Shift = []) and (Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR]) then begin
-    SendMessage(hg.Handle,WM_KEYDOWN,Key,0);
-    Key := 0;
-    exit;
-  end;
-
-  if (Shift = [ssCtrl]) and (Key in [VK_UP,VK_DOWN]) then begin
-    if hg.Reversed then begin
-      if Key = VK_UP then
-        sbSearchNext.Click
-      else
-        sbSearchPrev.Click;
-    end
-    else begin
-      if Key = VK_UP then
-        sbSearchPrev.Click
-      else
-        sbSearchNext.Click;
+  if FilterState then begin
+    if Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR] then begin
+      SendMessage(hg.Handle,WM_KEYDOWN,Key,0);
+      Key := 0;
     end;
-    Key := 0;
-    exit;
+  end else begin
+    if (Shift = []) and (Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR]) then begin
+      SendMessage(hg.Handle,WM_KEYDOWN,Key,0);
+      Key := 0;
+      exit;
+    end;
+    if (Shift = [ssCtrl]) and (Key in [VK_UP,VK_DOWN]) then begin
+      if hg.Reversed then begin
+        if Key = VK_UP then
+          sbSearchNext.Click
+        else
+          sbSearchPrev.Click;
+      end else begin
+        if Key = VK_UP then
+          sbSearchPrev.Click
+        else
+          sbSearchNext.Click;
+      end;
+      Key := 0;
+      exit;
+    end;
   end;
 end;
 
@@ -2170,7 +2162,7 @@ end;
 procedure THistoryFrm.PostLoadHistory;
 begin
   ProcessPassword;
-  if hContact = 0 then paTop.Visible := False;
+  //if hContact = 0 then paTop.Visible := False;
   // set reversed here, after Allocate, because of some scrollbar
   // "features", we'll load end of the list if put before Allocate
   SetRecentEventsPosition(GetDBInt(hppDBName,'SortOrder',0) <> 0);
@@ -2221,25 +2213,12 @@ begin
   hg.EndUpdate;
 end;
 
-procedure THistoryFrm.paFilterResize(Sender: TObject);
-begin
-  edFilter.Width := paFilter.ClientWidth - edFilter.Left;
-end;
-
 procedure THistoryFrm.paPassHolderResize(Sender: TObject);
 begin
   if PasswordMode = true then begin
     paPassword.Left := (ClientWidth-paPassword.Width) div 2;
     paPassword.Top := (ClientHeight - paPassword.Height) div 2;
   end;
-end;
-
-procedure THistoryFrm.paSearchResize(Sender: TObject);
-begin
-  {sbSearchClose.Left := paSearch.ClientWidth - sbSearchClose.Width;
-  sbSearchNext.Left := sbSearchClose.Left - sbSearchNext.Width - 2;
-  sbSearchPrev.Left := sbSearchNext.Left - sbSearchPrev.Width;
-  edSearch.Width :=  - edSearch.Left + sbSearchPrev.Left;}
 end;
 
 procedure THistoryFrm.Passwordprotection1Click(Sender: TObject);
@@ -2283,14 +2262,6 @@ begin
   hg.TxtPartLog := TranslateWideW(hg.TxtPartLog);
   hg.txtStartUp := TranslateWideW(hg.txtStartUp);
 
-  laFilter.Caption := TranslateWideW(laFilter.Caption);
-
-  for i := 0 to cbFilter.Items.Count-1 do
-    cbFilter.Items[i] := TranslateWideW(cbFilter.Items[i]);
-
-  for i := 0 to cbSort.Items.Count-1 do
-    cbSort.Items[i] := TranslateWideW(cbSort.Items[i]);
-
   sbClearFilter.Hint := TranslateWideW(sbClearFilter.Hint);
 
   bnPass.Caption := TranslateWideW(bnPass.Caption);
@@ -2315,10 +2286,6 @@ begin
   UnicodeFilter := Translate(PChar(UnicodeFilter));
   TextFilter := Translate(PChar(TextFilter));
   AllFilter := Translate(PChar(AllFilter));
-
-  cbFilter.Left := laFilter.Left + laFilter.Width + 5;
-  cbSort.Left := paTop.Width - cbSort.Width - 2;
-  edFilter.Width := paFilter.Width - edFilter.Left - 2;
 end;
 
 procedure THistoryFrm.tvSessChange(Sender: TObject; Node: TTreeNode);
@@ -2430,6 +2397,10 @@ procedure THistoryFrm.CopyText1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
   CopyToClip(hg.FormatSelected(hg.Options.ClipCopyTextFormat),Handle,UserCodePage);
+  // rtf copy works only if not more then one selected
+  //hg.ApplyItemToRich(hg.Selected,hg.RichEdit,False);
+  //hg.RichEdit.SelectAll;
+  //hg.RichEdit.CopyToClipboard;
 end;
 
 procedure THistoryFrm.CreateEventsFilterMenu;
@@ -2753,13 +2724,24 @@ end;
 
 procedure THistoryFrm.CopyInlineClick(Sender: TObject);
 begin
-  CopyToClip(hg.InlineRichEdit.SelText,Handle,UserCodepage);
+  //CopyToClip(hg.InlineRichEdit.SelText,Handle,UserCodepage);
+  hg.InlineRichEdit.CopyToClipboard;
 end;
 
 
 procedure THistoryFrm.CopyAllInlineClick(Sender: TObject);
+var
+  ss,sl: integer;
 begin
-  CopyToClip(hg.InlineRichEdit.Text,Handle,UserCodepage);
+  //CopyToClip(hg.InlineRichEdit.Text,Handle,UserCodepage);
+  hg.InlineRichEdit.Lines.BeginUpdate;
+  ss := hg.InlineRichEdit.SelStart;
+  sl := hg.InlineRichEdit.SelLength;
+  hg.InlineRichEdit.SelectAll;
+  hg.InlineRichEdit.CopyToClipboard;
+  hg.InlineRichEdit.SelStart := ss;
+  hg.InlineRichEdit.SelLength := sl;
+  hg.InlineRichEdit.Lines.EndUpdate;
 end;
 
 procedure THistoryFrm.SelectAllInlineClick(Sender: TObject);
@@ -2792,35 +2774,25 @@ end;
 
 procedure THistoryFrm.ChangeSearchMode(Filter: Boolean);
 var
-  edit: TTntEdit;
-  ToHide,ToShow: TTntPanel;
   Lock: Boolean;
 begin
+  FilterState := Filter;
   tbFilter.Down := Filter;
   tbSearch.Down := not Filter;
-  if Filter then begin
-    ToHide := paSearch;
-    ToShow := paFilter;
-    edit := edFilter;
-  end
-  else begin
-    ToHide := paFilter;
-    ToShow := paSearch;
-    edit := edSearch;
-  end;
-
   hg.BeginUpdate;
   if Visible then Lock := LockWindowUpdate(Handle);
   try
-    ToHide.Visible := False;
-    ToShow.Visible := True;
+    pbSearch.Visible := not Filter;
+    pbFilter.Visible := Filter;
+    if Filter then paSearchStatus.Visible := False;
+    paSearchButtons.Visible := not Filter;
+    edSearch.Text := '';
   finally
     hg.EndUpdate;
     if Visible and Lock then LockWindowUpdate(0);
   end;
-
   if Self.Visible then
-    edit.SetFocus;
+    edSearch.SetFocus;
 end;
 
 procedure THistoryFrm.CodepageChangeClick(Sender: TObject);
@@ -2834,8 +2806,8 @@ end;
 
 procedure THistoryFrm.sbClearFilterClick(Sender: TObject);
 begin
-  edFilter.Text := '';
-  EndHotFilterTimer;
+  if FilterState then EndHotFilterTimer;
+  edSearch.Text := '';
   hg.SetFocus;
 end;
 
@@ -2868,29 +2840,6 @@ begin
   else
     pbSearchState.Canvas.FillRect(pbSearchState.Canvas.ClipRect);
   end;}
-end;
-
-procedure THistoryFrm.edFilterChange(Sender: TObject);
-begin
-  StartHotFilterTimer;
-end;
-
-procedure THistoryFrm.edFilterKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
-  if Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR] then begin
-    SendMessage(hg.Handle,WM_KEYDOWN,Key,0);
-    Key := 0;
-  end;
-end;
-
-procedure THistoryFrm.edFilterKeyUp(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-begin
-  if Key = VK_RETURN then begin
-    hg.SetFocus;
-    key := 0;
-  end;
 end;
 
 procedure THistoryFrm.StartHotFilterTimer;
@@ -2927,16 +2876,16 @@ end;
 procedure THistoryFrm.EndHotFilterTimer;
 begin
   tiFilter.Enabled := False;
-  HotFilterString := edFilter.Text;
+  HotFilterString := edSearch.Text;
   hg.UpdateFilter;
   if pbFilter.Tag <> 0 then begin
     pbFilter.Tag := 0;
     pbFilter.Repaint;
   end;
   if hg.Selected = -1 then
-    edFilter.Color := $008080FF
+    edSearch.Color := $008080FF
   else
-    edFilter.Color := clWindow;
+    edSearch.Color := clWindow;
 end;
 
 procedure THistoryFrm.tbDeleteClick(Sender: TObject);
@@ -3017,6 +2966,12 @@ begin
     tbEventsFilter.CheckMenuDropdown
   else
     SetEventFilter(0);
+end;
+
+procedure THistoryFrm.paSearchPanelResize(Sender: TObject);
+begin
+  //paSearchButtons.Left := paSearch.ClientWidth-paSearchButtons.Width;
+  //paSearchStatus.Left := paSearchButtons.Left - paSearchStatus.Width;
 end;
 
 end.
