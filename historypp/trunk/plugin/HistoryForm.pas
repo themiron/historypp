@@ -792,7 +792,7 @@ begin
     key := 0;
     end;
 
-  if (key = VK_F3) and ((Shift=[]) or (Shift=[ssShift])) and (not PasswordMode) then begin
+  if (key = VK_F3) and ((Shift=[]) or (Shift=[ssShift])) and (not PasswordMode) and (not FilterState) then begin
     if ssShift in Shift then
       sbSearchPrev.Click
     else
@@ -2774,9 +2774,10 @@ end;
 
 procedure THistoryFrm.ChangeSearchMode(Filter: Boolean);
 var
+  SaveStr: WideString;
   Lock: Boolean;
 begin
-  FilterState := Filter;
+  SaveStr := edSearch.Text;
   tbFilter.Down := Filter;
   tbSearch.Down := not Filter;
   hg.BeginUpdate;
@@ -2787,10 +2788,13 @@ begin
     if Filter then paSearchStatus.Visible := False;
     paSearchButtons.Visible := not Filter;
     edSearch.Text := '';
+    if FilterState then EndHotFilterTimer;
   finally
     hg.EndUpdate;
     if Visible and Lock then LockWindowUpdate(0);
   end;
+  FilterState := Filter;
+  edSearch.Text := SaveStr;
   if Self.Visible then
     edSearch.SetFocus;
 end;
