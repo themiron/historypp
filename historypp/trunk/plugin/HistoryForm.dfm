@@ -1,6 +1,6 @@
 object HistoryFrm: THistoryFrm
-  Left = 252
-  Top = 177
+  Left = 256
+  Top = 189
   Width = 586
   Height = 418
   VertScrollBar.Tracking = True
@@ -37,17 +37,17 @@ object HistoryFrm: THistoryFrm
     TabOrder = 0
     object spSess: TTntSplitter
       Left = 158
-      Top = 64
-      Height = 256
+      Top = 33
+      Height = 312
       AutoSnap = False
       MinSize = 100
       Visible = False
     end
     object paGrid: TPanel
       Left = 161
-      Top = 64
+      Top = 33
       Width = 415
-      Height = 256
+      Height = 312
       Align = alClient
       BevelOuter = bvNone
       BorderStyle = bsSingle
@@ -56,7 +56,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 0
         Width = 411
-        Height = 252
+        Height = 308
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         MultiSelect = True
@@ -98,66 +98,14 @@ object HistoryFrm: THistoryFrm
         Padding = 4
       end
     end
-    object paTop: TPanel
-      Left = 2
-      Top = 33
-      Width = 574
-      Height = 31
-      Align = alTop
-      BevelOuter = bvNone
-      TabOrder = 1
-      Visible = False
-      DesignSize = (
-        574
-        31)
-      object laFilter: TTntLabel
-        Left = 2
-        Top = 7
-        Width = 27
-        Height = 13
-        Caption = 'Show'
-        FocusControl = cbFilter
-      end
-      object cbFilter: TTntComboBox
-        Left = 40
-        Top = 3
-        Width = 145
-        Height = 21
-        Style = csDropDownList
-        ItemHeight = 13
-        TabOrder = 0
-        OnChange = cbFilterChange
-        Items.Strings = (
-          'All Items'
-          'Incoming Messages'
-          'Outgoing Messages'
-          'Files'
-          'Link URLs'
-          'Status Changes')
-      end
-      object cbSort: TTntComboBox
-        Left = 428
-        Top = 3
-        Width = 145
-        Height = 21
-        Style = csDropDownList
-        Anchors = [akTop, akRight]
-        ItemHeight = 13
-        TabOrder = 1
-        OnChange = cbSortChange
-        Items.Strings = (
-          'Recent at bottom'
-          'Recent on top')
-      end
-    end
     object paSess: TPanel
       Left = 2
-      Top = 64
+      Top = 33
       Width = 156
-      Height = 256
+      Height = 312
       Align = alLeft
       BevelOuter = bvLowered
-      TabOrder = 2
+      TabOrder = 1
       Visible = False
       object Panel1: TPanel
         Left = 1
@@ -202,7 +150,7 @@ object HistoryFrm: THistoryFrm
         Left = 1
         Top = 22
         Width = 154
-        Height = 233
+        Height = 289
         Align = alClient
         BevelInner = bvNone
         BorderStyle = bsNone
@@ -218,100 +166,76 @@ object HistoryFrm: THistoryFrm
         OnMouseMove = tvSessMouseMove
       end
     end
-    object paFilter: TTntPanel
+    object paSearch: TTntPanel
       Left = 2
       Top = 345
       Width = 574
       Height = 25
       Align = alBottom
       BevelOuter = bvNone
-      TabOrder = 3
-      Visible = False
-      OnResize = paFilterResize
-      object sbClearFilter: TTntSpeedButton
-        Left = 25
-        Top = 4
-        Width = 23
-        Height = 21
-        Hint = 'Clear Search'
-        Flat = True
-        ParentShowHint = False
-        ShowHint = True
-        OnClick = sbClearFilterClick
-      end
-      object pbFilter: TPaintBox
-        Left = 2
-        Top = 6
-        Width = 16
-        Height = 16
-        OnPaint = pbFilterPaint
-      end
-      object edFilter: TTntEdit
-        Left = 50
-        Top = 4
-        Width = 468
-        Height = 21
-        TabOrder = 0
-        OnChange = edFilterChange
-        OnKeyDown = edFilterKeyDown
-        OnKeyUp = edFilterKeyUp
-      end
-    end
-    object paSearch: TTntPanel
-      Left = 2
-      Top = 320
-      Width = 574
-      Height = 25
-      Align = alBottom
-      BevelOuter = bvNone
-      TabOrder = 4
-      Visible = False
-      OnResize = paSearchResize
-      object paSearchStatus: TTntPanel
-        Left = 393
-        Top = 0
-        Width = 181
-        Height = 25
-        Align = alRight
-        Anchors = [akLeft, akTop, akBottom]
-        BevelOuter = bvNone
-        TabOrder = 0
-        Visible = False
-        object laSearchState: TTntLabel
-          Left = 31
-          Top = 4
-          Width = 12
-          Height = 19
-          AutoSize = False
-          Caption = '>>'
-          Layout = tlCenter
-        end
-        object imSearchEndOfPage: TTntImage
-          Left = 9
-          Top = 6
-          Width = 16
-          Height = 16
-        end
-        object imSearchNotFound: TTntImage
-          Left = 9
-          Top = 6
-          Width = 16
-          Height = 16
-        end
-      end
-      object TntPanel2: TTntPanel
+      TabOrder = 2
+      object paSearchPanel: TTntPanel
         Left = 0
         Top = 0
-        Width = 393
+        Width = 495
         Height = 25
         Align = alClient
         BevelOuter = bvNone
+        TabOrder = 0
+        DesignSize = (
+          495
+          25)
+        object pbSearch: TPaintBox
+          Left = 2
+          Top = 6
+          Width = 16
+          Height = 16
+          OnPaint = pbSearchPaint
+        end
+        object sbClearFilter: TTntSpeedButton
+          Left = 21
+          Top = 4
+          Width = 23
+          Height = 21
+          Hint = 'Clear Search'
+          Flat = True
+          ParentShowHint = False
+          ShowHint = True
+          OnClick = sbClearFilterClick
+        end
+        object pbFilter: TPaintBox
+          Left = 2
+          Top = 6
+          Width = 16
+          Height = 16
+          OnPaint = pbFilterPaint
+        end
+        object edSearch: TTntEdit
+          Left = 47
+          Top = 4
+          Width = 447
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 0
+          OnChange = edSearchChange
+          OnKeyDown = edSearchKeyDown
+          OnKeyUp = edSearchKeyUp
+        end
+      end
+      object paSearchButtons: TTntPanel
+        Left = 532
+        Top = 0
+        Width = 42
+        Height = 25
+        Align = alRight
+        AutoSize = True
+        BevelOuter = bvNone
         TabOrder = 1
         DesignSize = (
-          393
+          42
           25)
         object sbSearchNext: TTntSpeedButton
-          Left = 371
+          Left = 0
           Top = 4
           Width = 21
           Height = 21
@@ -321,10 +245,11 @@ object HistoryFrm: THistoryFrm
           Layout = blGlyphTop
           ParentShowHint = False
           ShowHint = True
+          Spacing = 0
           OnClick = sbSearchNextClick
         end
         object sbSearchPrev: TTntSpeedButton
-          Left = 350
+          Left = 21
           Top = 4
           Width = 21
           Height = 21
@@ -333,25 +258,40 @@ object HistoryFrm: THistoryFrm
           Layout = blGlyphTop
           ParentShowHint = False
           ShowHint = True
+          Spacing = 0
           OnClick = sbSearchPrevClick
         end
-        object pbSearch: TPaintBox
-          Left = 2
+      end
+      object paSearchStatus: TTntPanel
+        Left = 495
+        Top = 0
+        Width = 37
+        Height = 25
+        Align = alRight
+        BevelOuter = bvNone
+        BorderWidth = 3
+        TabOrder = 2
+        Visible = False
+        object laSearchState: TTntLabel
+          Left = 22
+          Top = 3
+          Width = 12
+          Height = 19
+          Align = alRight
+          Caption = '>>'
+          Layout = tlCenter
+        end
+        object imSearchEndOfPage: TTntImage
+          Left = 3
           Top = 6
           Width = 16
           Height = 16
-          OnPaint = pbSearchPaint
         end
-        object edSearch: TTntEdit
-          Left = 25
-          Top = 4
-          Width = 324
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          TabOrder = 0
-          OnChange = edSearchChange
-          OnKeyDown = edSearchKeyDown
-          OnKeyUp = edSearchKeyUp
+        object imSearchNotFound: TTntImage
+          Left = 3
+          Top = 6
+          Width = 16
+          Height = 16
         end
       end
     end
@@ -363,11 +303,11 @@ object HistoryFrm: THistoryFrm
       Align = alTop
       AutoSize = True
       BevelOuter = bvNone
-      TabOrder = 5
+      TabOrder = 3
       object laFilterText: TTntLabel
-        Left = 299
+        Left = 273
         Top = 0
-        Width = 275
+        Width = 301
         Height = 31
         Align = alClient
         Alignment = taRightJustify
@@ -387,7 +327,6 @@ object HistoryFrm: THistoryFrm
         EdgeOuter = esNone
         Flat = True
         Images = ilToolbar
-        List = True
         ParentShowHint = False
         ShowHint = True
         TabOrder = 0
@@ -668,13 +607,13 @@ object HistoryFrm: THistoryFrm
     FilterIndex = 0
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofShareAware, ofEnableSizing]
     Title = 'Save History'
-    Left = 44
-    Top = 168
+    Left = 28
+    Top = 108
   end
   object pmGrid: TTntPopupMenu
     OnPopup = pmPopup
-    Left = 84
-    Top = 261
+    Left = 184
+    Top = 257
     object Details1: TTntMenuItem
       Caption = '&Open'
       ShortCut = 16397
@@ -689,7 +628,7 @@ object HistoryFrm: THistoryFrm
       OnClick = SendMessage1Click
     end
     object ReplyQuoted1: TTntMenuItem
-      Caption = 'Reply &Quoted'
+      Caption = '&Reply Quoted'
       ShortCut = 16466
       OnClick = ReplyQuoted1Click
     end
@@ -728,7 +667,7 @@ object HistoryFrm: THistoryFrm
     end
   end
   object pmLink: TTntPopupMenu
-    Left = 116
+    Left = 288
     Top = 262
     object Open1: TTntMenuItem
       Caption = 'Open &Link'
@@ -748,7 +687,7 @@ object HistoryFrm: THistoryFrm
     end
   end
   object pmFile: TTntPopupMenu
-    Left = 50
+    Left = 318
     Top = 259
     object OpenFile2: TTntMenuItem
       Caption = 'Open &File'
@@ -767,8 +706,8 @@ object HistoryFrm: THistoryFrm
   end
   object pmOptions: TTntPopupMenu
     OnPopup = pmPopup
-    Left = 236
-    Top = 31
+    Left = 260
+    Top = 39
     object IconsEnabled1: TTntMenuItem
       Caption = 'Show event icons'
       Checked = True
@@ -844,18 +783,20 @@ object HistoryFrm: THistoryFrm
   end
   object pmGridInline: TTntPopupMenu
     OnPopup = pmGridInlinePopup
-    Left = 180
-    Top = 263
+    Left = 184
+    Top = 291
     object CopyInline: TTntMenuItem
-      Caption = 'Copy'
+      Caption = '&Copy'
+      ShortCut = 16451
       OnClick = CopyInlineClick
     end
     object CopyAllInline: TTntMenuItem
-      Caption = 'Copy all'
+      Caption = 'Copy All'
       OnClick = CopyAllInlineClick
     end
     object SelectAllInline: TTntMenuItem
-      Caption = 'Select all'
+      Caption = 'Select &All'
+      ShortCut = 16449
       OnClick = SelectAllInlineClick
     end
     object N10: TTntMenuItem
@@ -868,8 +809,8 @@ object HistoryFrm: THistoryFrm
   end
   object ilSessions: TImageList
     ShareImages = True
-    Left = 80
-    Top = 192
+    Left = 28
+    Top = 68
   end
   object tiFilter: TTimer
     Enabled = False
@@ -881,12 +822,12 @@ object HistoryFrm: THistoryFrm
   object ilToolbar: TImageList
     DrawingStyle = dsFocus
     ShareImages = True
-    Left = 276
-    Top = 32
+    Left = 504
+    Top = 4
   end
   object pmHistory: TTntPopupMenu
-    Left = 200
-    Top = 32
+    Left = 216
+    Top = 40
     object SaveasHTML2: TTntMenuItem
       Caption = 'Export as &HTML...'
       OnClick = SaveasHTML2Click
@@ -920,8 +861,8 @@ object HistoryFrm: THistoryFrm
     end
   end
   object pmEventsFilter: TTntPopupMenu
-    Left = 168
-    Top = 32
+    Left = 172
+    Top = 40
     object Showall1: TTntMenuItem
       Caption = '-'
     end
