@@ -2535,7 +2535,7 @@ begin
   laFilterText.Caption := WideFormat(TranslateWideW('Filter: %s'),[name])+'  ';
   //tbEventsFilter.Caption := name;
   tbEventsFilter.Tag := fi;
-  for i := 0 to pmHistory.Items.Count-1 do
+  for i := 0 to pmEventsFilter.Items.Count-1 do
     if pmEventsFilter.Items[i].RadioItem then
       pmEventsFilter.Items[i].Checked := (pmEventsFilter.Items[i].Tag = fi);
   hg.Filter := hppEventFilters[fi].Events;
