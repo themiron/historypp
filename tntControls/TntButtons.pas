@@ -682,6 +682,7 @@ var
   Mic: Boolean;
 begin
   inherited;
+  {$IFNDEF COMPILER_10_UP}
   // hack to avoid buttons always hovered in deplhi 7
   if ((Message.Msg = WM_MOUSEMOVE) or (Message.Msg = WM_NCMOUSEMOVE)) then begin
     P := Point(Message.LParamLo, Message.LParamHi);
@@ -695,6 +696,7 @@ begin
       Perform(CM_MOUSELEAVE,0,0);
     end;
   end;
+  {$ENDIF}
 end;
 
 {$IFDEF COMPILER_10_UP}
