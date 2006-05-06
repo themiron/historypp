@@ -74,7 +74,6 @@ type
     pmLink: TTntPopupMenu;
     pmFile: TTntPopupMenu;
     paSess: TPanel;
-    pmOptions: TTntPopupMenu;
     pmGridInline: TTntPopupMenu;
     spSess: TTntSplitter;
     ilSessions: TImageList;
@@ -136,20 +135,8 @@ type
     paSearch: TTntPanel;
     tbFilter: TTntToolButton;
     tbDelete: TTntToolButton;
-    TntToolButton5: TTntToolButton;
-    tbOptions: TTntToolButton;
     tbSessions: TTntToolButton;
     TntToolButton7: TTntToolButton;
-    IconsEnabled1: TTntMenuItem;
-    SmileysEnabled1: TTntMenuItem;
-    BBCodesEnabled1: TTntMenuItem;
-    MathModuleEnabled1: TTntMenuItem;
-    N14: TTntMenuItem;
-    N15: TTntMenuItem;
-    RTLEnabled1: TTntMenuItem;
-    N16: TTntMenuItem;
-    RecentOnTop1: TTntMenuItem;
-    N3: TTntMenuItem;
     paSearchStatus: TTntPanel;
     laSearchState: TTntLabel;
     paSearchPanel: TTntPanel;
@@ -175,12 +162,13 @@ type
     TopPanel: TPanel;
     laFilterText: TTntLabel;
     paSearchButtons: TTntPanel;
+    N7: TTntMenuItem;
+    Internationalization1: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
     procedure SaveasXML2Click(Sender: TObject);
     procedure SaveasHTML2Click(Sender: TObject);
-    procedure RecentOnTop1Click(Sender: TObject);
     procedure tbSessionsClick(Sender: TObject);
     procedure pbSearchStatePaint(Sender: TObject);
     procedure tbDeleteClick(Sender: TObject);
@@ -247,12 +235,6 @@ type
     procedure hgKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     //procedure AddMenu(M: TMenuItem; FromM,ToM: TPopupMenu; Index: integer);
     procedure AddMenuArray(Menu: TPopupMenu; List: Array of TMenuItem; Index: integer);
-    procedure pmPopup(Sender: TObject);
-    procedure IconsEnabled1Click(Sender: TObject);
-    procedure RTLEnabled1Click(Sender: TObject);
-    procedure SmileysEnabled1Click(Sender: TObject);
-    procedure MathModuleEnabled1Click(Sender: TObject);
-    procedure BBCodesEnabled1Click(Sender: TObject);
     procedure ContactRTLmode1Click(Sender: TObject);
     procedure SelectAllInlineClick(Sender: TObject);
     procedure CopyInlineClick(Sender: TObject);
@@ -695,8 +677,6 @@ begin
     tbSearch.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_DELETE].Handle);
     tbDelete.ImageIndex := ii;
-    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_OPTIONS].Handle);
-    tbOptions.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_SESSIONS].Handle);
     tbSessions.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_SAVE].Handle);
@@ -717,8 +697,6 @@ procedure THistoryFrm.SavePosition;
 //save position and filter setting
 begin
   Utils_SaveWindowPosition(Self.Handle,0,hppDBName,'HistoryWindow.');
-  //WriteDBInt(hppDBName,'SortOrder',cbSort.ItemIndex);
-  WriteDBInt(hppDBName,'SortOrder',Integer(RecentOnTop1.Checked));
   if (hContact <> 0) and (not PasswordMode) and not ((HistoryLength = 0) and (not paSess.Visible)) then begin
      WriteDBBool(hppDBName,'ShowSessions',paSess.Visible);
      if paSess.Visible then
@@ -1722,12 +1700,6 @@ begin
   end;}
 end;
 
-procedure THistoryFrm.RecentOnTop1Click(Sender: TObject);
-begin
-  RecentOnTop1.Checked := not RecentOnTop1.Checked;
-  SetRecentEventsPosition(RecentOnTop1.Checked);
-end;
-
 procedure THistoryFrm.ReplyQuoted(Item: Integer);
 var
   Txt: WideString;
@@ -2036,7 +2008,6 @@ end;
 
 procedure THistoryFrm.SetRecentEventsPosition(OnTop: Boolean);
 begin
-  RecentOnTop1.Checked := OnTop;
   hg.Reversed := not OnTop;
   LoadButtonIcons;
 end;
@@ -2273,7 +2244,6 @@ begin
 
   TranslateToolbar(Toolbar);
 
-  TranslateMenu(pmOptions.Items);
   TranslateMenu(pmHistory.Items);
   TranslateMenu(pmGrid.Items);
   TranslateMenu(pmGridInline.Items);
@@ -2496,8 +2466,6 @@ procedure THistoryFrm.LoadInOptions();
 var
   i: integer;
 begin
-  IconsEnabled1.Checked := hg.Options.ShowIcons;
-  RTLEnabled1.Checked := hg.Options.RTLEnabled;
   if hContact = 0 then begin
     ContactRTLmode1.Visible := False;
     ANSICodepage1.Visible := False;
@@ -2513,11 +2481,6 @@ begin
         break;
       end;
   end;
-  SmileysEnabled1.Enabled := SmileyAddEnabled;
-  SmileysEnabled1.Checked := hg.Options.SmileysEnabled;
-  BBCodesEnabled1.Checked := hg.Options.BBCodesEnabled;
-  //MathModuleEnabled1.Enabled := MathModuleEnabled;
-  //MathModuleEnabled1.Checked  := hg.Options.MathModuleEnabled;
 end;
 
 procedure THistoryFrm.SetEventFilter(FilterIndex: Integer = -1);
@@ -2596,31 +2559,6 @@ begin
     paSess.Left := spSess.Left;
 end;
 
-procedure THistoryFrm.pmPopup(Sender: TObject);
-begin
-  LoadInOptions();
-end;
-
-procedure THistoryFrm.IconsEnabled1Click(Sender: TObject);
-var
-  val: boolean;
-begin
-  val := not hg.Options.ShowIcons;
-  hg.Options.ShowIcons := val;
-  SaveGridOptions;
-  //(Sender as TMenuItem).Checked := val;
-end;
-
-procedure THistoryFrm.RTLEnabled1Click(Sender: TObject);
-var
-  val: boolean;
-begin
-  val := not hg.Options.RTLEnabled;
-  hg.Options.RTLEnabled := val;
-  SaveGridOptions;
-  //(Sender as TMenuItem).Checked := val;
-end;
-
 procedure THistoryFrm.ContactRTLmode1Click(Sender: TObject);
 begin
   if RTLDefault2.Checked then
@@ -2630,16 +2568,6 @@ begin
                            else hg.RTLMode := hppRTLDisable;
   end;
   WriteContactRTLMode(hContact,hg.RTLMode,Protocol);
-end;
-
-procedure THistoryFrm.SmileysEnabled1Click(Sender: TObject);
-var
-  val: boolean;
-begin
-  val := not hg.Options.SmileysEnabled;
-  hg.Options.SmileysEnabled := val;
-  SaveGridOptions;
-  //(Sender as TMenuItem).Checked := val;
 end;
 
 procedure THistoryFrm.SMItemsFound(var M: TMessage);
@@ -2695,26 +2623,6 @@ begin
     tvSess.Items.EndUpdate;
   end;
 {$RANGECHECKS ON}
-end;
-
-procedure THistoryFrm.BBCodesEnabled1Click(Sender: TObject);
-var
-  val: boolean;
-begin
-  val := not hg.Options.BBCodesEnabled;
-  hg.Options.BBCodesEnabled := val;
-  SaveGridOptions;
-  //(Sender as TMenuItem).Checked := val;
-end;
-
-procedure THistoryFrm.MathModuleEnabled1Click(Sender: TObject);
-var
-  val: boolean;
-begin
-  val := not hg.Options.MathModuleEnabled;
-  hg.Options.MathModuleEnabled := val;
-  SaveGridOptions;
-  //(Sender as TMenuItem).Checked := val;
 end;
 
 procedure THistoryFrm.pmGridInlinePopup(Sender: TObject);
