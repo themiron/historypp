@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 {%ToDo 'historypp.todo'}
 {$R 'hpp_resource.res' 'hpp_resource.rc'}
 {$R 'hpp_res_ver.res' 'hpp_res_ver.rc'}
+{$R 'hpp_opt_dialog.res' 'hpp_opt_dialog.rc'}
 
 uses
   {$IFDEF EUREKALOG}
@@ -66,11 +67,12 @@ uses
   hpp_sessionsthread in 'hpp_sessionsthread.pas',
   hpp_arrays in 'hpp_arrays.pas',
   hpp_strparser in 'hpp_strparser.pas',
-  hpp_forms in 'hpp_forms';
+  hpp_forms in 'hpp_forms.pas',
+  hpp_opt_dialog in 'hpp_opt_dialog.pas';
 
 var
   hookModulesLoad,
-  //hookOptInit,
+  hookOptInit,
   hookSettingsChanged,
   hookIconChanged,
   HookIcon2Changed,
@@ -84,7 +86,7 @@ function OnModulesLoad(wParam,lParam:DWord):integer;cdecl; forward;
 function OnSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnIconChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnIcon2Changed(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
-//function OnOptInit(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
+function OnOptInit(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnContactChanged(wParam: wParam; lParam: LPARAM): Integer; cdecl; forward;
 function OnContactDelete(wParam: wParam; lParam: LPARAM): Integer; cdecl; forward;
 function OnFSChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
@@ -109,13 +111,14 @@ end;
 function Load(link:PPLUGINLINK):Integer;cdecl;
 begin
   PluginLink := Pointer(link);
+
   //init history functions later
   HookModulesLoad := PluginLink.HookEvent(ME_SYSTEM_MODULESLOADED,OnModulesLoad);
+
+  hookOptInit := PluginLink.HookEvent(ME_OPT_INITIALISE,OnOptInit);
   hppRegisterServices;
-  //hppRegisterItemProcessSamples;
   InitMMI;
-  //HistoryIcon := LoadIcon(hInstance,hppIcons[0].name);
-  //GlobalSearchIcon := LoadIcon(hInstance,hppIcons[1].name);
+
   Result:=0;
 end;
 
@@ -133,6 +136,7 @@ begin
   //PluginLink.UnhookEvent(HookContactChanged);
   PluginLink.UnhookEvent(HookContactDelete);
   PluginLink.UnhookEvent(HookFSChanged);
+  PluginLink.UnhookEvent(hookOptInit);
   // delete icons
   //DeleteObject(HistoryIcon);
   //DeleteObject(GlobalSearchIcon);
@@ -260,27 +264,22 @@ begin
   Result := 0;
 end;
 
-{function OnOptInit(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
+function OnOptInit(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
 var
-  odp:tOPTIONSDIALOGPAGE;
-  fmOpt: TfmOptions;
-  WndProc: Pointer;
+  odp: TOptionsDialogPage;
 begin
-  fmOpt := TfmOptions.Create(nil);
-  TfmOptions(fmOpt).DateGrid.ProfileName := 'Self';
-  TfmOptions(fmOpt).Load;
-  fmOpt.Show;
   ZeroMemory(@odp,sizeof(odp));
-  odp.cbSize:=sizeof(odp);
-  odp.Position:=900003000;
-  odp.hInstance:=hInstance;
-  odp.pszTemplate:=pchar(101);
-  odp.pszTitle:=Translate(PChar('History++'));
-  odp.pszGroup:=Translate(PChar('Plugins'));
-  odp.pfnDlgProc:=Pointer(GetWindowLong(fmOpt.Handle,GWL_WNDPROC));
+  odp.cbSize := sizeof(odp);
+  odp.Position := 0;
+  odp.hInstance := hInstance;
+  odp.pszTemplate := MakeIntResource(IDD_OPT_HISTORYPP);
+  odp.pszTitle := Translate(PChar(hppName));
+  odp.pszGroup := Translate(PChar('Plugins'));
+  odp.pfnDlgProc := @OptDialogProc;
+  odp.flags := ODPF_BOLDGROUPS;
   PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp));
   Result:=0;
-end;}
+end;
 
 function OnIconChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
 var
