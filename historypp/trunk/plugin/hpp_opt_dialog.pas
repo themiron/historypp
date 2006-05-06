@@ -32,9 +32,9 @@ const
   ID_LOOK_INFO_LINK   = 340; // "More info on why ..."
 
 const
-  URL_FONTSERVICE = 'http://addons.miranda-im.org/feed.php?dlfile=2065';
-  URL_ICOLIB      = 'http://addons.miranda-im.org/feed.php?dlfile=2700';
-  URL_EXPLAIN     = 'http://slav.pp.ru/miranda/';
+  URL_FONTSERVICE = 'http://addons.miranda-im.org/details.php?action=viewfile&id=2065';
+  URL_ICOLIB      = 'http://addons.miranda-im.org/details.php?action=viewfile&id=2700';
+  URL_EXPLAIN     = 'https://opensvn.csie.org/traccgi/historypp/trac.cgi/wiki/CustomizationSupport';
 
 function OptDialogProc(hwndDlg: HWND; uMsg: Integer;
   wParam: WPARAM; lParam: LPARAM): Integer; stdcall;
@@ -106,6 +106,7 @@ begin
       GridOptions.SmileysEnabled := GetChecked(IDC_SMILEY);
     if MathModuleEnabled then
       GridOptions.MathModuleEnabled := GetChecked(IDC_MATH);
+    SaveGridOptions;
   finally
     GridOptions.EndChange;
   end;
