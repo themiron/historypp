@@ -2683,7 +2683,7 @@ end;
 procedure THistoryFrm.ChangeSearchMode(Filter: Boolean);
 var
   SaveStr: WideString;
-  Lock: Boolean;
+  NotFound,Lock: Boolean;
 begin
   SaveStr := edSearch.Text;
   tbFilter.Down := Filter;
@@ -2695,6 +2695,7 @@ begin
     pbFilter.Visible := Filter;
     if Filter then paSearchStatus.Visible := False;
     paSearchButtons.Visible := not Filter;
+    NotFound := not (edSearch.Color = clWindow);
     edSearch.Text := '';
     if FilterState then EndHotFilterTimer;
   finally
@@ -2702,7 +2703,11 @@ begin
     if Visible and Lock then LockWindowUpdate(0);
   end;
   FilterState := Filter;
-  edSearch.Text := SaveStr;
+
+  // don't search or filter if the string is not found
+  if not NotFound then
+    edSearch.Text := SaveStr;
+
   if Self.Visible then
     edSearch.SetFocus;
 end;
