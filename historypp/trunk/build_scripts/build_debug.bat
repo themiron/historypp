@@ -95,6 +95,8 @@ brcc32 -fohpp_resource.res hpp_resource.rc
 if errorlevel 1 goto failbcc
 brcc32 -fohpp_res_ver.res hpp_res_ver.rc
 if errorlevel 1 goto failbcc
+brcc32 -fohpp_opt_dialog.res hpp_opt_dialog.rc
+if errorlevel 1 goto failbcc
 
 rem #
 rem # Find tntControls path relatively to our current dir
