@@ -200,7 +200,7 @@ type
   private
     LastAddedContact: TContactInfo;
     ContactList: TObjectList;
-    function FindContact(hContact: Integer): TContactInfo;
+    //function FindContact(hContact: Integer): TContactInfo;
     function AddContact(hContact: Integer): TContactInfo;
   protected
     procedure LoadWindowPosition;
@@ -434,8 +434,6 @@ begin
 end;
 
 procedure TfmGlobalSearch.StartHotFilterTimer;
-var
-  RepaintIcon: Boolean;
 begin
   if tiFilter.Interval = 0 then
     EndHotFilterTimer
@@ -514,6 +512,18 @@ begin
 end;
 
 procedure TfmGlobalSearch.TranslateForm;
+
+procedure TranslateMenu(mi: TMenuItem);
+  var
+    i: integer;
+  begin
+    for i := 0 to mi.Count-1 do
+      if mi.Items[i].Caption <> '-' then begin
+        TTntMenuItem(mi.Items[i]).Caption := TranslateWideW(mi.Items[i].Caption{TRANSLATE-IGNORE});
+          if mi.Items[i].Count > 0 then TranslateMenu(mi.Items[i]);
+      end;
+  end;
+
 begin
   Caption := TranslateWideW(Caption);
 
@@ -531,12 +541,7 @@ begin
 
   SaveDialog.Title := Translate(PAnsiChar(SaveDialog.Title));
 
-  Open1.Caption := TranslateWideW(Open1.Caption);
-  SendMessage1.Caption := TranslateWideW(SendMessage1.Caption);
-  ReplyQuoted1.Caption := TranslateWideW(ReplyQuoted1.Caption);
-  Copy1.Caption := TranslateWideW(Copy1.Caption);
-  CopyText1.Caption := TranslateWideW(CopyText1.Caption);
-  SaveSelected1.Caption := TranslateWideW(SaveSelected1.Caption);
+  TranslateMenu(pmGrid.Items);
 
   hg.TxtFullLog := TranslateWideW(hg.txtFullLog);
   hg.TxtGenHist1 := TranslateWideW(hg.txtGenHist1);
@@ -576,10 +581,10 @@ begin
   end;
 end;
 
-function TfmGlobalSearch.FindContact(hContact: Integer): TContactInfo;
+{function TfmGlobalSearch.FindContact(hContact: Integer): TContactInfo;
 begin
   Result := nil;
-end;
+end;}
 
 function TfmGlobalSearch.FindHistoryItemByHandle(hDBEvent: THandle): Integer;
 var
