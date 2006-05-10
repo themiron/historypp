@@ -1,6 +1,6 @@
 object HistoryFrm: THistoryFrm
-  Left = 259
-  Top = 181
+  Left = 280
+  Top = 188
   Width = 586
   Height = 418
   VertScrollBar.Tracking = True
@@ -162,7 +162,6 @@ object HistoryFrm: THistoryFrm
         ReadOnly = True
         RightClickSelect = True
         RowSelect = True
-        ShowButtons = False
         ShowHint = True
         TabOrder = 1
         ToolTips = False
@@ -743,7 +742,6 @@ object HistoryFrm: THistoryFrm
   end
   object ilSessions: TImageList
     BkColor = clWhite
-    Masked = False
     ShareImages = True
     Left = 28
     Top = 68
