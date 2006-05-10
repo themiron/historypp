@@ -726,6 +726,8 @@ begin
      if paSess.Visible then
         WriteDBInt(hppDBName,'SessionsWidth',paSess.Width);
   end;
+  if (hContact <> 0) then
+    WriteDBBool(hppDBName,'ExpandHeaders',hg.ExpandHeaders);
 end;
 
 procedure THistoryFrm.HMEventAdded(var Message: TMessage);
@@ -2175,6 +2177,7 @@ procedure THistoryFrm.PreLoadHistory;
 begin
   LoadPosition;
   hg.ShowHeaders := (hContact <> 0);
+  hg.ExpandHeaders := GetDBBool(hppDBName,'ExpandHeaders',True);
   if hContact = 0 then begin
     tbUserDetails.Enabled := False;
     tbUserMenu.Enabled := False;
