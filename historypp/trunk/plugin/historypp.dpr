@@ -223,7 +223,7 @@ begin
   //Log('OnSettChanged','Started. wParam: '+IntToStr(wParam)+', lParam: '+IntToStr(lParam));
   if wParam <> 0 then exit;
   if GridOptions.Locked then exit;
-  if (PDBContactWriteSetting(lParam).szModule <> 'HistoryPlusPlus') and
+  if (PDBContactWriteSetting(lParam).szModule <> hppDBName) and
     (PDBContactWriteSetting(lParam).szModule <> 'SRMsg') then exit;
   //LoadDefaultGridOptions;
 end;
