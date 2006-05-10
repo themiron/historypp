@@ -162,8 +162,12 @@ type
     TopPanel: TPanel;
     laFilterText: TTntLabel;
     paSearchButtons: TTntPanel;
+    pmSessions: TTntPopupMenu;
+    SessCopy: TTntMenuItem;
+    SessSelect: TTntMenuItem;
+    SessDelete: TTntMenuItem;
     N7: TTntMenuItem;
-    Internationalization1: TTntMenuItem;
+    SessSave: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -185,7 +189,7 @@ type
     procedure TntFormShow(Sender: TObject);
     procedure tvSessMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
-    procedure tvSessClick(Sender: TObject);
+    //procedure tvSessClick(Sender: TObject);
     procedure sbCloseSessClick(Sender: TObject);
     procedure hgItemFilter(Sender: TObject; Index: Integer; var Show: Boolean);
     procedure tvSessChange(Sender: TObject; Node: TTreeNode);
@@ -234,7 +238,7 @@ type
     procedure hgSearchItem(Sender: TObject; Item, ID: Integer; var Found: Boolean);
     procedure hgKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     //procedure AddMenu(M: TMenuItem; FromM,ToM: TPopupMenu; Index: integer);
-    procedure AddMenuArray(Menu: TPopupMenu; List: Array of TMenuItem; Index: integer);
+    procedure AddMenuArray(Menu: TTntPopupMenu; List: Array of TTntMenuItem; Index: integer);
     procedure ContactRTLmode1Click(Sender: TObject);
     procedure SelectAllInlineClick(Sender: TObject);
     procedure CopyInlineClick(Sender: TObject);
@@ -256,6 +260,9 @@ type
     procedure Passwordprotection1Click(Sender: TObject);
     procedure tbEventsFilterClick(Sender: TObject);
     procedure paSearchPanelResize(Sender: TObject);
+    procedure SessSelectClick(Sender: TObject);
+    procedure pmGridPopup(Sender: TObject);
+    procedure pmHistoryPopup(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -572,10 +579,10 @@ end;
 procedure THistoryFrm.FormCreate(Sender: TObject);
 var
   i: integer;
-  mi: TMenuItem;
+  mi: TTntMenuItem;
 begin
   hg.BeginUpdate;
-  
+
   Icon.ReleaseHandle;
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
   LoadSessionIcons;
@@ -588,14 +595,16 @@ begin
   hg.Filter := filAll;
 
   for i := 0 to High(cpTable) do begin
-    mi := NewItem(cpTable[i].name,0,false,true,nil,0,'cp'+intToStr(i));
+    mi := WideNewItem(cpTable[i].name,0,false,true,nil,0,'cp'+intToStr(i));
     mi.Tag := cpTable[i].cp;
     mi.OnClick := CodepageChangeClick;
     mi.AutoCheck := True;
     mi.RadioItem := True;
     ANSICodepage1.Add(mi);
   end;
+
   TranslateForm;
+
   //cbFilter.ItemIndex := 0;
   RecentFormat := sfHtml;
   hg.InlineRichEdit.PopupMenu := pmGridInline;
@@ -894,14 +903,14 @@ begin
   if hg.Reversed then begin
     nextic := hppIcons[HPP_ICON_SEARCHUP].Handle;
     previc := hppIcons[HPP_ICON_SEARCHDOWN].Handle;
-    sbSearchNext.Hint := TranslateWideW(SearchUpHint);
-    sbSearchPrev.Hint := TranslateWideW(SearchDownHint);
+    sbSearchNext.Hint := SearchUpHint;
+    sbSearchPrev.Hint := SearchDownHint;
   end
   else begin
     nextic := hppIcons[HPP_ICON_SEARCHDOWN].Handle;
     previc := hppIcons[HPP_ICON_SEARCHUP].Handle;
-    sbSearchNext.Hint := TranslateWideW(SearchDownHint);
-    sbSearchPrev.Hint := TranslateWideW(SearchUpHint);
+    sbSearchNext.Hint := SearchDownHint;
+    sbSearchPrev.Hint := SearchUpHint;
   end;
 
   with sbSearchPrev.Glyph do begin
@@ -2207,8 +2216,8 @@ var
   begin
     for i := 0 to mi.Count-1 do
       if mi.Items[i].Caption <> '-' then begin
-        mi.Items[i].Caption := TranslateWideW(mi.Items[i].Caption{TRANSLATE-IGNORE});
-        if mi.Items[i].Count > 0 then TranslateMenu(mi.Items[i]);
+        TTntMenuItem(mi.Items[i]).Caption := TranslateWideW(mi.Items[i].Caption{TRANSLATE-IGNORE});
+          if mi.Items[i].Count > 0 then TranslateMenu(mi.Items[i]);
       end;
   end;
 
@@ -2218,7 +2227,7 @@ var
   begin
     for i := 0 to tb.ButtonCount-1 do
       if tb.Buttons[i].Style <> tbsSeparator then
-        tb.Buttons[i].Hint := TranslateWideW(tb.Buttons[i].Hint{TRANSLATE-IGNORE});
+        TTntToolBar(tb.Buttons[i]).Hint := TranslateWideW(tb.Buttons[i].Hint{TRANSLATE-IGNORE});
   end;
 
 begin
@@ -2232,6 +2241,9 @@ begin
   hg.TxtNoSuch := TranslateWideW(hg.TxtNoSuch);
   hg.TxtPartLog := TranslateWideW(hg.TxtPartLog);
   hg.txtStartUp := TranslateWideW(hg.txtStartUp);
+
+  SearchUpHint := TranslateWideW(SearchUpHint);
+  SearchDownHint := TranslateWideW(SearchDownHint);
 
   sbClearFilter.Hint := TranslateWideW(sbClearFilter.Hint);
 
@@ -2249,6 +2261,7 @@ begin
   TranslateMenu(pmGridInline.Items);
   TranslateMenu(pmLink.Items);
   TranslateMenu(pmFile.Items);
+  TranslateMenu(pmSessions.Items);
 
   HtmlFilter := Translate(PChar(HtmlFilter));
   XmlFilter := Translate(PChar(XmlFilter));
@@ -2312,14 +2325,14 @@ begin
   hg.UpdateFilter;}
 end;
 
-procedure THistoryFrm.tvSessClick(Sender: TObject);
+{procedure THistoryFrm.tvSessClick(Sender: TObject);
 var
   Node: TTntTreeNode;
 begin
   Node := tvSess.Selected;
   if Node = nil then exit;
   //tvSessChange(Self,Node);
-end;
+end;}
 
 procedure THistoryFrm.tvSessMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
@@ -2384,7 +2397,7 @@ begin
 
   for i := 0 to Length(hppEventFilters) - 1 do begin
     mi := TTntMenuItem.Create(pmEventsFilter);
-    mi.Caption := Tnt_WideStringReplace(TranslateWideW(hppEventFilters[i].Name),'&','&&',[rfReplaceAll]);
+    mi.Caption := Tnt_WideStringReplace(TranslateWideW(hppEventFilters[i].Name),'&','&&',[rfReplaceAll]{TRANSLATE-IGNORE});
     mi.GroupIndex := 1;
     mi.RadioItem := True;
     mi.Tag := i;
@@ -2493,7 +2506,7 @@ begin
     if fi > High(hppEventFilters) then fi := 0;
   end else
     fi := FilterIndex;
-  name := TranslateWideW(hppEventFilters[fi].Name);
+  name := TranslateWideW(hppEventFilters[fi].Name{TRANSLATE-IGNORE});
   name := Tnt_WideStringReplace(name,'&','&&',[rfReplaceAll]);
   laFilterText.Caption := WideFormat(TranslateWideW('Filter: %s'),[name])+'  ';
   //tbEventsFilter.Caption := name;
@@ -2535,7 +2548,7 @@ begin
   end;
 end;}
 
-procedure THistoryFrm.AddMenuArray(Menu: TPopupMenu; List: Array of TMenuItem; Index: integer);
+procedure THistoryFrm.AddMenuArray(Menu: TTntPopupMenu; List: Array of TTntMenuItem; Index: integer);
 var
   i: integer;
 begin
@@ -2716,7 +2729,7 @@ procedure THistoryFrm.CodepageChangeClick(Sender: TObject);
 var
   val: Cardinal;
 begin
-  val := (Sender as TMenuItem).Tag;
+  val := (Sender as TTntMenuItem).Tag;
   WriteContactCodePage(hContact,val,Protocol);
   UserCodepage := val;
 end;
@@ -2889,6 +2902,93 @@ procedure THistoryFrm.paSearchPanelResize(Sender: TObject);
 begin
   //paSearchButtons.Left := paSearch.ClientWidth-paSearchButtons.Width;
   //paSearchStatus.Left := paSearchButtons.Left - paSearchStatus.Width;
+end;
+
+procedure THistoryFrm.SessSelectClick(Sender: TObject);
+var
+  Items: Array of integer;
+  i: integer;
+
+function BuildIndexesFromSession(const Node: TtntTreeNode): boolean;
+var
+  First,Last: THandle;
+  fFirst,fLast: integer;
+  a,b,i,cnt: integer;
+begin
+  Result := false;
+  if Node = nil then exit;
+  if Node.Level = 2 then begin
+    First := Sessions[DWord(Node.Data)].hDBEventFirst;
+    Last:= Sessions[DWord(Node.Data)].hDBEventLast;
+    fFirst := -1;
+    fLast := -1;
+    for i := Length(History) - 1 downto 0 do begin
+      if History[i] = 0 then LoadPendingHeaders(i,HistoryLength);
+      if History[i] = First then fFirst := i;
+      if History[i] = Last then fLast := i;
+      if (fLast>=0) and (fFirst>=0) then break;
+    end;
+    if (fLast>=0) and (fFirst>=0) then begin
+      if fFirst > fLast then begin
+        a:= fLast; b:= fFirst;
+      end else begin
+        a:= fFirst; b:= fLast;
+      end;
+      cnt := Length(Items);
+      SetLength(Items,cnt+b-a+1);
+      for i := b downto a do Items[cnt+b-i] := HistoryIndexToGrid(i);
+      Result := True;
+    end;
+  end else
+    for i := 0 to Node.Count-1 do
+      Result := BuildIndexesFromSession(Node.Item[i]) or Result;
+end;
+
+begin
+  if SessThread <> nil then exit;
+  BuildIndexesFromSession(tvSess.Selected);
+  //hg.MakeRangeSelected();
+  for i := 0 to High(Items) do begin
+    hg.SelItems[0] := Items[i];
+    Application.ProcessMessages;
+  end;
+  hg.Invalidate;
+  //w := w + hg.Items[i].Text+#13#10+'--------------'+#13#10;
+  //CopyToClip(w,Handle,UserCodepage);
+  SetLength(Items,0);
+  //Index := HistoryIndexToGrid(Index);
+  //hg.MakeTopmost(Index);
+  //hg.Selected := Index;
+  //exit;
+  //Events := MakeSessionEvents();
+end;
+
+{procedure THistoryFrm.tvSessMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  Node: TTreeNode;
+begin
+  exit;
+  if (Button = mbRight) then begin
+    Node := tvSess.GetNodeAt(X,Y);
+    if Node <> nil then begin
+      if not Node.Selected then
+        tvSess.Select(Node);
+      tvSessChange(tvSess,Node);
+      if not Node.Focused then
+        Node.Focused := True;
+      tvSess.Invalidate;
+    end;
+  end;
+end;}
+
+procedure THistoryFrm.pmGridPopup(Sender: TObject);
+begin
+  AddMenuArray(pmGrid,[ContactRTLmode1,ANSICodepage1],-1);
+end;
+
+procedure THistoryFrm.pmHistoryPopup(Sender: TObject);
+begin
+  AddMenuArray(pmHistory,[ContactRTLmode1,ANSICodepage1],7);
 end;
 
 end.
