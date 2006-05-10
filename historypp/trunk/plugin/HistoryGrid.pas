@@ -926,6 +926,7 @@ var
   text: WideString;
   RTL: Boolean;
   RIconOffset,IconOffset, IconTop: Integer;
+  TextOffset: Integer;
   ArrIcon: Integer;
   //BackColor: TColor;
   //TextFont: TFont;
@@ -977,7 +978,12 @@ begin
   Canvas.Font := Options.FontTimeStamp;
   Inc(ItemRect.Left,IconOffset);
   Dec(ItemRect.Right,RIconOffset);
-  WideCanvasTextRect(Canvas,ItemRect,ItemRect.Left,ItemRect.Top,text);
+  if RTL then begin
+    TextOffset := WideCanvasTextWidth(Canvas,text);
+    WideCanvasTextRect(Canvas,ItemRect,ItemRect.Right-TextOffset,ItemRect.Top,text);
+  end
+  else
+    WideCanvasTextRect(Canvas,ItemRect,ItemRect.Left,ItemRect.Top,text);
 end;
 
 procedure THistoryGrid.SetCodepage(const Value: Cardinal);
