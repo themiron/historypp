@@ -19,7 +19,6 @@ Save
 Event Filter
 History
 History Search
-Options
 You need password to access this history
 Password:
 Enter
@@ -38,18 +37,6 @@ Open Link in New &Window
 Open &File
 Open File Fo&lder
 &Copy
-Show event icons
-Enable smiley support
-Enable BBCodes support
-Enable MathModule support
-Use RTL by default
-Text direction
-Default
-Always RTL
-Always LTR
-ANSI Encoding
-System default codepage
-Recent events on top
 &Copy
 Copy All
 Select &All
@@ -59,8 +46,18 @@ Export as &XML...
 Export as &RTF...
 Export as &Text...
 Empty history...
+Text direction
+Default
+Always RTL
+Always LTR
+ANSI Encoding
+System default codepage
 Password protection...
 Customize
+&Copy
+Select
+Delete
+Save...
 ;; Text found in ..\plugin\HistoryForm.pas:
 System History
 HotSearch: %s (F3 to find next)

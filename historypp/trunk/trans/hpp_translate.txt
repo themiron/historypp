@@ -7,67 +7,6 @@
 ;; Trac: https://opensvn.csie.org/traccgi/historypp/trac.cgi/
 ;; 
 
-;; PassCheckForm.trans.txt file 
-
-;; Text found in ..\plugin\PassCheckForm.dfm:
-[Password Check]
-Password Check
-[Password:]
-Password:
-[Enter password]
-Enter password
-[To access Password Protection options you need to enter password]
-To access Password Protection options you need to enter password
-[OK]
-OK
-[Cancel]
-Cancel
-;; Text found in ..\plugin\PassCheckForm.pas:
-[You have entered the wrong password.]
-You have entered the wrong password.
-[History++ Password Protection]
-History++ Password Protection
-
-;; PassNewForm.trans.txt file 
-
-;; Text found in ..\plugin\PassNewForm.dfm:
-[New Password]
-New Password
-[Enter new password]
-Enter new password
-[Confirm:]
-Confirm:
-[Leave this fields blank to disable password]
-Leave this fields blank to disable password
-[Pay attention to CAPS LOCK button state]
-Pay attention to CAPS LOCK button state
-;; Text found in ..\plugin\PassNewForm.pas:
-[Password and Confirm fields should be similar]
-Password and Confirm fields should be similar
-[Error]
-Error
-
-;; PassForm.trans.txt file 
-
-;; Text found in ..\plugin\PassForm.dfm:
-[Password Options]
-Password Options
-[Protect all contacts]
-Protect all contacts
-[Protect only selected contacts]
-Protect only selected contacts
-[Password...]
-Password...
-[&Refresh List]
-&Refresh List
-;; Text found in ..\plugin\PassForm.pas:
-[System History]
-System History
-[Password not set]
-Password not set
-[Password set]
-Password set
-
 ;; GlobalSearch.trans.txt file 
 
 ;; Text found in ..\plugin\GlobalSearch.dfm:
@@ -87,6 +26,8 @@ Search any word
 Search all words
 [Search exact phrase]
 Search exact phrase
+[Password:]
+Password:
 [Include password-protected contacts]
 Include password-protected contacts
 [Starting up...]
@@ -126,6 +67,8 @@ Save History
 %.0n items in %d contacts found. Searched for %.1f sec in %.0n items.
 [All Results]
 All Results
+[System History]
+System History
 [Searching "%s"...]
 Searching "%s"...
 [Searching... Please wait.]
@@ -136,6 +79,10 @@ Preparing search...
 Searching... %.0n items in %d contacts found
 [Enter the history password to search.]
 Enter the history password to search.
+[History++ Password Protection]
+History++ Password Protection
+[You have entered the wrong password.]
+You have entered the wrong password.
 [Please wait while closing the window...]
 Please wait while closing the window...
 [Partial History [%s] - [%s]]
@@ -166,6 +113,59 @@ Saving...
 Searching...
 [Deleting...]
 Deleting...
+
+;; PassCheckForm.trans.txt file 
+
+;; Text found in ..\plugin\PassCheckForm.dfm:
+[Password Check]
+Password Check
+[Enter password]
+Enter password
+[To access Password Protection options you need to enter password]
+To access Password Protection options you need to enter password
+[OK]
+OK
+[Cancel]
+Cancel
+;; Text found in ..\plugin\PassCheckForm.pas:
+
+;; PassNewForm.trans.txt file 
+
+;; Text found in ..\plugin\PassNewForm.dfm:
+[New Password]
+New Password
+[Enter new password]
+Enter new password
+[Confirm:]
+Confirm:
+[Leave this fields blank to disable password]
+Leave this fields blank to disable password
+[Pay attention to CAPS LOCK button state]
+Pay attention to CAPS LOCK button state
+;; Text found in ..\plugin\PassNewForm.pas:
+[Password and Confirm fields should be similar]
+Password and Confirm fields should be similar
+[Error]
+Error
+
+;; PassForm.trans.txt file 
+
+;; Text found in ..\plugin\PassForm.dfm:
+[Password Options]
+Password Options
+[Protect all contacts]
+Protect all contacts
+[Protect only selected contacts]
+Protect only selected contacts
+[Password...]
+Password...
+[&Refresh List]
+&Refresh List
+;; Text found in ..\plugin\PassForm.pas:
+[Password not set]
+Password not set
+[Password set]
+Password set
 
 ;; EventDetailForm.trans.txt file 
 
@@ -249,8 +249,6 @@ Event Filter
 History
 [History Search]
 History Search
-[Options]
-Options
 [You need password to access this history]
 You need password to access this history
 [Enter]
@@ -269,30 +267,6 @@ Open Link in New &Window
 Open &File
 [Open File Fo&lder]
 Open File Fo&lder
-[Show event icons]
-Show event icons
-[Enable smiley support]
-Enable smiley support
-[Enable BBCodes support]
-Enable BBCodes support
-[Enable MathModule support]
-Enable MathModule support
-[Use RTL by default]
-Use RTL by default
-[Text direction]
-Text direction
-[Default]
-Default
-[Always RTL]
-Always RTL
-[Always LTR]
-Always LTR
-[ANSI Encoding]
-ANSI Encoding
-[System default codepage]
-System default codepage
-[Recent events on top]
-Recent events on top
 [Select &All]
 Select &All
 [Export as &HTML...]
@@ -305,10 +279,26 @@ Export as &RTF...
 Export as &Text...
 [Empty history...]
 Empty history...
+[Text direction]
+Text direction
+[Default]
+Default
+[Always RTL]
+Always RTL
+[Always LTR]
+Always LTR
+[ANSI Encoding]
+ANSI Encoding
+[System default codepage]
+System default codepage
 [Password protection...]
 Password protection...
 [Customize]
 Customize
+[Select]
+Select
+[Save...]
+Save...
 ;; Text found in ..\plugin\HistoryForm.pas:
 [Do you really want to delete selected items (%.0f)?]
 Do you really want to delete selected items (%.0f)?
