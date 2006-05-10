@@ -4336,8 +4336,10 @@ begin
     hh := PHeaderHeight;
   Inc(Result.Top,hh+Padding);
   Dec(Result.Bottom,Padding+1);
-  if (Items[Item].HasHeader) and (ShowHeaders) and (ExpandHeaders) then
-    Inc(Result.Top,SessHeaderHeight);
+  if (Items[Item].HasHeader) and (ShowHeaders) and (ExpandHeaders) then begin
+    if Reversed then Inc(Result.Top,SessHeaderHeight)
+                else Dec(Result.Bottom,SessHeaderHeight);
+  end;
   IntersectRect(r,ClientRect,Result);
   Result := r;
 end;
