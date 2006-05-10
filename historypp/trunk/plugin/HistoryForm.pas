@@ -169,7 +169,7 @@ type
     N7: TTntMenuItem;
     SessSave: TTntMenuItem;
     tbUserMenu: TTntToolButton;
-    tbUserInfo: TTntToolButton;
+    tbUserDetails: TTntToolButton;
     TntToolButton6: TTntToolButton;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
@@ -267,6 +267,7 @@ type
     procedure pmGridPopup(Sender: TObject);
     procedure pmHistoryPopup(Sender: TObject);
     procedure tbUserMenuClick(Sender: TObject);
+    procedure tvSessGetSelectedIndex(Sender: TObject; Node: TTreeNode);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -663,7 +664,12 @@ begin
     ImageList_AddIcon(il,hppIcons[HPP_ICON_SESS_YEAR].handle);
   finally
     tvSess.Items.EndUpdate;
+    //tvSess.Update;
   end;
+
+  // simple hack to avoid dark icons
+  ilSessions.BkColor := tvSess.Color;
+
 end;
 
 procedure THistoryFrm.LoadToolbarIcons;
@@ -684,7 +690,7 @@ begin
 
     // add other icons without processing
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_CONTACDETAILS].Handle);
-    tbUserInfo.ImageIndex := ii;
+    tbUserDetails.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_CONTACTMENU].Handle);
     tbUserMenu.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_CONTACTHISTORY].Handle);
@@ -1074,7 +1080,7 @@ begin
       year := tvSess.Items.AddChild(nil,FormatDateTime(HPP_SESS_YEARFORMAT,dt));
       year.Data := Pointer(YearOf(dt));
       year.ImageIndex := 5;
-      year.SelectedIndex := year.ImageIndex;
+      //year.SelectedIndex := year.ImageIndex;
     end;
     month := nil;
     if year.GetLastChild <> nil then begin
@@ -1090,12 +1096,12 @@ begin
         6..8: month.ImageIndex := 1;
         9..11: month.ImageIndex := 2;
       end;
-      month.SelectedIndex := month.ImageIndex;
+      //month.SelectedIndex := month.ImageIndex;
     end;
     day := tvSess.Items.AddChild(month,FormatDateTime(HPP_SESS_DAYFORMAT,dt));
     day.Data := Pointer(idx);
     day.ImageIndex := 0;
-    day.SelectedIndex := day.ImageIndex;
+    //day.SelectedIndex := day.ImageIndex;
   end;
 end;
 
@@ -2170,6 +2176,8 @@ begin
   LoadPosition;
   hg.ShowHeaders := (hContact <> 0);
   if hContact = 0 then begin
+    tbUserDetails.Enabled := False;
+    tbUserMenu.Enabled := False;
     tbEventsFilter.Enabled := False;
     tbSessions.Enabled := False;
   end;
@@ -2311,7 +2319,7 @@ begin
   Index := HistoryIndexToGrid(Index);
   hg.MakeTopmost(Index);
   hg.Selected := Index;
-  exit;
+  //exit;
   // OXY: try to make selected item the topmost
   //while hg.GetFirstVisible <> Index do begin
   //  if hg.VertScrollBar.Position = hg.VertScrollBar.Range then break;
@@ -2617,7 +2625,7 @@ begin
         PrevYearNode := tvSess.Items.AddChild(nil,FormatDateTime(HPP_SESS_YEARFORMAT,dt));
         PrevYearNode.Data := Pointer(YearOf(dt));
         PrevYearNode.ImageIndex := 5;
-        PrevYearNode.SelectedIndex := PrevYearNode.ImageIndex;
+        //PrevYearNode.SelectedIndex := PrevYearNode.ImageIndex;
         PrevMonthNode := nil;
       end;
       if (PrevMonthNode = nil) or (DWord(PrevMonthNode.Data) <> MonthOf(dt)) then begin
@@ -2629,12 +2637,12 @@ begin
           6..8: PrevMonthNode.ImageIndex := 1;
           9..11: PrevMonthNode.ImageIndex := 2;
         end;
-        PrevMonthNode.SelectedIndex := PrevMonthNode.ImageIndex;
+        //PrevMonthNode.SelectedIndex := PrevMonthNode.ImageIndex;
       end;
       ti := tvSess.Items.AddChild(PrevMonthNode,FormatDateTime(HPP_SESS_DAYFORMAT,dt));
       ti.Data := Pointer(i);
       ti.ImageIndex := 0;
-      ti.SelectedIndex := ti.ImageIndex;
+      //ti.SelectedIndex := ti.ImageIndex;
     end;
     if PrevYearNode <> nil then begin
       PrevYearNode.Expand(False);
@@ -2993,11 +3001,13 @@ end;}
 
 procedure THistoryFrm.pmGridPopup(Sender: TObject);
 begin
+  Self.LoadInOptions();
   AddMenuArray(pmGrid,[ContactRTLmode1,ANSICodepage1],-1);
 end;
 
 procedure THistoryFrm.pmHistoryPopup(Sender: TObject);
 begin
+  Self.LoadInOptions();
   AddMenuArray(pmHistory,[ContactRTLmode1,ANSICodepage1],7);
 end;
 
@@ -3031,6 +3041,13 @@ begin
     TrackPopupMenu(hm,TPM_LEFTALIGN + TPM_LEFTBUTTON,p.x,p.y,0,Handle,nil);
     DestroyMenu(hm);
   end;
+end;
+
+procedure THistoryFrm.tvSessGetSelectedIndex(Sender: TObject;
+  Node: TTreeNode);
+begin
+  // and we don't need to set SelectedIndex manually anymore
+  Node.SelectedIndex := Node.ImageIndex;
 end;
 
 end.
