@@ -161,10 +161,13 @@ object HistoryFrm: THistoryFrm
         PopupMenu = pmSessions
         ReadOnly = True
         RightClickSelect = True
+        RowSelect = True
+        ShowButtons = False
         ShowHint = True
         TabOrder = 1
         ToolTips = False
         OnChange = tvSessChange
+        OnGetSelectedIndex = tvSessGetSelectedIndex
         OnMouseMove = tvSessMouseMove
       end
     end
@@ -307,9 +310,9 @@ object HistoryFrm: THistoryFrm
       BevelOuter = bvNone
       TabOrder = 3
       object laFilterText: TTntLabel
-        Left = 323
+        Left = 297
         Top = 0
-        Width = 251
+        Width = 277
         Height = 31
         Align = alClient
         Alignment = taRightJustify
@@ -320,7 +323,7 @@ object HistoryFrm: THistoryFrm
       object Toolbar: TTntToolBar
         Left = 0
         Top = 0
-        Width = 323
+        Width = 297
         Height = 31
         Align = alLeft
         AutoSize = True
@@ -333,7 +336,7 @@ object HistoryFrm: THistoryFrm
         TabOrder = 0
         Transparent = True
         Wrapable = False
-        object tbUserInfo: TTntToolButton
+        object tbUserDetails: TTntToolButton
           Left = 0
           Top = 2
           Hint = 'User Details'
@@ -739,6 +742,8 @@ object HistoryFrm: THistoryFrm
     end
   end
   object ilSessions: TImageList
+    BkColor = clWhite
+    Masked = False
     ShareImages = True
     Left = 28
     Top = 68
