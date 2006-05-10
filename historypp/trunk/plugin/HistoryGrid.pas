@@ -394,7 +394,6 @@ type
     procedure SetSelected(const Value: Integer);
     procedure AddSelected(Item: Integer);
     procedure RemoveSelected(Item: Integer);
-    procedure MakeRangeSelected(FromItem,ToItem: Integer);
     procedure MakeSelectedTo(Item: Integer);
     function GetSelCount: Integer;
     procedure SetFilter(const Value: TMessageTypes);
@@ -406,6 +405,7 @@ type
     procedure WriteWideString(fs: TFileStream; Text: WideString);
     procedure CheckBusy;
     function GetSelItems(Index: Integer): Integer;
+    procedure SetSelItems(Index: Integer; Item: integer);
     procedure SetState(const Value: TGridState);
     procedure SetReversed(const Value: Boolean);
     procedure AdjustScrollBar;
@@ -473,7 +473,7 @@ type
     procedure DeleteSelected;
     procedure DeleteAll;
     property Items[Index: Integer]: THistoryItem read GetItems;
-    property SelItems[Index: Integer]: Integer read GetSelItems;
+    property SelItems[Index: Integer]: Integer read GetSelItems write SetSelItems;
     function Search(Text: WideString; CaseSensitive: Boolean; FromStart: Boolean = False; SearchAll: Boolean = False; FromNext: Boolean = False; Down: Boolean = True): Integer;
     function SearchItem(ItemID: Integer): Integer;
     procedure AddItem;
@@ -516,6 +516,7 @@ type
     function FormatItem(Item: Integer; Format: WideString): WideString;
     function FormatItems(ItemList: array of Integer; Format: WideString): WideString;
     function FormatSelected(const Format: WideString): WideString;
+    procedure MakeRangeSelected(FromItem,ToItem: Integer);
   published
     property MultiSelect: Boolean read FMultiSelect write SetMultiSelect;
     property ShowHeaders: Boolean read FShowHeaders write SetShowHeaders;
@@ -3842,6 +3843,11 @@ end;
 function THistoryGrid.GetSelItems(Index: Integer): Integer;
 begin
   Result := FSelItems[Index];
+end;
+
+procedure THistoryGrid.SetSelItems(Index: Integer; Item: Integer);
+begin
+  AddSelected(Item);
 end;
 
 procedure THistoryGrid.SetState(const Value: TGridState);

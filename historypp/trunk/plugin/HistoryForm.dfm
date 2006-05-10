@@ -1,13 +1,13 @@
 object HistoryFrm: THistoryFrm
-  Left = 256
-  Top = 189
+  Left = 274
+  Top = 151
+  Width = 586
+  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
-  ClientHeight = 391
-  ClientWidth = 578
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -156,13 +156,15 @@ object HistoryFrm: THistoryFrm
         BorderStyle = bsNone
         Images = ilSessions
         Indent = 19
+        MultiSelect = True
         ParentShowHint = False
+        PopupMenu = pmSessions
         ReadOnly = True
+        RightClickSelect = True
         ShowHint = True
         TabOrder = 1
         ToolTips = False
         OnChange = tvSessChange
-        OnClick = tvSessClick
         OnMouseMove = tvSessMouseMove
       end
     end
@@ -280,7 +282,6 @@ object HistoryFrm: THistoryFrm
           Align = alRight
           Caption = '>>'
           Layout = tlCenter
-          ExplicitHeight = 13
         end
         object imSearchEndOfPage: TTntImage
           Left = 3
@@ -315,9 +316,6 @@ object HistoryFrm: THistoryFrm
         Caption = '>>'
         Layout = tlCenter
         OnDblClick = tbEventsFilterClick
-        ExplicitLeft = 562
-        ExplicitWidth = 12
-        ExplicitHeight = 13
       end
       object Toolbar: TTntToolBar
         Left = 0
@@ -337,20 +335,20 @@ object HistoryFrm: THistoryFrm
         Wrapable = False
         object tbSessions: TTntToolButton
           Left = 0
-          Top = 0
+          Top = 2
           Hint = 'Show conversations (F4)'
           Style = tbsCheck
           OnClick = tbSessionsClick
         end
         object TntToolButton7: TTntToolButton
           Left = 23
-          Top = 0
+          Top = 2
           Width = 7
           Style = tbsSeparator
         end
         object tbSearch: TTntToolButton
           Left = 30
-          Top = 0
+          Top = 2
           Hint = 'Find'
           Grouped = True
           Style = tbsCheck
@@ -358,7 +356,7 @@ object HistoryFrm: THistoryFrm
         end
         object tbFilter: TTntToolButton
           Left = 53
-          Top = 0
+          Top = 2
           Hint = 'Filter'
           Grouped = True
           Style = tbsCheck
@@ -366,36 +364,36 @@ object HistoryFrm: THistoryFrm
         end
         object TntToolButton3: TTntToolButton
           Left = 76
-          Top = 0
+          Top = 2
           Width = 7
           Style = tbsSeparator
         end
         object tbCopy: TTntToolButton
           Left = 83
-          Top = 0
+          Top = 2
           Hint = 'Copy'
         end
         object tbDelete: TTntToolButton
           Left = 106
-          Top = 0
+          Top = 2
           Hint = 'Delete'
           OnClick = tbDeleteClick
         end
         object tbSave: TTntToolButton
           Left = 129
-          Top = 0
+          Top = 2
           Hint = 'Save'
           Visible = False
         end
         object TntToolButton2: TTntToolButton
           Left = 152
-          Top = 0
+          Top = 2
           Width = 7
           Style = tbsSeparator
         end
         object tbEventsFilter: TTntToolButton
           Left = 159
-          Top = 0
+          Top = 2
           Hint = 'Event Filter'
           DropdownMenu = pmEventsFilter
           Marked = True
@@ -404,13 +402,13 @@ object HistoryFrm: THistoryFrm
         end
         object TntToolButton4: TTntToolButton
           Left = 195
-          Top = 0
+          Top = 2
           Width = 7
           Style = tbsSeparator
         end
         object tbHistory: TTntToolButton
           Left = 202
-          Top = 0
+          Top = 2
           Hint = 'History'
           DropdownMenu = pmHistory
           Style = tbsDropDown
@@ -418,7 +416,7 @@ object HistoryFrm: THistoryFrm
         end
         object tbHistorySearch: TTntToolButton
           Left = 238
-          Top = 0
+          Top = 2
           Hint = 'History Search'
           OnClick = tbHistorySearchClick
         end
@@ -602,6 +600,7 @@ object HistoryFrm: THistoryFrm
     Top = 108
   end
   object pmGrid: TTntPopupMenu
+    OnPopup = pmGridPopup
     Left = 184
     Top = 257
     object Details1: TTntMenuItem
@@ -677,8 +676,8 @@ object HistoryFrm: THistoryFrm
     end
   end
   object pmFile: TTntPopupMenu
-    Left = 318
-    Top = 259
+    Left = 326
+    Top = 263
     object OpenFile2: TTntMenuItem
       Caption = 'Open &File'
       OnClick = OpenFile1Click
@@ -739,6 +738,7 @@ object HistoryFrm: THistoryFrm
     Top = 4
   end
   object pmHistory: TTntPopupMenu
+    OnPopup = pmHistoryPopup
     Left = 216
     Top = 40
     object SaveasHTML2: TTntMenuItem
@@ -768,39 +768,36 @@ object HistoryFrm: THistoryFrm
     object N6: TTntMenuItem
       Caption = '-'
     end
-    object Internationalization1: TTntMenuItem
-      Caption = 'Internationalization'
-      object ContactRTLmode1: TTntMenuItem
-        Caption = 'Text direction'
-        object RTLDefault2: TTntMenuItem
-          AutoCheck = True
-          Caption = 'Default'
-          Checked = True
-          RadioItem = True
-          OnClick = ContactRTLmode1Click
-        end
-        object RTLEnabled2: TTntMenuItem
-          AutoCheck = True
-          Caption = 'Always RTL'
-          RadioItem = True
-          OnClick = ContactRTLmode1Click
-        end
-        object RTLDisabled2: TTntMenuItem
-          AutoCheck = True
-          Caption = 'Always LTR'
-          RadioItem = True
-          OnClick = ContactRTLmode1Click
-        end
+    object ContactRTLmode1: TTntMenuItem
+      Caption = 'Text direction'
+      object RTLDefault2: TTntMenuItem
+        AutoCheck = True
+        Caption = 'Default'
+        Checked = True
+        RadioItem = True
+        OnClick = ContactRTLmode1Click
       end
-      object ANSICodepage1: TTntMenuItem
-        Caption = 'ANSI Encoding'
-        object SystemCodepage1: TTntMenuItem
-          AutoCheck = True
-          Caption = 'System default codepage'
-          Checked = True
-          RadioItem = True
-          OnClick = CodepageChangeClick
-        end
+      object RTLEnabled2: TTntMenuItem
+        AutoCheck = True
+        Caption = 'Always RTL'
+        RadioItem = True
+        OnClick = ContactRTLmode1Click
+      end
+      object RTLDisabled2: TTntMenuItem
+        AutoCheck = True
+        Caption = 'Always LTR'
+        RadioItem = True
+        OnClick = ContactRTLmode1Click
+      end
+    end
+    object ANSICodepage1: TTntMenuItem
+      Caption = 'ANSI Encoding'
+      object SystemCodepage1: TTntMenuItem
+        AutoCheck = True
+        Caption = 'System default codepage'
+        Checked = True
+        RadioItem = True
+        OnClick = CodepageChangeClick
       end
     end
     object N7: TTntMenuItem
@@ -819,6 +816,26 @@ object HistoryFrm: THistoryFrm
     end
     object Customize1: TTntMenuItem
       Caption = 'Customize'
+      Enabled = False
+    end
+  end
+  object pmSessions: TTntPopupMenu
+    Left = 30
+    Top = 205
+    object SessCopy: TTntMenuItem
+      Caption = '&Copy'
+      Enabled = False
+    end
+    object SessSelect: TTntMenuItem
+      Caption = 'Select'
+      OnClick = SessSelectClick
+    end
+    object SessDelete: TTntMenuItem
+      Caption = 'Delete'
+      Enabled = False
+    end
+    object SessSave: TTntMenuItem
+      Caption = 'Save...'
       Enabled = False
     end
   end
