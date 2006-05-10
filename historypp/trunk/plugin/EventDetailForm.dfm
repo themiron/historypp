@@ -31,7 +31,7 @@ object EventDetailsFrm: TEventDetailsFrm
     Align = alBottom
     BevelOuter = bvNone
     Caption = ' '
-    TabOrder = 3
+    TabOrder = 2
     object Panel3: TTntPanel
       Left = 258
       Top = 0
@@ -80,30 +80,6 @@ object EventDetailsFrm: TEventDetailsFrm
       OnClick = NextBtnClick
     end
   end
-  object Panel4: TTntPanel
-    Left = 0
-    Top = 141
-    Width = 458
-    Height = 194
-    Align = alClient
-    BevelOuter = bvNone
-    BorderWidth = 4
-    Caption = ' '
-    TabOrder = 2
-    object EText: TTntRichEdit
-      Left = 4
-      Top = 4
-      Width = 450
-      Height = 186
-      Align = alClient
-      BiDiMode = bdLeftToRight
-      ParentBiDiMode = False
-      PopupMenu = pmEText
-      ReadOnly = True
-      ScrollBars = ssVertical
-      TabOrder = 0
-    end
-  end
   object Panel5: TTntPanel
     Left = 0
     Top = 69
@@ -117,9 +93,9 @@ object EventDetailsFrm: TEventDetailsFrm
     object Panel7: TTntPanel
       Left = 2
       Top = 2
-      Width = 227
+      Width = 226
       Height = 68
-      Align = alLeft
+      Align = alClient
       BevelOuter = bvNone
       BorderWidth = 2
       TabOrder = 0
@@ -183,24 +159,24 @@ object EventDetailsFrm: TEventDetailsFrm
       end
     end
     object Panel8: TTntPanel
-      Left = 229
+      Left = 228
       Top = 2
-      Width = 227
+      Width = 228
       Height = 68
-      Align = alClient
+      Align = alRight
       BevelOuter = bvNone
       BorderWidth = 2
       TabOrder = 1
       object GroupBox3: TTntGroupBox
         Left = 2
         Top = 2
-        Width = 223
+        Width = 224
         Height = 64
         Align = alClient
         Caption = 'To'
         TabOrder = 0
         DesignSize = (
-          223
+          224
           64)
         object Label5: TTntLabel
           Left = 8
@@ -219,7 +195,7 @@ object EventDetailsFrm: TEventDetailsFrm
         object EToNick: TTntEdit
           Left = 56
           Top = 16
-          Width = 163
+          Width = 164
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BorderStyle = bsNone
@@ -230,7 +206,7 @@ object EventDetailsFrm: TEventDetailsFrm
         object EToUIN: TTntEdit
           Left = 56
           Top = 36
-          Width = 99
+          Width = 100
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BorderStyle = bsNone
@@ -239,7 +215,7 @@ object EventDetailsFrm: TEventDetailsFrm
           TabOrder = 1
         end
         object EToMore: TTntButton
-          Left = 162
+          Left = 163
           Top = 32
           Width = 51
           Height = 17
@@ -309,6 +285,23 @@ object EventDetailsFrm: TEventDetailsFrm
         TabOrder = 1
       end
     end
+  end
+  object EText: TTntRichEdit
+    Left = 4
+    Top = 141
+    Width = 450
+    Height = 194
+    Align = alCustom
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    BevelInner = bvNone
+    BevelOuter = bvNone
+    BiDiMode = bdLeftToRight
+    BorderWidth = 1
+    ParentBiDiMode = False
+    PopupMenu = pmEText
+    ReadOnly = True
+    ScrollBars = ssVertical
+    TabOrder = 3
   end
   object pmEText: TTntPopupMenu
     OnPopup = pmETextPopup

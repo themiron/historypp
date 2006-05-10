@@ -38,13 +38,13 @@ uses
   TntForms,
   m_globaldefs, m_api, hpp_messages,
   hpp_global, hpp_contacts, hpp_events, hpp_forms, TntExtCtrls, ComCtrls,
-  TntComCtrls, Menus, TntMenus;
+  TntComCtrls, Menus, TntMenus, RichEdit;
 
 type
+
   TEventDetailsFrm = class(TTntForm)
     Panel2: TTntPanel;
     Panel3: TTntPanel;
-    Panel4: TTntPanel;
     Panel5: TTntPanel;
     Panel6: TTntPanel;
     GroupBox1: TTntGroupBox;
@@ -103,8 +103,10 @@ type
     FParentForm: THistoryFrm;
     FItem: Integer;
     Prev,Next: Integer;
+
 //    procedure SetRowIdx(const Value: integer);
     procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
+    procedure WMNotify(var Message: TWMNotify); message WM_Notify;
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo);message wm_GetMinMaxInfo;
     procedure LoadPosition;
     procedure SavePosition;
@@ -279,6 +281,8 @@ begin
 end;
 
 procedure TEventDetailsFrm.FormCreate(Sender: TObject);
+var
+  re_mask: integer;
 begin
   Icon.ReleaseHandle;
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
@@ -287,7 +291,11 @@ begin
   TranslateForm;
   Prev := -1;
   Next := -1;
+  //EText.Parent := Self;
+  re_mask := SendMessage(EText.Handle,EM_GETEVENTMASK, 0, 0);
   SendMessage(EText.Handle,EM_SETMARGINS,EC_RIGHTMARGIN or EC_LEFTMARGIN,MakeLParam(3,3));
+  SendMessage(EText.Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK);
+  SendMessage(EText.Handle,EM_AUTOURLDETECT,1,0);
 end;
 
 procedure TEventDetailsFrm.SetItem(const Value: Integer);
@@ -394,8 +402,8 @@ procedure TEventDetailsFrm.TranslateForm;
   begin
     for i := 0 to mi.Count-1 do
       if mi.Items[i].Caption <> '-' then begin
-        mi.Items[i].Caption := TranslateWideW(mi.Items[i].Caption{TRANSLATE-IGNORE});
-        if mi.Items[i].Count > 0 then TranslateMenu(mi.Items[i]);
+        TTntMenuItem(mi.Items[i]).Caption := TranslateWideW(mi.Items[i].Caption{TRANSLATE-IGNORE});
+          if mi.Items[i].Count > 0 then TranslateMenu(mi.Items[i]);
       end;
   end;
 
@@ -461,6 +469,32 @@ procedure TEventDetailsFrm.ReplyQuoted1Click(Sender: TObject);
 begin
   if ParentForm.hContact = 0 then exit;
   FParentForm.ReplyQuoted(FItem);
+end;
+
+procedure TEventDetailsFrm.WMNotify(var Message: TWMNotify);
+var
+  link: TENLink;
+  tr: TextRange;
+  WideURL: WideString;
+  AnsiURL: String;
+begin
+  if Message.NMHdr^.code = EN_LINK then begin
+    link := TENLink(Pointer(Message.NMHdr)^);
+    if link.msg = WM_LBUTTONUP then begin
+      tr.chrg := link.chrg;
+      if hppOSUnicode then begin
+        SetLength(WideURL,link.chrg.cpMax-link.chrg.cpMin);
+        tr.lpstrText := @WideURL[1];
+      end else begin
+        SetLength(AnsiUrl,link.chrg.cpMax-link.chrg.cpMin);
+        tr.lpstrText := @AnsiUrl[1];
+      end;
+      EText.Perform(EM_GETTEXTRANGE,0,LongInt(@tr));
+      if hppOSUnicode then AnsiURL := WideToAnsiString(WideURL,CP_ACP);
+      PluginLink.CallService(MS_UTILS_OPENURL,1,Integer(Pointer(@AnsiURL[1])));
+    end;
+  end;
+  inherited;
 end;
 
 end.
