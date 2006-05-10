@@ -299,10 +299,10 @@ begin
   st.WaitFor;
   FreeAndNil(st);
   IsSearching := False;
+  bnSearch.Caption := TranslateWideW('Search');
   paProgress.Hide;
   //paFilter.Show;
   sb.SimpleText := sbt;
-  bnSearch.Enabled := True;
   if Length(History) = 0 then
     ShowContacts(False);
 end;
@@ -367,6 +367,9 @@ begin
   else
     hg.Allocate(Length(History));
 
+  if (hg.Count > 0) and (hg.Selected = -1) then
+    hg.Selected := 0;
+
   paFilter.Visible := True;
   if not paContacts.Visible then begin
      ShowContacts(True);
@@ -404,10 +407,10 @@ begin
   SetLength(FilterHistory,0);
   SetLength(History,0);
 
-  bnSearch.Enabled := False;
+  IsSearching := True;
+  bnSearch.Caption := TranslateWideW('Stop');
 
   sb.SimpleText := TranslateWideW('Searching... Please wait.');
-  IsSearching := True;
   laProgress.Caption := TranslateWideW('Preparing search...');
   pb.Position := 0;
   paProgress.Show;
@@ -612,7 +615,19 @@ end;
 
 procedure TfmGlobalSearch.bnSearchClick(Sender: TObject);
 begin
-  {TODO: Text}
+  if IsSearching then begin
+    bnSearch.Enabled := False;
+    try
+      st.Terminate;
+      while IsSearching do
+        Application.ProcessMessages;
+    finally
+      bnSearch.Enabled := True;
+    end;
+    edSearch.SetFocus;
+    exit;
+  end;
+  
   if edSearch.Text = '' then
     raise Exception.Create('Enter text to search');
   if edPass.Enabled then begin
