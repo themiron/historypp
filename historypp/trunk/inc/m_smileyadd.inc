@@ -3,6 +3,9 @@
 
 const
   MS_SMILEYADD_REPLACESMILEYS = 'SmileyAdd/ReplaceSmileys';
+  // insert smiley as EMF into RichEdit, otherwise bitmap inserted
+  // this flag allows "true" transparency
+  SAFLRE_INSERTEMF = 2;
 
 type
   _charrange = record
@@ -44,6 +47,16 @@ type
     ProtocolName: PChar;
     useSounds: Boolean;
     disableRedraw: Boolean;
+    end;
+
+  TSmAddRichEdit3 = record
+    cbSize: Integer;
+    hwndRichEditControl: HWND;
+    rangeToReplace: PCharRange;
+    ProtocolName: PChar;
+    flags: integer;
+    disableRedraw: Boolean;
+    hContact: THandle;
     end;
 
 {$ENDIF}
