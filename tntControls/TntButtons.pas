@@ -679,7 +679,6 @@ end;
 procedure TTntSpeedButton.WndProc(var Message: TMessage);
 var
   P : TPoint;
-  Mic: Boolean;
 begin
   inherited;
   {$IFNDEF COMPILER_10_UP}
