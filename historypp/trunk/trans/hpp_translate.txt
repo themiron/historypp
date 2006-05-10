@@ -231,6 +231,12 @@ History is empty
 No such items
 [Conversations]
 Conversations
+[User Details]
+User Details
+[User Menu]
+User Menu
+[TntToolButton6]
+TntToolButton6
 [Show conversations (F4)]
 Show conversations (F4)
 [Find]

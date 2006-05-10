@@ -92,8 +92,10 @@ const
   HPP_ICON_HOTFILTERCLEAR    = 27;
   HPP_ICON_SESS_HIDE         = 28;
   HPP_ICON_TOOL_EVENTSFILTER = 29;
+  HPP_ICON_CONTACDETAILS     = 30;
+  HPP_ICON_CONTACTMENU       = 31;
 
-  hppIcons : array[0..29] of ThppIconsRec = (
+  hppIcons : array[0..31] of ThppIconsRec = (
     (name:'historypp_00'; desc:'Contact history'; i:HPP_ICON_CONTACTHISTORY; handle:0),
     (name:'historypp_01'; desc:'History search'; i:HPP_ICON_GLOBALSEARCH; handle:0),
     (name:'historypp_02'; desc:'Conversation divider'; i:HPP_ICON_SESS_DIVIDER; handle:0),
@@ -123,7 +125,9 @@ const
     (name:'historypp_26'; desc:'Phrase not found'; i:HPP_ICON_SEARCH_NOTFOUND; handle:0),
     (name:'historypp_27'; desc:'Clear in-place filter'; i:HPP_ICON_HOTFILTERCLEAR; handle:0),
     (name:'historypp_28'; desc:'Conversation hide'; i:HPP_ICON_SESS_HIDE; handle:0),
-    (name:'historypp_29'; desc:'Events filter'; i:HPP_ICON_TOOL_EVENTSFILTER; handle:0)
+    (name:'historypp_29'; desc:'Events filter'; i:HPP_ICON_TOOL_EVENTSFILTER; handle:0),
+    (name:'historypp_30'; desc:'User Details'; i:HPP_ICON_CONTACDETAILS; handle:0),
+    (name:'historypp_31'; desc:'User Menu'; i:HPP_ICON_CONTACTMENU; handle:0)
   );
 
   hppFontItems: array[0..15] of ThppFontsRec = (

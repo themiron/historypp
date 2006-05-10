@@ -168,6 +168,9 @@ type
     SessDelete: TTntMenuItem;
     N7: TTntMenuItem;
     SessSave: TTntMenuItem;
+    tbUserMenu: TTntToolButton;
+    tbUserInfo: TTntToolButton;
+    TntToolButton6: TTntToolButton;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -263,6 +266,7 @@ type
     procedure SessSelectClick(Sender: TObject);
     procedure pmGridPopup(Sender: TObject);
     procedure pmHistoryPopup(Sender: TObject);
+    procedure tbUserMenuClick(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -273,7 +277,8 @@ type
     HotFilterString: WideString;
     FilterState: Boolean;
 
-    procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo);message WM_GetMinMaxInfo;
+    procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo); message WM_GetMinMaxInfo;
+    procedure WndProc(var Message: TMessage); override;
     //procedure WMSize(var Message: TWMSize); message WM_SIZE;
     procedure LoadPosition;
     procedure SavePosition;
@@ -678,6 +683,10 @@ begin
     Toolbar.Images := ilToolbar;
 
     // add other icons without processing
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_CONTACDETAILS].Handle);
+    tbUserInfo.ImageIndex := ii;
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_CONTACTMENU].Handle);
+    tbUserMenu.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_CONTACTHISTORY].Handle);
     tbHistory.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_HOTFILTER].Handle);
@@ -2990,6 +2999,38 @@ end;
 procedure THistoryFrm.pmHistoryPopup(Sender: TObject);
 begin
   AddMenuArray(pmHistory,[ContactRTLmode1,ANSICodepage1],7);
+end;
+
+procedure THistoryFrm.WndProc(var Message: TMessage);
+var
+  res: integer;
+begin
+  inherited;
+  case Message.Msg of
+    WM_COMMAND: begin
+      res := PluginLink.CallService(MS_CLIST_MENUPROCESSCOMMAND,MAKEWPARAM(Message.WParamLo,MPCF_CONTACTMENU),hContact);
+      if  res <> 0 then Message.Result := res;
+    end;
+    WM_MEASUREITEM:
+ 	    Message.Result := PluginLink.CallService(MS_CLIST_MENUMEASUREITEM,Message.WParam,Message.LParam);
+    WM_DRAWITEM:
+   		Message.Result := PluginLink.CallService(MS_CLIST_MENUDRAWITEM,Message.WParam,Message.LParam);
+  end;
+end;
+
+procedure THistoryFrm.tbUserMenuClick(Sender: TObject);
+var
+  p: TPoint;
+  hm: hMenu;
+begin
+  hm := PluginLink.CallService(MS_CLIST_MENUBUILDCONTACT,hContact,0);
+  if hm <> 0 then begin
+    p.x := 0;
+    p.y := tbUserMenu.Height;
+    p := tbUserMenu.ClientToScreen(p);
+    TrackPopupMenu(hm,TPM_LEFTALIGN + TPM_LEFTBUTTON,p.x,p.y,0,Handle,nil);
+    DestroyMenu(hm);
+  end;
 end;
 
 end.
