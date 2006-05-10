@@ -109,7 +109,7 @@ function OpenContactHistory(hContact: THandle; index: integer = -1): THistoryFrm
 var
   wHistory: THistoryFrm;
   Lock: Boolean;
-  r: TRect;
+  //r: TRect;
 begin
   //check if window exists, otherwise create one
   wHistory := FindContactWindow(hContact);
