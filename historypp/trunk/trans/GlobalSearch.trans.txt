@@ -27,9 +27,11 @@ Copy &Text
 Save History
 ;; Text found in ..\plugin\GlobalSearch.pas:
 %.0n items in %d contacts found. Searched for %.1f sec in %.0n items.
+Search
 All Results
 System History
 Searching "%s"...
+Stop
 Searching... Please wait.
 Preparing search...
 Searching... %.0n items in %d contacts found
