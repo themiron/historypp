@@ -85,6 +85,7 @@ md ..\bin
 move historypp.dll ..\bin
 copy hpp_translate.txt ..\bin
 copy ..\..\hpp_changelog.txt ..\bin
+copy ..\plugin\m_historypp.inc ..\bin
 
 cd ..\bin
 
