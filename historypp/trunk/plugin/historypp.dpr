@@ -82,6 +82,7 @@ var
   HookTTBLoaded: THandle;
   //HistoryIcon, GlobalSearchIcon: HIcon;
   MenuHandles: array[0..2] of THandle;
+  //icBitmap: hBitmap;
 
 function OnModulesLoad(wParam,lParam:DWord):integer;cdecl; forward;
 function OnSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
@@ -226,18 +227,43 @@ end;
 function OnTTBLoaded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
 var
   ttb: TTBButtonV2;
+  //winDC,tmpDC: hDC;
+  //tmpBMP: hBitmap;
+  //rc: TRect;
 begin
   if Boolean(PluginLink.ServiceExists(MS_TTB_ADDBUTTON)) then begin
+
+    // if we use TopToolBar pre 0.7.1.0 version, then we have to use
+    // TTButton and bitmaps instead of icons. Hope noone will
+    //
+    {winDC := GetDC(0);
+    icBitmap := CreateCompatibleBitmap(winDC,16,16);
+    tmpDC := CreateCompatibleDC(winDC);
+    tmpBMP := SelectObject(tmpDC,icBitmap);
+    rc.TopLeft := Point(0,0);
+    rc.BottomRight := Point(16,16);
+    FillRect(tmpDC,rc,CreateSolidBrush(GetSysColor(COLOR_3DFACE)));
+    DrawIconEx(tmpDC,0,0,hppIcons[HPP_ICON_GLOBALSEARCH].handle,16,16,0,0,DI_NORMAL);
+    SelectObject(tmpDC,tmpBMP);
+    DeleteDC(tmpDC);
+    ReleaseDC(0,winDC);}
+    // and don't forget to delete hBitmap on unload
+    //DeleteObject(icBitmap);
+
     ZeroMemory(@ttb,SizeOf(ttb));
     ttb.cbSize := SizeOf(ttb);
+
+    //ttb.hbBitmapUp := icBitmap;
+    //ttb.hbBitmapDown := icBitmap;
     ttb.hIconUp := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
     ttb.hIconDn := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
+
     ttb.pszServiceUp := MS_HPP_SHOWGLOBALSEARCH;
     ttb.pszServiceDown := MS_HPP_SHOWGLOBALSEARCH;
-    ttb.name := PChar(Translate('Global History Search'));
-    //ttb.tooltipUp := ttb.name;
-    //ttb.tooltipDn := ttb.name;
     ttb.dwFlags := TTBBF_VISIBLE or TTBBF_SHOWTOOLTIP;
+    ttb.name := PChar(Translate('Global History Search'));
+    ttb.tooltipUp := ttb.name;
+    ttb.tooltipDn := ttb.name;
     PluginLink.CallService(MS_TTB_ADDBUTTON,integer(@ttb), 0);
     PluginLink.UnhookEvent(HookTTBLoaded);
   end;
