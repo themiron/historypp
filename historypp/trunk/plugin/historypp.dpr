@@ -78,7 +78,8 @@ var
   HookIcon2Changed,
   //hookContactChanged,
   hookContactDelete,
-  hookFSChanged: THandle;
+  hookFSChanged,
+  HookTTBLoaded: THandle;
   //HistoryIcon, GlobalSearchIcon: HIcon;
   MenuHandles: array[0..2] of THandle;
 
@@ -90,6 +91,7 @@ function OnOptInit(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnContactChanged(wParam: wParam; lParam: LPARAM): Integer; cdecl; forward;
 function OnContactDelete(wParam: wParam; lParam: LPARAM): Integer; cdecl; forward;
 function OnFSChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
+function OnTTBLoaded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 
 //Tell Miranda about this plugin
 function MirandaPluginInfo(mirandaVersion:DWord):PPLUGININFO;cdecl;
@@ -114,8 +116,8 @@ begin
 
   //init history functions later
   HookModulesLoad := PluginLink.HookEvent(ME_SYSTEM_MODULESLOADED,OnModulesLoad);
-
   hookOptInit := PluginLink.HookEvent(ME_OPT_INITIALISE,OnOptInit);
+
   hppRegisterServices;
   InitMMI;
 
@@ -155,6 +157,9 @@ begin
 
   LoadIcons;
   LoadIcons2;
+
+  // TopToolBar support
+  HookTTBLoaded := PluginLink.HookEvent(ME_TTB_MODULELOADED,OnTTBLoaded);
 
   ZeroMemory(@menuitem,SizeOf(menuItem));
   // Checking if core is unicode
@@ -211,8 +216,32 @@ begin
   //HookContactChanged := PluginLink.HookEvent(ME_DB_CONTACT_DELETED,OnContactChanged);
   HookContactDelete := PluginLink.HookEvent(ME_DB_CONTACT_DELETED,OnContactDelete);
   HookFSChanged := PluginLink.HookEvent(ME_FONT_RELOAD,OnFSChanged);
+
   // return successfully
   Result:=0;
+end;
+
+// Called when the toolbar services are available
+// wParam = lParam = 0
+function OnTTBLoaded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
+var
+  ttb: TTBButtonV2;
+begin
+  if Boolean(PluginLink.ServiceExists(MS_TTB_ADDBUTTON)) then begin
+    ZeroMemory(@ttb,SizeOf(ttb));
+    ttb.cbSize := SizeOf(ttb);
+    ttb.hIconUp := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
+    ttb.hIconDn := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
+    ttb.pszServiceUp := MS_HPP_SHOWGLOBALSEARCH;
+    ttb.pszServiceDown := MS_HPP_SHOWGLOBALSEARCH;
+    ttb.name := PChar(Translate('Global History Search'));
+    //ttb.tooltipUp := ttb.name;
+    //ttb.tooltipDn := ttb.name;
+    ttb.dwFlags := TTBBF_VISIBLE or TTBBF_SHOWTOOLTIP;
+    PluginLink.CallService(MS_TTB_ADDBUTTON,integer(@ttb), 0);
+    PluginLink.UnhookEvent(HookTTBLoaded);
+  end;
+  Result := 0;
 end;
 
 // Called when setting in DB have changed
