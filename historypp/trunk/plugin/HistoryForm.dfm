@@ -309,11 +309,11 @@ object HistoryFrm: THistoryFrm
       BevelOuter = bvNone
       TabOrder = 3
       object laFilterText: TTntLabel
-        Left = 297
+        Left = 320
         Top = 0
-        Width = 277
+        Width = 254
         Height = 31
-        Align = alClient
+        Align = alRight
         Alignment = taRightJustify
         Caption = '>>'
         Layout = tlCenter
@@ -322,7 +322,7 @@ object HistoryFrm: THistoryFrm
       object Toolbar: TTntToolBar
         Left = 0
         Top = 0
-        Width = 297
+        Width = 323
         Height = 31
         Align = alLeft
         AutoSize = True
