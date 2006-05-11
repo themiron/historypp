@@ -71,6 +71,8 @@ All Results
 System History
 [Searching "%s"...]
 Searching "%s"...
+[Stop]
+Stop
 [Searching... Please wait.]
 Searching... Please wait.
 [Preparing search...]
@@ -129,97 +131,6 @@ OK
 Cancel
 ;; Text found in ..\plugin\PassCheckForm.pas:
 
-;; PassNewForm.trans.txt file 
-
-;; Text found in ..\plugin\PassNewForm.dfm:
-[New Password]
-New Password
-[Enter new password]
-Enter new password
-[Confirm:]
-Confirm:
-[Leave this fields blank to disable password]
-Leave this fields blank to disable password
-[Pay attention to CAPS LOCK button state]
-Pay attention to CAPS LOCK button state
-;; Text found in ..\plugin\PassNewForm.pas:
-[Password and Confirm fields should be similar]
-Password and Confirm fields should be similar
-[Error]
-Error
-
-;; PassForm.trans.txt file 
-
-;; Text found in ..\plugin\PassForm.dfm:
-[Password Options]
-Password Options
-[Protect all contacts]
-Protect all contacts
-[Protect only selected contacts]
-Protect only selected contacts
-[Password...]
-Password...
-[&Refresh List]
-&Refresh List
-;; Text found in ..\plugin\PassForm.pas:
-[Password not set]
-Password not set
-[Password set]
-Password set
-
-;; EventDetailForm.trans.txt file 
-
-;; Text found in ..\plugin\EventDetailForm.dfm:
-[Event Details]
-Event Details
-[&Close]
-&Close
-[From]
-From
-[Nick:]
-Nick:
-[ID:]
-ID:
-[More...]
-More...
-[To]
-To
-[Event Info]
-Event Info
-[Type:]
-Type:
-[Date/Time:]
-Date/Time:
-[Copy All]
-Copy All
-[&Select All]
-&Select All
-[&Reply Quoted]
-&Reply Quoted
-;; Text found in ..\plugin\EventDetailForm.pas:
-[Message]
-Message
-[URL]
-URL
-[File Transfer]
-File Transfer
-[Contacts]
-Contacts
-[You Were Added Message]
-You Were Added Message
-[Authorisation Request]
-Authorisation Request
-[System message]
-System message
-[SMS Message]
-SMS Message
-[WebPager]
-WebPager
-[EMail Express]
-EMail Express
-[Other event]
-Other event
-
 ;; HistoryForm.trans.txt file 
 
 ;; Text found in ..\plugin\HistoryForm.dfm:
@@ -261,6 +172,8 @@ You need password to access this history
 Enter
 [&Open]
 &Open
+[&Reply Quoted]
+&Reply Quoted
 [User &Details]
 User &Details
 [&Delete]
@@ -273,6 +186,8 @@ Open Link in New &Window
 Open &File
 [Open File Fo&lder]
 Open File Fo&lder
+[Copy All]
+Copy All
 [Select &All]
 Select &All
 [Export as &HTML...]
@@ -357,3 +272,90 @@ Unicode text file (*.txt)|*.txt
 Text file (*.txt)|*.txt
 [All files (*.*)|*.*]
 All files (*.*)|*.*
+
+;; PassNewForm.trans.txt file 
+
+;; Text found in ..\plugin\PassNewForm.dfm:
+[New Password]
+New Password
+[Enter new password]
+Enter new password
+[Confirm:]
+Confirm:
+[Leave this fields blank to disable password]
+Leave this fields blank to disable password
+[Pay attention to CAPS LOCK button state]
+Pay attention to CAPS LOCK button state
+;; Text found in ..\plugin\PassNewForm.pas:
+[Password and Confirm fields should be similar]
+Password and Confirm fields should be similar
+[Error]
+Error
+
+;; PassForm.trans.txt file 
+
+;; Text found in ..\plugin\PassForm.dfm:
+[Password Options]
+Password Options
+[Protect all contacts]
+Protect all contacts
+[Protect only selected contacts]
+Protect only selected contacts
+[Password...]
+Password...
+[&Refresh List]
+&Refresh List
+;; Text found in ..\plugin\PassForm.pas:
+[Password not set]
+Password not set
+[Password set]
+Password set
+
+;; EventDetailForm.trans.txt file 
+
+;; Text found in ..\plugin\EventDetailForm.dfm:
+[Event Details]
+Event Details
+[&Close]
+&Close
+[From]
+From
+[Nick:]
+Nick:
+[ID:]
+ID:
+[More...]
+More...
+[To]
+To
+[Event Info]
+Event Info
+[Type:]
+Type:
+[Date/Time:]
+Date/Time:
+[&Select All]
+&Select All
+;; Text found in ..\plugin\EventDetailForm.pas:
+[Message]
+Message
+[URL]
+URL
+[File Transfer]
+File Transfer
+[Contacts]
+Contacts
+[You Were Added Message]
+You Were Added Message
+[Authorisation Request]
+Authorisation Request
+[System message]
+System message
+[SMS Message]
+SMS Message
+[WebPager]
+WebPager
+[EMail Express]
+EMail Express
+[Other event]
+Other event
