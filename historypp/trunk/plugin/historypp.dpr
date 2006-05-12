@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 *)
 
 {%ToDo 'historypp.todo'}
-{$R 'hpp_resource.res' 'hpp_resource.rc'}
+{$R 'hpp_resource.res'}
 {$R 'hpp_res_ver.res' 'hpp_res_ver.rc'}
 {$R 'hpp_opt_dialog.res' 'hpp_opt_dialog.rc'}
 
