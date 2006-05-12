@@ -39,12 +39,12 @@ const
 function OptDialogProc(hwndDlg: HWND; uMsg: Integer;
   wParam: WPARAM; lParam: LPARAM): Integer; stdcall;
 
+var
+  hDlg: HWND;
+  
 implementation
 
 uses hpp_database, HistoryForm, GlobalSearch;
-
-var
-  hDlg: HWND;
 
 function GetText(idCtrl: Integer): String;
 var
@@ -188,14 +188,13 @@ end;
 function OptDialogProc(hwndDlg: HWND; uMsg: Integer;
   wParam: WPARAM; lParam: LPARAM): Integer;
 begin
-  hDlg := hwndDlg;
+  Result := 0;
   case uMsg of
-    WM_INITDIALOG: Result := InitDlg;
+    WM_INITDIALOG: begin hDlg := hwndDlg; Result := InitDlg; end;
     WM_NOTIFY:     Result := NotifyDlg(wParam,PNMHDR(lParam)^);
     WM_COMMAND:    Result := CommandDlg(LoWord(wParam),lParam,HiWord(wParam));
-  else
-    Result := 0;
-    end;
+    WM_DESTROY:    hDlg := 0;
+  end;
 end;
 
 end.
