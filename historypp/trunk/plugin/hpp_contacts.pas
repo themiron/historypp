@@ -35,7 +35,8 @@ uses
 function GetContactDisplayName(hContact: THandle; Proto: String = ''; Contact: boolean = false): WideString;
 function GetContactProto(hContact: THandle): String;
 function GetContactID(hContact: THandle; Proto: String = ''; Contact: boolean = false): String;
-function GetContactCodePage(hContact: THandle; Proto: String = ''): Cardinal;
+function GetContactCodePage(hContact: THandle; Proto: String = ''): Cardinal; overload;
+function GetContactCodePage(hContact: THandle; Proto: String; var UsedDefault: Boolean): Cardinal; overload;
 function WriteContactCodePage(hContact: THandle; CodePage: Cardinal; Proto: String = ''): Boolean;
 function GetContactRTLMode(hContact: THandle; Proto: String = ''): boolean;
 function GetContactRTLModeTRTL(hContact: THandle; Proto: String = ''): TRTLMode;
@@ -137,17 +138,31 @@ begin
   Result := True;
 end;
 
-function GetContactCodePage(hContact: THandle; Proto: String = ''): Cardinal;
+function _GetContactCodePage(hContact: THandle; Proto: String; var UsedDefault: Boolean): Cardinal;
 begin
   if Proto = '' then Proto := GetContactProto(hContact);
   if Proto = '' then
     Result := hppCodepage
   else begin
     Result := GetDBWord(hContact,Proto,'AnsiCodePage',MaxWord);
-    If Result = MaxWord then
+    UsedDefault := (Result = MaxWord);
+    If UsedDefault then
       Result := GetDBWord(0,Proto,'AnsiCodePage',CP_ACP);
   end;
 end;
+
+function GetContactCodePage(hContact: THandle; Proto: String = ''): Cardinal;
+var
+  def: boolean;
+begin
+  Result := _GetContactCodePage(hContact,Proto,def);
+end;
+
+function GetContactCodePage(hContact: THandle; Proto: String; var UsedDefault: Boolean): Cardinal; overload;
+begin
+  Result := _GetContactCodePage(hContact,Proto,UsedDefault);
+end;
+
 
 // OXY: 2006-03-30
 // Changed default RTL mode from SysLocale.MiddleEast to
@@ -159,12 +174,15 @@ var
 begin
   if Proto = '' then Proto := GetContactProto(hContact);
   if Proto = '' then
-    Result := Application.UseRightToLeftScrollBar
+    Result := GetDBBool(hppDBName,'RTL',Application.UseRightToLeftScrollBar)
   else begin
     Temp := GetDBByte(hContact,Proto,'RTL',255);
-    If Temp = 255 then
-      Temp := GetDBByte(0,Proto,'RTL',Byte(Application.UseRightToLeftScrollBar));
-    Result := Boolean(Temp);
+    // we have no per-proto rtl setup ui, use global instead
+    //if Temp = 255 then
+    //  Temp := GetDBByte(0,Proto,'RTL',255);
+    if Temp = 255 then
+      Temp := GetDBByte(hppDBName,'RTL',Byte(Application.UseRightToLeftScrollBar));
+    Result := boolean(Temp);
   end;
 end;
 
