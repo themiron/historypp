@@ -40,7 +40,7 @@ function OptDialogProc(hwndDlg: HWND; uMsg: Integer;
   wParam: WPARAM; lParam: LPARAM): Integer; stdcall;
 
 var
-  hDlg: HWND;
+  hDlg: HWND = 0;
   
 implementation
 
