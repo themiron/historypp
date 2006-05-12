@@ -390,6 +390,8 @@ begin
     EVENTTYPE_STATUSCHANGE:
       //Result := GetEventTextForStatusChange(EventInfo,UseCP);
       Result := GetEventTextForStatusChange(EventInfo,hppCodepage);
+    EVENTTYPE_SMTPSIMPLE:
+      Result := GetEventTextForMessage(EventInfo,UseCP);
   else
       Result := GetEventTextForOther(EventInfo,UseCP);
   end;
@@ -486,6 +488,8 @@ begin
       Include(Result.MessageType,mtOther);
     EVENTTYPE_STATUSCHANGE:
       Include(Result.MessageType,mtStatus);
+    EVENTTYPE_SMTPSIMPLE:
+      Include(Result.MessageType,mtSMTPSimple);
   else
     Include(Result.MessageType,mtOther);
   end;

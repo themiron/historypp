@@ -362,12 +362,14 @@ var
   HistoryFrm: THistoryFrm;
 
 const
-  hppEventFilters: array[0..5] of ThppEventFilter = (
+  hppEventFilters: array[0..6] of ThppEventFilter = (
     (Name: 'Show all events'; Events: filAll),
     (Name: 'Messages'; Events: [mtMessage,mtIncoming,mtOutgoing]),
-    (Name: 'Recieved links'; Events: [mtUrl,mtIncoming]),
+    //(Name: 'Recieved links'; Events: [mtUrl,mtIncoming]),
     (Name: 'Link URLs'; Events: [mtUrl,mtIncoming,mtOutgoing]),
     (Name: 'Files'; Events: [mtFile,mtIncoming,mtOutgoing]),
+    (Name: 'Status changes'; Events: [mtStatus,mtIncoming,mtOutgoing]),
+    (Name: 'SMTP Simple'; Events: [mtSMTPSimple,mtIncoming,mtOutgoing]),
     (Name: 'All except status'; Events: filAll - [mtStatus])
     );
 
