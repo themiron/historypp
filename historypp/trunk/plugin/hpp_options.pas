@@ -384,8 +384,9 @@ begin
   // load others
   GridOptions.ShowIcons := GetDBBool(hppDBName,'ShowIcons',True);
 
+  // we have no per-proto rtl setup ui, use global instead
   GridOptions.RTLEnabled := GetContactRTLMode(0,'');
-
+  
   GridOptions.SmileysEnabled := GetDBBool(hppDBName,'Smileys',SmileyAddEnabled);
   GridOptions.BBCodesEnabled := GetDBBool(hppDBName,'BBCodes',True);
   GridOptions.MathModuleEnabled := GetDBBool(hppDBName,'MathModule',MathModuleEnabled);
@@ -402,7 +403,8 @@ begin
   GridOptions.StartChange;
   try
   WriteDBBool(hppDBName,'ShowIcons',GridOptions.ShowIcons);
-  //WriteDBBool(hppDBName,'RTL',GridOptions.RTLEnabled);
+  // we have no per-proto rtl setup ui, use global instead
+  WriteDBBool(hppDBName,'RTL',GridOptions.RTLEnabled);
   WriteDBBool(hppDBName,'Smileys',GridOptions.SmileysEnabled);
   WriteDBBool(hppDBName,'BBCodes',GridOptions.BBCodesEnabled);
   WriteDBBool(hppDBName,'MathModule',GridOptions.MathModuleEnabled);
