@@ -303,6 +303,7 @@ type
     procedure PostLoadHistory;
   public
     UserCodepage: Cardinal;
+    UseDefaultCP: boolean;
     LastSearch: TLastSearch;
     HotString: WideString;
     LastHotIdx: Integer;
@@ -572,8 +573,7 @@ begin
                   else Protocol := GetContactProto(hContact);
   hg.ProfileName := GetContactDisplayName(0, Protocol);
   hg.ContactName := GetContactDisplayName(hContact, Protocol, true);
-
-  UserCodepage := GetContactCodePage(hContact, Protocol);
+  UserCodepage := GetContactCodePage(hContact,Protocol,UseDefaultCP);
   hg.Codepage := UserCodepage;
   hg.RTLMode := GetContactRTLModeTRTL(hContact, Protocol);
 
@@ -2509,11 +2509,14 @@ begin
       hppRTLEnable: Self.RTLEnabled2.Checked := true;
       hppRTLDisable: Self.RTLDisabled2.Checked := true;
     end;
-    for i := 0 to ANSICodepage1.Count-1 do
-      if ANSICodepage1.Items[i].Tag = Integer(UserCodepage) then begin
-        ANSICodepage1.Items[i].Checked := true;
-        break;
-      end;
+    if UseDefaultCP then
+      SystemCodepage1.Checked := true
+    else
+      for i := 0 to ANSICodepage1.Count-1 do
+        if ANSICodepage1.Items[i].Tag = Integer(UserCodepage) then begin
+          ANSICodepage1.Items[i].Checked := true;
+          break;
+        end;
   end;
 end;
 
@@ -2752,7 +2755,9 @@ var
 begin
   val := (Sender as TTntMenuItem).Tag;
   WriteContactCodePage(hContact,val,Protocol);
-  UserCodepage := val;
+  //UserCodepage := val;
+  UserCodepage := GetContactCodePage(hContact,Protocol,UseDefaultCP);
+  hg.Codepage := UserCodepage;
 end;
 
 procedure THistoryFrm.sbClearFilterClick(Sender: TObject);
