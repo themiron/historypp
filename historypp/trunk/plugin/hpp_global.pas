@@ -37,7 +37,11 @@ uses
 
 type
 
-  TMessageType = (mtUnknown, mtIncoming, mtOutgoing, mtMessage, mtUrl, mtFile, mtSystem, mtContacts, mtSMS, mtWebPager, mtEmailExpress, mtStatus, mtOther);
+  TMessageType = (mtUnknown,
+                  mtIncoming, mtOutgoing,
+                  mtMessage, mtUrl, mtFile, mtSystem,
+                  mtContacts, mtSMS, mtWebPager, mtEmailExpress, mtStatus, mtSMTPSimple,
+                  mtOther);
   TMessageTypes = set of TMessageType;
   PMessageTypes = ^TMessageTypes;
 
@@ -78,7 +82,8 @@ const
   hppLoadBlock  = 4096;
   hppFirstLoadBlock = 200;
 
-  EVENTTYPE_STATUSCHANGE = 25368; // from srmm's
+  EVENTTYPE_STATUSCHANGE = 25368;	// from srmm's
+  EVENTTYPE_SMTPSIMPLE = 2350;		// from SMTP Simple
 
 var
   hppVersionStr: String;
