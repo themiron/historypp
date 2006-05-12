@@ -430,7 +430,7 @@ type
     procedure PaintItem(Index: Integer; ItemRect: TRect);
     procedure DrawProgress;
     procedure DrawMessage(Text: WideString);
-    procedure LoadItem(Item: Integer; LoadHeight: Boolean = True);
+    procedure LoadItem(Item: Integer; LoadHeight: Boolean = True; Reload: Boolean = False);
     procedure DoOptionsChanged;
     procedure DoKeyDown(Key: Word; ShiftState: TShiftState);
     procedure DoChar(Ch: WideChar; ShiftState: TShiftState);
@@ -839,9 +839,9 @@ begin
   Invalidate;
 end;
 
-procedure THistoryGrid.LoadItem(Item: Integer; LoadHeight: Boolean = True);
+procedure THistoryGrid.LoadItem(Item: Integer; LoadHeight: Boolean = True; Reload: Boolean = False);
 begin
-  if isUnknown(Item) then
+  if Reload or isUnknown(Item) then
     if Assigned(FGetItemData) then
       OnItemData(Self,Item,FItems[Item]);
   if LoadHeight then
@@ -987,9 +987,14 @@ begin
 end;
 
 procedure THistoryGrid.SetCodepage(const Value: Cardinal);
+var
+  i: Integer;
 begin
   if FCodepage = Value then exit;
   FCodepage := Value;
+  for i := 0 to Length(FItems) - 1 do
+    if not IsUnknown(i) then LoadItem(i,false,true);
+  DoOptionsChanged;
 end;
 
 procedure THistoryGrid.SetContact(const Value: THandle);
