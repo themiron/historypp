@@ -62,12 +62,37 @@ echo * %DELPHILIB%
 echo * Building project...
 echo:
 
-brcc32 -fohpp_resource.res hpp_resource.rc
-if errorlevel 1 goto failbcc
 brcc32 -fohpp_res_ver.res hpp_res_ver.rc
 if errorlevel 1 goto failbcc
 brcc32 -fohpp_opt_dialog.res hpp_opt_dialog.rc
 if errorlevel 1 goto failbcc
+
+rem #
+rem # Find utils path relatively to our current dir
+rem #
+
+set GORC=utils\GoRC.exe
+set TRIES=0
+:loop1
+if exist %GORC% goto exitloop1
+set GORC=..\%GORC%
+if "%TRIES%"=="00000000000" goto exitloop1
+set TRIES=0%TRIES%
+goto loop1
+:exitloop1
+if exist %GORC% goto dogorc
+echo ###
+echo ### Error! GoRC not fount in Utils directory
+echo ### 32bit icon depth support is broken
+echo ### http://www.jorgon.freeserve.co.uk/#rc
+echo ###
+pause
+brcc32 -fohpp_resource.res hpp_resource.rc
+if errorlevel 1 goto failbcc
+goto exitgorc
+:dogorc
+%GORC% /r /nw hpp_resource.rc
+:exitgorc
 
 rem #
 rem # Find tntControls path relatively to our current dir
