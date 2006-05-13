@@ -31,6 +31,8 @@ procedure SetSafetyMode(Safe: Boolean);
 
 function DBGetContactSettingString(hContact: THandle; const szModule: PChar; const szSetting: PChar; ErrorValue: PChar): PChar;
 
+function GetDBBlob(const Module,Param: String; var Value: Pointer; var Size: Integer): Boolean; overload;
+function GetDBBlob(const hContact: THandle; const Module,Param: String; var Value: Pointer; var Size: Integer): Boolean; overload;
 function GetDBStr(const Module,Param: String; Default: String): String; overload;
 function GetDBStr(const hContact: THandle; const Module,Param: String; Default: String): String; overload;
 function GetDBInt(const Module,Param: String; Default: Integer): Integer; overload;
@@ -44,6 +46,8 @@ function GetDBByte(const hContact: THandle; const Module,Param: String; Default:
 function GetDBBool(const Module,Param: String; Default: Boolean): Boolean; overload;
 function GetDBBool(const hContact: THandle; const Module,Param: String; Default: Boolean): Boolean; overload;
 
+function WriteDBBlob(const Module,Param: String; Value: Pointer; Size: Integer): Integer; overload;
+function WriteDBBlob(const hContact: THandle; const Module,Param: String; Value: Pointer; Size: Integer): Integer; overload;
 function WriteDBByte(const Module,Param: String; Value: Byte): Integer; overload;
 function WriteDBByte(const hContact: THandle; const Module,Param: String; Value: Byte): Integer; overload;
 function WriteDBWord(const Module,Param: String; Value: Word): Integer; overload;
@@ -128,6 +132,45 @@ end;
 function WriteDBStr(const hContact: THandle; const Module,Param: String; Value: String): Integer;
 begin
   Result := DBWriteContactSettingString(hContact,PChar(Module),PChar(Param),PChar(Value));
+end;
+
+function WriteDBBlob(const Module,Param: String; Value: Pointer; Size: Integer): Integer;
+begin
+  Result := WriteDBBlob(0,Module,Param,Value,Size);
+end;
+
+function WriteDBBlob(const hContact: THandle; const Module,Param: String; Value: Pointer; Size: Integer): Integer;
+var
+  cws: TDBContactWriteSetting;
+begin
+  ZeroMemory(@cws,SizeOf(cws));
+  cws.szModule := @Module[1];
+  cws.szSetting := @Param[1];
+  cws.value.pbVal := Value;
+  cws.value.cpbVal := Word(Size);
+  Result := PluginLink^.CallService(MS_DB_CONTACT_WRITESETTING,hContact,lParam(@cws));
+end;
+
+function GetDBBlob(const Module,Param: String; var Value: Pointer; var Size: Integer): Boolean;
+begin
+  Result := GetDBBlob(0,Module,Param,Value,Size);
+end;
+
+function GetDBBlob(const hContact: THandle; const Module,Param: String; var Value: Pointer; var Size: Integer): Boolean;
+var
+  cgs: TDBContactGetSetting;
+  dbv: TDBVARIANT;
+begin
+  Result := False;
+  ZeroMemory(@cgs,SizeOf(cgs));
+  cgs.szModule := @Module[1];
+  cgs.szSetting := @Param[1];
+  cgs.pValue := @dbv;
+  if PluginLink^.CallService(MS_DB_CONTACT_GETSETTING, hContact, lParam(@cgs)) <> 0 then exit;
+  if dbv.cpbVal = 0 then exit;
+  GetMem(Value,dbv.cpbVal);
+  Move(dbv.pbVal^,PByte(Value)^,dbv.cpbVal);
+  Result := True;
 end;
 
 function GetDBBool(const Module,Param: String; Default: Boolean): Boolean;
