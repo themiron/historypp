@@ -82,9 +82,11 @@ goto loop1
 :exitloop1
 if exist %GORC% goto dogorc
 echo ###
-echo ### Error! GoRC not fount in Utils directory
-echo ### 32bit icon depth support is broken
-echo ### http://www.jorgon.freeserve.co.uk/#rc
+echo ### Warning! GoRC not fount in Utils directory
+echo ### Using Borland Resource Compiler instead
+echo ### Support for icons with 32-bit color depth would be broken
+echo ### 
+echo ### Download gorc.exe from http://www.jorgon.freeserve.co.uk/#rc
 echo ###
 pause
 brcc32 -fohpp_resource.res hpp_resource.rc
