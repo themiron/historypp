@@ -1,13 +1,13 @@
 object HistoryFrm: THistoryFrm
   Left = 280
   Top = 188
-  Width = 586
-  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   BiDiMode = bdLeftToRight
   Caption = '%s - History++'
+  ClientHeight = 391
+  ClientWidth = 578
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -284,6 +284,7 @@ object HistoryFrm: THistoryFrm
           Align = alRight
           Caption = '>>'
           Layout = tlCenter
+          ExplicitHeight = 13
         end
         object imSearchEndOfPage: TTntImage
           Left = 3
@@ -308,136 +309,127 @@ object HistoryFrm: THistoryFrm
       AutoSize = True
       BevelOuter = bvNone
       TabOrder = 3
-      object laFilterText: TTntLabel
-        Left = 320
-        Top = 0
-        Width = 254
-        Height = 31
-        Align = alRight
-        Alignment = taRightJustify
-        Caption = '>>'
-        Layout = tlCenter
-        OnDblClick = tbEventsFilterClick
-      end
       object Toolbar: TTntToolBar
         Left = 0
         Top = 0
-        Width = 323
+        Width = 574
         Height = 31
-        Align = alLeft
+        Align = alClient
         AutoSize = True
         BorderWidth = 2
+        ButtonWidth = 43
         EdgeInner = esNone
         EdgeOuter = esNone
         Images = ilToolbar
+        List = True
         ParentShowHint = False
+        AllowTextButtons = True
         ShowHint = True
         TabOrder = 0
         Transparent = True
         Wrapable = False
         object tbUserDetails: TTntToolButton
           Left = 0
-          Top = 2
+          Top = 0
           Hint = 'User Details'
           OnClick = UserDetails1Click
         end
         object tbUserMenu: TTntToolButton
-          Left = 23
-          Top = 2
+          Left = 43
+          Top = 0
           Hint = 'User Menu'
           OnClick = tbUserMenuClick
         end
         object TntToolButton6: TTntToolButton
-          Left = 46
-          Top = 2
+          Left = 86
+          Top = 0
           Width = 8
           Caption = 'TntToolButton6'
           Style = tbsSeparator
         end
         object tbSessions: TTntToolButton
-          Left = 54
-          Top = 2
+          Left = 94
+          Top = 0
           Hint = 'Show conversations (F4)'
           Style = tbsCheck
           OnClick = tbSessionsClick
         end
         object TntToolButton7: TTntToolButton
-          Left = 77
-          Top = 2
+          Left = 137
+          Top = 0
           Width = 7
           Style = tbsSeparator
         end
         object tbSearch: TTntToolButton
-          Left = 84
-          Top = 2
+          Left = 144
+          Top = 0
           Hint = 'Find'
           Grouped = True
           Style = tbsCheck
           OnClick = tbFilterClick
         end
         object tbFilter: TTntToolButton
-          Left = 107
-          Top = 2
+          Left = 187
+          Top = 0
           Hint = 'Filter'
           Grouped = True
           Style = tbsCheck
           OnClick = tbFilterClick
         end
         object TntToolButton3: TTntToolButton
-          Left = 130
-          Top = 2
+          Left = 230
+          Top = 0
           Width = 7
           Style = tbsSeparator
         end
         object tbCopy: TTntToolButton
-          Left = 137
-          Top = 2
+          Left = 237
+          Top = 0
           Hint = 'Copy'
         end
         object tbDelete: TTntToolButton
-          Left = 160
-          Top = 2
+          Left = 280
+          Top = 0
           Hint = 'Delete'
           OnClick = tbDeleteClick
         end
         object tbSave: TTntToolButton
-          Left = 183
-          Top = 2
+          Left = 323
+          Top = 0
           Hint = 'Save'
           Visible = False
         end
         object TntToolButton2: TTntToolButton
-          Left = 206
-          Top = 2
+          Left = 366
+          Top = 0
           Width = 7
           Style = tbsSeparator
         end
         object tbEventsFilter: TTntToolButton
-          Left = 213
-          Top = 2
+          Left = 373
+          Top = 0
           Hint = 'Event Filter'
           DropdownMenu = pmEventsFilter
-          Marked = True
-          Style = tbsDropDown
+          Style = tbsTextButton
           OnClick = tbEventsFilterClick
         end
         object TntToolButton4: TTntToolButton
-          Left = 249
-          Top = 2
+          Left = 380
+          Top = 0
           Width = 7
           Style = tbsSeparator
         end
         object tbHistory: TTntToolButton
-          Left = 256
-          Top = 2
+          Left = 387
+          Top = 0
           Hint = 'History'
           DropdownMenu = pmHistory
           Style = tbsDropDown
           OnClick = tbHistoryClick
         end
         object tbHistorySearch: TTntToolButton
-          Left = 292
-          Top = 2
+          Left = 400
+          Top = 0
           Hint = 'History Search'
           OnClick = tbHistorySearchClick
         end
