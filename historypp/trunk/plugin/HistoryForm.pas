@@ -1036,7 +1036,7 @@ begin
              hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,16,16,0,tbEventsFilter.Glyph.Canvas.Brush.Handle,DI_NORMAL);
 
   PaintRect := Rect(0,GlyphTopOffset+((GlyphHeight-sz.cy) div 2),tbEventsFilter.Glyph.Width-16+5,tbEventsFilter.Glyph.Height);
-  DrawTextFlags := DT_END_ELLIPSIS or DT_NOPREFIX;
+  DrawTextFlags := DT_END_ELLIPSIS or DT_NOPREFIX or DT_CENTER;
   if hppOSUnicode then
     DrawTextW(tbEventsFilter.Glyph.Canvas.Handle,@Name[1],Length(Name),PaintRect,DrawTextFlags)
   else
