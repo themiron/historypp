@@ -325,7 +325,6 @@ object HistoryFrm: THistoryFrm
         TabOrder = 0
         Transparent = True
         Wrapable = False
-        ExplicitWidth = 368
         object tbUserDetails: TTntToolButton
           Left = 0
           Top = 0
@@ -409,7 +408,9 @@ object HistoryFrm: THistoryFrm
           Width = 110
           Height = 22
           Flat = True
-          Margin = 4
+          Layout = blGlyphTop
+          Margin = 0
+          Spacing = 0
           Transparent = False
           OnClick = tbEventsFilterClick
         end

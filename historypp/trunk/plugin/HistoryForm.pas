@@ -53,7 +53,7 @@ uses
   clipbrd, {FileCtrl,} shellapi,
   HistoryGrid, Checksum, WFindReplaceDialog, TntExtCtrls, hpp_sessionsthread, DateUtils,
   ImgList, PasswordEditControl, TntStdCtrls, TntButtons, TntMenus,
-  CommCtrl, ToolWin;
+  CommCtrl, ToolWin, Themes;
 
 const
   HM_EVENTADDED   = WM_APP + 100;
@@ -337,6 +337,7 @@ type
 
     procedure LoadSessionIcons;
     procedure LoadToolbarIcons;
+    procedure LoadEventFilterButton;
     procedure LoadButtonIcons;
 
     procedure LoadEventFilters;
@@ -707,14 +708,14 @@ begin
     //ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle);
     //tbEventsFilter.ImageIndex := ii;
 
-    with tbEventsFilter.Glyph do begin
+    {with tbEventsFilter.Glyph do begin
       if Width < 16 then Width := 16;
       if Height < 16 then Height := 16;
       Canvas.Brush.Color := clBtnFace;
       Canvas.FillRect(Rect(0,0,16,16));
       DrawiconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
-    end;
-
+    end;}
+    LoadEventFilterButton;
   finally
     //Toolbar.Be
   end;
@@ -960,6 +961,74 @@ begin
 
   imSearchNotFound.Picture.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_SEARCH_NOTFOUND].handle);
   imSearchEndOfPage.Picture.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_SEARCH_ENDOFPAGE].handle);
+end;
+
+procedure THistoryFrm.LoadEventFilterButton;
+var
+  pad: DWord;
+  PadV, PadH, GlyphHeight, GlyphTopOffset: Integer;
+  TopBorderHeight: Integer;
+  sz: TSize;
+  FirstName, Name: WideString;
+
+  Button: TThemedButton;
+  ToolButton: TThemedToolBar;
+  Details: TThemedElementDetails;
+  PaintRect: TRect;
+begin
+  FirstName := TranslateWideW(hppEventFilters[0].Name{TRANSLATE-IGNORE});
+  Name := TranslateWideW(hppEventFilters[tbEventsFilter.Tag].Name{TRANSLATE-IGNORE});
+  //name := Tnt_WideStringReplace(name,'&','&&',[rfReplaceAll]);
+  tbEventsFilter.Hint := Name; // show hint because the whole name may not fit in button
+
+  pad := SendMessage(Toolbar.Handle,TB_GETPADDING,0,0);
+  PadV := HiWord(pad);
+  PadH := LoWord(pad);
+  tbEventsFilter.Glyph.Canvas.Font := tbEventsFilter.Font;
+  //sz := WideCanvasTextExtent(tbEventsFilter.Glyph.Canvas,Name);
+  sz := WideCanvasTextExtent(tbEventsFilter.Glyph.Canvas,FirstName);
+  GlyphHeight := Toolbar.ButtonHeight-PadV;
+  GlyphTopOffset := (Toolbar.ButtonHeight - GlyphHeight) div 2;
+
+  TopBorderHeight := 1; // top border height is 1 pixel normally, but if we have themes...
+  if ThemeServices.ThemesEnabled then begin
+    if not Enabled then
+      Button := tbPushButtonDisabled
+    else
+      if tbEventsFilter.Down then
+        Button := tbPushButtonPressed
+      else
+        Button := tbPushButtonNormal;
+
+    case Button of
+      tbPushButtonDisabled:
+        Toolbutton := ttbButtonDisabled;
+      tbPushButtonPressed:
+        Toolbutton := ttbButtonPressed;
+      tbPushButtonNormal:
+        Toolbutton := ttbButtonNormal;
+    end;
+
+    PaintRect := tbEventsFilter.ClientRect;
+    Details := ThemeServices.GetElementDetails(ToolButton);
+    PaintRect := ThemeServices.ContentRect(Canvas.Handle, Details, PaintRect);
+    TopBorderHeight := tbEventsFilter.ClientRect.Top - PaintRect.Top;
+  end;
+
+  Dec(GlyphTopOffset, TopBorderHeight); // decrease by top button border height
+
+  tbEventsFilter.Glyph.Height := GlyphHeight+GlyphTopOffset;
+  tbEventsFilter.Glyph.Width := 16+sz.cx-5;
+  tbEventsFilter.Glyph.Canvas.Brush.Color := Toolbar.Color;
+  tbEventsFilter.Glyph.Canvas.FillRect(tbEventsFilter.Glyph.Canvas.ClipRect);
+  DrawIconEx(tbEventsFilter.Glyph.Canvas.Handle,sz.cx-5,GlyphTopOffset+((GlyphHeight-16) div 2),
+             hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,16,16,0,tbEventsFilter.Glyph.Canvas.Brush.Handle,DI_NORMAL);
+  PaintRect := Rect(0,GlyphTopOffset+((GlyphHeight-sz.cy) div 2),tbEventsFilter.Glyph.Width-16+5,tbEventsFilter.Glyph.Height);
+  if hppOSUnicode then
+    DrawTextW(tbEventsFilter.Glyph.Canvas.Handle,@Name[1],Length(Name),PaintRect,DT_END_ELLIPSIS or DT_NOPREFIX)
+  else
+    DrawTextA(tbEventsFilter.Glyph.Canvas.Handle,PChar(WidetoAnsiString(Name,hppCodepage)),Length(Name),PaintRect,DT_END_ELLIPSIS or DT_NOPREFIX);
+  tbEventsFilter.Width := tbEventsFilter.Glyph.Width+2*PadH;
 end;
 
 procedure THistoryFrm.LoadEventFilters;
@@ -2192,7 +2261,6 @@ begin
   
   HookEvents;
   ChangeSearchMode(False);
-  ReadEventFilters;
   CreateEventsFilterMenu;
   SetEventFilter(0);
 end;
@@ -2552,28 +2620,16 @@ end;
 
 procedure THistoryFrm.SetEventFilter(FilterIndex: Integer = -1);
 var
-  name: WideString;
   i,fi: Integer;
-  sz: TSize;
 begin
   if FilterIndex = -1 then begin
     fi := tbEventsFilter.Tag+1;
     if fi > High(hppEventFilters) then fi := 0;
   end else
     fi := FilterIndex;
-  name := TranslateWideW(hppEventFilters[fi].Name{TRANSLATE-IGNORE});
-  name := Tnt_WideStringReplace(name,'&','&&',[rfReplaceAll]);
 
-  //tbEventsFilter.Caption := name;
   tbEventsFilter.Tag := fi;
-  tbEventsFilter.Glyph.Canvas.Font := tbEventsFilter.Font;
-  sz := WideCanvasTextExtent(tbEventsFilter.Glyph.Canvas,name);
-  tbEventsFilter.Glyph.Width := 16+tbEventsFilter.Spacing+sz.cx;
-  tbEventsFilter.Glyph.Canvas.Brush.Color := clBtnFace;
-  tbEventsFilter.Glyph.Canvas.FillRect(Rect(16+tbEventsFilter.Spacing,0,sz.cx,tbEventsFilter.Glyph.Height));
-  WideCanvasTextOut(tbEventsFilter.Glyph.Canvas,16+tbEventsFilter.Spacing,
-                    (tbEventsFilter.Glyph.Height-sz.cy) div 2,name);
-  tbEventsFilter.Width := tbEventsFilter.Glyph.Width+tbEventsFilter.Margin*2;
+  LoadEventFilterButton;
   for i := 0 to pmEventsFilter.Items.Count-1 do
     if pmEventsFilter.Items[i].RadioItem then
       pmEventsFilter.Items[i].Checked := (pmEventsFilter.Items[i].Tag = fi);
