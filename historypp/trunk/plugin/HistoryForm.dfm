@@ -178,6 +178,7 @@ object HistoryFrm: THistoryFrm
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2
+      Visible = False
       object paSearchPanel: TTntPanel
         Left = 0
         Top = 0
@@ -284,6 +285,7 @@ object HistoryFrm: THistoryFrm
           Align = alRight
           Caption = '>>'
           Layout = tlCenter
+          ExplicitLeft = 16
           ExplicitHeight = 13
         end
         object imSearchEndOfPage: TTntImage
@@ -361,6 +363,7 @@ object HistoryFrm: THistoryFrm
           Left = 84
           Top = 0
           Hint = 'Find'
+          AllowAllUp = True
           Grouped = True
           Style = tbsCheck
           OnClick = tbFilterClick
@@ -369,6 +372,7 @@ object HistoryFrm: THistoryFrm
           Left = 107
           Top = 0
           Hint = 'Filter'
+          AllowAllUp = True
           Grouped = True
           Style = tbsCheck
           OnClick = tbFilterClick
@@ -410,6 +414,7 @@ object HistoryFrm: THistoryFrm
           Flat = True
           Layout = blGlyphTop
           Margin = 0
+          PopupMenu = pmEventsFilter
           Spacing = 0
           Transparent = False
           OnClick = tbEventsFilterClick

@@ -63,6 +63,7 @@ const
 type
 
   TLastSearch = (lsNone,lsHotSearch,lsSearch);
+  TSearchMode = (smNone, smSearch, smFilter, smHotSearch); // smHotSearch for possible future use
 
   THistoryFrm = class(TTntForm)
     SaveDialog: TSaveDialog;
@@ -260,7 +261,6 @@ type
     procedure Emptyhistory1Click(Sender: TObject);
     procedure EventsFilterItemClick(Sender: TObject);
     procedure Passwordprotection1Click(Sender: TObject);
-    procedure tbEventsFilterClick(Sender: TObject);
     procedure paSearchPanelResize(Sender: TObject);
     procedure SessSelectClick(Sender: TObject);
     procedure pmGridPopup(Sender: TObject);
@@ -268,6 +268,7 @@ type
     procedure tbUserMenuClick(Sender: TObject);
     procedure tvSessGetSelectedIndex(Sender: TObject; Node: TTreeNode);
     procedure Customize1Click(Sender: TObject);
+    procedure tbEventsFilterClick(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -276,8 +277,9 @@ type
     FPasswordMode: Boolean;
     SavedLinkUrl: String;
     HotFilterString: WideString;
-    FilterState: Boolean;
     FormState: TGridState;
+    PreHotSearchMode: TSearchMode;
+    FSearchMode: TSearchMode;
 
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo); message WM_GetMinMaxInfo;
     procedure WndProc(var Message: TMessage); override;
@@ -302,6 +304,7 @@ type
 
     procedure PreLoadHistory;
     procedure PostLoadHistory;
+    procedure SetSearchMode(const Value: TSearchMode);
   public
     UserCodepage: Cardinal;
     UseDefaultCP: boolean;
@@ -352,6 +355,7 @@ type
     procedure CreateEventsFilterMenu;
   protected
     procedure LoadPendingHeaders(rowidx: integer; count: integer);
+    property SearchMode: TSearchMode read FSearchMode write SetSearchMode;
   published
     procedure AlignControls(Control: TControl; var ARect: TRect); override;
   public
@@ -635,6 +639,8 @@ begin
   l := GetDBInt(hppDBName,'HistoryWindow.x',(Screen.Width-Self.Width) div 2);
   t := GetDBInt(hppDBName,'HistoryWindow.y',(Screen.Height - Self.Height) div 2);
   Self.SetBounds(l,t,w,h);
+
+  SearchMode := TSearchMode(GetDBByte(hppDBName,'SearchMode',0));
 end;
 
 procedure THistoryFrm.LoadSessionIcons;
@@ -723,6 +729,8 @@ end;
 
 procedure THistoryFrm.SavePosition;
 //save position and filter setting
+var
+  SearchModeForSave: TSearchMode;
 begin
   Utils_SaveWindowPosition(Self.Handle,0,hppDBName,'HistoryWindow.');
   if (hContact <> 0) and (not PasswordMode) and not ((HistoryLength = 0) and (not paSess.Visible)) then begin
@@ -730,9 +738,13 @@ begin
      if paSess.Visible then
         WriteDBInt(hppDBName,'SessionsWidth',paSess.Width);
   end;
-  WriteEventFilters;
   if (hContact <> 0) then
     WriteDBBool(hppDBName,'ExpandHeaders',hg.ExpandHeaders);
+  if SearchMode = smHotSearch then
+    SearchModeForSave := PreHotSearchMode
+  else
+    SearchModeForSave := SearchMode;
+  WriteDBByte(hppDBName,'SearchMode',Byte(SearchModeForSave));
 end;
 
 procedure THistoryFrm.HMEventAdded(var Message: TMessage);
@@ -800,7 +812,7 @@ begin
     key := 0;
     end;
 
-  if (key = VK_F3) and ((Shift=[]) or (Shift=[ssShift])) and (not PasswordMode) and (not FilterState) then begin
+  if (key = VK_F3) and ((Shift=[]) or (Shift=[ssShift])) and (not PasswordMode) and (SearchMode in [smSearch,smHotSearch]) then begin
     if ssShift in Shift then
       sbSearchPrev.Click
     else
@@ -2130,6 +2142,50 @@ begin
   LoadButtonIcons;
 end;
 
+procedure THistoryFrm.SetSearchMode(const Value: TSearchMode);
+var
+  SaveStr: WideString;
+  NotFound,Lock: Boolean;
+begin
+  if FSearchMode = Value then exit;
+  if Value = smHotSearch then PreHotSearchMode := FSearchMode;
+  FSearchMode := Value;
+
+
+  if Visible then Lock := LockWindowUpdate(Handle);
+  try
+
+    if tiFilter.Enabled then EndHotFilterTimer;
+    paSearch.Visible := not (SearchMode = smNone);
+    if SearchMode = smNone then begin
+      edSearch.Text := '';
+      exit;
+    end;
+
+    SaveStr := edSearch.Text;
+    tbFilter.Down := (FSearchMode = smFilter);
+    tbSearch.Down := (FSearchMode = smSearch);
+
+    hg.BeginUpdate;
+    try
+      pbSearch.Visible := (FSearchMode in [smSearch,smHotSearch]);
+      pbFilter.Visible := (FSearchMode = smFilter);
+      if (FSearchMode = smFilter) then paSearchStatus.Visible := False;
+      paSearchButtons.Visible := not (FSearchMode = smFilter);
+      NotFound := not (edSearch.Color = clWindow);
+      edSearch.Text := '';
+    finally
+      hg.EndUpdate;
+    end;
+
+    // don't search or filter if the string is not found
+    if not NotFound then
+      edSearch.Text := SaveStr;
+  finally
+    if Visible and Lock then LockWindowUpdate(0);
+  end;
+end;
+
 procedure THistoryFrm.EventsFilterItemClick(Sender: TObject);
 begin
   //tbEventsFilter.Caption := TTntMenuItem(Sender).Caption;
@@ -2191,7 +2247,7 @@ end;
 
 procedure THistoryFrm.edSearchChange(Sender: TObject);
 begin
-  if FilterState then
+  if SearchMode = smFilter then
     StartHotFilterTimer    
   else
     Search(True,False);
@@ -2200,7 +2256,7 @@ end;
 procedure THistoryFrm.edSearchKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if FilterState then begin
+  if SearchMode = smFilter then begin
     if Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR] then begin
       SendMessage(hg.Handle,WM_KEYDOWN,Key,0);
       Key := 0;
@@ -2814,35 +2870,7 @@ begin
 end;
 
 procedure THistoryFrm.ChangeSearchMode(Filter: Boolean);
-var
-  SaveStr: WideString;
-  NotFound,Lock: Boolean;
 begin
-  SaveStr := edSearch.Text;
-  tbFilter.Down := Filter;
-  tbSearch.Down := not Filter;
-  hg.BeginUpdate;
-  if Visible then Lock := LockWindowUpdate(Handle);
-  try
-    pbSearch.Visible := not Filter;
-    pbFilter.Visible := Filter;
-    if Filter then paSearchStatus.Visible := False;
-    paSearchButtons.Visible := not Filter;
-    NotFound := not (edSearch.Color = clWindow);
-    edSearch.Text := '';
-    if FilterState then EndHotFilterTimer;
-  finally
-    hg.EndUpdate;
-    if Visible and Lock then LockWindowUpdate(0);
-  end;
-  FilterState := Filter;
-
-  // don't search or filter if the string is not found
-  if not NotFound then
-    edSearch.Text := SaveStr;
-
-  if Self.Visible then
-    edSearch.SetFocus;
 end;
 
 procedure THistoryFrm.CodepageChangeClick(Sender: TObject);
@@ -2858,7 +2886,7 @@ end;
 
 procedure THistoryFrm.sbClearFilterClick(Sender: TObject);
 begin
-  if FilterState then EndHotFilterTimer;
+  if SearchMode = smFilter then EndHotFilterTimer;
   edSearch.Text := '';
   hg.SetFocus;
 end;
@@ -2945,9 +2973,25 @@ begin
   Delete1.Click;
 end;
 
+procedure THistoryFrm.tbEventsFilterClick(Sender: TObject);
+var
+  p: TPoint;
+begin
+  p := tbEventsFilter.ClientOrigin;
+  tbEventsFilter.ClientToScreen(p);
+  pmEventsFilter.Popup(p.X,p.Y+tbEventsFilter.Height);
+end;
+
 procedure THistoryFrm.tbFilterClick(Sender: TObject);
 begin
-  ChangeSearchMode(tbFilter.Down);
+  if tbSearch.Down then
+    SearchMode := smSearch
+  else if tbFilter.Down then
+    SearchMode := smFilter
+  else
+    SearchMode := smNone;
+
+  if paSearch.Visible then edSearch.SetFocus;
 end;
 
 procedure THistoryFrm.tbHistoryClick(Sender: TObject);
@@ -3147,15 +3191,6 @@ procedure THistoryFrm.tvSessGetSelectedIndex(Sender: TObject;
 begin
   // and we don't need to set SelectedIndex manually anymore
   Node.SelectedIndex := Node.ImageIndex;
-end;
-
-procedure THistoryFrm.tbEventsFilterClick(Sender: TObject);
-var
-  p: TPoint;
-begin
-  p := tbEventsFilter.ClientOrigin;
-  tbEventsFilter.ClientToScreen(p);
-  pmEventsFilter.Popup(p.X,p.Y+tbEventsFilter.Height);
 end;
 
 end.
