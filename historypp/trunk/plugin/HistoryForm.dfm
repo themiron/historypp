@@ -395,6 +395,7 @@ object HistoryFrm: THistoryFrm
           Left = 183
           Top = 2
           Hint = 'Save'
+          Visible = False
         end
         object TntToolButton2: TTntToolButton
           Left = 206
@@ -402,8 +403,19 @@ object HistoryFrm: THistoryFrm
           Width = 7
           Style = tbsSeparator
         end
-        object tbEventsFilter2: TTntSpeedButton
+        object tbEventsFilter: TTntToolButton
+          Tag = 1
           Left = 213
+          Top = 2
+          Hint = 'Event Filter'
+          Caption = 'Caption'
+          DropdownMenu = pmEventsFilter
+          Style = tbsDropDown
+          Visible = False
+          OnClick = tbEventsFilterClick
+        end
+        object tbEventsFilter2: TTntSpeedButton
+          Left = 249
           Top = 2
           Width = 110
           Height = 22
@@ -411,16 +423,6 @@ object HistoryFrm: THistoryFrm
           Caption = 'Event Filter'
           Flat = True
           OnClick = tbEventsFilter2Click
-        end
-        object tbEventsFilter: TTntToolButton
-          Tag = 1
-          Left = 323
-          Top = 2
-          Hint = 'Event Filter'
-          Caption = 'Caption'
-          DropdownMenu = pmEventsFilter
-          Style = tbsDropDown
-          OnClick = tbEventsFilterClick
         end
         object TntToolButton4: TTntToolButton
           Left = 359

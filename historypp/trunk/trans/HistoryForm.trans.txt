@@ -20,6 +20,9 @@ Copy
 Delete
 Save
 Event Filter
+Caption
+Event Filter
+Event Filter
 History
 History Search
 You need password to access this history
@@ -90,7 +93,6 @@ You have entered the wrong password
 History++ Password Protection
 %d event
 %0.n events (%s)
-Filter: %s
 Do you really want to delete ALL items (%.0f) for this contact?
 Note: It can take several minutes for large history.
 Empty History
