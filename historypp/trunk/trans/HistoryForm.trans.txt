@@ -19,10 +19,6 @@ Filter
 Copy
 Delete
 Save
-Event Filter
-Caption
-Event Filter
-Event Filter
 History
 History Search
 You need password to access this history
