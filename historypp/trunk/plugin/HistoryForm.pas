@@ -724,8 +724,13 @@ begin
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle);
     tbEventsFilter.ImageIndex := ii;
 
-    GetIconInfo(hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,icInfo);
-    tbEventsFilter2.Glyph.Handle := icInfo.hbmColor;
+    with tbEventsFilter2.Glyph do begin
+      Width := 16;
+      Height := 16;
+      Canvas.Brush.Color := Toolbar.Color;
+      Canvas.FillRect(Canvas.ClipRect);
+      DrawiconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+    end;
 
   finally
     //Toolbar.Be
@@ -2550,6 +2555,10 @@ begin
     fi := FilterIndex;
   name := TranslateWideW(hppEventFilters[fi].Name{TRANSLATE-IGNORE});
   name := Tnt_WideStringReplace(name,'&','&&',[rfReplaceAll]);
+
+  tbEventsFilter2.Caption := name;
+  tbEventsFilter2.Width := tbEventsFilter2.Glyph.Canvas.TextWidth(name)+16+4+4+4;
+
   tbEventsFilter.Caption := name;
   tbEventsFilter.Tag := fi;
   for i := 0 to pmEventsFilter.Items.Count-1 do
