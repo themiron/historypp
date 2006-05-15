@@ -211,6 +211,7 @@ begin
   PluginLink.CallService(MS_UPDATE_REGISTER, 0, integer(@upd));
 
   LoadGridOptions;
+  ReadEventFilters;
 
   HookSettingsChanged := PluginLink.HookEvent(ME_DB_CONTACT_SETTINGCHANGED,OnSettingsChanged);
   HookIconChanged := PluginLink.HookEvent(ME_SKIN_ICONSCHANGED,OnIconChanged);
