@@ -15,7 +15,7 @@ object fmGlobalSearch: TfmGlobalSearch
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
-  OnDestroy = TntFormDestroy
+  OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnMouseWheel = TntFormMouseWheel
   OnShow = FormShow
@@ -381,6 +381,11 @@ object fmGlobalSearch: TfmGlobalSearch
       Caption = 'Copy &Text'
       ShortCut = 16468
       OnClick = CopyText1Click
+    end
+    object Delete1: TTntMenuItem
+      Caption = '&Delete'
+      ShortCut = 46
+      OnClick = Delete1Click
     end
     object N1: TTntMenuItem
       Caption = '-'

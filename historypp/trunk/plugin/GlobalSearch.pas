@@ -58,7 +58,7 @@ type
       RTLMode: TRTLMode;
       Name: WideString;
       ProfileName: WideString;
-      Handle: Integer;
+      Handle: THandle;
   end;
 
   TSearchItem = record
@@ -106,6 +106,7 @@ type
     sbClearFilter: TTntSpeedButton;
     edFilter: TTntEdit;
     pbFilter: TPaintBox;
+    Delete1: TTntMenuItem;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -122,7 +123,7 @@ type
       Shift: TShiftState);
     procedure hgItemFilter(Sender: TObject; Index: Integer; var Show: Boolean);
     procedure edFilterChange(Sender: TObject);
-    procedure TntFormDestroy(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure edSearchChange(Sender: TObject);
     procedure hgKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure hgState(Sender: TObject; State: TGridState);
@@ -154,6 +155,7 @@ type
     procedure hgSelect(Sender: TObject; Item, OldItem: Integer);
     procedure Copy1Click(Sender: TObject);
     procedure CopyText1Click(Sender: TObject);
+    procedure Delete1Click(Sender: TObject);
   private
     WasReturnPressed: Boolean;
     LastUpdateTime: Cardinal;
@@ -172,6 +174,8 @@ type
     AllItems: Integer;
     AllContacts: Integer;
     HotFilterString: WideString;
+    FormState: TGridState;
+    
     procedure SMPrepare(var M: TMessage); message SM_PREPARE;
     procedure SMProgress(var M: TMessage); message SM_PROGRESS;
     procedure SMItemsFound(var M: TMessage); message SM_ITEMSFOUND;
@@ -278,6 +282,8 @@ begin
 //  end;
   DesktopFont := True;
   MakeFontsParent(Self);
+
+  FormState := gsIdle;
 
   ContactList := TObjectList.Create;
   hg.Codepage := hppCodepage;
@@ -478,7 +484,7 @@ begin
   end;
 end;
 
-procedure TfmGlobalSearch.TntFormDestroy(Sender: TObject);
+procedure TfmGlobalSearch.FormDestroy(Sender: TObject);
 begin
   fmGlobalSearch := nil;
   ContactList.Free;
@@ -688,7 +694,7 @@ begin
     if FilterHistory[i] = Item then EventDeleted := True;
     if (EventDeleted) and (i < Length(FilterHistory)-1) then FilterHistory[i] := FilterHistory[i+1];
     if EventDeleted then Dec(FilterHistory[i]);
-    
+
   end;
   if EventDeleted then SetLength(FilterHistory,Length(FilterHistory)-1);
 end;
@@ -699,8 +705,11 @@ begin
   FFiltered := False;
   SetLength(FilterHistory,0);
   hg.Allocate(0);
-  hg.Allocate(Length(History));
-  hg.Selected := 0;
+  if Length(History) > 0 then begin
+    hg.Allocate(Length(History));
+    hg.Selected := 0;
+  end else
+    hg.Selected := -1;
   // dirty hack: readjust scrollbars
   hg.Perform(WM_SIZE,SIZE_RESTORED,MakeLParam(hg.ClientWidth,hg.ClientHeight));
 end;
@@ -727,10 +736,17 @@ begin
 end;
 
 procedure TfmGlobalSearch.hgItemDelete(Sender: TObject; Index: Integer);
+var
+  si: TSearchItem;
 begin
+  si := GetSearchItem(Index);
+  if (FormState = gsDelete) and (si.hDBEvent <> 0) then
+    PluginLink.CallService(MS_DB_EVENT_DELETE,si.Contact.Handle,si.hDBEvent);
   if FFiltered then
     Index := FilterHistory[Index];
   DeleteEventFromLists(Index);
+  hgState(hg,hg.State);
+  Application.ProcessMessages;
 end;
 
 procedure TfmGlobalSearch.hgItemFilter(Sender: TObject; Index: Integer;
@@ -1108,21 +1124,20 @@ procedure TfmGlobalSearch.HMEventDeleted(var M: TMessage);
 var
   i: Integer;
 begin
-{wParam - hContact; lParam - hDBEvent}
-// event is deleted
-for i := 0 to hg.Count - 1 do begin
-  if (GetSearchItem(i).hDBEvent = M.lParam) then begin
-    hg.Delete(i);
-    exit;
-  end;
-end;
-// exit if we searched all
-if not FFiltered then exit;
-
-// if event is not in filter, we must search the overall array
-i := FindHistoryItemByHandle(m.LParam);
-if i <> -1 then
-  DeleteEventFromLists(i);
+  {wParam - hContact; lParam - hDBEvent}
+  if hg.State <> gsDelete then
+    for i := 0 to hg.Count - 1 do begin
+      if GetSearchItem(i).hDBEvent = M.lParam then begin
+        hg.Delete(i);
+        hgState(hg,hg.State);
+        exit;
+      end;
+    end;
+  // exit if we searched all
+  if not FFiltered then exit;
+  // if event is not in filter, we must search the overall array
+  i := FindHistoryItemByHandle(m.LParam);
+  if i <> -1 then DeleteEventFromLists(i);
 end;
 
 procedure TfmGlobalSearch.HMPreShutdown(var M: TMessage);
@@ -1400,6 +1415,28 @@ procedure TfmGlobalSearch.CopyText1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
   CopyToClip(hg.FormatSelected(hg.Options.ClipCopyTextFormat),Handle,GetSearchItem(hg.Selected).Contact.Codepage);
+end;
+
+procedure TfmGlobalSearch.Delete1Click(Sender: TObject);
+begin
+  if hg.SelCount = 0 then exit;
+  if hg.SelCount > 1 then begin
+    if HppMessageBox(Handle,
+      WideFormat(TranslateWideW('Do you really want to delete selected items (%.0f)?'),
+      [hg.SelCount/1]), TranslateWideW('Delete Selected'),
+      MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = IDNO then exit;
+  end else begin
+    if HppMessageBox(Handle, TranslateWideW('Do you really want to delete selected item?'),
+    TranslateWideW('Delete'), MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = IDNO then exit;
+  end;
+  SetSafetyMode(False);
+  try
+    FormState := gsDelete;
+    hg.DeleteSelected;
+    FormState := gsIdle;
+  finally
+    SetSafetyMode(True);
+  end;
 end;
 
 initialization
