@@ -343,11 +343,7 @@ type
     procedure LoadEventFilterButton;
     procedure LoadButtonIcons;
 
-    procedure LoadEventFilters;
-    procedure SaveEventFilters;
-
     procedure SetRecentEventsPosition(OnTop: Boolean);
-    procedure ChangeSearchMode(Filter: Boolean);
     procedure Search(Next: Boolean; FromNext: Boolean = False);
 
     procedure ShowAllEvents;
@@ -854,11 +850,13 @@ begin
       key:=0;
       end;
     if (key=Ord('E')) and (not PasswordMode) then begin
-      ChangeSearchMode(True);
+      SearchMode := smFilter;
+      edSearch.SetFocus;
       key:=0;
       end;
     if (key=Ord('F')) and (not PasswordMode) then begin
-      ChangeSearchMode(False);
+      SearchMode := smSearch;
+      edSearch.SetFocus;
       key:=0;
       end;
     if ((key=Ord('C')) or (key = VK_INSERT)) and (not PasswordMode) then begin
@@ -987,6 +985,7 @@ var
   ToolButton: TThemedToolBar;
   Details: TThemedElementDetails;
   PaintRect: TRect;
+  DrawTextFlags: Cardinal;
 begin
   FirstName := TranslateWideW(hppEventFilters[0].Name{TRANSLATE-IGNORE});
   Name := TranslateWideW(hppEventFilters[tbEventsFilter.Tag].Name{TRANSLATE-IGNORE});
@@ -1035,21 +1034,14 @@ begin
   tbEventsFilter.Glyph.Canvas.FillRect(tbEventsFilter.Glyph.Canvas.ClipRect);
   DrawIconEx(tbEventsFilter.Glyph.Canvas.Handle,sz.cx-5,GlyphTopOffset+((GlyphHeight-16) div 2),
              hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,16,16,0,tbEventsFilter.Glyph.Canvas.Brush.Handle,DI_NORMAL);
+
   PaintRect := Rect(0,GlyphTopOffset+((GlyphHeight-sz.cy) div 2),tbEventsFilter.Glyph.Width-16+5,tbEventsFilter.Glyph.Height);
+  DrawTextFlags := DT_END_ELLIPSIS or DT_NOPREFIX;
   if hppOSUnicode then
-    DrawTextW(tbEventsFilter.Glyph.Canvas.Handle,@Name[1],Length(Name),PaintRect,DT_END_ELLIPSIS or DT_NOPREFIX)
+    DrawTextW(tbEventsFilter.Glyph.Canvas.Handle,@Name[1],Length(Name),PaintRect,DrawTextFlags)
   else
-    DrawTextA(tbEventsFilter.Glyph.Canvas.Handle,PChar(WidetoAnsiString(Name,hppCodepage)),Length(Name),PaintRect,DT_END_ELLIPSIS or DT_NOPREFIX);
+    DrawTextA(tbEventsFilter.Glyph.Canvas.Handle,PChar(WidetoAnsiString(Name,hppCodepage)),Length(Name),PaintRect,DrawTextFlags);
   tbEventsFilter.Width := tbEventsFilter.Glyph.Width+2*PadH;
-end;
-
-procedure THistoryFrm.LoadEventFilters;
-var
-  mem: Pointer;
-  mem_size: Integer;
-  i: Integer;
-begin
-
 end;
 
 procedure THistoryFrm.LoadPendingHeaders(rowidx: integer; count: integer);
@@ -1355,8 +1347,8 @@ procedure THistoryFrm.hgChar(Sender: TObject; Char: WideChar;
   Shift: TShiftState);
 begin
   edSearch.Text := Char;
-  if not paSearch.Visible then
-    ChangeSearchMode(False);
+  if SearchMode = smNone then
+    SearchMode := smSearch;
   edSearch.SetFocus;
   edSearch.SelStart := Length(edSearch.Text);
   edSearch.SelLength := 0;
@@ -1892,11 +1884,6 @@ begin
   WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
 end;
 
-procedure THistoryFrm.SaveEventFilters;
-begin
-  ;
-end;
-
 procedure THistoryFrm.SaveasText2Click(Sender: TObject);
 var
   t: String;
@@ -2316,7 +2303,6 @@ begin
   paSess.Width := GetDBInt(hppDBName,'SessionsWidth',150);
   
   HookEvents;
-  ChangeSearchMode(False);
   CreateEventsFilterMenu;
   SetEventFilter(0);
 end;
@@ -2867,10 +2853,6 @@ procedure THistoryFrm.UserDetails1Click(Sender: TObject);
 begin
   if hContact = 0 then exit;
   PluginLink.CallService(MS_USERINFO_SHOWDIALOG,hContact,0);
-end;
-
-procedure THistoryFrm.ChangeSearchMode(Filter: Boolean);
-begin
 end;
 
 procedure THistoryFrm.CodepageChangeClick(Sender: TObject);
