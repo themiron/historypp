@@ -563,7 +563,10 @@ begin
     if ThemeServices.ThemesEnabled then
     begin
       {$IFDEF COMPILER_7_UP}
-      PerformEraseBackground(Self, Canvas.Handle);
+      //PerformEraseBackground(Self, Canvas.Handle);
+      PaintRect := Rect(0, 0, Width, Height);
+      Canvas.Brush.Color := Color;
+      Canvas.FillRect(PaintRect);
       {$ENDIF}
       SelectObject(Canvas.Handle, Canvas.Font.Handle); { For some reason, PerformEraseBackground sometimes messes the font up. }
 

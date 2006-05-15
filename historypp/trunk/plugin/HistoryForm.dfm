@@ -311,9 +311,9 @@ object HistoryFrm: THistoryFrm
       object Toolbar: TTntToolBar
         Left = 0
         Top = 0
-        Width = 574
+        Width = 397
         Height = 31
-        Align = alClient
+        Align = alLeft
         AutoSize = True
         BorderWidth = 2
         EdgeInner = esNone
@@ -324,8 +324,6 @@ object HistoryFrm: THistoryFrm
         TabOrder = 0
         Transparent = True
         Wrapable = False
-        OnAdvancedCustomDrawButton = ToolbarAdvancedCustomDrawButton
-        OnResize = ToolbarResize
         object tbUserDetails: TTntToolButton
           Left = 0
           Top = 2
@@ -403,35 +401,23 @@ object HistoryFrm: THistoryFrm
           Width = 7
           Style = tbsSeparator
         end
-        object tbEventsFilter: TTntToolButton
-          Tag = 1
+        object tbEventsFilter: TTntSpeedButton
           Left = 213
-          Top = 2
-          Hint = 'Event Filter'
-          Caption = 'Caption'
-          DropdownMenu = pmEventsFilter
-          Style = tbsDropDown
-          Visible = False
-          OnClick = tbEventsFilterClick
-        end
-        object tbEventsFilter2: TTntSpeedButton
-          Left = 249
           Top = 2
           Width = 110
           Height = 22
-          Hint = 'Event Filter'
-          Caption = 'Event Filter'
           Flat = True
-          OnClick = tbEventsFilter2Click
+          Margin = 4
+          OnClick = tbEventsFilterClick
         end
         object TntToolButton4: TTntToolButton
-          Left = 359
+          Left = 323
           Top = 2
           Width = 7
           Style = tbsSeparator
         end
         object tbHistory: TTntToolButton
-          Left = 366
+          Left = 330
           Top = 2
           Hint = 'History'
           DropdownMenu = pmHistory
@@ -439,7 +425,7 @@ object HistoryFrm: THistoryFrm
           OnClick = tbHistoryClick
         end
         object tbHistorySearch: TTntToolButton
-          Left = 402
+          Left = 366
           Top = 2
           Hint = 'History Search'
           OnClick = tbHistorySearchClick
