@@ -276,6 +276,7 @@ type
     SavedLinkUrl: String;
     HotFilterString: WideString;
     FilterState: Boolean;
+    FormState: TGridState;
 
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo); message WM_GetMinMaxInfo;
     procedure WndProc(var Message: TMessage); override;
@@ -599,6 +600,8 @@ begin
   DesktopFont := True;
   MakeFontsParent(Self);
 
+  FormState := gsIdle;
+
   hg.Filter := filAll;
 
   for i := 0 to High(cpTable) do begin
@@ -747,11 +750,10 @@ var
   i: Integer;
 begin
   {wParam - hContact; lParam - hDBEvent}
-  if (dword(message.wParam)=hContact) and (hg.State <> gsDelete) then
+  if (hg.State <> gsDelete) and (dword(message.wParam)=hContact) then
     for i := 0 to hg.Count - 1 do begin
       if (History[GridIndexToHistory(i)] = Message.lParam) then begin
         hg.Delete(i);
-        DeleteHistoryItem(i);
         hgState(hg,hg.State);
         exit;
       end;
@@ -1324,14 +1326,16 @@ var
   idx: Integer;
 begin
   idx := GridIndexToHistory(Index);
+  if (FormState = gsDelete) and (History[idx] <> 0) then
+    PluginLink.CallService(MS_DB_EVENT_DELETE,hContact,History[idx]);
   DeleteEventFromSessions(idx);
   if History[idx] <> 0 then begin
     if Assigned(EventDetailFrom) then
       if TEventDetailsFrm(EventDetailFrom).Item=Index then
         EventDetailFrom.Release;
-    PluginLink.CallService(MS_DB_EVENT_DELETE,hContact,History[idx]);
   end;
   DeleteHistoryItem(idx);
+  hgState(hg,hg.State);
   Application.ProcessMessages;
 end;
 
@@ -1373,7 +1377,9 @@ begin
   end;
   SetSafetyMode(False);
   try
+    FormState := gsDelete;
     hg.DeleteSelected;
+    FormState := gsIdle;
   finally
     SetSafetyMode(True);
   end;
