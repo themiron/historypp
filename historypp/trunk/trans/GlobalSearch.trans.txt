@@ -23,6 +23,7 @@ Send &Message
 Reply &Quoted
 &Copy
 Copy &Text
+&Delete
 &Save Selected...
 Save History
 ;; Text found in ..\plugin\GlobalSearch.pas:
@@ -59,3 +60,7 @@ Saving...
 Searching...
 Deleting...
 Searching... %.0n items in %d contacts found
+Do you really want to delete selected items (%.0f)?
+Delete Selected
+Do you really want to delete selected item?
+Delete
