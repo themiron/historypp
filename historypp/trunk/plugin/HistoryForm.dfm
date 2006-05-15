@@ -410,6 +410,7 @@ object HistoryFrm: THistoryFrm
           Height = 22
           Flat = True
           Margin = 4
+          Transparent = False
           OnClick = tbEventsFilterClick
         end
         object TntToolButton4: TTntToolButton
