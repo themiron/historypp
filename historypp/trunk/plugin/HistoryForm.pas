@@ -160,7 +160,6 @@ type
     N6: TTntMenuItem;
     Passwordprotection1: TTntMenuItem;
     TopPanel: TPanel;
-    laFilterText: TTntLabel;
     paSearchButtons: TTntPanel;
     pmSessions: TTntPopupMenu;
     SessCopy: TTntMenuItem;
@@ -2534,8 +2533,7 @@ begin
     fi := FilterIndex;
   name := TranslateWideW(hppEventFilters[fi].Name{TRANSLATE-IGNORE});
   name := Tnt_WideStringReplace(name,'&','&&',[rfReplaceAll]);
-  laFilterText.Caption := WideFormat(TranslateWideW('Filter: %s'),[name])+'  ';
-  //tbEventsFilter.Caption := name;
+  tbEventsFilter.Caption := name;
   tbEventsFilter.Tag := fi;
   for i := 0 to pmEventsFilter.Items.Count-1 do
     if pmEventsFilter.Items[i].RadioItem then
@@ -2918,12 +2916,7 @@ end;
 
 procedure THistoryFrm.tbEventsFilterClick(Sender: TObject);
 begin
-  //SetEventFilter(-1);
-  //tbEventsFilter.CheckMenuDropdown;
-  if tbEventsFilter.Tag = 0 then
-    tbEventsFilter.CheckMenuDropdown
-  else
-    SetEventFilter(0);
+  tbEventsFilter.CheckMenuDropdown;
 end;
 
 procedure THistoryFrm.paSearchPanelResize(Sender: TObject);
