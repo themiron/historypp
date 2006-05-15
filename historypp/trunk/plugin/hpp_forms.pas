@@ -10,12 +10,32 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
   end;
 
+procedure NotifyAllForms(Msg,wParam,lParam: DWord);
 procedure MakeFontsParent(Control: TControl);
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
 
 implementation
 
-uses hpp_global;
+uses hpp_global, hpp_services, HistoryForm, GlobalSearch, hpp_opt_dialog;
+
+procedure NotifyAllForms(Msg,wParam,lParam: DWord);
+var
+  i: Integer;
+begin
+  if hDlg <> 0 then
+    SendMessage(hDlg,Msg,wParam,lParam);
+
+  // we are going backwards here because history forms way want to
+  // close themselves on the message, so we would have AVs if go from 0 to Count
+  for i := HstWindowList.Count - 1 downto 0 do begin
+    if Assigned(THistoryFrm(HstWindowList[i]).EventDetailFrom) then
+      SendMessage(THistoryFrm(HstWindowList[i]).EventDetailFrom.Handle,Msg,wParam,lParam);
+    SendMessage(THistoryFrm(HstWindowList[i]).Handle,Msg,wParam,lParam);
+  end;
+
+  if Assigned(fmGlobalSearch) then
+    SendMessage(fmGlobalSearch.Handle,Msg,wParam,lParam);
+end;
 
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
 begin
