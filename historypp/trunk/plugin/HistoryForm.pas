@@ -46,7 +46,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, RichEdit,
   Graphics, Controls, Forms, Dialogs, Buttons, StdCtrls, Menus, ComCtrls, ExtCtrls,
-  TntSysUtils, TntForms, TntDialogs, TntComCtrls, {WFindDialog,}
+  TntWindows, TntSysUtils, TntForms, TntDialogs, TntComCtrls, {WFindDialog,}
   m_globaldefs, m_api,
   hpp_global, hpp_database, hpp_messages, hpp_events, hpp_contacts, hpp_itemprocess,
   hpp_forms,
@@ -170,6 +170,7 @@ type
     tbUserMenu: TTntToolButton;
     tbUserDetails: TTntToolButton;
     TntToolButton6: TTntToolButton;
+    tbEventsFilter2: TTntSpeedButton;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -267,6 +268,12 @@ type
     procedure pmHistoryPopup(Sender: TObject);
     procedure tbUserMenuClick(Sender: TObject);
     procedure tvSessGetSelectedIndex(Sender: TObject; Node: TTreeNode);
+    procedure ToolbarAdvancedCustomDrawButton(Sender: TToolBar;
+      Button: TToolButton; State: TCustomDrawState;
+      Stage: TCustomDrawStage; var Flags: TTBCustomDrawFlags;
+      var DefaultDraw: Boolean);
+    procedure ToolbarResize(Sender: TObject);
+    procedure tbEventsFilter2Click(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -681,6 +688,7 @@ var
   il: HIMAGELIST;
   ii: Integer;
   ic: HICON;
+  icInfo: _IconInfo;
 begin
   //tvSess.Items.BeginUpdate;
   try
@@ -715,6 +723,9 @@ begin
     tbHistorySearch.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle);
     tbEventsFilter.ImageIndex := ii;
+
+    GetIconInfo(hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,icInfo);
+    tbEventsFilter2.Glyph.Handle := icInfo.hbmColor;
 
   finally
     //Toolbar.Be
@@ -3057,6 +3068,47 @@ procedure THistoryFrm.tvSessGetSelectedIndex(Sender: TObject;
 begin
   // and we don't need to set SelectedIndex manually anymore
   Node.SelectedIndex := Node.ImageIndex;
+end;
+
+procedure THistoryFrm.ToolbarAdvancedCustomDrawButton(Sender: TToolBar;
+  Button: TToolButton; State: TCustomDrawState; Stage: TCustomDrawStage;
+  var Flags: TTBCustomDrawFlags; var DefaultDraw: Boolean);
+var
+  r,cr: TRect;
+  txt: WideString;
+begin
+  if (Stage=cdPostPaint) and (Button.Caption<>'') then begin
+    txt := TTntToolButton(Button).Caption;
+    cr := Button.ClientRect;
+    OffsetRect(cr,Button.Left,Button.Top);
+    Sender.Canvas.FillRect(cr);
+    Tnt_DrawTextW(Sender.Canvas.Handle,PWideChar(txt),Length(txt),cr,DT_NOPREFIX or DT_CENTER);
+  end;
+end;
+
+procedure THistoryFrm.ToolbarResize(Sender: TObject);
+var
+  i,delta,x: integer;
+begin
+  tbEventsFilter.Width := 200;
+{  for i := 1 to Toolbar.ButtonCount-1 do begin
+    if Toolbar.Buttons[i].Caption <> '' then
+      Toolbar.Buttons[i].Width := Toolbar.ButtonWidth+100;
+    if i > 1 then begin
+      tbEventsFilter.Index
+      Toolbar.Buttons[i].Left := x;
+    end;
+    x := Toolbar.Buttons[i].Left+Toolbar.Buttons[i].Width;
+  end;}
+end;
+
+procedure THistoryFrm.tbEventsFilter2Click(Sender: TObject);
+var
+  p: TPoint;
+begin
+  p := tbEventsFilter2.ClientOrigin;
+  tbEventsFilter2.ClientToScreen(p);
+  pmEventsFilter.Popup(p.X,p.Y+tbEventsFilter2.Height);
 end;
 
 end.
