@@ -267,6 +267,7 @@ type
     procedure pmHistoryPopup(Sender: TObject);
     procedure tbUserMenuClick(Sender: TObject);
     procedure tvSessGetSelectedIndex(Sender: TObject; Node: TTreeNode);
+    procedure Customize1Click(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -308,6 +309,7 @@ type
     HotString: WideString;
     LastHotIdx: Integer;
     EventDetailFrom: TForm;
+    CustomizeFiltersForm: TForm;
     WindowList:TList;
     History:array of THandle;
     HistoryLength:integer;
@@ -337,6 +339,9 @@ type
     procedure LoadToolbarIcons;
     procedure LoadButtonIcons;
 
+    procedure LoadEventFilters;
+    procedure SaveEventFilters;
+
     procedure SetRecentEventsPosition(OnTop: Boolean);
     procedure ChangeSearchMode(Filter: Boolean);
     procedure Search(Next: Boolean; FromNext: Boolean = False);
@@ -353,25 +358,8 @@ type
     property hContact: THandle read FhContact write SethContact;
   end;
 
-  ThppEventFilter = record
-    Name: WideString;
-    Events: TMessageTypes;
-  end;
-
 var
   HistoryFrm: THistoryFrm;
-
-const
-  hppEventFilters: array[0..6] of ThppEventFilter = (
-    (Name: 'Show all events'; Events: filAll),
-    (Name: 'Messages'; Events: [mtMessage,mtIncoming,mtOutgoing]),
-    //(Name: 'Recieved links'; Events: [mtUrl,mtIncoming]),
-    (Name: 'Link URLs'; Events: [mtUrl,mtIncoming,mtOutgoing]),
-    (Name: 'Files'; Events: [mtFile,mtIncoming,mtOutgoing]),
-    (Name: 'Status changes'; Events: [mtStatus,mtIncoming,mtOutgoing]),
-    (Name: 'SMTP Simple'; Events: [mtSMTPSimple,mtIncoming,mtOutgoing]),
-    (Name: 'All except status'; Events: filAll - [mtStatus])
-    );
 
 procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
 function ParseUrlItem(Item: THistoryItem; out Url,Mes: WideString): Boolean;
@@ -381,7 +369,8 @@ function ParseFileItem(Item: THistoryItem; out FileName,Mes: WideString): Boolea
 
 implementation
 
-uses EventDetailForm, PassForm, hpp_options, hpp_services;
+uses EventDetailForm, PassForm, hpp_options, hpp_services, hpp_eventfilters,
+  CustomizeFiltersForm;
 
 {$R *.DFM}
 
@@ -740,6 +729,7 @@ begin
      if paSess.Visible then
         WriteDBInt(hppDBName,'SessionsWidth',paSess.Width);
   end;
+  WriteEventFilters;
   if (hContact <> 0) then
     WriteDBBool(hppDBName,'ExpandHeaders',hg.ExpandHeaders);
 end;
@@ -972,6 +962,15 @@ begin
   imSearchEndOfPage.Picture.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_SEARCH_ENDOFPAGE].handle);
 end;
 
+procedure THistoryFrm.LoadEventFilters;
+var
+  mem: Pointer;
+  mem_size: Integer;
+  i: Integer;
+begin
+
+end;
+
 procedure THistoryFrm.LoadPendingHeaders(rowidx: integer; count: integer);
 //reads hDBEvents from the database until this row (begin from end which was loaded at the startup)
 // 2006.02.13 reads a windows with rowidx at center. Prefeching
@@ -1039,7 +1038,9 @@ procedure THistoryFrm.FormDestroy(Sender: TObject);
 begin
   // this is the only event fired when history is open
   // and miranda is closed
-  // (except now I added ME_SYSTEM_PRESHUTDOWN hook, which should work)
+  // (added: except now I added ME_SYSTEM_PRESHUTDOWN hook, which should work)
+  if Assigned(CustomizeFiltersForm) then
+    CustomizeFiltersForm.Release;
   if Assigned(EventDetailFrom) then
     EventDetailFrom.Release;
   Release;
@@ -1810,6 +1811,11 @@ begin
   WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
 end;
 
+procedure THistoryFrm.SaveEventFilters;
+begin
+  ;
+end;
+
 procedure THistoryFrm.SaveasText2Click(Sender: TObject);
 var
   t: String;
@@ -2186,6 +2192,7 @@ begin
   
   HookEvents;
   ChangeSearchMode(False);
+  ReadEventFilters;
   CreateEventsFilterMenu;
   SetEventFilter(0);
 end;
@@ -2445,6 +2452,12 @@ begin
   end;
 end;
 
+procedure THistoryFrm.Customize1Click(Sender: TObject);
+begin
+  CustomizeFiltersForm := TfmCustomizeFilters.Create(Self);
+  CustomizeFiltersForm.Show;
+end;
+
 procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
 var
   bNewWindow: Integer;
@@ -2564,6 +2577,7 @@ begin
   for i := 0 to pmEventsFilter.Items.Count-1 do
     if pmEventsFilter.Items[i].RadioItem then
       pmEventsFilter.Items[i].Checked := (pmEventsFilter.Items[i].Tag = fi);
+  hg.ShowHeaders := (mtMessage in hppEventFilters[fi].Events);
   hg.Filter := hppEventFilters[fi].Events;
 end;
 
