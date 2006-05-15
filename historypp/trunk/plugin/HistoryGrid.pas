@@ -989,12 +989,17 @@ end;
 procedure THistoryGrid.SetCodepage(const Value: Cardinal);
 var
   i: Integer;
+  DoChanges: Boolean;
 begin
   if FCodepage = Value then exit;
   FCodepage := Value;
+  DoChanges := false;
   for i := 0 to Length(FItems) - 1 do
-    if not IsUnknown(i) then LoadItem(i,false,true);
-  DoOptionsChanged;
+    if not IsUnknown(i) then begin
+      DoChanges := true;
+      LoadItem(i,false,true);
+    end;
+  if DoChanges then DoOptionsChanged;
 end;
 
 procedure THistoryGrid.SetContact(const Value: THandle);
