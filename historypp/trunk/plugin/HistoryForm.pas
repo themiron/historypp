@@ -987,8 +987,8 @@ var
   PaintRect: TRect;
   DrawTextFlags: Cardinal;
 begin
-  FirstName := TranslateWideW(hppEventFilters[0].Name{TRANSLATE-IGNORE});
-  Name := TranslateWideW(hppEventFilters[tbEventsFilter.Tag].Name{TRANSLATE-IGNORE});
+  FirstName := hppEventFilters[0].Name;
+  Name := hppEventFilters[tbEventsFilter.Tag].Name;
   //name := Tnt_WideStringReplace(name,'&','&&',[rfReplaceAll]);
   tbEventsFilter.Hint := Name; // show hint because the whole name may not fit in button
 
@@ -2186,7 +2186,7 @@ begin
   // Filter property in SetEventFilter, one when reset hot filter
   // make Begin/EndUpdate support batch UpdateFilter requests
   // so we can make it run only one time on EndUpdate
-  SetEventFilter(0);
+  SetEventFilter(GetShowAllEventsIndex);
   edSearch.Text := '';
   EndHotFilterTimer;
 end;
@@ -2304,7 +2304,10 @@ begin
   
   HookEvents;
   CreateEventsFilterMenu;
-  SetEventFilter(0);
+  if hContact <> 0 then
+    SetEventFilter(0)
+  else
+    SetEventFilter(GetShowAllEventsIndex);
 end;
 
 procedure THistoryFrm.PreLoadHistory;
@@ -2552,7 +2555,7 @@ begin
 
   for i := 0 to Length(hppEventFilters) - 1 do begin
     mi := TTntMenuItem.Create(pmEventsFilter);
-    mi.Caption := Tnt_WideStringReplace(TranslateWideW(hppEventFilters[i].Name),'&','&&',[rfReplaceAll]{TRANSLATE-IGNORE});
+    mi.Caption := Tnt_WideStringReplace(hppEventFilters[i].Name,'&','&&',[rfReplaceAll]);
     mi.GroupIndex := 1;
     mi.RadioItem := True;
     mi.Tag := i;
@@ -2564,8 +2567,13 @@ end;
 
 procedure THistoryFrm.Customize1Click(Sender: TObject);
 begin
-  CustomizeFiltersForm := TfmCustomizeFilters.Create(Self);
-  CustomizeFiltersForm.Show;
+  if not Assigned(fmCustomizeFilters)  then begin
+    CustomizeFiltersForm := TfmCustomizeFilters.Create(Self);
+    CustomizeFiltersForm.Show;
+  end
+  else begin
+    BringFormToFront(fmCustomizeFilters);
+  end;
 end;
 
 procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; Url: String);

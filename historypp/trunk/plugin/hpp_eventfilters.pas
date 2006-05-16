@@ -9,6 +9,9 @@ const
   FM_INCLUDE = 0; // show all events from filEvents (default)
   FM_EXCLUDE = 1; // show all events except from filEvents
 
+const
+  MAX_FILTER_NAME_LENGTH = 33; // make it uneven, so our db record would align in 4 bytes
+
 type
   ThppEventFilter = record
     Name: WideString;
@@ -18,8 +21,10 @@ type
   end;
 
   ThppEventFilterRec = packed record
-    Name: array[0..63] of WideChar; // max 63 char length (64'th char for zero)
-    Events: DWord;
+    Name: array[0..MAX_FILTER_NAME_LENGTH-1] of WideChar;
+    filMode: Byte;
+    filEvents: DWord;
+    filFlags: Byte; // reserved for future use (??) added this field to make record byte-align
   end;
   PhppEventFilterRec = ^ThppEventFilterRec;
 
@@ -29,6 +34,13 @@ var
   procedure ReadEventFilters;
   procedure WriteEventFilters;
   procedure ResetEventFiltersToDefault;
+  function GetShowAllEventsIndex: Integer;
+  // compile filMode & filEvents into Events:
+  procedure GenerateEventFilters(Filters: array of ThppEventFilter);
+
+const
+  AlwaysInclude: TMessageTypes = [];
+  AlwaysExclude: TMessageTypes = [mtUnknown];
 
 implementation
 
@@ -37,14 +49,15 @@ uses
 
 const
   hppDefEventFilters: array[0..6] of ThppEventFilter = (
-    (Name: 'Show all events'; Events: filAll; filMode: 1; filEvents: []),
-    (Name: 'Messages'; Events: [mtMessage,mtIncoming,mtOutgoing]; filMode: 0; filEvents: [mtMessage,mtIncoming,mtOutgoing]),
-    (Name: 'Link URLs'; Events: [mtUrl,mtIncoming,mtOutgoing]; filMode: 0; filEvents: [mtUrl,mtIncoming,mtOutgoing]),
-    (Name: 'Files'; Events: [mtFile,mtIncoming,mtOutgoing]; filMode: 0; filEvents: [mtFile,mtIncoming,mtOutgoing]),
-    (Name: 'Status changes'; Events: [mtStatus,mtIncoming,mtOutgoing];  filMode: 0; filEvents: [mtStatus,mtIncoming,mtOutgoing]),
-    (Name: 'SMTP Simple'; Events: [mtSMTPSimple,mtIncoming,mtOutgoing];  filMode: 0; filEvents: [mtSMTPSimple,mtIncoming,mtOutgoing]),
-    (Name: 'All except status'; Events: filAll - [mtStatus]; filMode: 1; filEvents: [mtStatus])
+    (Name: 'Show all events'; Events: []; filMode: FM_EXCLUDE; filEvents: []),
+    (Name: 'Messages'; Events: []; filMode: FM_INCLUDE; filEvents: [mtMessage,mtIncoming,mtOutgoing]),
+    (Name: 'Link URLs'; Events: []; filMode: FM_INCLUDE; filEvents: [mtUrl,mtIncoming,mtOutgoing]),
+    (Name: 'Files'; Events: []; filMode: FM_INCLUDE; filEvents: [mtFile,mtIncoming,mtOutgoing]),
+    (Name: 'Status changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtStatus,mtIncoming,mtOutgoing]),
+    (Name: 'SMTP Simple'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtSMTPSimple,mtIncoming,mtOutgoing]),
+    (Name: 'All except status'; Events: []; filMode: FM_EXCLUDE; filEvents: [mtStatus])
     );
+
 
 function IsSameAsDefault: Boolean;
 var
@@ -53,7 +66,7 @@ begin
   Result := False;
   if Length(hppDefEventFilters) <> Length(hppEventFilters) then exit;
   for i := 0 to Length(hppEventFilters) - 1 do begin
-    if hppEventFilters[i].Name <> TranslateWideW(hppDefEventFilters[i].Name{TRANSLATE-IGNORE}) then exit;
+    if hppEventFilters[i].Name <> Copy(TranslateWideW(hppDefEventFilters[i].Name{TRANSLATE-IGNORE}),1,MAX_FILTER_NAME_LENGTH) then exit;
     if hppEventFilters[i].Events <> hppDefEventFilters[i].Events then exit;
   end;
   Result := True;
@@ -81,17 +94,45 @@ begin
   end;
 end;
 
+procedure GenerateEventFilters(Filters: array of ThppEventFilter);
+var
+  i: Integer;
+begin
+  for i := 0 to Length(Filters) - 1 do begin
+    if Filters[i].filMode = FM_INCLUDE then
+      Filters[i].Events := Filters[i].filEvents
+    else begin
+      Filters[i].Events := DWordToMessageTypes(High(DWord));
+      Filters[i].Events := Filters[i].Events - Filters[i].filEvents;
+    end;
+    Filters[i].Events := Filters[i].Events - AlwaysExclude + AlwaysInclude;
+  end;
+end;
+
+function GetShowAllEventsIndex: Integer;
+var
+  i: Integer;
+begin
+  Result := 0;
+  for i := 0 to Length(hppEventFilters) - 1 do
+    if (hppEventFilters[i].filMode = FM_EXCLUDE) and
+    (hppEventFilters[i].filEvents = []) then begin
+      Result := i;
+      break;
+    end;
+end;
+
 procedure ResetEventFiltersToDefault;
 var
   i: Integer;
 begin
   SetLength(hppEventFilters,Length(hppDefEventFilters));
   for i := 0 to Length(hppDefEventFilters) - 1 do begin
-    hppEventFilters[i].Name := TranslateWideW(hppDefEventFilters[i].Name{TRANSLATE-IGNORE});
-    hppEventFilters[i].Events := hppDefEventFilters[i].Events;
+    hppEventFilters[i].Name := Copy(TranslateWideW(hppDefEventFilters[i].Name{TRANSLATE-IGNORE}),1,MAX_FILTER_NAME_LENGTH);
     hppEventFilters[i].filEvents := hppDefEventFilters[i].filEvents;
     hppEventFilters[i].filMode := hppDefEventFilters[i].filMode;
   end;
+  GenerateEventFilters(hppEventFilters);
   DBDeleteContactSetting(0,hppDBName,'EventFilters');
   UpdateEventFiltersOnForms;
 end;
@@ -122,9 +163,10 @@ begin
     for i := 0 to ef_count - 1 do begin
       efr := PhppEventFilterRec(Integer(mem)+i*SizeOf(efr^));
       hppEventFilters[i].Name := efr^.Name;
-      //hppEventFilters[i].Events := TMessageTypes(efr^.Events);
+      hppEventFilters[i].filEvents := DWordToMessageTypes(efr^.filEvents);
+      hppEventFilters[i].filMode := efr^.filMode;
     end;
-    WriteDBBlob(hppDBName,'EventFilters',mem,mem_size);
+    GenerateEventFilters(hppEventFilters);
     FreeMem(mem,mem_size);
   except
     ResetEventFiltersToDefault;
@@ -158,9 +200,10 @@ begin
   for i := 0 to Length(hppEventFilters) - 1 do begin
     ZeroMemory(@efr,SizeOf(efr));
     name_len := Length(hppEventFilters[i].Name);
-    name_len := Min(name_len,Length(efr.Name)-1);
+    name_len := Min(name_len,MAX_FILTER_NAME_LENGTH);
     Move(hppEventFilters[i].Name[1],efr.Name[0],name_len*SizeOf(WideChar));
-    efr.Events := MessageTypesToDWord(hppEventFilters[i].Events);
+    efr.filEvents := MessageTypesToDWord(hppEventFilters[i].filEvents);
+    efr.filMode := hppEventFilters[i].filMode;
     Move(efr,PByte(Integer(mem)+i*SizeOf(efr))^,SizeOf(efr));
   end;
 
