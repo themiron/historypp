@@ -281,10 +281,11 @@ object HistoryFrm: THistoryFrm
           Left = 22
           Top = 3
           Width = 12
-          Height = 13
+          Height = 19
           Align = alRight
           Caption = '>>'
           Layout = tlCenter
+          ExplicitHeight = 13
         end
         object imSearchEndOfPage: TTntImage
           Left = 3
