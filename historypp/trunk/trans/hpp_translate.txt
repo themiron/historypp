@@ -7,46 +7,6 @@
 ;; Trac: https://opensvn.csie.org/traccgi/historypp/trac.cgi/
 ;; 
 
-;; PassCheckForm.trans.txt file 
-
-;; Text found in ..\plugin\PassCheckForm.dfm:
-[Password Check]
-Password Check
-[Password:]
-Password:
-[Enter password]
-Enter password
-[To access Password Protection options you need to enter password]
-To access Password Protection options you need to enter password
-[OK]
-OK
-[Cancel]
-Cancel
-;; Text found in ..\plugin\PassCheckForm.pas:
-[You have entered the wrong password.]
-You have entered the wrong password.
-[History++ Password Protection]
-History++ Password Protection
-
-;; PassNewForm.trans.txt file 
-
-;; Text found in ..\plugin\PassNewForm.dfm:
-[New Password]
-New Password
-[Enter new password]
-Enter new password
-[Confirm:]
-Confirm:
-[Leave this fields blank to disable password]
-Leave this fields blank to disable password
-[Pay attention to CAPS LOCK button state]
-Pay attention to CAPS LOCK button state
-;; Text found in ..\plugin\PassNewForm.pas:
-[Password and Confirm fields should be similar]
-Password and Confirm fields should be similar
-[Error]
-Error
-
 ;; HistoryForm.trans.txt file 
 
 ;; Text found in ..\plugin\HistoryForm.dfm:
@@ -76,8 +36,8 @@ Clear Search
 User Details
 [User Menu]
 User Menu
-[TntToolButton6]
-TntToolButton6
+[TntToolButton1]
+TntToolButton1
 [Show conversations (F4)]
 Show conversations (F4)
 [Find]
@@ -96,6 +56,8 @@ History
 History Search
 [You need password to access this history]
 You need password to access this history
+[Password:]
+Password:
 [Enter]
 Enter
 [Save History]
@@ -128,6 +90,8 @@ Open File Fo&lder
 Copy All
 [Select &All]
 Select &All
+[Cancel]
+Cancel
 [Export as &HTML...]
 Export as &HTML...
 [Export as &XML...]
@@ -201,6 +165,8 @@ Do you want to continue searching at the beginning?
 "%s" not found
 [You have entered the wrong password]
 You have entered the wrong password
+[History++ Password Protection]
+History++ Password Protection
 [%d event]
 %d event
 [%0.n events (%s)]
@@ -229,6 +195,67 @@ Text file (*.txt)|*.txt
 [All files (*.*)|*.*]
 All files (*.*)|*.*
 
+;; GlobalSearch.trans.txt file 
+
+;; Text found in ..\plugin\GlobalSearch.dfm:
+[Global History Search]
+Global History Search
+[Search for]
+Search for
+[Search]
+Search
+[Advanced >>]
+Advanced >>
+[Advanced Search Options]
+Advanced Search Options
+[Search any word]
+Search any word
+[Search all words]
+Search all words
+[Search exact phrase]
+Search exact phrase
+[Include password-protected contacts]
+Include password-protected contacts
+[No items found]
+No items found
+[No items for your current filter]
+No items for your current filter
+[Sh&ow in context]
+Sh&ow in context
+[Reply &Quoted]
+Reply &Quoted
+;; Text found in ..\plugin\GlobalSearch.pas:
+[%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.]
+%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.
+[All Results]
+All Results
+[Searching "%s"...]
+Searching "%s"...
+[Stop]
+Stop
+[Searching... Please wait.]
+Searching... Please wait.
+[Preparing search...]
+Preparing search...
+[Searching... %.0n items in %d contacts found]
+Searching... %.0n items in %d contacts found
+[Enter the history password to search.]
+Enter the history password to search.
+[You have entered the wrong password.]
+You have entered the wrong password.
+[Please wait while closing the window...]
+Please wait while closing the window...
+[Ready to search]
+Ready to search
+[Click Search button to start]
+Click Search button to start
+[From %s]
+From %s
+[To %s]
+To %s
+[Advanced <<]
+Advanced <<
+
 ;; PassForm.trans.txt file 
 
 ;; Text found in ..\plugin\PassForm.dfm:
@@ -240,6 +267,8 @@ Protect all contacts
 Protect only selected contacts
 [Password...]
 Password...
+[OK]
+OK
 [&Refresh List]
 &Refresh List
 ;; Text found in ..\plugin\PassForm.pas:
@@ -253,8 +282,6 @@ Password set
 ;; Text found in ..\plugin\EventDetailForm.dfm:
 [Event Details]
 Event Details
-[Reply &Quoted]
-Reply &Quoted
 [&Close]
 &Close
 [From]
@@ -299,59 +326,59 @@ EMail Express
 [Other event]
 Other event
 
-;; GlobalSearch.trans.txt file 
+;; PassCheckForm.trans.txt file 
 
-;; Text found in ..\plugin\GlobalSearch.dfm:
-[Global History Search]
-Global History Search
-[Search for]
-Search for
-[Search]
-Search
-[Advanced >>]
-Advanced >>
-[Advanced Search Options]
-Advanced Search Options
-[Search any word]
-Search any word
-[Search all words]
-Search all words
-[Search exact phrase]
-Search exact phrase
-[Include password-protected contacts]
-Include password-protected contacts
-[No items found]
-No items found
-[No items for your current filter]
-No items for your current filter
-[Sh&ow in context]
-Sh&ow in context
-;; Text found in ..\plugin\GlobalSearch.pas:
-[%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.]
-%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.
-[All Results]
-All Results
-[Searching "%s"...]
-Searching "%s"...
-[Stop]
-Stop
-[Searching... Please wait.]
-Searching... Please wait.
-[Preparing search...]
-Preparing search...
-[Searching... %.0n items in %d contacts found]
-Searching... %.0n items in %d contacts found
-[Enter the history password to search.]
-Enter the history password to search.
-[Please wait while closing the window...]
-Please wait while closing the window...
-[Ready to search]
-Ready to search
-[Click Search button to start]
-Click Search button to start
-[From %s]
-From %s
-[To %s]
-To %s
-[Advanced <<]
-Advanced <<
+;; Text found in ..\plugin\PassCheckForm.dfm:
+[Password Check]
+Password Check
+[Enter password]
+Enter password
+[To access Password Protection options you need to enter password]
+To access Password Protection options you need to enter password
+;; Text found in ..\plugin\PassCheckForm.pas:
+
+;; PassNewForm.trans.txt file 
+
+;; Text found in ..\plugin\PassNewForm.dfm:
+[New Password]
+New Password
+[Enter new password]
+Enter new password
+[Confirm:]
+Confirm:
+[Leave this fields blank to disable password]
+Leave this fields blank to disable password
+[Pay attention to CAPS LOCK button state]
+Pay attention to CAPS LOCK button state
+;; Text found in ..\plugin\PassNewForm.pas:
+[Password and Confirm fields should be similar]
+Password and Confirm fields should be similar
+[Error]
+Error
+
+;; CustomizeFiltersForm.trans.txt file 
+
+;; Text found in ..\plugin\CustomizeFiltersForm.dfm:
+[Customize Filters]
+Customize Filters
+[Filter Properties]
+Filter Properties
+[Name:]
+Name:
+[Show all except selected events]
+Show all except selected events
+[Show only selected events]
+Show only selected events
+[Reset to Default]
+Reset to Default
+[Filters]
+Filters
+[Down]
+Down
+[Up]
+Up
+[Add]
+Add
+;; Text found in ..\plugin\CustomizeFiltersForm.pas:
+[New Filter #%d]
+New Filter #%d
