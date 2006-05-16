@@ -1,6 +1,6 @@
 object fmCustomizeFilters: TfmCustomizeFilters
-  Left = 0
-  Top = 0
+  Left = 227
+  Top = 70
   BorderStyle = bsDialog
   Caption = 'Customize Filters'
   ClientHeight = 477
@@ -31,7 +31,6 @@ object fmCustomizeFilters: TfmCustomizeFilters
     Default = True
     TabOrder = 2
     OnClick = bnOKClick
-    ExplicitTop = 417
   end
   object bnCancel: TTntButton
     Left = 89
@@ -43,7 +42,6 @@ object fmCustomizeFilters: TfmCustomizeFilters
     Caption = 'Cancel'
     TabOrder = 3
     OnClick = bnCancelClick
-    ExplicitTop = 417
   end
   object gbFilter: TTntGroupBox
     Left = 8
@@ -53,7 +51,6 @@ object fmCustomizeFilters: TfmCustomizeFilters
     Anchors = [akLeft, akTop, akRight, akBottom]
     Caption = 'Filter Properties'
     TabOrder = 1
-    ExplicitHeight = 260
     DesignSize = (
       354
       265)
@@ -82,7 +79,6 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Anchors = [akLeft, akTop, akRight, akBottom]
       ItemHeight = 13
       TabOrder = 3
-      ExplicitHeight = 148
     end
     object rbExclude: TTntRadioButton
       Left = 12
@@ -112,7 +108,6 @@ object fmCustomizeFilters: TfmCustomizeFilters
     Caption = 'Reset to Default'
     Enabled = False
     TabOrder = 4
-    ExplicitTop = 417
   end
   object gbFilters: TTntGroupBox
     Left = 8
@@ -134,7 +129,6 @@ object fmCustomizeFilters: TfmCustomizeFilters
       ItemHeight = 13
       TabOrder = 0
       OnClick = lbFiltersClick
-      ExplicitHeight = 107
     end
     object bnDown: TTntButton
       Left = 259
