@@ -89,8 +89,6 @@ begin
 end;
 
 procedure UpdateEventFiltersOnForms;
-var
-  i: Integer;
 begin
   NotifyAllForms(HM_NOTF_FILTERSCHANGED,0,0);
 end;

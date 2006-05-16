@@ -189,6 +189,8 @@ type
     procedure HMContactIconChanged(var M: TMessage); message HM_SRCH_CONTACTICONCHANGED;
     procedure HMPreShutdown(var M: TMessage); message HM_SRCH_PRESHUTDOWN;
 
+    procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
+
     procedure TranslateForm;
 
     procedure HookEvents;
@@ -1138,6 +1140,14 @@ begin
   // if event is not in filter, we must search the overall array
   i := FindHistoryItemByHandle(m.LParam);
   if i <> -1 then DeleteEventFromLists(i);
+end;
+
+procedure TfmGlobalSearch.HMIcons2Changed(var M: TMessage);
+begin
+  Icon.Handle := CopyIcon(hppIcons[HPP_ICON_GLOBALSEARCH].handle);
+  pbFilter.Repaint;
+  LoadButtonIcons;
+  LoadContactsIcons;
 end;
 
 procedure TfmGlobalSearch.HMPreShutdown(var M: TMessage);
