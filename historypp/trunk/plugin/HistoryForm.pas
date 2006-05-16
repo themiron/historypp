@@ -290,6 +290,7 @@ type
     procedure HMEventAdded(var Message: TMessage); message HM_HIST_EVENTADDED;
     procedure HMEventDeleted(var Message: TMessage); message HM_HIST_EVENTDELETED;
     procedure HMPreShutdown(var Message: TMessage); message HM_HIST_PRESHUTDOWN;
+    procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
 
     procedure HookEvents;
     procedure UnhookEvents;
@@ -349,6 +350,7 @@ type
     procedure ShowAllEvents;
     procedure SetEventFilter(FilterIndex: Integer = -1);
     procedure CreateEventsFilterMenu;
+    procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED;
   protected
     procedure LoadPendingHeaders(rowidx: integer; count: integer);
     property SearchMode: TSearchMode read FSearchMode write SetSearchMode;
@@ -767,6 +769,22 @@ begin
         exit;
       end;
     end;
+end;
+
+procedure THistoryFrm.HMFiltersChanged(var M: TMessage);
+begin
+  CreateEventsFilterMenu;
+end;
+
+procedure THistoryFrm.HMIcons2Changed(var M: TMessage);
+begin
+  Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
+  LoadSessionIcons;
+  LoadToolbarIcons;
+  LoadButtonIcons;
+  pbFilter.Repaint;
+  if Assigned(EventDetailFrom) then
+    EventDetailFrom.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
 end;
 
 procedure THistoryFrm.HMPreShutdown(var Message: TMessage);

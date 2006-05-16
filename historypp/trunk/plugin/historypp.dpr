@@ -322,9 +322,7 @@ begin
   Result := 0;
   if not GridOptions.ShowIcons then exit;
   LoadIcons;
-  for i := 0 to HstWindowList.Count - 1 do begin
-    THistoryFrm(HstWindowList[i]).LoadToolbarIcons;
-  end;
+  NotifyAllForms(HM_NOTF_ICONSCHANGED,0,0);
 end;
 
 function OnIcon2Changed(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
@@ -334,21 +332,7 @@ var
 begin
   Result := 0;
   LoadIcons2;
-  if Assigned(fmGlobalSearch) then begin
-    fmGlobalSearch.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_GLOBALSEARCH].handle);
-    fmGlobalSearch.pbFilter.Repaint;
-    fmGlobalSearch.LoadButtonIcons;
-    fmGlobalSearch.LoadContactsIcons;
-  end;
-  for i:=0 to HstWindowList.Count-1 do begin
-    THistoryFrm(HstWindowList[i]).Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
-    THistoryFrm(HstWindowList[i]).LoadSessionIcons;
-    THistoryFrm(HstWindowList[i]).LoadToolbarIcons;
-    THistoryFrm(HstWindowList[i]).LoadButtonIcons;
-    THistoryFrm(HstWindowList[i]).pbFilter.Repaint;
-    if Assigned(THistoryFrm(HstWindowList[i]).EventDetailFrom) then
-      THistoryFrm(HstWindowList[i]).EventDetailFrom.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
-  end;
+  NotifyAllForms(HM_NOTF_ICONS2CHANGED,0,0);
   //change menu icons
   ZeroMemory(@menuitem,SizeOf(menuItem));
   menuitem.cbSize := SizeOf(menuItem);

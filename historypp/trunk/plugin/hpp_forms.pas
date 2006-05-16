@@ -18,8 +18,10 @@ const
   HM_STRD_BASE = HM_BASE + 400; // base for search thread specific messages
   HM_NOTF_BASE = HM_BASE + 500; // base for plugin-wide notification messages
 
-  HM_NOTF_ICONSCHANGED   = HM_NOTF_BASE + 1; // Icons has changed
-  HM_NOTF_FILTERSCHANGED = HM_NOTF_BASE + 2; // Filters has changed
+  // notification messages:
+  HM_NOTF_ICONSCHANGED   = HM_NOTF_BASE + 1; // Skin icons has changed
+  HM_NOTF_ICONS2CHANGED  = HM_NOTF_BASE + 2; // IcoLib icons has changed
+  HM_NOTF_FILTERSCHANGED = HM_NOTF_BASE + 3; // Filters has changed
 
 procedure NotifyAllForms(Msg,wParam,lParam: DWord);
 procedure BringFormToFront(Form: TForm);
