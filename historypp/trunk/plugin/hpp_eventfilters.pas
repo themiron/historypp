@@ -36,7 +36,7 @@ var
   procedure ResetEventFiltersToDefault;
   function GetShowAllEventsIndex: Integer;
   // compile filMode & filEvents into Events:
-  procedure GenerateEventFilters(Filters: array of ThppEventFilter);
+  procedure GenerateEventFilters(var Filters: array of ThppEventFilter);
 
 const
   AlwaysInclude: TMessageTypes = [];
@@ -94,7 +94,7 @@ begin
   end;
 end;
 
-procedure GenerateEventFilters(Filters: array of ThppEventFilter);
+procedure GenerateEventFilters(var Filters: array of ThppEventFilter);
 var
   i: Integer;
 begin
