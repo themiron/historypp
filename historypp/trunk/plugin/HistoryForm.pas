@@ -56,9 +56,9 @@ uses
   CommCtrl, ToolWin, Themes;
 
 const
-  HM_EVENTADDED   = WM_APP + 100;
-  HM_EVENTDELETED = WM_APP + 101;
-  HM_PRESHUTDOWN  = WM_APP + 102;
+  HM_HIST_EVENTADDED   = HM_HIST_BASE + 1;
+  HM_HIST_EVENTDELETED = HM_HIST_BASE + 2;
+  HM_HIST_PRESHUTDOWN  = HM_HIST_BASE + 3;
 
 type
 
@@ -287,9 +287,9 @@ type
     procedure LoadPosition;
     procedure SavePosition;
 
-    procedure HMEventAdded(var Message: TMessage); message HM_EVENTADDED;
-    procedure HMEventDeleted(var Message: TMessage); message HM_EVENTDELETED;
-    procedure HMPreShutdown(var Message: TMessage); message HM_PRESHUTDOWN;
+    procedure HMEventAdded(var Message: TMessage); message HM_HIST_EVENTADDED;
+    procedure HMEventDeleted(var Message: TMessage); message HM_HIST_EVENTDELETED;
+    procedure HMPreShutdown(var Message: TMessage); message HM_HIST_PRESHUTDOWN;
 
     procedure HookEvents;
     procedure UnhookEvents;
@@ -332,8 +332,8 @@ type
     procedure ReplyQuoted(Item: Integer);
     procedure OpenPassword;
 
-    procedure SMItemsFound(var M: TMessage); message SM_ITEMSFOUND;
-    procedure SMFinished(var M: TMessage); message SM_FINISHED;
+    procedure SMItemsFound(var M: TMessage); message HM_SESS_ITEMSFOUND;
+    procedure SMFinished(var M: TMessage); message HM_SESS_FINISHED;
     procedure AddEventToSessions(hDBEvent: THandle);
     procedure DeleteEventFromSessions(ItemIdx: Integer);
     procedure ShowSessions(Show: Boolean);
@@ -1209,9 +1209,9 @@ end;
 
 procedure THistoryFrm.HookEvents;
 begin
-  hHookEventAdded:=PluginLink.HookEventMessage(ME_DB_EVENT_ADDED,Self.Handle,HM_EVENTADDED);
-  hHookEventDeleted := PluginLink.HookEventMessage(ME_DB_EVENT_DELETED,Self.Handle,HM_EVENTDELETED);
-  hHookEventPreShutdown := PluginLink.HookEventMessage(ME_SYSTEM_PRESHUTDOWN,Self.Handle,HM_PRESHUTDOWN);
+  hHookEventAdded:=PluginLink.HookEventMessage(ME_DB_EVENT_ADDED,Self.Handle,HM_HIST_EVENTADDED);
+  hHookEventDeleted := PluginLink.HookEventMessage(ME_DB_EVENT_DELETED,Self.Handle,HM_HIST_EVENTDELETED);
+  hHookEventPreShutdown := PluginLink.HookEventMessage(ME_SYSTEM_PRESHUTDOWN,Self.Handle,HM_HIST_PRESHUTDOWN);
 end;
 
 procedure THistoryFrm.UnhookEvents;

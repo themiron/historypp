@@ -42,13 +42,13 @@ uses
   m_globaldefs, m_api,
   hpp_global, hpp_events, hpp_services, hpp_contacts,  hpp_database,  hpp_searchthread,
   ImgList, PasswordEditControl, Buttons, TntButtons, Math, CommCtrl,
-  Contnrs, TntMenus;
+  Contnrs, TntMenus, hpp_forms;
 
 const
-  HM_EVENTDELETED       = WM_APP + 100;
-  HM_CONTACTDELETED     = WM_APP + 101;
-  HM_CONTACTICONCHANGED = WM_APP + 102;
-  HM_PRESHUTDOWN        = WM_APP + 103;
+  HM_SRCH_EVENTDELETED       = HM_SRCH_BASE + 1;
+  HM_SRCH_CONTACTDELETED     = HM_SRCH_BASE + 2;
+  HM_SRCH_CONTACTICONCHANGED = HM_SRCH_BASE + 3;
+  HM_SRCH_PRESHUTDOWN        = HM_SRCH_BASE + 4;
 
 type
   TContactInfo = class(TObject)
@@ -176,18 +176,18 @@ type
     HotFilterString: WideString;
     FormState: TGridState;
     
-    procedure SMPrepare(var M: TMessage); message SM_PREPARE;
-    procedure SMProgress(var M: TMessage); message SM_PROGRESS;
-    procedure SMItemsFound(var M: TMessage); message SM_ITEMSFOUND;
-    procedure SMNextContact(var M: TMessage); message SM_NEXTCONTACT;
-    procedure SMFinished(var M: TMessage); message SM_FINISHED;
+    procedure SMPrepare(var M: TMessage); message HM_STRD_PREPARE;
+    procedure SMProgress(var M: TMessage); message HM_STRD_PROGRESS;
+    procedure SMItemsFound(var M: TMessage); message HM_STRD_ITEMSFOUND;
+    procedure SMNextContact(var M: TMessage); message HM_STRD_NEXTCONTACT;
+    procedure SMFinished(var M: TMessage); message HM_STRD_FINISHED;
 
-    procedure HMEventDeleted(var M: TMessage); message HM_EVENTDELETED;
+    procedure HMEventDeleted(var M: TMessage); message HM_SRCH_EVENTDELETED;
     function FindHistoryItemByHandle(hDBEvent: THandle): Integer;
     procedure DeleteEventFromLists(Item: Integer);
-    procedure HMContactDeleted(var M: TMessage); message HM_CONTACTDELETED;
-    procedure HMContactIconChanged(var M: TMessage); message HM_CONTACTICONCHANGED;
-    procedure HMPreShutdown(var M: TMessage); message HM_PRESHUTDOWN;
+    procedure HMContactDeleted(var M: TMessage); message HM_SRCH_CONTACTDELETED;
+    procedure HMContactIconChanged(var M: TMessage); message HM_SRCH_CONTACTICONCHANGED;
+    procedure HMPreShutdown(var M: TMessage); message HM_SRCH_PRESHUTDOWN;
 
     procedure TranslateForm;
 
@@ -236,7 +236,7 @@ var
 
 implementation
 
-uses hpp_options, PassForm, hpp_itemprocess, hpp_forms, hpp_messages,
+uses hpp_options, PassForm, hpp_itemprocess, hpp_messages,
   HistoryForm;
 
 {$R *.DFM}
@@ -1030,10 +1030,10 @@ end;
 
 procedure TfmGlobalSearch.HookEvents;
 begin
-  hHookEventDeleted := PluginLink.HookEventMessage(ME_DB_EVENT_DELETED,Self.Handle,HM_EVENTDELETED);
-  hHookContactDeleted := PluginLink.HookEventMessage(ME_DB_CONTACT_DELETED,Self.Handle,HM_CONTACTDELETED);
-  hHookContactIconChanged :=PluginLink.HookEventMessage(ME_CLIST_CONTACTICONCHANGED,Self.Handle,HM_CONTACTICONCHANGED);
-  hHookEventPreShutdown :=PluginLink.HookEventMessage(ME_SYSTEM_PRESHUTDOWN,Self.Handle,HM_PRESHUTDOWN);
+  hHookEventDeleted := PluginLink.HookEventMessage(ME_DB_EVENT_DELETED,Self.Handle,HM_SRCH_EVENTDELETED);
+  hHookContactDeleted := PluginLink.HookEventMessage(ME_DB_CONTACT_DELETED,Self.Handle,HM_SRCH_CONTACTDELETED);
+  hHookContactIconChanged :=PluginLink.HookEventMessage(ME_CLIST_CONTACTICONCHANGED,Self.Handle,HM_SRCH_CONTACTICONCHANGED);
+  hHookEventPreShutdown :=PluginLink.HookEventMessage(ME_SYSTEM_PRESHUTDOWN,Self.Handle,HM_SRCH_PRESHUTDOWN);
 end;
 
 procedure TfmGlobalSearch.UnhookEvents;

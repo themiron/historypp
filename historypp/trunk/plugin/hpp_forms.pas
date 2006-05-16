@@ -2,13 +2,24 @@ unit hpp_forms;
 
 interface
 
-uses Graphics, Windows, Forms, TntStdCtrls, StdCtrls, Controls, TntControls;
+uses Graphics, Windows, Forms, TntStdCtrls, StdCtrls, Controls, TntControls, Messages;
 
 type
   THppHintWindow = class (TTntHintWindow)
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   end;
+
+const
+  HM_BASE = WM_APP + 10214; // base for all history++ messages
+  HM_HIST_BASE = HM_BASE + 100; // base for contact's history specific messages
+  HM_SRCH_BASE = HM_BASE + 200; // base for global search specific messages
+  HM_SESS_BASE = HM_BASE + 300; // base for session thread specific messages
+  HM_STRD_BASE = HM_BASE + 400; // base for search thread specific messages
+  HM_NOTF_BASE = HM_BASE + 500; // base for plugin-wide notification messages
+
+  HM_NOTF_ICONSCHANGED   = HM_NOTF_BASE + 1; // Icons has changed
+  HM_NOTF_FILTERSCHANGED = HM_NOTF_BASE + 2; // Filters has changed
 
 procedure NotifyAllForms(Msg,wParam,lParam: DWord);
 procedure BringFormToFront(Form: TForm);
