@@ -35,7 +35,10 @@ var
   procedure WriteEventFilters;
   procedure ResetEventFiltersToDefault;
   function GetShowAllEventsIndex: Integer;
+
   // compile filMode & filEvents into Events:
+  function GenerateEvents(filMode: Byte; filEvents: TMessageTypes): TMessageTypes;
+  // compile filMode & filEvents into Events for all filters
   procedure GenerateEventFilters(var Filters: array of ThppEventFilter);
 
 const
@@ -94,18 +97,23 @@ begin
   end;
 end;
 
+function GenerateEvents(filMode: Byte; filEvents: TMessageTypes): TMessageTypes;
+begin
+  if filMode = FM_INCLUDE then
+    Result := filEvents
+  else begin
+    Result := DWordToMessageTypes(High(DWord));
+    Result := Result - filEvents;
+  end;
+  Result := Result - AlwaysExclude + AlwaysInclude;
+end;
+
 procedure GenerateEventFilters(var Filters: array of ThppEventFilter);
 var
   i: Integer;
 begin
   for i := 0 to Length(Filters) - 1 do begin
-    if Filters[i].filMode = FM_INCLUDE then
-      Filters[i].Events := Filters[i].filEvents
-    else begin
-      Filters[i].Events := DWordToMessageTypes(High(DWord));
-      Filters[i].Events := Filters[i].Events - Filters[i].filEvents;
-    end;
-    Filters[i].Events := Filters[i].Events - AlwaysExclude + AlwaysInclude;
+    Filters[i].Events := GenerateEvents(Filters[i].filMode,Filters[i].filEvents);
   end;
 end;
 
@@ -206,7 +214,7 @@ begin
     efr.filMode := hppEventFilters[i].filMode;
     Move(efr,PByte(Integer(mem)+i*SizeOf(efr))^,SizeOf(efr));
   end;
-
+  WriteDBBlob(hppDBName,'FilterEvents',mem,mem_size);
   UpdateEventFiltersOnForms;
 end;
 
