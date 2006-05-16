@@ -74,28 +74,24 @@ const
   HPP_ICON_HOTFILTER         = 9;
   HPP_ICON_HOTFILTERWAIT     = 10;
   HPP_ICON_SEARCH_ALLRESULTS = 11;
-  HPP_ICON_OVERLAY_HIDE      = 12;
-  HPP_ICON_OVERLAY_INC       = 13;
-  HPP_ICON_OVERLAY_OUT       = 14;
-  HPP_ICON_TOOL_SAVEALL      = 15;
-  HPP_ICON_HOTSEARCH         = 16;
-  HPP_ICON_SEARCHUP          = 17;
-  HPP_ICON_SEARCHDOWN        = 18;
-  HPP_ICON_TOOL_DELETEALL    = 19;
-  HPP_ICON_TOOL_DELETE       = 20;
-  HPP_ICON_TOOL_OPTIONS      = 21;
-  HPP_ICON_TOOL_SESSIONS     = 22;
-  HPP_ICON_TOOL_SAVE         = 23;
-  HPP_ICON_TOOL_COPY         = 24;
-  HPP_ICON_SEARCH_ENDOFPAGE  = 25;
-  HPP_ICON_SEARCH_NOTFOUND   = 26;
-  HPP_ICON_HOTFILTERCLEAR    = 27;
-  HPP_ICON_SESS_HIDE         = 28;
-  HPP_ICON_TOOL_EVENTSFILTER = 29;
-  HPP_ICON_CONTACDETAILS     = 30;
-  HPP_ICON_CONTACTMENU       = 31;
+  HPP_ICON_TOOL_SAVEALL      = 12;
+  HPP_ICON_HOTSEARCH         = 13;
+  HPP_ICON_SEARCHUP          = 14;
+  HPP_ICON_SEARCHDOWN        = 15;
+  HPP_ICON_TOOL_DELETEALL    = 16;
+  HPP_ICON_TOOL_DELETE       = 17;
+  HPP_ICON_TOOL_SESSIONS     = 18;
+  HPP_ICON_TOOL_SAVE         = 19;
+  HPP_ICON_TOOL_COPY         = 20;
+  HPP_ICON_SEARCH_ENDOFPAGE  = 21;
+  HPP_ICON_SEARCH_NOTFOUND   = 22;
+  HPP_ICON_HOTFILTERCLEAR    = 23;
+  HPP_ICON_SESS_HIDE         = 24;
+  HPP_ICON_TOOL_EVENTSFILTER = 25;
+  HPP_ICON_CONTACDETAILS     = 26;
+  HPP_ICON_CONTACTMENU       = 27;
 
-  hppIcons : array[0..31] of ThppIconsRec = (
+  hppIcons : array[0..27] of ThppIconsRec = (
     (name:'historypp_00'; desc:'Contact history'; i:HPP_ICON_CONTACTHISTORY; handle:0),
     (name:'historypp_01'; desc:'History search'; i:HPP_ICON_GLOBALSEARCH; handle:0),
     (name:'historypp_02'; desc:'Conversation divider'; i:HPP_ICON_SESS_DIVIDER; handle:0),
@@ -105,29 +101,25 @@ const
     (name:'historypp_06'; desc:'Conversation winter'; i:HPP_ICON_SESS_WINTER; handle:0),
     (name:'historypp_07'; desc:'Conversation spring'; i:HPP_ICON_SESS_SPRING; handle:0),
     (name:'historypp_08'; desc:'Conversation year'; i:HPP_ICON_SESS_YEAR; handle:0),
-    (name:'historypp_09'; desc:'In-place filter'; i:HPP_ICON_HOTFILTER; handle:0),
+    (name:'historypp_09'; desc:'Filter'; i:HPP_ICON_HOTFILTER; handle:0),
     (name:'historypp_10'; desc:'In-place filter wait'; i:HPP_ICON_HOTFILTERWAIT; handle:0),
     (name:'historypp_11'; desc:'Search All Results'; i:HPP_ICON_SEARCH_ALLRESULTS; handle:0),
-    (name:'historypp_12'; desc:'Mark Hide Messages'; i:HPP_ICON_OVERLAY_HIDE; handle:0),
-    (name:'historypp_13'; desc:'Mark Incoming Messages'; i:HPP_ICON_OVERLAY_INC; handle:0),
-    (name:'historypp_14'; desc:'Mark Outgoing Messages'; i:HPP_ICON_OVERLAY_OUT; handle:0),
-    (name:'historypp_15'; desc:'Save All'; i:HPP_ICON_TOOL_SAVEALL; handle:0),
-    (name:'historypp_16'; desc:'In-place Search'; i:HPP_ICON_HOTSEARCH; handle:0),
-    (name:'historypp_17'; desc:'Search Up'; i:HPP_ICON_SEARCHUP; handle:0),
-    (name:'historypp_18'; desc:'Search Down'; i:HPP_ICON_SEARCHDOWN; handle:0),
-    (name:'historypp_19'; desc:'Delete All'; i:HPP_ICON_TOOL_DELETEALL; handle:0),
-    (name:'historypp_20'; desc:'Delete'; i:HPP_ICON_TOOL_DELETE; handle:0),
-    (name:'historypp_21'; desc:'Options'; i:HPP_ICON_TOOL_OPTIONS; handle:0),
-    (name:'historypp_22'; desc:'Conversations'; i:HPP_ICON_TOOL_SESSIONS; handle:0),
-    (name:'historypp_23'; desc:'Save'; i:HPP_ICON_TOOL_SAVE; handle:0),
-    (name:'historypp_24'; desc:'Copy'; i:HPP_ICON_TOOL_COPY; handle:0),
-    (name:'historypp_25'; desc:'End of page'; i:HPP_ICON_SEARCH_ENDOFPAGE; handle:0),
-    (name:'historypp_26'; desc:'Phrase not found'; i:HPP_ICON_SEARCH_NOTFOUND; handle:0),
-    (name:'historypp_27'; desc:'Clear in-place filter'; i:HPP_ICON_HOTFILTERCLEAR; handle:0),
-    (name:'historypp_28'; desc:'Conversation hide'; i:HPP_ICON_SESS_HIDE; handle:0),
-    (name:'historypp_29'; desc:'Events filter'; i:HPP_ICON_TOOL_EVENTSFILTER; handle:0),
-    (name:'historypp_30'; desc:'User Details'; i:HPP_ICON_CONTACDETAILS; handle:0),
-    (name:'historypp_31'; desc:'User Menu'; i:HPP_ICON_CONTACTMENU; handle:0)
+    (name:'historypp_12'; desc:'Save All'; i:HPP_ICON_TOOL_SAVEALL; handle:0),
+    (name:'historypp_13'; desc:'Search'; i:HPP_ICON_HOTSEARCH; handle:0),
+    (name:'historypp_14'; desc:'Search Up'; i:HPP_ICON_SEARCHUP; handle:0),
+    (name:'historypp_15'; desc:'Search Down'; i:HPP_ICON_SEARCHDOWN; handle:0),
+    (name:'historypp_16'; desc:'Delete All'; i:HPP_ICON_TOOL_DELETEALL; handle:0),
+    (name:'historypp_17'; desc:'Delete'; i:HPP_ICON_TOOL_DELETE; handle:0),
+    (name:'historypp_18'; desc:'Conversations'; i:HPP_ICON_TOOL_SESSIONS; handle:0),
+    (name:'historypp_19'; desc:'Save'; i:HPP_ICON_TOOL_SAVE; handle:0),
+    (name:'historypp_20'; desc:'Copy'; i:HPP_ICON_TOOL_COPY; handle:0),
+    (name:'historypp_21'; desc:'End of page'; i:HPP_ICON_SEARCH_ENDOFPAGE; handle:0),
+    (name:'historypp_22'; desc:'Phrase not found'; i:HPP_ICON_SEARCH_NOTFOUND; handle:0),
+    (name:'historypp_23'; desc:'Clear in-place filter'; i:HPP_ICON_HOTFILTERCLEAR; handle:0),
+    (name:'historypp_24'; desc:'Conversation hide'; i:HPP_ICON_SESS_HIDE; handle:0),
+    (name:'historypp_25'; desc:'Events filter'; i:HPP_ICON_TOOL_EVENTSFILTER; handle:0),
+    (name:'historypp_26'; desc:'User Details'; i:HPP_ICON_CONTACDETAILS; handle:0),
+    (name:'historypp_27'; desc:'User Menu'; i:HPP_ICON_CONTACTMENU; handle:0)
   );
 
   hppFontItems: array[0..16] of ThppFontsRec = (
