@@ -38,7 +38,7 @@ interface
 
 uses
   Windows, SysUtils, Controls, Messages, HistoryGrid, Classes, m_GlobalDefs,
-  hpp_global, m_api, hpp_events, TntSysUtils;
+  hpp_global, m_api, hpp_events, TntSysUtils, hpp_forms;
 
 type
   TSess = record
@@ -82,10 +82,9 @@ type
   end;
 
 const
-  SM_BASE = WM_APP + 421;
-  SM_PREPARE = SM_BASE + 1; // the search is prepared (0,0)
-  SM_FINISHED = SM_BASE + 5; // search finished (0,0)
-  SM_ITEMSFOUND = SM_BASE + 6; // (NEW) items are found (array of hDBEvent, array size)
+  HM_SESS_PREPARE    = HM_SESS_BASE + 1; // the search is prepared (0,0)
+  HM_SESS_FINISHED   = HM_SESS_BASE + 2; // search finished (0,0)
+  HM_SESS_ITEMSFOUND = HM_SESS_BASE + 3; // (NEW) items are found (array of hDBEvent, array size)
 
 const
   // 2 hours
@@ -128,7 +127,7 @@ begin
   Count := 0;
   FirstBatch := True;
   try
-    DoMessage(SM_PREPARE,0,0);
+    DoMessage(HM_SESS_PREPARE,0,0);
     hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDFIRST,FContact,0);
     while hDBEvent <> 0 do begin
       ZeroMemory(@Event,SizeOf(Event));
@@ -165,7 +164,7 @@ begin
     FSearchTime := GetTickCount - SearchStart;
     // only Post..., not Send... because we wait for this thread
     // to die in this message
-    PostMessage(ParentHandle,SM_FINISHED,0,0);
+    PostMessage(ParentHandle,HM_SESS_FINISHED,0,0);
   end;
  end;
 
@@ -202,7 +201,7 @@ begin
   if Length(Buffer) > 0 then begin
     GetMem(Batch,SizeOf(Buffer));
     CopyMemory(Batch,@Buffer,SizeOf(Buffer));
-    DoMessage(SM_ITEMSFOUND,DWord(Batch),Length(Buffer));
+    DoMessage(HM_SESS_ITEMSFOUND,DWord(Batch),Length(Buffer));
     BufCount := 0;
     FirstBatch := False;
   end;

@@ -48,7 +48,7 @@ const
 implementation
 
 uses
-  HistoryGrid, hpp_database, hpp_services, HistoryForm, Math;
+  HistoryGrid, hpp_database, hpp_services, HistoryForm, Math, hpp_forms;
 
 const
   hppDefEventFilters: array[0..6] of ThppEventFilter = (
@@ -92,9 +92,7 @@ procedure UpdateEventFiltersOnForms;
 var
   i: Integer;
 begin
-  for i := 0 to HstWindowList.Count - 1 do begin
-    THistoryFrm(HstWindowList[i]).CreateEventsFilterMenu;
-  end;
+  NotifyAllForms(HM_NOTF_FILTERSCHANGED,0,0);
 end;
 
 function GenerateEvents(filMode: Byte; filEvents: TMessageTypes): TMessageTypes;

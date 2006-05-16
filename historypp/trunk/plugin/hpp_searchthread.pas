@@ -38,7 +38,7 @@ interface
 
 uses
   Windows, SysUtils, Controls, Messages, HistoryGrid, Classes, m_GlobalDefs,
-  hpp_global, hpp_events, TntSysUtils, m_api;
+  hpp_global, hpp_events, TntSysUtils, m_api, hpp_forms;
 
 
 const
@@ -105,13 +105,12 @@ type
   end;
 
 const
-  SM_BASE = WM_APP + 421;
-  SM_PREPARE = SM_BASE + 1; // the search is prepared (0,0)
-  SM_PROGRESS = SM_BASE + 2; // report the progress (progress, max)
-  SM_ITEMFOUND = SM_BASE + 3; // (OBSOLETE) item is found (hDBEvent,0)
-  SM_NEXTCONTACT = SM_BASE + 4; // the next contact is searched (hContact, ContactCount)
-  SM_FINISHED = SM_BASE + 5; // search finished (0,0)
-  SM_ITEMSFOUND = SM_BASE + 6; // (NEW) items are found (array of hDBEvent, array size)
+  HM_STRD_PREPARE     = HM_STRD_BASE + 1; // the search is prepared (0,0)
+  HM_STRD_PROGRESS    = HM_STRD_BASE + 2; // report the progress (progress, max)
+  HM_STRD_ITEMFOUND   = HM_STRD_BASE + 3; // (OBSOLETE) item is found (hDBEvent,0)
+  HM_STRD_NEXTCONTACT = HM_STRD_BASE + 4; // the next contact is searched (hContact, ContactCount)
+  HM_STRD_FINISHED    = HM_STRD_BASE + 5; // search finished (0,0)
+  HM_STRD_ITEMSFOUND  = HM_STRD_BASE + 6; // (NEW) items are found (array of hDBEvent, array size)
 
 // helper functions
 function SearchTextExact(MessageText: WideString; SearchText: WideString): Boolean;
@@ -276,7 +275,7 @@ begin
   FirstBatch := True;
   try
     SearchStart := GetTickCount;
-    DoMessage(SM_PREPARE,0,0);
+    DoMessage(HM_STRD_PREPARE,0,0);
     CalcMaxProgress;
     SetProgress(0);
 
@@ -306,7 +305,7 @@ begin
     FSearchTime := GetTickCount - SearchStart;
     // only Post..., not Send... because we wait for this thread
     // to die in this message
-    PostMessage(ParentHandle,SM_FINISHED,0,0);
+    PostMessage(ParentHandle,HM_STRD_FINISHED,0,0);
     end;
 end;
 
@@ -354,7 +353,7 @@ var
 begin
   CurContactCP := GetContactCodePage(Contact);
   CurContact := Contact;
-  DoMessage(SM_NEXTCONTACT, Contact, GetContactsCount);
+  DoMessage(HM_STRD_NEXTCONTACT, Contact, GetContactsCount);
   hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDLAST,Contact,0);
   while hDBEvent <> 0 do begin
     if SearchEvent(hDBEvent) then begin
@@ -405,7 +404,7 @@ begin
   if BufCount > 0 then begin
     GetMem(Batch,SizeOf(Batch^));
     CopyMemory(Batch,@Buffer,SizeOf(Buffer));
-    DoMessage(SM_ITEMSFOUND,DWord(Batch),DWord(BufCount));
+    DoMessage(HM_STRD_ITEMSFOUND,DWord(Batch),DWord(BufCount));
     BufCount := 0;
     FirstBatch := False;
   end;
@@ -417,7 +416,7 @@ begin
   if CurProgress > MaxProgress then
     MaxProgress := CurProgress;
   if (CurProgress mod 1000 = 0) or (CurProgress = MaxProgress) then
-    DoMessage(SM_PROGRESS,CurProgress,MaxProgress);
+    DoMessage(HM_STRD_PROGRESS,CurProgress,MaxProgress);
 end;
 
 
