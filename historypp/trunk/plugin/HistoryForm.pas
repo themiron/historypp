@@ -46,7 +46,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, RichEdit,
   Graphics, Controls, Forms, Dialogs, Buttons, StdCtrls, Menus, ComCtrls, ExtCtrls,
-  TntGraphics, TntSysUtils, TntForms, TntDialogs, TntComCtrls, {WFindDialog,}
+  TntWindows, TntGraphics, TntSysUtils, TntForms, TntDialogs, TntComCtrls, {WFindDialog,}
   m_globaldefs, m_api,
   hpp_global, hpp_database, hpp_messages, hpp_events, hpp_contacts, hpp_itemprocess,
   hpp_forms,
@@ -131,13 +131,12 @@ type
     SaveasHTML2: TTntMenuItem;
     SaveasText2: TTntMenuItem;
     tbSearch: TTntToolButton;
-    TntToolButton2: TTntToolButton;
     TntToolButton3: TTntToolButton;
     paSearch: TTntPanel;
     tbFilter: TTntToolButton;
     tbDelete: TTntToolButton;
     tbSessions: TTntToolButton;
-    TntToolButton7: TTntToolButton;
+    TntToolButton2: TTntToolButton;
     paSearchStatus: TTntPanel;
     laSearchState: TTntLabel;
     paSearchPanel: TTntPanel;
@@ -169,7 +168,7 @@ type
     SessSave: TTntMenuItem;
     tbUserMenu: TTntToolButton;
     tbUserDetails: TTntToolButton;
-    TntToolButton6: TTntToolButton;
+    TntToolButton1: TTntToolButton;
     tbEventsFilter: TTntSpeedButton;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
@@ -1048,18 +1047,15 @@ begin
   Dec(GlyphTopOffset, TopBorderHeight); // decrease by top button border height
 
   tbEventsFilter.Glyph.Height := GlyphHeight+GlyphTopOffset;
-  tbEventsFilter.Glyph.Width := 16+sz.cx-5;
+  tbEventsFilter.Glyph.Width := 16+sz.cx+tbEventsFilter.Spacing;
   tbEventsFilter.Glyph.Canvas.Brush.Color := Toolbar.Color;
   tbEventsFilter.Glyph.Canvas.FillRect(tbEventsFilter.Glyph.Canvas.ClipRect);
-  DrawIconEx(tbEventsFilter.Glyph.Canvas.Handle,sz.cx-5,GlyphTopOffset+((GlyphHeight-16) div 2),
+  DrawIconEx(tbEventsFilter.Glyph.Canvas.Handle,sz.cx+tbEventsFilter.Spacing,GlyphTopOffset+((GlyphHeight-16) div 2),
              hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,16,16,0,tbEventsFilter.Glyph.Canvas.Brush.Handle,DI_NORMAL);
 
-  PaintRect := Rect(0,GlyphTopOffset+((GlyphHeight-sz.cy) div 2),tbEventsFilter.Glyph.Width-16+5,tbEventsFilter.Glyph.Height);
+  PaintRect := Rect(0,GlyphTopOffset+((GlyphHeight-sz.cy) div 2),tbEventsFilter.Glyph.Width-16-tbEventsFilter.Spacing,tbEventsFilter.Glyph.Height);
   DrawTextFlags := DT_END_ELLIPSIS or DT_NOPREFIX or DT_CENTER;
-  if hppOSUnicode then
-    DrawTextW(tbEventsFilter.Glyph.Canvas.Handle,@Name[1],Length(Name),PaintRect,DrawTextFlags)
-  else
-    DrawTextA(tbEventsFilter.Glyph.Canvas.Handle,PChar(WidetoAnsiString(Name,hppCodepage)),Length(Name),PaintRect,DrawTextFlags);
+  Tnt_DrawTextW(tbEventsFilter.Glyph.Canvas.Handle,@Name[1],Length(Name),PaintRect,DrawTextFlags);
   tbEventsFilter.Width := tbEventsFilter.Glyph.Width+2*PadH;
 end;
 
