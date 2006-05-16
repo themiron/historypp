@@ -118,18 +118,18 @@ object fmCustomizeFilters: TfmCustomizeFilters
     Left = 8
     Top = 8
     Width = 354
-    Height = 153
+    Height = 149
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Filters'
     TabOrder = 0
     DesignSize = (
       354
-      153)
+      149)
     object lbFilters: TTntListBox
       Left = 12
       Top = 18
       Width = 241
-      Height = 123
+      Height = 119
       Anchors = [akLeft, akTop, akRight, akBottom]
       ItemHeight = 13
       TabOrder = 0
