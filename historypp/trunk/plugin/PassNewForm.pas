@@ -35,7 +35,7 @@ var
 
 implementation
 
-uses hpp_global;
+uses hpp_global, hpp_options;
 
 {$R *.DFM}
 
@@ -71,6 +71,7 @@ begin
   TranslateForm;
   DesktopFont := True;
   MakeFontsParent(Self);
+  Image1.Picture.Icon.Handle := CopyIcon(hppIntIcons[0].handle);
 end;
 
 end.

@@ -121,6 +121,7 @@ begin
   DesktopFont := True;
   MakeFontsParent(Self);
   TranslateForm;
+  Image1.Picture.Icon.Handle := CopyIcon(hppIntIcons[0].handle);
 end;
 
 end.

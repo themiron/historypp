@@ -588,6 +588,7 @@ begin
   LoadSessionIcons;
   LoadToolbarIcons;
   LoadButtonIcons;
+  Image1.Picture.Icon.Handle := CopyIcon(hppIntIcons[0].handle);
 
   DesktopFont := True;
   MakeFontsParent(Self);
