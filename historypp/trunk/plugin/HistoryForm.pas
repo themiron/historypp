@@ -2695,6 +2695,7 @@ begin
 
   tbEventsFilter.Tag := fi;
   LoadEventFilterButton;
+  tbEventsFilter.Repaint;
   for i := 0 to pmEventsFilter.Items.Count-1 do
     if pmEventsFilter.Items[i].RadioItem then
       pmEventsFilter.Items[i].Checked := (pmEventsFilter.Items[i].Tag = fi);
