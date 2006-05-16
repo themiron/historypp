@@ -11,12 +11,19 @@ type
   end;
 
 procedure NotifyAllForms(Msg,wParam,lParam: DWord);
+procedure BringFormToFront(Form: TForm);
 procedure MakeFontsParent(Control: TControl);
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
 
 implementation
 
 uses hpp_global, hpp_services, HistoryForm, GlobalSearch, hpp_opt_dialog;
+
+procedure BringFormToFront(Form: TForm);
+begin
+  ShowWindow(Form.Handle,SW_SHOWNORMAL);
+  Form.BringToFront;
+end;
 
 procedure NotifyAllForms(Msg,wParam,lParam: DWord);
 var
