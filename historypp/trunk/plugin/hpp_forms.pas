@@ -17,7 +17,8 @@ function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: W
 
 implementation
 
-uses hpp_global, hpp_services, HistoryForm, GlobalSearch, hpp_opt_dialog;
+uses hpp_global, hpp_services, HistoryForm, GlobalSearch, hpp_opt_dialog,
+  CustomizeFiltersForm;
 
 procedure BringFormToFront(Form: TForm);
 begin
@@ -42,6 +43,9 @@ begin
 
   if Assigned(fmGlobalSearch) then
     SendMessage(fmGlobalSearch.Handle,Msg,wParam,lParam);
+
+  if Assigned(fmCustomizeFilters) then
+    SendMessage(fmCustomizeFilters.Handle,Msg,wParam,lParam);
 end;
 
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
