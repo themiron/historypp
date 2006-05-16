@@ -55,7 +55,7 @@ var
 implementation
 
 uses
-  {Dialogs, }GlobalSearch, hpp_global, hpp_itemprocess;
+  {Dialogs, }GlobalSearch, hpp_global, hpp_itemprocess, hpp_forms;
 
 // our own processing of RichEdit for all history windows
 function AllHistoryRichEditProcess(wParam{hRichEdit}, lParam{PItemRenderDetails}: DWord): Integer; cdecl;
@@ -143,8 +143,7 @@ begin
     end;
     // restore even if minimized
     // and we ain't have no double hooks
-    ShowWindow(wHistory.Handle,SW_SHOWNORMAL);
-    wHistory.BringToFront;
+    BringFormToFront(wHistory);
   end;
   Result := wHistory;
 end;
@@ -172,8 +171,7 @@ begin
     fmGlobalSearch := TfmGlobalSearch.Create(nil);
     fmGlobalSearch.Show;
   end;
-  ShowWindow(fmGlobalSearch.Handle,SW_SHOWNORMAL);
-  fmGlobalSearch.BringToFront;
+  BringFormToFront(fmGlobalSearch);
   Result := 0;
 end;
 
