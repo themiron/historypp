@@ -200,6 +200,7 @@ begin
     rbProtAll.Checked := true;
   rbProtSelClick(Self);
   UpdatePassword;
+  Image1.Picture.Icon.Handle := CopyIcon(hppIntIcons[0].handle);
 end;
 
 procedure TfmPass.rbProtSelClick(Sender: TObject);

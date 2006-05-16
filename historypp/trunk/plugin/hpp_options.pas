@@ -34,6 +34,11 @@ uses
 
 type
 
+  ThppIntIconsRec = record
+    name: PChar;
+    handle: hIcon;
+  end;
+  
   ThppIconsRec = record
     name: PChar;
     desc: PChar;
@@ -122,6 +127,10 @@ const
     (name:'historypp_27'; desc:'User Menu'; i:HPP_ICON_CONTACTMENU; handle:0)
   );
 
+  hppIntIcons: array[0..0] of ThppIntIconsRec = (
+    (name:'z_password_protect'; handle: 0)
+  );
+  
   hppFontItems: array[0..16] of ThppFontsRec = (
     (name: 'Incoming nick'; nameColor: 'Divider'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $6B3FC8; back: clGray),
     (name: 'Outgoing nick'; nameColor: 'Selected text'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $BD6008; back: clHighlightText),
@@ -172,6 +181,7 @@ procedure LoadGridOptions;
 procedure SaveGridOptions;
 procedure LoadIcons;
 procedure LoadIcons2;
+procedure LoadIntIcons;
 procedure OnShowIcons;
 //procedure LoadDefaultGridOptions;
 procedure hppRegisterGridOptions;
@@ -241,6 +251,14 @@ begin
   finally
     GridOptions.EndChange;
   end;
+end;
+
+procedure LoadIntIcons;
+var
+  i: Integer;
+begin
+  for i := 0 to High(hppIntIcons) do
+    hppIntIcons[i].handle := LoadIcon(hInstance,hppIntIcons[i].name);
 end;
 
 procedure LoadIcons2;
