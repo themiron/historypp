@@ -681,24 +681,24 @@ end;
 
 procedure TTntSpeedButton.WndProc(var Message: TMessage);
 var
+  mic: Boolean;
   P : TPoint;
 begin
-  inherited;
   {$IFNDEF COMPILER_10_UP}
   // hack to avoid buttons always hovered in deplhi 7
   if ((Message.Msg = WM_MOUSEMOVE) or (Message.Msg = WM_NCMOUSEMOVE)) then begin
     P := Point(Message.LParamLo, Message.LParamHi);
-    THackSpeedButton(Self).FMouseInControl := PtInRect(ClientRect,P);
-    MouseCapture := THackSpeedButton(Self).FMouseInControl;
-    if THackSpeedButton(Self).FMouseInControl then
-      //Perform(CM_MOUSEENTER,0,0)
-    else begin
-      THackSpeedButton(Self).FDragging := False;
-      FState := bsUp;
-      Perform(CM_MOUSELEAVE,0,0);
+    mic := PtInRect(ClientRect,P);
+    if mic then begin
+      if not MouseCapture then Perform(CM_MOUSEENTER,0,0);
+      MouseCapture := true;
+    end else begin
+      MouseCapture := THackSpeedButton(Self).FDragging;
+      THackSpeedButton(Self).FMouseInControl := false;
     end;
   end;
   {$ENDIF}
+  inherited;
 end;
 
 {$IFDEF COMPILER_10_UP}
