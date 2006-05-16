@@ -12,7 +12,7 @@ Conversations
 Clear Search
 User Details
 User Menu
-TntToolButton6
+TntToolButton1
 Show conversations (F4)
 Find
 Filter
