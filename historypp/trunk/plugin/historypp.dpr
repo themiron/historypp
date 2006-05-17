@@ -374,6 +374,7 @@ begin
 
   TntSystem.InstallTntSystemUpdates;
   Forms.HintWindowClass := THppHintWindow;
+  SysLocale.MiddleEast := true;
 
   {$IFDEF REPORT_LEAKS}
   // TThemeServices leaks on exit, looks like it's ok

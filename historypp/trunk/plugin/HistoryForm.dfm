@@ -6,7 +6,6 @@ object HistoryFrm: THistoryFrm
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
-  BiDiMode = bdLeftToRight
   Caption = '%s - History++'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -16,7 +15,6 @@ object HistoryFrm: THistoryFrm
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
-  ParentBiDiMode = False
   Position = poDefault
   OnClose = FormClose
   OnCreate = FormCreate

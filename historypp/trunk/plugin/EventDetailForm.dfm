@@ -295,9 +295,7 @@ object EventDetailsFrm: TEventDetailsFrm
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelInner = bvNone
     BevelOuter = bvNone
-    BiDiMode = bdLeftToRight
     BorderWidth = 1
-    ParentBiDiMode = False
     PopupMenu = pmEText
     ReadOnly = True
     ScrollBars = ssVertical
