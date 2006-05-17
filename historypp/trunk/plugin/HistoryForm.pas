@@ -779,6 +779,7 @@ end;
 procedure THistoryFrm.HMFiltersChanged(var M: TMessage);
 begin
   CreateEventsFilterMenu;
+  SetEventFilter(0);
 end;
 
 procedure THistoryFrm.HMIcons2Changed(var M: TMessage);
@@ -2568,11 +2569,13 @@ procedure THistoryFrm.CreateEventsFilterMenu;
 var
   i: Integer;
   mi: TTntMenuItem;
+  ShowAllEventsIndex: Integer;
 begin
   for i := pmEventsFilter.Items.Count - 1 downto 0 do
     if pmEventsFilter.Items[i].RadioItem then
       pmEventsFilter.Items.Delete(i);
 
+  ShowAllEventsIndex := GetShowAllEventsIndex;
   for i := 0 to Length(hppEventFilters) - 1 do begin
     mi := TTntMenuItem.Create(pmEventsFilter);
     mi.Caption := Tnt_WideStringReplace(hppEventFilters[i].Name,'&','&&',[rfReplaceAll]);
@@ -2580,7 +2583,7 @@ begin
     mi.RadioItem := True;
     mi.Tag := i;
     mi.OnClick := EventsFilterItemClick;
-    if i = 0 then mi.Default := True;
+    if i = ShowAllEventsIndex then mi.Default := True;
     pmEventsFilter.Items.Insert(i,mi);
   end;
 end;

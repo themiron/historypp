@@ -20,6 +20,8 @@ type
     filEvents: TMessageTypes; // filter events which are combined with filMode
   end;
 
+  ThppEventFilterArray = array of ThppEventFilter;
+
   ThppEventFilterRec = packed record
     Name: array[0..MAX_FILTER_NAME_LENGTH-1] of WideChar;
     filMode: Byte;
@@ -29,12 +31,15 @@ type
   PhppEventFilterRec = ^ThppEventFilterRec;
 
 var
-  hppEventFilters: array of ThppEventFilter;
-
+  hppEventFilters: ThppEventFilterArray;
+  hppDefEventFilters: ThppEventFilterArray;
+  
+  procedure InitEventFilters;
   procedure ReadEventFilters;
   procedure WriteEventFilters;
   procedure ResetEventFiltersToDefault;
-  function GetShowAllEventsIndex: Integer;
+  procedure CopyEventFilters(var Src,Dest: ThppEventFilterArray);
+  function GetShowAllEventsIndex(Arr: ThppEventFilterArray = nil): Integer;
 
   // compile filMode & filEvents into Events:
   function GenerateEvents(filMode: Byte; filEvents: TMessageTypes): TMessageTypes;
@@ -51,13 +56,12 @@ uses
   HistoryGrid, hpp_database, hpp_services, HistoryForm, Math, hpp_forms;
 
 const
-  hppDefEventFilters: array[0..6] of ThppEventFilter = (
+  hppIntDefEventFilters: array[0..5] of ThppEventFilter = (
     (Name: 'Show all events'; Events: []; filMode: FM_EXCLUDE; filEvents: []),
     (Name: 'Messages'; Events: []; filMode: FM_INCLUDE; filEvents: [mtMessage,mtIncoming,mtOutgoing]),
     (Name: 'Link URLs'; Events: []; filMode: FM_INCLUDE; filEvents: [mtUrl,mtIncoming,mtOutgoing]),
     (Name: 'Files'; Events: []; filMode: FM_INCLUDE; filEvents: [mtFile,mtIncoming,mtOutgoing]),
     (Name: 'Status changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtStatus,mtIncoming,mtOutgoing]),
-    (Name: 'SMTP Simple'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtSMTPSimple,mtIncoming,mtOutgoing]),
     (Name: 'All except status'; Events: []; filMode: FM_EXCLUDE; filEvents: [mtStatus])
     );
 
@@ -69,7 +73,7 @@ begin
   Result := False;
   if Length(hppDefEventFilters) <> Length(hppEventFilters) then exit;
   for i := 0 to Length(hppEventFilters) - 1 do begin
-    if hppEventFilters[i].Name <> Copy(TranslateWideW(hppDefEventFilters[i].Name{TRANSLATE-IGNORE}),1,MAX_FILTER_NAME_LENGTH) then exit;
+    if hppEventFilters[i].Name <> hppDefEventFilters[i].Name then exit;
     if hppEventFilters[i].Events <> hppDefEventFilters[i].Events then exit;
   end;
   Result := True;
@@ -113,14 +117,28 @@ begin
   end;
 end;
 
-function GetShowAllEventsIndex: Integer;
+procedure CopyEventFilters(var Src,Dest: ThppEventFilterArray);
 var
   i: Integer;
 begin
+  SetLength(Dest,Length(Src));
+  for i := 0 to Length(Src) - 1 do begin
+    Dest[i].Name := Src[i].Name;
+    Dest[i].Events := Src[i].Events;
+    Dest[i].filMode := Src[i].filMode;
+    Dest[i].filEvents := Src[i].filEvents;
+  end;
+end;
+
+function GetShowAllEventsIndex(Arr: ThppEventFilterArray = nil): Integer;
+var
+  i: Integer;
+begin
+  if Arr = nil then Arr := hppEventFilters;
   Result := 0;
-  for i := 0 to Length(hppEventFilters) - 1 do
-    if (hppEventFilters[i].filMode = FM_EXCLUDE) and
-    (hppEventFilters[i].filEvents = []) then begin
+  for i := 0 to Length(Arr) - 1 do
+    if (Arr[i].filMode = FM_EXCLUDE) and
+    (Arr[i].filEvents = []) then begin
       Result := i;
       break;
     end;
@@ -130,13 +148,7 @@ procedure ResetEventFiltersToDefault;
 var
   i: Integer;
 begin
-  SetLength(hppEventFilters,Length(hppDefEventFilters));
-  for i := 0 to Length(hppDefEventFilters) - 1 do begin
-    hppEventFilters[i].Name := Copy(TranslateWideW(hppDefEventFilters[i].Name{TRANSLATE-IGNORE}),1,MAX_FILTER_NAME_LENGTH);
-    hppEventFilters[i].filEvents := hppDefEventFilters[i].filEvents;
-    hppEventFilters[i].filMode := hppDefEventFilters[i].filMode;
-  end;
-  GenerateEventFilters(hppEventFilters);
+  CopyEventFilters(hppDefEventFilters,hppEventFilters);
   DBDeleteContactSetting(0,hppDBName,'EventFilters');
   UpdateEventFiltersOnForms;
 end;
@@ -180,7 +192,7 @@ end;
 procedure WriteEventFilters;
 var
   i: Integer;
-  mem: Pointer;
+  org_mem,mem: Pointer;
   mem_size: Integer;
   efr: ThppEventFilterRec;
   name_len: Integer;
@@ -192,10 +204,12 @@ begin
   if IsSameAsDefault then begin
     // revert to default state
     DBDeleteContactSetting(0,hppDBName,'FilterEvents');
+    UpdateEventFiltersOnForms;
     exit;
   end;
   mem_size := SizeOf(Integer)*2+Length(hppEventFilters)*SizeOf(ThppEventFilterRec);
   GetMem(mem,mem_size);
+  org_mem := mem;
   PInteger(mem)^ := Length(hppEventFilters);
   Inc(Integer(mem),SizeOf(Integer));
   PInteger(mem)^ := SizeOf(ThppEventFilterRec);
@@ -210,8 +224,23 @@ begin
     efr.filMode := hppEventFilters[i].filMode;
     Move(efr,PByte(Integer(mem)+i*SizeOf(efr))^,SizeOf(efr));
   end;
-  WriteDBBlob(hppDBName,'FilterEvents',mem,mem_size);
+  //WriteDBBlob(hppDBName,'FilterEvents',org_mem,mem_size);
+  FreeMem(org_mem,mem_size);
   UpdateEventFiltersOnForms;
+end;
+
+procedure InitEventFilters;
+var
+  i: Integer;
+begin
+  // translate and copy internal default static array to dynamic array
+  SetLength(hppDefEventFilters,Length(hppIntDefEventFilters));
+  for i := 0 to High(hppIntDefEventFilters) do begin
+    hppDefEventFilters[i].Name := Copy(TranslateWideW(hppIntDefEventFilters[i].Name),1,MAX_FILTER_NAME_LENGTH);
+    hppDefEventFilters[i].filMode := hppIntDefEventFilters[i].filMode;
+    hppDefEventFilters[i].filEvents := hppIntDefEventFilters[i].filEvents;
+  end;
+  GenerateEventFilters(hppDefEventFilters);
 end;
 
 end.

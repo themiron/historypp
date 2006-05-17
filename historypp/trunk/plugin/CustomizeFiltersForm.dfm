@@ -76,6 +76,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Top = 92
       Width = 332
       Height = 164
+      OnClickCheck = clEventsClickCheck
       Anchors = [akLeft, akTop, akRight, akBottom]
       ItemHeight = 13
       TabOrder = 3
@@ -88,6 +89,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Show all except selected events'
       TabOrder = 2
+      OnClick = rbIncludeClick
     end
     object rbInclude: TTntRadioButton
       Left = 12
@@ -97,6 +99,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Show only selected events'
       TabOrder = 1
+      OnClick = rbIncludeClick
     end
   end
   object bnReset: TTntButton
@@ -106,8 +109,8 @@ object fmCustomizeFilters: TfmCustomizeFilters
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Reset to Default'
-    Enabled = False
     TabOrder = 4
+    OnClick = bnResetClick
   end
   object gbFilters: TTntGroupBox
     Left = 8
@@ -126,48 +129,51 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Width = 241
       Height = 119
       Anchors = [akLeft, akTop, akRight, akBottom]
+      DragMode = dmAutomatic
       ItemHeight = 13
       TabOrder = 0
       OnClick = lbFiltersClick
+      OnDragDrop = lbFiltersDragDrop
+      OnDragOver = lbFiltersDragOver
     end
     object bnDown: TTntButton
+      Left = 259
+      Top = 94
+      Width = 85
+      Height = 23
+      Anchors = [akTop, akRight]
+      Caption = 'Down'
+      TabOrder = 4
+      OnClick = bnDownClick
+    end
+    object bnUp: TTntButton
+      Left = 259
+      Top = 71
+      Width = 85
+      Height = 23
+      Anchors = [akTop, akRight]
+      Caption = 'Up'
+      TabOrder = 3
+      OnClick = bnUpClick
+    end
+    object bnDelete: TTntButton
       Left = 259
       Top = 41
       Width = 85
       Height = 23
       Anchors = [akTop, akRight]
-      Caption = 'Down'
+      Caption = 'Delete'
       TabOrder = 2
-      OnClick = bnDownClick
+      OnClick = bnDeleteClick
     end
-    object bnUp: TTntButton
+    object bnAdd: TTntButton
       Left = 259
       Top = 18
       Width = 85
       Height = 23
       Anchors = [akTop, akRight]
-      Caption = 'Up'
-      TabOrder = 1
-      OnClick = bnUpClick
-    end
-    object bnDelete: TTntButton
-      Left = 259
-      Top = 93
-      Width = 85
-      Height = 23
-      Anchors = [akTop, akRight]
-      Caption = 'Delete'
-      TabOrder = 4
-      OnClick = bnDeleteClick
-    end
-    object bnAdd: TTntButton
-      Left = 259
-      Top = 70
-      Width = 85
-      Height = 23
-      Anchors = [akTop, akRight]
       Caption = 'Add'
-      TabOrder = 3
+      TabOrder = 1
       OnClick = bnAddClick
     end
   end
