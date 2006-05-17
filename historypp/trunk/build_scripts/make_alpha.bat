@@ -93,6 +93,8 @@ cd ..\bin
 %ZPATH% a -y -tzip -mx ..\historypp-%VER_%-bin.zip *
 if errorlevel 1 goto ziperr
 
+goto end_zip
+
 cd ..\src
 rem # a bit of saftiness here
 if errorlevel 1 (
@@ -118,6 +120,8 @@ del /S /Q /F *.todo
 
 %ZPATH% a -y -tzip -r -mx ..\historypp-%VER_%-src.zip *
 if errorlevel 1 goto ziperr
+
+:end_zip
 
 cd ..
 rd /q/s src
