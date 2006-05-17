@@ -79,7 +79,9 @@ object fmCustomizeFilters: TfmCustomizeFilters
       OnClickCheck = clEventsClickCheck
       Anchors = [akLeft, akTop, akRight, akBottom]
       ItemHeight = 13
+      Style = lbOwnerDrawFixed
       TabOrder = 3
+      OnDrawItem = clEventsDrawItem
     end
     object rbExclude: TTntRadioButton
       Left = 12
@@ -128,6 +130,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Top = 18
       Width = 241
       Height = 119
+      Style = lbOwnerDrawFixed
       Anchors = [akLeft, akTop, akRight, akBottom]
       DragMode = dmAutomatic
       ItemHeight = 13
@@ -135,6 +138,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
       OnClick = lbFiltersClick
       OnDragDrop = lbFiltersDragDrop
       OnDragOver = lbFiltersDragOver
+      OnDrawItem = lbFiltersDrawItem
     end
     object bnDown: TTntButton
       Left = 259
