@@ -374,7 +374,7 @@ begin
   FreeLibrary(GetModuleHandle('oleaut32.dll'));
 
   TntSystem.InstallTntSystemUpdates;
-  Forms.HintWindowClass := THppHintWindow;
+  //Forms.HintWindowClass := THppHintWindow;
   SysLocale.MiddleEast := true;
 
   {$IFDEF REPORT_LEAKS}
