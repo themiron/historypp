@@ -38,10 +38,11 @@ type
     name: PChar;
     handle: hIcon;
   end;
-  
+
   ThppIconsRec = record
     name: PChar;
     desc: PChar;
+    group: PChar;
     i: shortint;
     handle: hIcon;
   end;
@@ -97,34 +98,34 @@ const
   HPP_ICON_CONTACTMENU       = 27;
 
   hppIcons : array[0..27] of ThppIconsRec = (
-    (name:'historypp_00'; desc:'Contact history'; i:HPP_ICON_CONTACTHISTORY; handle:0),
-    (name:'historypp_01'; desc:'History search'; i:HPP_ICON_GLOBALSEARCH; handle:0),
-    (name:'historypp_02'; desc:'Conversation divider'; i:HPP_ICON_SESS_DIVIDER; handle:0),
-    (name:'historypp_03'; desc:'Conversation icon'; i:HPP_ICON_SESSION; handle:0),
-    (name:'historypp_04'; desc:'Conversation summer'; i:HPP_ICON_SESS_SUMMER; handle:0),
-    (name:'historypp_05'; desc:'Conversation autumn'; i:HPP_ICON_SESS_AUTUMN; handle:0),
-    (name:'historypp_06'; desc:'Conversation winter'; i:HPP_ICON_SESS_WINTER; handle:0),
-    (name:'historypp_07'; desc:'Conversation spring'; i:HPP_ICON_SESS_SPRING; handle:0),
-    (name:'historypp_08'; desc:'Conversation year'; i:HPP_ICON_SESS_YEAR; handle:0),
-    (name:'historypp_09'; desc:'Filter'; i:HPP_ICON_HOTFILTER; handle:0),
-    (name:'historypp_10'; desc:'In-place filter wait'; i:HPP_ICON_HOTFILTERWAIT; handle:0),
-    (name:'historypp_11'; desc:'Search All Results'; i:HPP_ICON_SEARCH_ALLRESULTS; handle:0),
-    (name:'historypp_12'; desc:'Save All'; i:HPP_ICON_TOOL_SAVEALL; handle:0),
-    (name:'historypp_13'; desc:'Search'; i:HPP_ICON_HOTSEARCH; handle:0),
-    (name:'historypp_14'; desc:'Search Up'; i:HPP_ICON_SEARCHUP; handle:0),
-    (name:'historypp_15'; desc:'Search Down'; i:HPP_ICON_SEARCHDOWN; handle:0),
-    (name:'historypp_16'; desc:'Delete All'; i:HPP_ICON_TOOL_DELETEALL; handle:0),
-    (name:'historypp_17'; desc:'Delete'; i:HPP_ICON_TOOL_DELETE; handle:0),
-    (name:'historypp_18'; desc:'Conversations'; i:HPP_ICON_TOOL_SESSIONS; handle:0),
-    (name:'historypp_19'; desc:'Save'; i:HPP_ICON_TOOL_SAVE; handle:0),
-    (name:'historypp_20'; desc:'Copy'; i:HPP_ICON_TOOL_COPY; handle:0),
-    (name:'historypp_21'; desc:'End of page'; i:HPP_ICON_SEARCH_ENDOFPAGE; handle:0),
-    (name:'historypp_22'; desc:'Phrase not found'; i:HPP_ICON_SEARCH_NOTFOUND; handle:0),
-    (name:'historypp_23'; desc:'Clear in-place filter'; i:HPP_ICON_HOTFILTERCLEAR; handle:0),
-    (name:'historypp_24'; desc:'Conversation hide'; i:HPP_ICON_SESS_HIDE; handle:0),
-    (name:'historypp_25'; desc:'Events filter'; i:HPP_ICON_TOOL_EVENTSFILTER; handle:0),
-    (name:'historypp_26'; desc:'User Details'; i:HPP_ICON_CONTACDETAILS; handle:0),
-    (name:'historypp_27'; desc:'User Menu'; i:HPP_ICON_CONTACTMENU; handle:0)
+    (name:'historypp_00'; desc:'Contact history'; group: ''; i:HPP_ICON_CONTACTHISTORY; handle:0),
+    (name:'historypp_01'; desc:'History search'; group: ''; i:HPP_ICON_GLOBALSEARCH; handle:0),
+    (name:'historypp_02'; desc:'Conversation divider'; group: 'Conversations'; i:HPP_ICON_SESS_DIVIDER; handle:0),
+    (name:'historypp_03'; desc:'Conversation icon'; group: 'Conversations'; i:HPP_ICON_SESSION; handle:0),
+    (name:'historypp_04'; desc:'Conversation summer'; group: 'Conversations'; i:HPP_ICON_SESS_SUMMER; handle:0),
+    (name:'historypp_05'; desc:'Conversation autumn'; group: 'Conversations'; i:HPP_ICON_SESS_AUTUMN; handle:0),
+    (name:'historypp_06'; desc:'Conversation winter'; group: 'Conversations'; i:HPP_ICON_SESS_WINTER; handle:0),
+    (name:'historypp_07'; desc:'Conversation spring'; group: 'Conversations'; i:HPP_ICON_SESS_SPRING; handle:0),
+    (name:'historypp_08'; desc:'Conversation year'; group: 'Conversations'; i:HPP_ICON_SESS_YEAR; handle:0),
+    (name:'historypp_09'; desc:'Filter'; group: 'Toolbar'; i:HPP_ICON_HOTFILTER; handle:0),
+    (name:'historypp_10'; desc:'In-place filter wait'; group: 'Search panel'; i:HPP_ICON_HOTFILTERWAIT; handle:0),
+    (name:'historypp_11'; desc:'Search All Results'; group: ''; i:HPP_ICON_SEARCH_ALLRESULTS; handle:0),
+    (name:'historypp_12'; desc:'Save All'; group: 'Toolbar'; i:HPP_ICON_TOOL_SAVEALL; handle:0),
+    (name:'historypp_13'; desc:'Search'; group: 'Toolbar'; i:HPP_ICON_HOTSEARCH; handle:0),
+    (name:'historypp_14'; desc:'Search Up'; group: 'Search panel'; i:HPP_ICON_SEARCHUP; handle:0),
+    (name:'historypp_15'; desc:'Search Down'; group: 'Search panel'; i:HPP_ICON_SEARCHDOWN; handle:0),
+    (name:'historypp_16'; desc:'Delete All'; group: 'Toolbar'; i:HPP_ICON_TOOL_DELETEALL; handle:0),
+    (name:'historypp_17'; desc:'Delete'; group: 'Toolbar'; i:HPP_ICON_TOOL_DELETE; handle:0),
+    (name:'historypp_18'; desc:'Conversations'; group: 'Toolbar'; i:HPP_ICON_TOOL_SESSIONS; handle:0),
+    (name:'historypp_19'; desc:'Save'; group: 'Toolbar'; i:HPP_ICON_TOOL_SAVE; handle:0),
+    (name:'historypp_20'; desc:'Copy'; group: 'Toolbar'; i:HPP_ICON_TOOL_COPY; handle:0),
+    (name:'historypp_21'; desc:'End of page'; group: 'Search panel'; i:HPP_ICON_SEARCH_ENDOFPAGE; handle:0),
+    (name:'historypp_22'; desc:'Phrase not found'; group: 'Search panel'; i:HPP_ICON_SEARCH_NOTFOUND; handle:0),
+    (name:'historypp_23'; desc:'Clear in-place filter'; group: 'Search panel'; i:HPP_ICON_HOTFILTERCLEAR; handle:0),
+    (name:'historypp_24'; desc:'Conversation hide'; group: 'Conversations'; i:HPP_ICON_SESS_HIDE; handle:0),
+    (name:'historypp_25'; desc:'Events filter'; group: 'Toolbar'; i:HPP_ICON_TOOL_EVENTSFILTER; handle:0),
+    (name:'historypp_26'; desc:'User Details'; group: 'Toolbar'; i:HPP_ICON_CONTACDETAILS; handle:0),
+    (name:'historypp_27'; desc:'User Menu'; group: 'Toolbar'; i:HPP_ICON_CONTACTMENU; handle:0)
   );
 
   hppIntIcons: array[0..0] of ThppIntIconsRec = (
@@ -442,11 +443,14 @@ begin
     SetLength(hppdll,GetModuleFileName(hInstance,PAnsiChar(hppdll),Length(hppdll)));
     ZeroMemory(@sid,SizeOf(sid));
     sid.cbSize := SizeOf(sid);
-    sid.pszSection := hppName;
     sid.pszDefaultFile := PChar(hppdll);
     for i := 0 to High(hppIcons) do begin
       sid.pszName := hppIcons[i].name;
       sid.pszDescription := translate(hppIcons[i].desc);
+      if StrLen(hppIcons[i].group) = 0 then
+        sid.pszSection := hppName
+      else
+        sid.pszSection := PChar(hppName+'/'+translate(hppIcons[i].group));
       sid.iDefaultIndex := hppIcons[i].i;
       PluginLink.CallService(MS_SKIN2_ADDICON,0,DWord(@sid));
     end;
