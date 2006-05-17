@@ -72,14 +72,15 @@ uses
   CustomizeFiltersForm in 'CustomizeFiltersForm.pas' {fmCustomizeFilters};
 
 var
-  hookModulesLoad,
-  hookOptInit,
-  hookSettingsChanged,
-  hookIconChanged,
+  HookModulesLoad,
+  HookOptInit,
+  HookSettingsChanged,
+  HookSmAddChanged,
+  HookIconChanged,
   HookIcon2Changed,
   //hookContactChanged,
-  hookContactDelete,
-  hookFSChanged,
+  HookContactDelete,
+  HookFSChanged,
   HookTTBLoaded: THandle;
   //HistoryIcon, GlobalSearchIcon: HIcon;
   MenuHandles: array[0..2] of THandle;
@@ -87,6 +88,7 @@ var
 
 function OnModulesLoad(wParam,lParam:DWord):integer;cdecl; forward;
 function OnSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
+function OnSmAddSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnIconChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnIcon2Changed(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnOptInit(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
@@ -135,6 +137,7 @@ begin
   // unhook events
   PluginLink.UnhookEvent(HookModulesLoad);
   PluginLink.UnhookEvent(HookSettingsChanged);
+  PluginLink.UnhookEvent(HookSmAddChanged);
   PluginLink.UnhookEvent(HookIconChanged);
   PluginLink.UnhookEvent(HookIcon2Changed);
   //PluginLink.UnhookEvent(HookContactChanged);
@@ -215,6 +218,7 @@ begin
   LoadGridOptions;
 
   HookSettingsChanged := PluginLink.HookEvent(ME_DB_CONTACT_SETTINGCHANGED,OnSettingsChanged);
+  HookSmAddChanged := PluginLink.HookEvent(ME_SMILEYADD_OPTIONSCHANGED,OnSmAddSettingsChanged);
   HookIconChanged := PluginLink.HookEvent(ME_SKIN_ICONSCHANGED,OnIconChanged);
   HookIcon2Changed := PluginLink.HookEvent(ME_SKIN2_ICONSCHANGED,OnIcon2Changed);
   //HookContactChanged := PluginLink.HookEvent(ME_DB_CONTACT_DELETED,OnContactChanged);
@@ -261,6 +265,16 @@ begin
   if (PDBContactWriteSetting(lParam).szModule <> hppDBName) and
     (PDBContactWriteSetting(lParam).szModule <> 'SRMsg') then exit;
   //LoadDefaultGridOptions;
+end;
+
+// Called when smilayadd settings have changed
+//wParam = Contact handle which options have changed, NULL if global options changed
+//lParam = (LPARAM) 0; not used
+function OnSmAddSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
+begin
+  Result := 0;
+  if GridOptions.Locked then exit;
+  LoadGridOptions;
 end;
 
 // Called when setting in FontService have changed

@@ -59,4 +59,13 @@ type
     hContact: THandle;
     end;
 
+const
+
+  // Event notifies that SmileyAdd options have changed 
+  // Message dialogs usually need to redraw it's content on reception of this event
+  //wParam = Contact handle which options have changed, NULL if global options changed
+  //lParam = (LPARAM) 0; not used
+  ME_SMILEYADD_OPTIONSCHANGED = 'SmileyAdd/OptionsChanged';
+
+
 {$ENDIF}
