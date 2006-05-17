@@ -170,6 +170,7 @@ type
     tbUserDetails: TTntToolButton;
     TntToolButton1: TTntToolButton;
     tbEventsFilter: TTntSpeedButton;
+    TntToolButton5: TTntToolButton;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -279,6 +280,7 @@ type
     FormState: TGridState;
     PreHotSearchMode: TSearchMode;
     FSearchMode: TSearchMode;
+    UserMenu: hMenu;
 
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo); message WM_GetMinMaxInfo;
     procedure WndProc(var Message: TMessage); override;
@@ -2695,7 +2697,7 @@ begin
 
   tbEventsFilter.Tag := fi;
   LoadEventFilterButton;
-  tbEventsFilter.Repaint;
+  //tbEventsFilter.Repaint;
   for i := 0 to pmEventsFilter.Items.Count-1 do
     if pmEventsFilter.Items[i].RadioItem then
       pmEventsFilter.Items[i].Checked := (pmEventsFilter.Items[i].Tag = fi);
@@ -3115,6 +3117,7 @@ begin
   if SessThread <> nil then exit;
   BuildIndexesFromSession(tvSess.Selected);
   //hg.MakeRangeSelected();
+  hg.Selected := -1;
   for i := 0 to High(Items) do begin
     hg.SelItems[0] := Items[i];
     Application.ProcessMessages;
@@ -3164,17 +3167,22 @@ procedure THistoryFrm.WndProc(var Message: TMessage);
 var
   res: integer;
 begin
-  inherited;
   case Message.Msg of
     WM_COMMAND: begin
       res := PluginLink.CallService(MS_CLIST_MENUPROCESSCOMMAND,MAKEWPARAM(Message.WParamLo,MPCF_CONTACTMENU),hContact);
-      if  res <> 0 then Message.Result := res;
+      if res = 0 then exit;
     end;
-    WM_MEASUREITEM:
+    WM_MEASUREITEM: begin
  	    Message.Result := PluginLink.CallService(MS_CLIST_MENUMEASUREITEM,Message.WParam,Message.LParam);
+      exit;
+    end;
     WM_DRAWITEM:
-   		Message.Result := PluginLink.CallService(MS_CLIST_MENUDRAWITEM,Message.WParam,Message.LParam);
+      if TWMDrawItem(Message).DrawItemStruct^.hwndItem = UserMenu then begin
+   		  Message.Result := PluginLink.CallService(MS_CLIST_MENUDRAWITEM,Message.WParam,Message.LParam);
+        exit;
+      end;
   end;
+  inherited;
 end;
 
 procedure THistoryFrm.tbUserMenuClick(Sender: TObject);
@@ -3182,13 +3190,14 @@ var
   p: TPoint;
   hm: hMenu;
 begin
-  hm := PluginLink.CallService(MS_CLIST_MENUBUILDCONTACT,hContact,0);
-  if hm <> 0 then begin
+  UserMenu := PluginLink.CallService(MS_CLIST_MENUBUILDCONTACT,hContact,0);
+  if UserMenu <> 0 then begin
     p.x := 0;
     p.y := tbUserMenu.Height;
     p := tbUserMenu.ClientToScreen(p);
-    TrackPopupMenu(hm,TPM_LEFTALIGN + TPM_LEFTBUTTON,p.x,p.y,0,Handle,nil);
-    DestroyMenu(hm);
+    TrackPopupMenu(UserMenu,TPM_TOPALIGN or TPM_LEFTALIGN or TPM_LEFTBUTTON,p.x,p.y,0,Handle,nil);
+    DestroyMenu(UserMenu);
+    UserMenu := 0;
   end;
 end;
 
