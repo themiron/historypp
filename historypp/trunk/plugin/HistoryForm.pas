@@ -307,6 +307,9 @@ type
     procedure PreLoadHistory;
     procedure PostLoadHistory;
     procedure SetSearchMode(const Value: TSearchMode);
+
+    procedure SetFormRTLMode(const Value: Boolean);
+
   public
     UserCodepage: Cardinal;
     UseDefaultCP: boolean;
@@ -571,7 +574,7 @@ begin
   UserCodepage := GetContactCodePage(hContact,Protocol,UseDefaultCP);
   hg.Codepage := UserCodepage;
   hg.RTLMode := GetContactRTLModeTRTL(hContact, Protocol);
-
+  SetFormRTLMode(GetContactRTLMode(hContact, Protocol));
   if hContact = 0 then Caption := TranslateW('System History')
                   else Caption := WideFormat(Caption,[hg.ContactName]);
   hg.Allocate(Length(History));
@@ -2769,6 +2772,7 @@ begin
                            else hg.RTLMode := hppRTLDisable;
   end;
   WriteContactRTLMode(hContact,hg.RTLMode,Protocol);
+  SetFormRTLMode(GetContactRTLMode(hContact,Protocol));
 end;
 
 procedure THistoryFrm.SMItemsFound(var M: TMessage);
@@ -3210,6 +3214,18 @@ procedure THistoryFrm.tvSessGetSelectedIndex(Sender: TObject;
 begin
   // and we don't need to set SelectedIndex manually anymore
   Node.SelectedIndex := Node.ImageIndex;
+end;
+
+procedure THistoryFrm.SetFormRTLMode(const Value: Boolean);
+var
+  Flag: TBiDiMode;
+begin
+  if Value then Flag := bdRightToLeft
+           else Flag := bdLeftToRight;
+  edPass.BiDiMode := Flag;
+  edSearch.BiDiMode := Flag;
+  //paGrid.BiDiMode := Flag;
+  //tvSess.BiDiMode := Flag;
 end;
 
 end.
