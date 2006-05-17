@@ -2994,7 +2994,9 @@ var
 begin
   p := tbEventsFilter.ClientOrigin;
   tbEventsFilter.ClientToScreen(p);
+  tbEventsFilter.ShowHint := false;
   pmEventsFilter.Popup(p.X,p.Y+tbEventsFilter.Height);
+  tbEventsFilter.ShowHint := true;
 end;
 
 procedure THistoryFrm.tbFilterClick(Sender: TObject);
