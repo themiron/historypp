@@ -26,7 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 *)
 
 {%ToDo 'historypp.todo'}
-{$R 'hpp_resource.res'}
+// we need here rc compilation to avoid errors on build
+// if they arn't exists, but anyway
+{$R 'hpp_resource.res' 'hpp_resource.rc'}
 {$R 'hpp_res_ver.res' 'hpp_res_ver.rc'}
 {$R 'hpp_opt_dialog.res' 'hpp_opt_dialog.rc'}
 
@@ -136,17 +138,18 @@ begin
   //hppUnregisterItemProcessSamples;
   // unhook events
   PluginLink.UnhookEvent(HookModulesLoad);
-  PluginLink.UnhookEvent(HookSettingsChanged);
-  PluginLink.UnhookEvent(HookSmAddChanged);
-  PluginLink.UnhookEvent(HookIconChanged);
-  PluginLink.UnhookEvent(HookIcon2Changed);
-  //PluginLink.UnhookEvent(HookContactChanged);
-  PluginLink.UnhookEvent(HookContactDelete);
-  PluginLink.UnhookEvent(HookFSChanged);
   PluginLink.UnhookEvent(hookOptInit);
-  // delete icons
-  //DeleteObject(HistoryIcon);
-  //DeleteObject(GlobalSearchIcon);
+  PluginLink.UnhookEvent(HookSettingsChanged);
+  PluginLink.UnhookEvent(HookIconChanged);
+  PluginLink.UnhookEvent(HookContactDelete);
+
+  if SmileyAddEnabled then
+    PluginLink.UnhookEvent(HookSmAddChanged);
+  if IcoLibEnabled then
+    PluginLink.UnhookEvent(HookIcon2Changed);
+  if FontServiceEnabled then
+    PluginLink.UnhookEvent(HookFSChanged);
+
   // return successfully
   Result:=0;
 end;
@@ -218,12 +221,15 @@ begin
   LoadGridOptions;
 
   HookSettingsChanged := PluginLink.HookEvent(ME_DB_CONTACT_SETTINGCHANGED,OnSettingsChanged);
-  HookSmAddChanged := PluginLink.HookEvent(ME_SMILEYADD_OPTIONSCHANGED,OnSmAddSettingsChanged);
   HookIconChanged := PluginLink.HookEvent(ME_SKIN_ICONSCHANGED,OnIconChanged);
-  HookIcon2Changed := PluginLink.HookEvent(ME_SKIN2_ICONSCHANGED,OnIcon2Changed);
-  //HookContactChanged := PluginLink.HookEvent(ME_DB_CONTACT_DELETED,OnContactChanged);
   HookContactDelete := PluginLink.HookEvent(ME_DB_CONTACT_DELETED,OnContactDelete);
-  HookFSChanged := PluginLink.HookEvent(ME_FONT_RELOAD,OnFSChanged);
+
+  if SmileyAddEnabled then
+    HookSmAddChanged := PluginLink.HookEvent(ME_SMILEYADD_OPTIONSCHANGED,OnSmAddSettingsChanged);
+  if IcoLibEnabled then
+    HookIcon2Changed := PluginLink.HookEvent(ME_SKIN2_ICONSCHANGED,OnIcon2Changed);
+  if FontServiceEnabled then
+    HookFSChanged := PluginLink.HookEvent(ME_FONT_RELOAD,OnFSChanged);
 
   // return successfully
   Result:=0;
@@ -331,8 +337,6 @@ begin
 end;
 
 function OnIconChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
-var
-  i: Integer;
 begin
   Result := 0;
   if not GridOptions.ShowIcons then exit;
@@ -343,7 +347,6 @@ end;
 function OnIcon2Changed(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
 var
   menuitem: TCLISTMENUITEM;
-  i: Integer;
 begin
   Result := 0;
   LoadIcons2;
