@@ -50,15 +50,15 @@ begin
   // close themselves on the message, so we would have AVs if go from 0 to Count
   for i := HstWindowList.Count - 1 downto 0 do begin
     if Assigned(THistoryFrm(HstWindowList[i]).EventDetailFrom) then
-      SendMessage(THistoryFrm(HstWindowList[i]).EventDetailFrom.Handle,Msg,wParam,lParam);
-    SendMessage(THistoryFrm(HstWindowList[i]).Handle,Msg,wParam,lParam);
+      THistoryFrm(HstWindowList[i]).EventDetailFrom.Perform(Msg,wParam,lParam);
+    THistoryFrm(HstWindowList[i]).Perform(Msg,wParam,lParam);
   end;
 
   if Assigned(fmGlobalSearch) then
-    SendMessage(fmGlobalSearch.Handle,Msg,wParam,lParam);
+    fmGlobalSearch.Perform(Msg,wParam,lParam);
 
   if Assigned(fmCustomizeFilters) then
-    SendMessage(fmCustomizeFilters.Handle,Msg,wParam,lParam);
+    fmCustomizeFilters.Perform(Msg,wParam,lParam);
 end;
 
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
