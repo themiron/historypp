@@ -56,12 +56,13 @@ uses
   HistoryGrid, hpp_database, hpp_services, HistoryForm, Math, hpp_forms;
 
 const
-  hppIntDefEventFilters: array[0..5] of ThppEventFilter = (
+  hppIntDefEventFilters: array[0..6] of ThppEventFilter = (
     (Name: 'Show all events'; Events: []; filMode: FM_EXCLUDE; filEvents: []),
     (Name: 'Messages'; Events: []; filMode: FM_INCLUDE; filEvents: [mtMessage,mtIncoming,mtOutgoing]),
     (Name: 'Link URLs'; Events: []; filMode: FM_INCLUDE; filEvents: [mtUrl,mtIncoming,mtOutgoing]),
     (Name: 'Files'; Events: []; filMode: FM_INCLUDE; filEvents: [mtFile,mtIncoming,mtOutgoing]),
     (Name: 'Status changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtStatus,mtIncoming,mtOutgoing]),
+    (Name: 'SMTP Simple'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtSMTPSimple,mtIncoming,mtOutgoing]),
     (Name: 'All except status'; Events: []; filMode: FM_EXCLUDE; filEvents: [mtStatus])
     );
 
