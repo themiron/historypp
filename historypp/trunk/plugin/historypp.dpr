@@ -166,6 +166,7 @@ begin
   LoadIcons;
   LoadIcons2;
   LoadIntIcons;
+  InitEventFilters;
   ReadEventFilters;
 
   // TopToolBar support

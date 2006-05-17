@@ -1,12 +1,12 @@
 object HistoryFrm: THistoryFrm
   Left = 280
   Top = 188
-  Width = 586
-  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   Caption = '%s - History++'
+  ClientHeight = 391
+  ClientWidth = 578
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -283,6 +283,7 @@ object HistoryFrm: THistoryFrm
           Align = alRight
           Caption = '>>'
           Layout = tlCenter
+          ExplicitHeight = 13
         end
         object imSearchEndOfPage: TTntImage
           Left = 3
@@ -317,7 +318,6 @@ object HistoryFrm: THistoryFrm
         BorderWidth = 2
         EdgeInner = esNone
         EdgeOuter = esNone
-        Flat = True
         Images = ilToolbar
         ParentShowHint = False
         ShowHint = True
