@@ -51,7 +51,7 @@ uses
   hpp_global, hpp_database, hpp_messages, hpp_events, hpp_contacts, hpp_itemprocess,
   hpp_forms,
   clipbrd, {FileCtrl,} shellapi,
-  HistoryGrid, Checksum, WFindReplaceDialog, TntExtCtrls, hpp_sessionsthread, DateUtils,
+  HistoryGrid, Checksum, TntExtCtrls, hpp_sessionsthread, DateUtils,
   ImgList, PasswordEditControl, TntStdCtrls, TntButtons, TntMenus,
   CommCtrl, ToolWin, Themes;
 
@@ -3010,7 +3010,9 @@ begin
   if hg.SelCount > 1 then
     Self.SaveSelected1Click(Self)
   else
+    tbHistory.ShowHint := false;
     tbHistory.CheckMenuDropdown;
+    tbHistory.ShowHint := true;
   {RecentFormat := TSaveFormat(GetDBInt(hppDBName,'ExportFormat',0));
   SaveFormat := RecentFormat;
   PrepareSaveDialog(SaveDialog,SaveFormat,True);
@@ -3195,9 +3197,11 @@ begin
     p.x := 0;
     p.y := tbUserMenu.Height;
     p := tbUserMenu.ClientToScreen(p);
+    tbUserMenu.ShowHint := false;
     TrackPopupMenu(UserMenu,TPM_TOPALIGN or TPM_LEFTALIGN or TPM_LEFTBUTTON,p.x,p.y,0,Handle,nil);
     DestroyMenu(UserMenu);
     UserMenu := 0;
+    tbUserMenu.ShowHint := true;
   end;
 end;
 
