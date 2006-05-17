@@ -41,8 +41,19 @@ type
     procedure lbFiltersDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure lbFiltersDragOver(Sender, Source: TObject; X, Y: Integer;
       State: TDragState; var Accept: Boolean);
+    procedure clEventsDrawItem(Control: TWinControl; Index: Integer;
+      Rect: TRect; State: TOwnerDrawState);
+    procedure lbFiltersDrawItem(Control: TWinControl; Index: Integer;
+      Rect: TRect; State: TOwnerDrawState);
   private
     LocalFilters: ThppEventFilterArray;
+
+    IncOutWrong: Boolean;
+    EventsWrong: Boolean;
+    EventsHeaderIndex: Integer;
+
+    DragOverIndex: Integer;
+
     procedure LoadLocalFilters;
     procedure SaveLocalFilters;
     procedure FillFiltersList;
@@ -189,12 +200,10 @@ end;
 
 procedure TfmCustomizeFilters.clEventsClickCheck(Sender: TObject);
 var
-  WrongEvents: Boolean;
   n,i: Integer;
 begin
   UpdateEventsState;
-  WrongEvents := (clEvents.Color <> clWindow);
-  if WrongEvents then exit;
+  if EventsWrong or IncOutWrong then exit;
   n := lbFilters.ItemIndex;
   if rbInclude.Checked then
     LocalFilters[n].filMode := FM_INCLUDE
@@ -207,6 +216,40 @@ begin
       Include(LocalFilters[n].filEvents,TMessageType(Integer(clEvents.Items.Objects[i])));
   end;
   LocalFilters[n].Events := GenerateEvents(LocalFilters[n].filMode,LocalFilters[n].filEvents);
+end;
+
+procedure TfmCustomizeFilters.clEventsDrawItem(Control: TWinControl;
+  Index: Integer; Rect: TRect; State: TOwnerDrawState);
+var
+  txt: String;
+  r: TRect;
+  tf: TTextFormat;
+  BrushColor: TColor;
+begin
+  BrushColor := clEvents.Canvas.Brush.Color;
+  txt := WideToAnsiString(clEvents.Items[Index],hppCodepage);
+  r := Rect;
+  tf := [tfVerticalCenter,tfNoPrefix];
+  InflateRect(r,-2,0);
+
+  if clEvents.Header[Index] then begin
+    if (EventsWrong) and (Index = EventsHeaderIndex) then
+      if BrushColor = clEvents.HeaderBackgroundColor then clEvents.Canvas.Brush.Color := $008080FF;
+    if (IncOutWrong) and (Index <> EventsHeaderIndex) then
+      if BrushColor = clEvents.HeaderBackgroundColor then clEvents.Canvas.Brush.Color := $008080FF;
+    clEvents.Canvas.FillRect(Rect);
+    clEvents.Canvas.TextRect(r,txt,tf);
+    clEvents.Canvas.Brush.Color := BrushColor;
+    exit;
+  end;
+
+  if (EventsWrong) and (Index > EventsHeaderIndex) then
+    if BrushColor = clEvents.Color then clEvents.Canvas.Brush.Color := $008080FF;
+  if (IncOutWrong) and (Index < EventsHeaderIndex) then
+    if BrushColor = clEvents.Color then clEvents.Canvas.Brush.Color := $008080FF;
+  clEvents.Canvas.FillRect(Rect);
+  clEvents.Canvas.TextRect(r,txt,tf);
+  clEvents.Canvas.Brush.Color := BrushColor;
 end;
 
 procedure TfmCustomizeFilters.edFilterNameChange(Sender: TObject);
@@ -242,6 +285,7 @@ begin
       else
         mt_name := TranslateWideW('Events');
       i := clEvents.Items.Add(mt_name);
+      EventsHeaderIndex := i;
       clEvents.Header[i] := True;
     end;
 
@@ -337,14 +381,59 @@ begin
   if src = dst then exit;
   if src < dst then Dec(dst);
   if src = dst then exit;
-  if dst = -1 then dst := lbFilters.Count-1;
   MoveItem(src,dst);
 end;
 
 procedure TfmCustomizeFilters.lbFiltersDragOver(Sender, Source: TObject; X,
   Y: Integer; State: TDragState; var Accept: Boolean);
+var
+  r: TRect;
+  idx: Integer;
 begin
   Accept := True;
+  idx := DragOverIndex;
+  if idx = lbFilters.Count then Dec(idx);
+  r := lbFilters.ItemRect(idx);
+  DragOverIndex := lbFilters.ItemAtPos(Point(x,y),False);
+  InvalidateRect(lbFilters.Handle,@r,False);
+  idx := DragOverIndex;
+  if idx = lbFilters.Count then Dec(idx);
+  r := lbFilters.ItemRect(idx);
+  InvalidateRect(lbFilters.Handle,@r,False);
+  lbFilters.Update;
+end;
+
+procedure TfmCustomizeFilters.lbFiltersDrawItem(Control: TWinControl;
+  Index: Integer; Rect: TRect; State: TOwnerDrawState);
+var
+  BrushColor: TColor;
+  txt: String;
+  r: TRect;
+  tf: TTextFormat;
+  src,dst: Integer;
+begin
+  BrushColor := lbFilters.Canvas.Brush.Color;
+  txt := WideToAnsiString(lbFilters.Items[Index],hppCodepage);
+  r := Rect;
+  tf := [tfVerticalCenter,tfNoPrefix];
+  InflateRect(r,-2,0);
+  lbFilters.Canvas.FillRect(Rect);
+  lbFilters.Canvas.TextRect(r,txt,tf);
+  if lbFilters.Dragging then begin
+    src := lbFilters.ItemIndex;
+    dst := DragOverIndex;
+    if (dst = lbFilters.Count) and (Index = lbFilters.Count-1) then begin
+      lbFilters.Canvas.Brush.Color := clHighlight;
+      r := Classes.Rect(Rect.Left,Rect.Bottom-1,Rect.Right,Rect.Bottom);
+      lbFilters.Canvas.FillRect(r);
+    end;
+    if (dst = Index) then begin
+      lbFilters.Canvas.Brush.Color := clHighlight;
+      r := Classes.Rect(Rect.Left,Rect.Top,Rect.Right,Rect.Top+1);
+      lbFilters.Canvas.FillRect(r);
+    end;
+  end;
+  lbFilters.Canvas.Brush.Color := BrushColor;
 end;
 
 procedure TfmCustomizeFilters.LoadLocalFilters;
@@ -371,6 +460,8 @@ var
   n: Integer;
 begin
   n := lbFilters.ItemIndex;
+  UpdateEventsState;
+  if IncOutWrong or EventsWrong then exit;
   if rbInclude.Checked then
     LocalFilters[n].filMode := FM_INCLUDE
   else
@@ -419,30 +510,86 @@ end;
 
 procedure TfmCustomizeFilters.UpdateEventsState;
 var
-  WrongEvents,AllChecked, AllUnchecked: Boolean;
+  IncOutChecked,IncOutUnchecked,
+  EventsChecked,EventsUnchecked: Boolean;
+  InsideEvents: Boolean;
+  InsideIncOut: Boolean;
+  HeadEvents: Integer;
   i: Integer;
 begin
-  AllChecked := True;
-  AllUnchecked := True;
+  if not clEvents.Enabled then begin
+    IncOutWrong := False;
+    EventsWrong := False;
+    bnOk.Enabled := True;
+    exit;
+  end;
+  IncOutChecked := True;
+  IncOutUnchecked := True;
+  EventsChecked := True;
+  EventsUnchecked := True;
+  InsideEvents := False;
+  InsideIncOut := False;
+  HeadEvents := 0;
   for i := 0 to clEvents.Count - 1 do begin
-    if clEvents.Header[i] then continue;
-    if AllChecked and (not clEvents.Checked[i]) then
-      AllChecked := False;
-    if AllUnchecked and clEvents.Checked[i] then
-      AllUnchecked := False;
-    if (not AllChecked) and (not AllUnchecked) then break;
+
+    if clEvents.Header[i] then begin
+      if InsideIncOut then begin
+        HeadEvents := i;
+        InsideEvents := True;
+      end
+      else
+        InsideIncOut := True;
+      continue;
+    end;
+
+    if InsideEvents then begin
+      if EventsChecked and (not clEvents.Checked[i]) then
+        EventsChecked := False;
+      if EventsUnchecked and clEvents.Checked[i] then
+        EventsUnchecked := False;
+      if (not EventsChecked) and (not EventsUnchecked) then break;
+    end
+    else begin
+      if IncOutChecked and (not clEvents.Checked[i]) then
+        IncOutChecked := False;
+      if IncOutUnchecked and clEvents.Checked[i] then
+        IncOutUnchecked := False;
+    end;
+
   end;
 
-  if rbInclude.Checked then
-    WrongEvents := AllUnchecked
-  else
-    WrongEvents := AllChecked;
+  if rbInclude.Checked then begin
+    EventsWrong := EventsUnchecked;
+    IncOutWrong := IncOutUnchecked;
+  end
+  else begin
+    EventsWrong := EventsChecked;
+    IncOutWrong := IncOutChecked;
+  end;
 
-  if WrongEvents then
-    clEvents.Color := $008080FF
+
+  // we probably need some help text to show why the filter selection is wrong
+  // explanation is given in comments below
+  if (rbExclude.Checked) and (EventsUnchecked) and (IncOutUnchecked) then begin
+    EventsWrong := True;
+    IncOutWrong := True;
+    // not allowed to duplicate Show All Events filter
+  end
   else
-    clEvents.Color := clWindow;
+  if (rbInclude.Checked) and (EventsChecked) and (IncOutChecked) then begin
+    EventsWrong := True;
+    IncOutWrong := True;
+    // not allowed to quasi-duplicate Show All Events filter
+  end
+  else begin
+    if (EventsWrong) or (IncOutWrong) then
+      ;// no events will be shown
+  end;
+
+  clEvents.Repaint;
+  bnOk.Enabled := not (EventsWrong or IncOutWrong);
 end;
+
 procedure TfmCustomizeFilters.UpdateUpDownButtons;
 begin
   bnUp.Enabled := (lbFilters.ItemIndex <> 0);
