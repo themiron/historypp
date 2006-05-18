@@ -325,6 +325,7 @@ type
     RecentFormat: TSaveFormat;
     SessThread: TSessionsThread;
     Sessions: TSessArray;
+    SeparatorButtonWidth: Integer;
 
     procedure SearchNext(Rev: Boolean; Warp: Boolean = True);
     procedure DeleteHistoryItem(ItemIdx:Integer);
@@ -347,6 +348,8 @@ type
     procedure LoadToolbarIcons;
     procedure LoadEventFilterButton;
     procedure LoadButtonIcons;
+
+    procedure LoadToolbar;
 
     procedure SetRecentEventsPosition(OnTop: Boolean);
     procedure Search(Next: Boolean; FromNext: Boolean = False);
@@ -593,6 +596,7 @@ begin
   LoadToolbarIcons;
   LoadButtonIcons;
   Image1.Picture.Icon.Handle := CopyIcon(hppIntIcons[0].handle);
+  //LoadToolbar;
 
   DesktopFont := True;
   MakeFontsParent(Self);
@@ -673,6 +677,107 @@ begin
   // simple hack to avoid dark icons
   ilSessions.BkColor := tvSess.Color;
 
+end;
+
+const
+  TOOLBAR_STR='[SESS]|[SEARCH][FILTER]|[EVENTS]|[COPY][DELETE]|[HISTORY]';
+
+// to do:
+// SAVEALL (???)
+// DELETEALL
+// SENDMES (???)
+// REPLQUOTED (???)
+// COPYTEXT (???)
+procedure THistoryFrm.LoadToolbar;
+var
+  tool: array of TControl;
+  i,n: Integer;
+  tb_butt: TTntToolButton;
+  butt: TControl;
+  butt_str,str: String;
+begin
+  str := TOOLBAR_STR;
+
+  i := 0;
+  while True do begin
+    if i = Toolbar.ControlCount then break;
+    if Toolbar.Controls[i] is TTntToolButton then begin
+      tb_butt := TTntToolButton(Toolbar.Controls[i]);
+      if (tb_butt.Style = tbsSeparator) or (tb_butt.Style = tbsDivider) then begin
+        // adding separator in runtime results in too wide separators
+        // we'll remeber the currect width and later re-apply it
+        SeparatorButtonWidth := tb_butt.Width;
+        tb_butt.Free;
+        Dec(i);
+      end
+      else
+        tb_butt.Visible := False;
+    end
+    else if Toolbar.Controls[i] is TTntSpeedButton then
+      TTntSpeedButton(Toolbar.Controls[i]).Visible := False;
+    Inc(i);
+  end;
+
+
+  try
+    while True do begin
+      if str = '' then break;
+      if (str[1] = ' ') or (str[1] = '|') then begin
+        if (tool[High(tool)] is TTntToolButton) then begin
+          tb_butt := TTntToolButton(tool[High(tool)]);
+          if (tb_butt.Style = tbsDivider) or (tb_butt.Style = tbsSeparator) then begin
+            Delete(str,1,1);
+            continue;
+          end;
+        end;
+        SetLength(tool,Length(tool)+1);
+        tb_butt := TTntToolButton.Create(Toolbar);
+        tb_butt.Visible := False;
+        if str[1] = ' ' then
+          tb_butt.Style := tbsDivider
+        else
+          tb_butt.Style := tbsSeparator;
+        Delete(str,1,1);
+        tb_butt.Parent := Toolbar;
+        tb_butt.Width := SeparatorButtonWidth;
+        tool[High(tool)] := tb_butt;
+      end
+      else if str[1]='[' then begin
+        n := Pos(']',str);
+        if n = -1 then
+          raise EAbort.Create('Wrong toolbar string format');
+        butt_str := Copy(str,2,n-2);
+        Delete(str,1,n);
+        butt := nil;
+        if butt_str = 'SESS' then butt := tbSessions;
+        if butt_str = 'SEARCH' then butt := tbSearch;
+        if butt_str = 'FILTER' then butt := tbFilter;
+        if butt_str = 'COPY' then butt := tbCopy;
+        if butt_str = 'DELETE' then butt := tbDelete;
+        if butt_str = 'SAVE' then butt := tbSave;
+        if butt_str = 'HISTORY' then butt := tbHistory;
+        if butt_str = 'GLOBSEARCH' then butt := tbHistorySearch;
+        if butt_str = 'EVENTS' then butt := tbEventsFilter;
+        if butt_str = 'USERMENU' then butt := tbUserMenu;
+        if butt_str = 'USERDETAILS' then butt := tbUserDetails;
+        if butt <> nil then begin
+          SetLength(tool,Length(tool)+1);
+          tool[High(tool)] := butt;
+        end;
+      end
+      else
+        raise EAbort.Create('Wrong toolbar string format');
+    end;
+  except
+
+  end;
+
+  n := 0;
+  for i := 0 to High(tool) do begin
+    tool[i].Left := n;
+    n := n + tool[i].Width;
+    tool[i].Visible := True;
+  end;
 end;
 
 procedure THistoryFrm.LoadToolbarIcons;
