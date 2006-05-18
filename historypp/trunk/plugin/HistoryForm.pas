@@ -680,7 +680,7 @@ begin
 end;
 
 const
-  TOOLBAR_STR='[SESS]|[SEARCH][FILTER]|[EVENTS]|[COPY][DELETE]|[HISTORY]';
+  DEF_TOOLBAR='[SESS] [SEARCH][FILTER] [EVENTS] [COPY][DELETE] [HISTORY]';
 
 // to do:
 // SAVEALL (???)
@@ -694,10 +694,11 @@ var
   i,n: Integer;
   tb_butt: TTntToolButton;
   butt: TControl;
-  butt_str,str: String;
+  butt_str,tb_str,str: String;
 begin
-  str := TOOLBAR_STR;
-
+  tb_str := GetDBStr(hppDBName,'HistoryToolbar',DEF_TOOLBAR);
+  str := tb_str;
+  
   i := 0;
   while True do begin
     if i = Toolbar.ControlCount then break;
@@ -734,9 +735,9 @@ begin
         tb_butt := TTntToolButton.Create(Toolbar);
         tb_butt.Visible := False;
         if str[1] = ' ' then
-          tb_butt.Style := tbsDivider
+          tb_butt.Style := tbsSeparator
         else
-          tb_butt.Style := tbsSeparator;
+          tb_butt.Style := tbsDivider;
         Delete(str,1,1);
         tb_butt.Parent := Toolbar;
         tb_butt.Width := SeparatorButtonWidth;
@@ -769,7 +770,25 @@ begin
         raise EAbort.Create('Wrong toolbar string format');
     end;
   except
-
+    // if we have error, try loading default toolbar config or
+    // show error if it doesn't work
+    if tb_str = DEF_TOOLBAR then begin
+      // don't think it should be translated:
+      hppMessageBox(Handle,'Can not apply default toolbar configuration.'+#10#13+
+      'Looks like it is an internal problem.'+#10#13+
+      #10#13+
+      'Download new History++ version or report the error to the authors'+#10#13+
+      '(include plugin version number and file date in the report).'+#10#13+
+      #10#13+
+      'You can find authors'' emails and plugin website in the Options->Plugins page.',
+      TranslateWideW('Error'),MB_OK or MB_ICONERROR);
+      exit;
+    end
+    else begin
+      DBDeleteContactSetting(0,hppDBName,'HistoryToolbar');
+      LoadToolbar;
+      exit;
+    end;
   end;
 
   n := 0;
