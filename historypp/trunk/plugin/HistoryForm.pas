@@ -3142,10 +3142,11 @@ procedure THistoryFrm.tbHistoryClick(Sender: TObject);
 begin
   if hg.SelCount > 1 then
     Self.SaveSelected1Click(Self)
-  else
+  else begin
     tbHistory.ShowHint := false;
     tbHistory.CheckMenuDropdown;
     tbHistory.ShowHint := true;
+  end;
   {RecentFormat := TSaveFormat(GetDBInt(hppDBName,'ExportFormat',0));
   SaveFormat := RecentFormat;
   PrepareSaveDialog(SaveDialog,SaveFormat,True);
