@@ -156,6 +156,7 @@ type
     procedure Copy1Click(Sender: TObject);
     procedure CopyText1Click(Sender: TObject);
     procedure Delete1Click(Sender: TObject);
+    procedure hgRTLEnabled(Sender: TObject; Enabled: Boolean);
   private
     WasReturnPressed: Boolean;
     LastUpdateTime: Cardinal;
@@ -288,7 +289,6 @@ begin
   FormState := gsIdle;
 
   ContactList := TObjectList.Create;
-  hg.Codepage := hppCodepage;
 
   ilContacts.Handle := PluginLink.CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
   LoadButtonIcons;
@@ -1057,7 +1057,10 @@ begin
   IsSearching := False;
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_GLOBALSEARCH].handle);
 
-  hg.Options := GridOptions;
+  hg.Codepage := hppCodepage;
+  hg.RTLMode := hppRTLDefault;
+  //hg.Options := GridOptions;
+
   hg.TxtStartup := TranslateWideW('Ready to search')+
     #10#13#10#13+TranslateWideW('Click Search button to start');
 
@@ -1447,6 +1450,19 @@ begin
   finally
     SetSafetyMode(True);
   end;
+end;
+
+procedure TfmGlobalSearch.hgRTLEnabled(Sender: TObject; Enabled: Boolean);
+var
+  Flag: TBiDiMode;
+begin
+  if Enabled then Flag := bdRightToLeft
+             else Flag := bdLeftToRight;
+  edPass.BiDiMode := Flag;
+  edSearch.BiDiMode := Flag;
+  edFilter.BiDiMode := Flag;
+  //lvContacts.BiDiMode := Flag;
+  hg.BiDiMode := Flag;
 end;
 
 initialization

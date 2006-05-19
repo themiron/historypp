@@ -1,6 +1,6 @@
 object fmGlobalSearch: TfmGlobalSearch
-  Left = 282
-  Top = 122
+  Left = 289
+  Top = 114
   Width = 559
   Height = 552
   Caption = 'Global History Search'
@@ -260,6 +260,7 @@ object fmGlobalSearch: TfmGlobalSearch
         OnKeyUp = hgKeyUp
         OnState = hgState
         OnSelect = hgSelect
+        OnRTLChange = hgRTLEnabled
         OnUrlClick = hgUrlClick
         OnItemFilter = hgItemFilter
         OnProcessRichText = hgProcessRichText
@@ -321,6 +322,8 @@ object fmGlobalSearch: TfmGlobalSearch
     SimplePanel = True
   end
   object pmGrid: TTntPopupMenu
+    BiDiMode = bdLeftToRight
+    ParentBiDiMode = False
     Left = 206
     Top = 266
     object Open1: TTntMenuItem

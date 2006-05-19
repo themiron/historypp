@@ -34,39 +34,6 @@ Password not set
 [Password set]
 Password set
 
-;; CustomizeFiltersForm.trans.txt file 
-
-;; Text found in ..\plugin\CustomizeFiltersForm.dfm:
-[Customize Filters]
-Customize Filters
-[Filter Properties]
-Filter Properties
-[Name:]
-Name:
-[Show all except selected events]
-Show all except selected events
-[Show only selected events]
-Show only selected events
-[Reset to Default]
-Reset to Default
-[Filters]
-Filters
-[Down]
-Down
-[Up]
-Up
-[Delete]
-Delete
-[Add]
-Add
-;; Text found in ..\plugin\CustomizeFiltersForm.pas:
-[New Filter #%d]
-New Filter #%d
-[Incoming & Outgoing]
-Incoming & Outgoing
-[Events]
-Events
-
 ;; EventDetailForm.trans.txt file 
 
 ;; Text found in ..\plugin\EventDetailForm.dfm:
@@ -125,6 +92,39 @@ WebPager
 EMail Express
 [Other event]
 Other event
+
+;; CustomizeFiltersForm.trans.txt file 
+
+;; Text found in ..\plugin\CustomizeFiltersForm.dfm:
+[Customize Filters]
+Customize Filters
+[Filter Properties]
+Filter Properties
+[Name:]
+Name:
+[Show all except selected events]
+Show all except selected events
+[Show only selected events]
+Show only selected events
+[Reset to Default]
+Reset to Default
+[Filters]
+Filters
+[Down]
+Down
+[Up]
+Up
+[Delete]
+Delete
+[Add]
+Add
+;; Text found in ..\plugin\CustomizeFiltersForm.pas:
+[New Filter #%d]
+New Filter #%d
+[Incoming & Outgoing]
+Incoming & Outgoing
+[Events]
+Events
 
 ;; GlobalSearch.trans.txt file 
 

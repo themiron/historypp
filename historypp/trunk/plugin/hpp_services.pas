@@ -169,6 +169,7 @@ function HppShowGlobalSearch(wParam{0}, lParam{0}: DWord): Integer; cdecl;
 begin
   if not Assigned(fmGlobalSearch) then begin
     fmGlobalSearch := TfmGlobalSearch.Create(nil);
+    fmGlobalSearch.hg.Options := GridOptions;
     fmGlobalSearch.Show;
   end;
   BringFormToFront(fmGlobalSearch);
