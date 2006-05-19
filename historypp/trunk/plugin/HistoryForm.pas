@@ -576,7 +576,7 @@ begin
   UserCodepage := GetContactCodePage(hContact,Protocol,UseDefaultCP);
   hg.Codepage := UserCodepage;
   hg.RTLMode := GetContactRTLModeTRTL(hContact, Protocol);
-  if hContact = 0 then Caption := TranslateW('System History')
+  if hContact = 0 then Caption := TranslateWideW('System History')
                   else Caption := WideFormat(Caption,[hg.ContactName]);
   hg.Allocate(Length(History));
 end;
