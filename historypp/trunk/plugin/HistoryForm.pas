@@ -269,6 +269,7 @@ type
     procedure tvSessGetSelectedIndex(Sender: TObject; Node: TTreeNode);
     procedure Customize1Click(Sender: TObject);
     procedure tbEventsFilterClick(Sender: TObject);
+    procedure hgRTLEnabled(Sender: TObject; Enabled: Boolean);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -307,8 +308,6 @@ type
     procedure PreLoadHistory;
     procedure PostLoadHistory;
     procedure SetSearchMode(const Value: TSearchMode);
-
-    procedure SetFormRTLMode(const Value: Boolean);
 
   public
     UserCodepage: Cardinal;
@@ -577,7 +576,6 @@ begin
   UserCodepage := GetContactCodePage(hContact,Protocol,UseDefaultCP);
   hg.Codepage := UserCodepage;
   hg.RTLMode := GetContactRTLModeTRTL(hContact, Protocol);
-  SetFormRTLMode(GetContactRTLMode(hContact, Protocol));
   if hContact = 0 then Caption := TranslateW('System History')
                   else Caption := WideFormat(Caption,[hg.ContactName]);
   hg.Allocate(Length(History));
@@ -603,7 +601,7 @@ begin
 
   FormState := gsIdle;
 
-  hg.Filter := filAll;
+  hg.Filter := GenerateEvents(FM_EXCLUDE,[]);
 
   for i := 0 to High(cpTable) do begin
     mi := WideNewItem(cpTable[i].name,0,false,true,nil,0,'cp'+intToStr(i));
@@ -2291,6 +2289,7 @@ begin
     paSearch.Visible := not (SearchMode = smNone);
     if SearchMode = smNone then begin
       edSearch.Text := '';
+      edSearch.Color := clWindow;
       exit;
     end;
 
@@ -2306,6 +2305,7 @@ begin
       paSearchButtons.Visible := not (FSearchMode = smFilter);
       NotFound := not (edSearch.Color = clWindow);
       edSearch.Text := '';
+      edSearch.Color := clWindow
     finally
       hg.EndUpdate;
     end;
@@ -2899,7 +2899,6 @@ begin
                            else hg.RTLMode := hppRTLDisable;
   end;
   WriteContactRTLMode(hContact,hg.RTLMode,Protocol);
-  SetFormRTLMode(GetContactRTLMode(hContact,Protocol));
 end;
 
 procedure THistoryFrm.SMItemsFound(var M: TMessage);
@@ -3027,6 +3026,7 @@ procedure THistoryFrm.sbClearFilterClick(Sender: TObject);
 begin
   if SearchMode = smFilter then EndHotFilterTimer;
   edSearch.Text := '';
+  edSearch.Color := clWindow;
   hg.SetFocus;
 end;
 
@@ -3346,16 +3346,18 @@ begin
   Node.SelectedIndex := Node.ImageIndex;
 end;
 
-procedure THistoryFrm.SetFormRTLMode(const Value: Boolean);
+procedure THistoryFrm.hgRTLEnabled(Sender: TObject; Enabled: Boolean);
 var
   Flag: TBiDiMode;
 begin
-  if Value then Flag := bdRightToLeft
-           else Flag := bdLeftToRight;
+  if Enabled then Flag := bdRightToLeft
+             else Flag := bdLeftToRight;
   edPass.BiDiMode := Flag;
   edSearch.BiDiMode := Flag;
-  //paGrid.BiDiMode := Flag;
   //tvSess.BiDiMode := Flag;
+  hg.BiDiMode := Flag;
+  if Assigned(EventDetailFrom) then
+    TEventDetailsFrm(EventDetailFrom).Item := TEventDetailsFrm(EventDetailFrom).Item;
 end;
 
 end.

@@ -43,10 +43,10 @@ uses
 type
 
   TEventDetailsFrm = class(TTntForm)
-    Panel2: TTntPanel;
+    paBottom: TTntPanel;
     Panel3: TTntPanel;
-    Panel5: TTntPanel;
-    Panel6: TTntPanel;
+    paUser: TTntPanel;
+    paInfo: TTntPanel;
     GroupBox1: TTntGroupBox;
     Label1: TTntLabel;
     Label2: TTntLabel;
@@ -78,6 +78,7 @@ type
     N1: TTntMenuItem;
     ReplyQuoted1: TTntMenuItem;
     SendMessage1: TTntMenuItem;
+    paText: TTntPanel;
     procedure PrevBtnClick(Sender: TObject);
     procedure NextBtnClick(Sender: TObject);
     procedure EFromMoreClick(Sender: TObject);
@@ -106,13 +107,12 @@ type
 
 //    procedure SetRowIdx(const Value: integer);
     procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
+    procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo); message wm_GetMinMaxInfo;
     procedure WMNotify(var Message: TWMNotify); message WM_Notify;
-    procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo);message wm_GetMinMaxInfo;
     procedure LoadPosition;
     procedure SavePosition;
     procedure SetItem(const Value: Integer);
     procedure ProcessRichEdit(const FItem: Integer);
-
     procedure TranslateForm;
     { Private declarations }
   public
@@ -357,7 +357,10 @@ begin
   // but it's better to lock and unlock rich in DoSupport... services
   EText.Lines.BeginUpdate;
   EText.Clear;
-  ParentForm.hg.SetRichRTL(ParentForm.hg.GetItemRTL(FItem),EText,false);
+  if ParentForm.hg.GetItemRTL(FItem) then EText.BiDiMode := bdRightToLeft
+                                     else EText.BiDiMode := bdLeftToRight;
+  //ParentForm.hg.SetRichRTL(ParentForm.hg.GetItemRTL(FItem),EText,false);
+
   EText.Text:=FParentForm.hg.Items[FItem].Text;
   ProcessRichEdit(FItem);
   // 'cose smileys are selected sometimes

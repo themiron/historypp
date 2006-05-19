@@ -60,7 +60,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   TntSysUtils,TntWindows, TntControls,TntGraphics, TntComCtrls, Menus, StdCtrls,
   Math, mmsystem,
-  hpp_global, hpp_contacts, hpp_itemprocess, hpp_events, m_api,
+  hpp_global, hpp_contacts, hpp_itemprocess, hpp_events, m_api, hpp_eventfilters,
   Contnrs,
   VertSB,
   RichEdit, ShellAPI;
@@ -98,6 +98,7 @@ type
   TOnState = procedure(Sender: TObject; State: TGridState) of object;
   TOnItemFilter = procedure(Sender: TObject; Index: Integer; var Show: Boolean) of object;
   TOnChar = procedure(Sender: TObject; Char: WideChar; Shift: TShiftState) of object;
+  TOnRTLChange = procedure(Sender: TObject; Enabled: boolean) of object;
 
   THistoryGrid = class;
 
@@ -170,7 +171,6 @@ type
     procedure SetIconMessage(const Value: TIcon);
 
     procedure SetShowIcons(const Value: Boolean);
-    procedure SetOnShowIcons(const Value: TOnShowIcons);
 
     procedure SetRTLEnabled(const Value: Boolean);
     procedure SetSmileysEnabled(const Value: Boolean);
@@ -190,7 +190,7 @@ type
     procedure EndChange;
     function AddItemOptions: integer;
     procedure GetItemOptions(Mes: TMessageTypes; out textFont: TFont; out textColor: TColor);
-    property OnShowIcons: TOnShowIcons read FOnShowIcons write SetOnShowIcons;
+    property OnShowIcons: TOnShowIcons read FOnShowIcons write FOnShowIcons;
   published
     property ClipCopyFormat: WideString read FClipCopyFormat write FClipCopyFormat;
     property ClipCopyTextFormat: WideString read FClipCopyTextFormat write FClipCopyTextFormat;
@@ -339,7 +339,10 @@ type
     OverURLStr: WideString;
     FOnSearchItem: TOnSearchItem;
 
+    FOnRTLChange: TOnRTLChange;
+
     FRTLMode: TRTLMode;
+    FRTLModeOld: boolean;
 
     TopItemOffset: Integer;
     MaxSBPos: Integer;
@@ -388,6 +391,7 @@ type
     procedure WMKeyUp(var Message: TWMKeyUp); message WM_KEYUP;
     procedure WMChar(var Message: TWMChar); message WM_CHAR;
     procedure WMMouseWheel(var Message: TWMMouseWheel); message WM_MOUSEWHEEL;
+    procedure CMBiDiModeChanged(var Message: TMessage); message CM_BIDIMODECHANGED;
     function GetCount: Integer;
     procedure SetContact(const Value: THandle);
     procedure SetPadding(Value: Integer);
@@ -546,6 +550,7 @@ type
     property OnState: TOnState read FOnState write FOnState;
     property OnSelect: TOnSelect read FOnSelect write FOnSelect;
     property OnXMLData: TGetXMLData read FGetXMLData write FGetXMLData;
+    property OnRTLChange: TOnRTLChange read FOnRTLChange write FOnRTLChange;
     {IFDEF RENDER_RICH}
     property OnUrlClick: TUrlEvent read FOnUrlClick write FOnUrlClick;
     property OnUrlPopup: TUrlEvent read FOnUrlPopup write FOnUrlPopup;
@@ -559,16 +564,18 @@ type
     property TabStop;
     property Font;
     property Color;
+    property BiDiMode;
+    property ParentBiDiMode;
     property Padding: Integer read FPadding write SetPadding;
     {$IFDEF CUST_SB}
     property VertScrollBar: TVertScrollBar read FVertScrollBar write SetVertScrollBar;
     {$ENDIF}
   end;
 
-const
-  filNone = [];
-  filAll = [mtIncoming, mtOutgoing, mtMessage, mtUrl, mtFile, mtSystem, mtContacts, mtSMS, mtWebPager, mtEmailExpress, mtStatus, mtSMTPSimple, mtOther];
-  filMessages = [mtMessage, mtIncoming, mtOutgoing];
+//const
+  //filNone = [];
+  //filAll = [mtIncoming, mtOutgoing, mtMessage, mtUrl, mtFile, mtSystem, mtContacts, mtSMS, mtWebPager, mtEmailExpress, mtStatus, mtSMTPSimple, mtOther];
+  //filMessages = [mtMessage, mtIncoming, mtOutgoing];
 
 procedure Register;
 
@@ -721,6 +728,8 @@ begin
   FRichInline.OnKeyUp := RichInlineOnKeyUp;
   {$ENDIF}
   FCodepage := CP_ACP;
+  //FRTLMode := hppRTLDefault;
+  //FRTLModeOld := false;
 
   CHeaderHeight := -1;
   PHeaderHeight := -1;
@@ -755,7 +764,7 @@ begin
   ControlStyle := ControlStyle + [csFramed];
 
   LockCount := 0;
-  FFilter := filAll;
+  FFilter := GenerateEvents(FM_EXCLUDE,[]);
   FSelected := -1;
   FContact := 0;
   FPadding := 4;
@@ -994,12 +1003,14 @@ begin
   if FCodepage = Value then exit;
   FCodepage := Value;
   DoChanges := false;
-  for i := 0 to Length(FItems) - 1 do
-    if not IsUnknown(i) then begin
-      DoChanges := true;
-      LoadItem(i,false,true);
-    end;
-  if DoChanges then DoOptionsChanged;
+  if Allocated then begin
+    for i := 0 to Length(FItems) - 1 do
+      if not IsUnknown(i) then begin
+        DoChanges := true;
+        LoadItem(i,false,true);
+      end;
+    if DoChanges then DoOptionsChanged;
+  end;
 end;
 
 procedure THistoryGrid.SetContact(const Value: THandle);
@@ -1933,7 +1944,7 @@ begin
   {$IFDEF DEBUG}
   OutPutDebugString('Filter');
   {$ENDIF}
-  if (FFilter = Value) or (Value = []) then exit;
+  if (Filter = Value) or (Value = []) or (Value = [mtUnknown]) then exit;
   FFilter := Value;
   UpdateFilter;
   {CheckBusy;
@@ -2477,7 +2488,7 @@ var
   mts: TMessageTypes;
 begin
   mts := FItems[Index].MessageType;
-  Result := ((Word(FFilter) and Word(mts)) >= Word(mts));
+  Result := ((DWord(FFilter) and DWord(mts)) >= DWord(mts));
   if Assigned(FOnItemFilter) then
     FOnItemFilter(Self,Index,Result);
 end;
@@ -3673,7 +3684,7 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     i := 0;
     found := false;
     while (not found) and (i <= High(Options.ItemOptions)) do
-      if (Word(Options.ItemOptions[i].MessageType) and Word(mt)) >= Word(mt) then
+      if (DWord(Options.ItemOptions[i].MessageType) and DWord(mt)) >= DWord(mt) then
         found := true
       else Inc(i);
     mes_id := 'event'+intToStr(i);
@@ -3765,7 +3776,7 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     i := 0;
     found := false;
     while (not found) and (i <= High(Options.ItemOptions)) do
-      if (Word(Options.ItemOptions[i].MessageType) and Word(mt)) >= Word(mt) then
+      if (DWord(Options.ItemOptions[i].MessageType) and DWord(mt)) >= DWord(mt) then
         found := true
       else Inc(i);
     mes_id := i;
@@ -3953,7 +3964,7 @@ procedure THistoryGrid.DoOptionsChanged;
 var
   i: integer;
   ch,ph,th: Integer;
-  pf: PARAFORMAT2;
+  //pf: PARAFORMAT2;
 begin
   // recalc fonts
   for i := 0 to Length(FItems)-1 do begin
@@ -3961,13 +3972,13 @@ begin
   end;
   FRichCache.ResetAllItems;
 
-  pf.cbSize := SizeOf(pf);
-  pf.dwMask := PFM_RTLPARA;
+  //pf.cbSize := SizeOf(pf);
+  //pf.dwMask := PFM_RTLPARA;
 
   //RTLEnabled := Options.RTLEnabled;
 
   //if Options.RTLEnabled then begin
-  if (RTLMode = hppRTLEnable) or ((RTLMode = hppRTLDefault) and Options.RTLEnabled) then begin
+  {if (RTLMode = hppRTLEnable) or ((RTLMode = hppRTLDefault) and Options.RTLEnabled) then begin
     // redundant, we do it in ApplyItemToRich
     //SetRichRTL(True);
     //pf.wReserved := PFE_RTLPARA;
@@ -3979,7 +3990,7 @@ begin
     //pf.wReserved := 0;
     // redundant, we do it PaintItem
     // Canvas.TextFlags := Canvas.TextFlags and not ETO_RTLREADING;
-  end;
+  end;}
   //SendMessage(FRich.Handle,EM_SETPARAFORMAT,0,integer(@pf));
   //SendMessage(FRichInline.Handle,EM_SETPARAFORMAT,0,integer(@pf));
   //FRich.Perform(EM_SETPARAFORMAT,0,integer(@pf));
@@ -4006,6 +4017,8 @@ begin
   Inc(CHeaderHeight,Padding);
   Inc(PHeaderHeight,Padding);
 
+  SetRTLMode(RTLMode);
+
   BarAdjusted := False;
   AdjustScrollBar;
   Invalidate;
@@ -4026,11 +4039,20 @@ begin
 end;
 
 procedure THistoryGrid.SetRTLMode(const Value: TRTLMode);
+var
+  newMode: boolean;
 begin
-  if FRTLMode = Value then exit;
-  FRTLMode := Value;
-  FRichCache.ResetAllItems;
-  Repaint;
+  if FRTLMode <> Value then begin
+    FRTLMode := Value;
+    FRichCache.ResetAllItems;
+    Repaint;
+  end;
+  newMode := (RTLMode = hppRTLEnable) or ((RTLMode = hppRTLDefault) and Options.RTLEnabled);
+  if FRTLModeOld <> newMode then begin
+    if Assigned(FOnRTLChange) then
+      OnRTLChange(Self,newMode);
+    FRTLModeOld := newMode;
+  end;
   // no need in it?
   // cause we set rich's RTL in ApplyItemToRich and
   // canvas'es RTL in PaintItem
@@ -4281,12 +4303,12 @@ begin
   State := gsInline;
   ApplyItemToRich(Item, FRichInline);
   State := gsIdle;
-  FRichInline.SelStart := 0;
-  FRichInline.SelLength := 0;
+  //FRichInline.SelStart := -1;
+  //FRichInline.SelLength := 0;
   FRichInline.Show;
   FRichInline.SetFocus;
   State := gsInline;
-  //FRichInline.SelectAll;
+  FRichInline.SelectAll;
 end;
 
 procedure THistoryGrid.CancelInline;
@@ -4519,7 +4541,7 @@ begin
   i := 0;
   found := false;
   while (not found) and (i <= High(FItemOptions)) do
-    if (Word(FItemOptions[i].MessageType) and Word(Mes)) >= Word(Mes) then begin
+    if (DWord(FItemOptions[i].MessageType) and DWord(Mes)) >= DWord(Mes) then begin
       textFont := FItemOptions[i].textFont;
       textColor := FItemOptions[i].textColor;
       found := true;
@@ -4578,11 +4600,6 @@ begin
 FIconUrl.Assign(Value);
 FIconUrl.OnChange := FontChanged;
 DoChange;
-end;
-
-procedure TGridOptions.SetOnShowIcons(const Value: TOnShowIcons);
-begin
-  FOnShowIcons := Value;
 end;
 
 procedure TGridOptions.SetShowIcons(const Value: Boolean);
@@ -4967,6 +4984,20 @@ begin
       else if Items[i].GridItem > GridItem then
         Dec(Items[i].GridItem);
     end;
+end;
+
+procedure THistoryGrid.CMBiDiModeChanged(var Message: TMessage);
+var
+  ExStyle: DWORD;
+  Loop: Integer;
+begin
+  //inherited;
+  if HandleAllocated then begin
+    ExStyle := DWORD(GetWindowLong(Handle, GWL_EXSTYLE))and (not WS_EX_RIGHT) and
+      (not WS_EX_RTLREADING) and (not WS_EX_LEFTSCROLLBAR);
+    AddBiDiModeExStyle(ExStyle);
+    SetWindowLong(Handle, GWL_EXSTYLE, ExStyle);
+  end;
 end;
 
 initialization
