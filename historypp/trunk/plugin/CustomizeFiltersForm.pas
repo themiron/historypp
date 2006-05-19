@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs,TntForms, StdCtrls, TntStdCtrls, CheckLst, TntCheckLst, hpp_global,
+  Dialogs,TntForms, StdCtrls, TntStdCtrls, CheckLst, TntCheckLst, TntGraphics, hpp_global,
   hpp_eventfilters;
 
 type
@@ -223,13 +223,13 @@ procedure TfmCustomizeFilters.clEventsDrawItem(Control: TWinControl;
 var
   txt: String;
   r: TRect;
-  tf: TTextFormat;
+  //tf: TTextFormat;
   BrushColor: TColor;
 begin
   BrushColor := clEvents.Canvas.Brush.Color;
   txt := WideToAnsiString(clEvents.Items[Index],hppCodepage);
   r := Rect;
-  tf := [tfVerticalCenter,tfNoPrefix];
+  //tf := [tfVerticalCenter,tfNoPrefix];
   InflateRect(r,-2,0);
 
   if clEvents.Header[Index] then begin
@@ -238,7 +238,8 @@ begin
     if (IncOutWrong) and (Index <> EventsHeaderIndex) then
       if BrushColor = clEvents.HeaderBackgroundColor then clEvents.Canvas.Brush.Color := $008080FF;
     clEvents.Canvas.FillRect(Rect);
-    clEvents.Canvas.TextRect(r,txt,tf);
+    WideCanvasTextRect(clEvents.Canvas,r,0,0,clEvents.Items[Index]);
+    //clEvents.Canvas.TextRect(r,txt,tf);
     clEvents.Canvas.Brush.Color := BrushColor;
     exit;
   end;
@@ -248,7 +249,8 @@ begin
   if (IncOutWrong) and (Index < EventsHeaderIndex) then
     if BrushColor = clEvents.Color then clEvents.Canvas.Brush.Color := $008080FF;
   clEvents.Canvas.FillRect(Rect);
-  clEvents.Canvas.TextRect(r,txt,tf);
+  WideCanvasTextRect(clEvents.Canvas,r,0,0,clEvents.Items[Index]);
+  //clEvents.Canvas.TextRect(r,txt,tf);
   clEvents.Canvas.Brush.Color := BrushColor;
 end;
 
@@ -409,16 +411,17 @@ var
   BrushColor: TColor;
   txt: String;
   r: TRect;
-  tf: TTextFormat;
+  //tf: TTextFormat;
   src,dst: Integer;
 begin
   BrushColor := lbFilters.Canvas.Brush.Color;
   txt := WideToAnsiString(lbFilters.Items[Index],hppCodepage);
   r := Rect;
-  tf := [tfVerticalCenter,tfNoPrefix];
+  //tf := [tfVerticalCenter,tfNoPrefix];
   InflateRect(r,-2,0);
   lbFilters.Canvas.FillRect(Rect);
-  lbFilters.Canvas.TextRect(r,txt,tf);
+  //lbFilters.Canvas.TextRect(r,txt,tf);
+  WideCanvasTextRect(clEvents.Canvas,r,0,0,lbFilters.Items[Index]);
   if lbFilters.Dragging then begin
     src := lbFilters.ItemIndex;
     dst := DragOverIndex;
