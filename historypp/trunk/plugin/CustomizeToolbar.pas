@@ -43,6 +43,7 @@ type
     procedure lbAvailableClick(Sender: TObject);
     procedure bnUpClick(Sender: TObject);
     procedure bnDownClick(Sender: TObject);
+    procedure bnRemoveClick(Sender: TObject);
   private
     ItemBmp: TBitmap;
     DragOverIndex: Integer;
@@ -50,6 +51,9 @@ type
     procedure FillButtons;
     procedure UpdateControlButtons;
     procedure TranslateForm;
+
+    procedure AddItem(src: Integer; dst: Integer = -1);
+    procedure RemoveItem(src: Integer);
 
     function GenerateToolbarString: String;
     procedure SaveToolbar(ToolbarStr: String);
@@ -76,19 +80,14 @@ begin
   if Source = lbAvailable then begin
     src := lbAvailable.ItemIndex;
     dst := lbAdded.ItemAtPos(Point(x,y),False);
-    lbAdded.AddItem(lbAvailable.Items[src],lbAvailable.Items.Objects[src]);
-    if lbAvailable.Items[src] <> '-' then
-      lbAvailable.Items.Delete(src);
-    if dst <> lbAdded.Count-1 then begin
-      lbAdded.Items.Move(lbAdded.Count-1,dst);
-    end;
+    AddItem(src,dst);
   end
   else begin
     src := lbAdded.ItemIndex;
     dst := lbAdded.ItemAtPos(Point(x,y),True);
     lbAdded.Items.Move(src,dst);
+    lbAdded.ItemIndex := dst;
   end;
-  lbAdded.ItemIndex := dst;
   lbAdded.SetFocus;
 
   UpdateControlButtons;
@@ -130,38 +129,15 @@ end;
 
 procedure TfmCustomizeToolbar.lbAvailableDragDrop(Sender, Source: TObject; X,
   Y: Integer);
-var
-  but: TControl;
-  n: Integer;
 begin
-  n := lbAdded.ItemIndex;
-  but := TControl(lbAdded.Items.Objects[n]);
-  if (but = nil) or ((but is TTntToolButton) and (TTntToolButton(but).Style in [tbsSeparator,tbsDivider])) then begin
-    lbAdded.Items.Delete(n);
-    exit;
-  end;
-  // delete last item -- separator
-  lbAvailable.Items.Delete(lbAvailable.Items.Count-1);
-  // add item
-  lbAvailable.AddItem(lbAdded.Items[n],lbAdded.Items.Objects[n]);
-  // sort
-  lbAvailable.Sorted := True;
-  lbAvailable.Sorted := False;
-  // add separator back
-  lbAvailable.AddItem('-',nil);
-
-  lbAvailable.ItemIndex := lbAvailable.Items.IndexOfObject(lbAdded.Items.Objects[n]);
+  RemoveItem(lbAdded.ItemIndex);
   lbAvailable.SetFocus;
-
-  lbAdded.Items.Delete(n);
-
-  UpdateControlButtons;
 end;
 
 procedure TfmCustomizeToolbar.lbAvailableDragOver(Sender, Source: TObject; X,
   Y: Integer; State: TDragState; var Accept: Boolean);
 begin
-  Accept := (Source = lbAdded);
+  Accept := (Source = lbAdded) and (lbAdded.ItemIndex <> -1);
 end;
 
 procedure TfmCustomizeToolbar.lbAvailableDrawItem(Control: TWinControl;
@@ -283,6 +259,32 @@ begin
     end;
 end;
 
+procedure TfmCustomizeToolbar.RemoveItem(src: Integer);
+begin
+  if (src = -1)  or (src > lbAdded.Count-1) then exit;
+
+  if (lbAdded.Items.Objects[src] <> nil) then begin
+    // delete last item -- separator
+    lbAvailable.Items.Delete(lbAvailable.Items.Count-1);
+    // add item
+    lbAvailable.AddItem(lbAdded.Items[src],lbAdded.Items.Objects[src]);
+    // sort
+    lbAvailable.Sorted := True;
+    lbAvailable.Sorted := False;
+    // add separator back
+    lbAvailable.AddItem('-',nil);
+  end;
+  lbAvailable.ItemIndex := lbAvailable.Items.IndexOfObject(lbAdded.Items.Objects[src]);
+
+  lbAdded.Items.Delete(src);
+  if src < lbAdded.Count then
+    lbAdded.ItemIndex := src
+  else if src-1 < lbAdded.Count then
+    lbAdded.ItemIndex := src-1;
+
+  UpdateControlButtons;
+end;
+
 procedure TfmCustomizeToolbar.SaveToolbar(ToolbarStr: String);
 begin
   if ToolbarStr = '' then ToolbarStr := DEF_HISTORY_TOOLBAR;
@@ -304,9 +306,30 @@ begin
   end;
 end;
 
+procedure TfmCustomizeToolbar.AddItem(src, dst: Integer);
+begin
+  if (src = -1)  or (src > lbAvailable.Count-1) then exit;
+
+  lbAdded.AddItem(lbAvailable.Items[src],lbAvailable.Items.Objects[src]);
+  if lbAvailable.Items[src] <> '-' then
+    lbAvailable.Items.Delete(src);
+  if (dst <> lbAdded.Count-1) and (dst <> -1) then begin
+    lbAdded.Items.Move(lbAdded.Count-1,dst);
+    lbAdded.ItemIndex := dst;
+  end
+  else
+    lbAdded.ItemIndex := lbAdded.Count-1;
+  if src < lbAvailable.Count then
+    lbAvailable.ItemIndex := src
+  else if src-1 < lbAvailable.Count then
+    lbAvailable.ItemIndex := src-1;
+
+  UpdateControlButtons;
+end;
+
 procedure TfmCustomizeToolbar.bnAddClick(Sender: TObject);
 begin
-  ShowMessage('Jo');
+  AddItem(lbAvailable.ItemIndex);
 end;
 
 procedure TfmCustomizeToolbar.FillButtons;
@@ -346,6 +369,22 @@ begin
   lbAvailable.Sorted := True;
   lbAvailable.Sorted := False;
   lbAvailable.AddItem('-',nil);
+
+  if lbAdded.Count > 0 then begin
+    lbAdded.ItemIndex := 0;
+    if Visible then
+      lbAdded.SetFocus
+    else
+      ActiveControl := lbAdded;
+  end
+  else begin
+    lbAvailable.ItemIndex := 0;
+    if Visible then
+      lbAvailable.SetFocus
+    else
+      ActiveControl := lbAvailable;
+  end;
+  UpdateControlButtons;
 end;
 
 procedure TfmCustomizeToolbar.FormClose(Sender: TObject;
@@ -364,15 +403,6 @@ begin
 
   ItemBmp := TBitmap.Create;
   FillButtons;
-  if lbAdded.Count > 0 then begin
-    lbAdded.ItemIndex := 0;
-    ActiveControl := lbAdded;
-  end
-  else begin
-    lbAvailable.ItemIndex := 0;
-    ActiveControl := lbAvailable;
-  end;
-  UpdateControlButtons;
 end;
 
 procedure TfmCustomizeToolbar.FormDestroy(Sender: TObject);
@@ -460,11 +490,17 @@ begin
   UpdateControlButtons;
 end;
 
+procedure TfmCustomizeToolbar.bnRemoveClick(Sender: TObject);
+begin
+  RemoveItem(lbAdded.ItemIndex);
+end;
+
 procedure TfmCustomizeToolbar.bnResetClick(Sender: TObject);
 begin
   DBDeleteContactSetting(0,hppDBName,'HistoryToolbar');
   NotifyAllForms(HM_NOTF_TOOLBARCHANGED,0,0);
   FillButtons;
+  UpdateControlButtons;
 end;
 
 procedure TfmCustomizeToolbar.bnUpClick(Sender: TObject);
@@ -498,6 +534,7 @@ begin
   bnRemove.Enabled := (lbAdded.ItemIndex <> -1);
   bnUp.Enabled := (lbAdded.ItemIndex <> -1) and (lbAdded.ItemIndex > 0);
   bnDown.Enabled := (lbAdded.ItemIndex <> -1) and (lbAdded.ItemIndex < lbAdded.Count-1);
+  bnOK.Enabled := (lbAdded.Count > 0);
 end;
 
 end.
