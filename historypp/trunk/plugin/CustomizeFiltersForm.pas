@@ -45,6 +45,8 @@ type
       Rect: TRect; State: TOwnerDrawState);
     procedure lbFiltersDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
+    procedure TntFormKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     LocalFilters: ThppEventFilterArray;
 
@@ -492,6 +494,30 @@ begin
   except
     // "eat" exceptions if any
   end;
+end;
+
+procedure TfmCustomizeFilters.TntFormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  Mask: Integer;
+begin
+  with Sender as TWinControl do
+    begin
+      if Perform(CM_CHILDKEY, Key, Integer(Sender)) <> 0 then
+        Exit;
+      Mask := 0;
+      case Key of
+        VK_TAB:
+          Mask := DLGC_WANTTAB;
+        VK_RETURN, VK_EXECUTE, VK_ESCAPE, VK_CANCEL:
+          Mask := DLGC_WANTALLKEYS;
+      end;
+      if (Mask <> 0)
+        and (Perform(CM_WANTSPECIALKEY, Key, 0) = 0)
+        and (Perform(WM_GETDLGCODE, 0, 0) and Mask = 0)
+        and (Self.Perform(CM_DIALOGKEY, Key, 0) <> 0)
+        then Exit;
+    end;
 end;
 
 procedure TfmCustomizeFilters.TranslateForm;
