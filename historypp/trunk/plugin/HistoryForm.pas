@@ -317,6 +317,7 @@ type
     LastHotIdx: Integer;
     EventDetailFrom: TForm;
     CustomizeFiltersForm: TForm;
+    CustomizeToolbarForm: TForm;
     WindowList:TList;
     History:array of THandle;
     HistoryLength:integer;
@@ -348,7 +349,9 @@ type
     procedure LoadEventFilterButton;
     procedure LoadButtonIcons;
 
+    procedure CustomizeToolbar;
     procedure LoadToolbar;
+    procedure HMToolbarChanged(var M: TMessage); message HM_NOTF_TOOLBARCHANGED;
 
     procedure SetRecentEventsPosition(OnTop: Boolean);
     procedure Search(Next: Boolean; FromNext: Boolean = False);
@@ -379,7 +382,7 @@ function ParseFileItem(Item: THistoryItem; out FileName,Mes: WideString): Boolea
 implementation
 
 uses EventDetailForm, PassForm, hpp_options, hpp_services, hpp_eventfilters,
-  CustomizeFiltersForm;
+  CustomizeFiltersForm, CustomizeToolbar;
 
 {$R *.DFM}
 
@@ -920,6 +923,11 @@ begin
   Close;
 end;
 
+procedure THistoryFrm.HMToolbarChanged(var M: TMessage);
+begin
+  LoadToolbar;
+end;
+
 {Unfortunatly when you make a form from a dll this form won't become the
 normal messages specified by the VCL but only the basic windows messages.
 Therefore neither tabs nor button shortcuts work on this form. As a workaround
@@ -1255,6 +1263,8 @@ begin
   // this is the only event fired when history is open
   // and miranda is closed
   // (added: except now I added ME_SYSTEM_PRESHUTDOWN hook, which should work)
+  if Assigned(CustomizeToolbarForm) then
+    CustomizeToolbarForm.Release;
   if Assigned(CustomizeFiltersForm) then
     CustomizeFiltersForm.Release;
   if Assigned(EventDetailFrom) then
@@ -2720,6 +2730,17 @@ begin
   end
   else begin
     BringFormToFront(fmCustomizeFilters);
+  end;
+end;
+
+procedure THistoryFrm.CustomizeToolbar;
+begin
+  if not Assigned(fmCustomizeToolbar)  then begin
+    CustomizeToolbarForm := TfmCustomizeToolbar.Create(Self);
+    CustomizeToolbarForm.Show;
+  end
+  else begin
+    BringFormToFront(fmCustomizeToolbar);
   end;
 end;
 

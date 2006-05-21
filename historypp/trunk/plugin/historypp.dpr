@@ -71,7 +71,8 @@ uses
   hpp_forms in 'hpp_forms.pas',
   hpp_opt_dialog in 'hpp_opt_dialog.pas',
   hpp_eventfilters in 'hpp_eventfilters.pas',
-  CustomizeFiltersForm in 'CustomizeFiltersForm.pas' {fmCustomizeFilters};
+  CustomizeFiltersForm in 'CustomizeFiltersForm.pas' {fmCustomizeFilters},
+  CustomizeToolbar in 'CustomizeToolbar.pas' {fmCustomizeToolbar};
 
 var
   HookModulesLoad,

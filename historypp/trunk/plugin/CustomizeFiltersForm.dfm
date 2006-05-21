@@ -11,11 +11,13 @@ object fmCustomizeFilters: TfmCustomizeFilters
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  KeyPreview = True
   OldCreateOrder = False
   Position = poOwnerFormCenter
   OnClose = TntFormClose
   OnCreate = FormCreate
   OnDestroy = TntFormDestroy
+  OnKeyDown = TntFormKeyDown
   DesignSize = (
     370
     477)

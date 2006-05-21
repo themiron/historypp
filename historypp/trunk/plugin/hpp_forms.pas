@@ -22,6 +22,7 @@ const
   HM_NOTF_ICONSCHANGED   = HM_NOTF_BASE + 1; // Skin icons has changed
   HM_NOTF_ICONS2CHANGED  = HM_NOTF_BASE + 2; // IcoLib icons has changed
   HM_NOTF_FILTERSCHANGED = HM_NOTF_BASE + 3; // Filters has changed
+  HM_NOTF_TOOLBARCHANGED = HM_NOTF_BASE + 4; // Toolbar has changed
 
 procedure NotifyAllForms(Msg,wParam,lParam: DWord);
 procedure BringFormToFront(Form: TForm);
