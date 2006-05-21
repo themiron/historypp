@@ -46,6 +46,14 @@ begin
   h := GetDBInt(Module,Prefix+'height',Form.Height);
   l := GetDBInt(Module,Prefix+'x',(Screen.Width - w) div 2);
   t := GetDBInt(Module,Prefix+'y',(Screen.Height - h) div 2);
+
+  // just to be safe, don't let window jump out of the screen
+  // at least 40 px from each side should be visible
+  if t+h < 40 then t := 40-h;
+  if l+w < 40 then l := 40-w;
+  if Screen.Width - l < 40 then l := Screen.Width - 40;
+  if Screen.Height - t < 40 then t := Screen.Height - 40;
+  
   Form.SetBounds(l,t,w,h);
 end;
 
@@ -70,11 +78,6 @@ begin
     l := Form.Left;
     t := Form.Top;
   end;
-
-  // just to be safe, don't let window jump too far out of the screen
-  // or maybe we don't need it?
-  if t < -10 then t := -10;
-  if l < -10 then l := -10;
 
   WriteDBInt(Module,Prefix+'width',w);
   WriteDBInt(Module,Prefix+'height',h);
