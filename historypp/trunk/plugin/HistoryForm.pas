@@ -171,6 +171,8 @@ type
     TntToolButton1: TTntToolButton;
     tbEventsFilter: TTntSpeedButton;
     TntToolButton5: TTntToolButton;
+    pmToolbar: TTntPopupMenu;
+    Customize2: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -270,6 +272,8 @@ type
     procedure Customize1Click(Sender: TObject);
     procedure tbEventsFilterClick(Sender: TObject);
     procedure hgRTLEnabled(Sender: TObject; Enabled: Boolean);
+    procedure ToolbarDblClick(Sender: TObject);
+    procedure Customize2Click(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -372,6 +376,9 @@ type
 
 var
   HistoryFrm: THistoryFrm;
+
+const
+  DEF_HISTORY_TOOLBAR='[SESS] [SEARCH][FILTER] [EVENTS] [COPY][DELETE] [HISTORY]';
 
 procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
 function ParseUrlItem(Item: THistoryItem; out Url,Mes: WideString): Boolean;
@@ -676,9 +683,6 @@ begin
 
 end;
 
-const
-  DEF_TOOLBAR='[SESS] [SEARCH][FILTER] [EVENTS] [COPY][DELETE] [HISTORY]';
-
 // to do:
 // SAVEALL (???)
 // DELETEALL
@@ -693,7 +697,7 @@ var
   butt: TControl;
   butt_str,tb_str,str: String;
 begin
-  tb_str := GetDBStr(hppDBName,'HistoryToolbar',DEF_TOOLBAR);
+  tb_str := GetDBStr(hppDBName,'HistoryToolbar',DEF_HISTORY_TOOLBAR);
   str := tb_str;
   
   i := 0;
@@ -721,7 +725,7 @@ begin
     while True do begin
       if str = '' then break;
       if (str[1] = ' ') or (str[1] = '|') then begin
-        if (tool[High(tool)] is TTntToolButton) then begin
+        if (Length(tool) > 0) and (tool[High(tool)] is TTntToolButton) then begin
           tb_butt := TTntToolButton(tool[High(tool)]);
           if (tb_butt.Style = tbsDivider) or (tb_butt.Style = tbsSeparator) then begin
             Delete(str,1,1);
@@ -769,7 +773,7 @@ begin
   except
     // if we have error, try loading default toolbar config or
     // show error if it doesn't work
-    if tb_str = DEF_TOOLBAR then begin
+    if tb_str = DEF_HISTORY_TOOLBAR then begin
       // don't think it should be translated:
       hppMessageBox(Handle,'Can not apply default toolbar configuration.'+#10#13+
       'Looks like it is an internal problem.'+#10#13+
@@ -789,10 +793,15 @@ begin
   end;
 
   n := 0;
-  for i := 0 to High(tool) do begin
-    tool[i].Left := n;
-    n := n + tool[i].Width;
+
+  // move buttons in reverse order and set parent afterwards
+  // thanks Luu Tran for this tip
+  // http://groups.google.com/group/borland.public.delphi.vcl.components.using/browse_thread/thread/da4e4da814baa745/c1ce8b671c1dac20
+  for i := High(tool) downto 0 do begin
+    tool[i].Parent := nil;
+    tool[i].Left := -3;
     tool[i].Visible := True;
+    tool[i].Parent := Toolbar;
   end;
 end;
 
@@ -922,7 +931,13 @@ end;
 procedure THistoryFrm.HMToolbarChanged(var M: TMessage);
 begin
   LoadToolbar;
-end;
+  // Thanks Primoz Gabrijeleie for this trick!
+  // http://groups.google.com/group/alt.comp.lang.borland-delphi/browse_thread/thread/da77e8db6d8f418a/dc4fd87eee6b1d54
+  // This f***ing toolbar has almost got me!
+  // A bit of explanation: without the following line loading toolbar when
+  // window is show results in unpredictable buttons placed on toolbar
+  ToolBar.Perform(CM_RECREATEWND, 0, 0)
+ end;
 
 {Unfortunatly when you make a form from a dll this form won't become the
 normal messages specified by the VCL but only the basic windows messages.
@@ -2501,6 +2516,11 @@ begin
   hg.EndUpdate;
 end;
 
+procedure THistoryFrm.ToolbarDblClick(Sender: TObject);
+begin
+  //CustomizeToolbar;
+end;
+
 procedure THistoryFrm.paPassHolderResize(Sender: TObject);
 begin
   if PasswordMode = true then begin
@@ -2570,6 +2590,7 @@ begin
   TranslateMenu(pmLink.Items);
   TranslateMenu(pmFile.Items);
   TranslateMenu(pmSessions.Items);
+  TranslateMenu(pmToolbar.Items);
 
   HtmlFilter := Translate(PChar(HtmlFilter));
   XmlFilter := Translate(PChar(XmlFilter));
@@ -2727,6 +2748,11 @@ begin
   else begin
     BringFormToFront(fmCustomizeFilters);
   end;
+end;
+
+procedure THistoryFrm.Customize2Click(Sender: TObject);
+begin
+  CustomizeToolbar;
 end;
 
 procedure THistoryFrm.CustomizeToolbar;

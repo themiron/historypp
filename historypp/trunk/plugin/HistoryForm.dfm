@@ -321,10 +321,12 @@ object HistoryFrm: THistoryFrm
         Flat = True
         Images = ilToolbar
         ParentShowHint = False
+        PopupMenu = pmToolbar
         ShowHint = True
         TabOrder = 0
         Transparent = False
         Wrapable = False
+        OnDblClick = ToolbarDblClick
         object tbUserDetails: TTntToolButton
           Left = 0
           Top = 0
@@ -779,6 +781,15 @@ object HistoryFrm: THistoryFrm
     object SessSave: TTntMenuItem
       Caption = 'Save...'
       Enabled = False
+    end
+  end
+  object pmToolbar: TTntPopupMenu
+    Left = 456
+    Top = 4
+    object Customize2: TTntMenuItem
+      Caption = '&Customize...'
+      Enabled = False
+      OnClick = Customize2Click
     end
   end
 end
