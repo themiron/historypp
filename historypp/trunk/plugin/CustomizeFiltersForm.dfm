@@ -41,7 +41,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
     Height = 25
     Anchors = [akLeft, akBottom]
     Cancel = True
-    Caption = 'Cancel'
+    Caption = '&Cancel'
     TabOrder = 3
     OnClick = bnCancelClick
   end
@@ -61,7 +61,8 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Top = 23
       Width = 31
       Height = 13
-      Caption = 'Name:'
+      Caption = '&Name:'
+      FocusControl = edFilterName
     end
     object edFilterName: TTntEdit
       Left = 60
@@ -112,7 +113,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
     Width = 131
     Height = 25
     Anchors = [akRight, akBottom]
-    Caption = 'Reset to Default'
+    Caption = 'R&eset to Default'
     TabOrder = 4
     OnClick = bnResetClick
   end
@@ -148,7 +149,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Width = 85
       Height = 23
       Anchors = [akTop, akRight]
-      Caption = 'Down'
+      Caption = '&Down'
       TabOrder = 4
       OnClick = bnDownClick
     end
@@ -158,7 +159,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Width = 85
       Height = 23
       Anchors = [akTop, akRight]
-      Caption = 'Up'
+      Caption = '&Up'
       TabOrder = 3
       OnClick = bnUpClick
     end
@@ -168,7 +169,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Width = 85
       Height = 23
       Anchors = [akTop, akRight]
-      Caption = 'Delete'
+      Caption = '&Delete'
       TabOrder = 2
       OnClick = bnDeleteClick
     end
@@ -178,7 +179,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Width = 85
       Height = 23
       Anchors = [akTop, akRight]
-      Caption = 'Add'
+      Caption = '&Add'
       TabOrder = 1
       OnClick = bnAddClick
     end
