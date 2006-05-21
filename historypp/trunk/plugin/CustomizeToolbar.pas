@@ -132,7 +132,7 @@ end;
 procedure TfmCustomizeToolbar.lbAvailableDrawItem(Control: TWinControl;
   Index: Integer; Rect: TRect; State: TOwnerDrawState);
 var
-  txt: String;
+  txtW: WideString;
   r: TRect;
   r2: TRect;
   but: TTntToolButton;
@@ -141,6 +141,7 @@ var
   src,dst: Integer;
   lb: TTntListBox;
   can: TCanvas;
+  tf: DWord;
   DrawLineTop,DrawLineBottom: Boolean;
 begin
   if Control = lbAdded then
@@ -159,12 +160,13 @@ begin
     can.Font.Color := clWindowText;
   end;
 
+  tf := DT_SINGLELINE or DT_VCENTER or DT_NOPREFIX;
   BrushColor := can.Brush.Color;
-  txt := WideToAnsiString(lb.Items[Index],hppCodepage);
-  if txt <> '-' then begin
+  txtW := lb.Items[Index];
+  if txtW <> '-' then begin
     can.FillRect(Rect);
     r.Left := r.Left + 20+4;
-    can.TextRect(r,txt,[tfVerticalCenter,tfSingleLine]);
+    DrawTextW(can.Handle,PWideChar(txtW),Length(txtW),r,tf);
     r2 := Classes.Rect(Rect.Left+2,Rect.Top+2,Rect.Left+20+2,Rect.Bottom-2);
     can.Brush.Color := clBtnFace;
     can.FillRect(r2);
