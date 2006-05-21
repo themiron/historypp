@@ -29,10 +29,58 @@ procedure BringFormToFront(Form: TForm);
 procedure MakeFontsParent(Control: TControl);
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
 
+function Utils_RestoreFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
+function Utils_SaveFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
+
 implementation
 
 uses hpp_global, hpp_services, HistoryForm, GlobalSearch, hpp_opt_dialog,
-  CustomizeFiltersForm;
+  CustomizeFiltersForm, hpp_database;
+
+function Utils_RestoreFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
+var
+  w,h,l,t: Integer;
+begin
+  Result := True;
+  w := GetDBInt(Module,Prefix+'width',Form.Width);
+  h := GetDBInt(Module,Prefix+'height',Form.Height);
+  l := GetDBInt(Module,Prefix+'x',(Screen.Width - w) div 2);
+  t := GetDBInt(Module,Prefix+'y',(Screen.Height - h) div 2);
+  Form.SetBounds(l,t,w,h);
+end;
+
+function Utils_SaveFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
+var
+  w,h,l,t: Integer;
+  wp: TWindowPlacement;
+begin
+  Result := True;
+
+  if Form.WindowState = wsMaximized then begin
+    wp.length := SizeOf(wp);
+    GetWindowPlacement(Form.Handle,@wp);
+    l := wp.rcNormalPosition.Left;
+    t := wp.rcNormalPosition.Top;
+    h := wp.rcNormalPosition.Bottom - wp.rcNormalPosition.Top;
+    w := wp.rcNormalPosition.Right - wp.rcNormalPosition.Left;
+  end
+  else begin
+    w := Form.Width;
+    h := Form.Height;
+    l := Form.Left;
+    t := Form.Top;
+  end;
+
+  // just to be safe, don't let window jump too far out of the screen
+  // or maybe we don't need it?
+  if t < -10 then t := -10;
+  if l < -10 then l := -10;
+
+  WriteDBInt(Module,Prefix+'width',w);
+  WriteDBInt(Module,Prefix+'height',h);
+  WriteDBInt(Module,Prefix+'x',l);
+  WriteDBInt(Module,Prefix+'y',t);
+end;
 
 procedure BringFormToFront(Form: TForm);
 begin

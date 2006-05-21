@@ -642,11 +642,7 @@ var
   w,h,l,t: Integer;
 begin
   // removed Utils_RestoreWindowPosition because it shows window sooner than we expect
-  w := GetDBInt(hppDBName,'HistoryWindow.width',Self.Width);
-  h := GetDBInt(hppDBName,'HistoryWindow.height',Self.Height);
-  l := GetDBInt(hppDBName,'HistoryWindow.x',(Screen.Width-Self.Width) div 2);
-  t := GetDBInt(hppDBName,'HistoryWindow.y',(Screen.Height - Self.Height) div 2);
-  Self.SetBounds(l,t,w,h);
+  Utils_RestoreFormPosition(Self,0,hppDBName,'HistoryWindow.');
 
   SearchMode := TSearchMode(GetDBByte(hppDBName,'SearchMode',0));
 end;
@@ -860,7 +856,7 @@ procedure THistoryFrm.SavePosition;
 var
   SearchModeForSave: TSearchMode;
 begin
-  Utils_SaveWindowPosition(Self.Handle,0,hppDBName,'HistoryWindow.');
+  Utils_SaveFormPosition(Self,0,hppDBName,'HistoryWindow.');
   if (hContact <> 0) and (not PasswordMode) and not ((HistoryLength = 0) and (not paSess.Visible)) then begin
      WriteDBBool(hppDBName,'ShowSessions',paSess.Visible);
      if paSess.Visible then
