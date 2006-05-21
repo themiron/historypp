@@ -28,14 +28,16 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     Top = 5
     Width = 87
     Height = 13
-    Caption = 'Available buttons:'
+    Caption = 'A&vailable buttons:'
+    FocusControl = lbAvailable
   end
   object laAdded: TTntLabel
     Left = 283
     Top = 5
     Width = 93
     Height = 13
-    Caption = 'Buttons on toolbar:'
+    Caption = 'Buttons on &toolbar:'
+    FocusControl = lbAdded
   end
   object TntBevel1: TTntBevel
     Left = 8
@@ -60,7 +62,7 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     Top = 49
     Width = 88
     Height = 25
-    Caption = '<< Remove'
+    Caption = '<< &Remove'
     TabOrder = 2
   end
   object lbAdded: TTntListBox
@@ -78,7 +80,6 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     OnDragDrop = lbAddedDragDrop
     OnDragOver = lbAddedDragOver
     OnDrawItem = lbAvailableDrawItem
-    ExplicitHeight = 268
   end
   object lbAvailable: TTntListBox
     Left = 8
@@ -95,14 +96,13 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     OnDragDrop = lbAvailableDragDrop
     OnDragOver = lbAvailableDragOver
     OnDrawItem = lbAvailableDrawItem
-    ExplicitHeight = 268
   end
   object bnUp: TTntButton
     Left = 189
     Top = 80
     Width = 88
     Height = 25
-    Caption = 'Up'
+    Caption = '&Up'
     TabOrder = 3
     OnClick = bnUpClick
   end
@@ -111,7 +111,7 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     Top = 105
     Width = 88
     Height = 25
-    Caption = 'Down'
+    Caption = '&Down'
     TabOrder = 4
     OnClick = bnDownClick
   end
@@ -125,7 +125,6 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     Default = True
     TabOrder = 6
     OnClick = bnOKClick
-    ExplicitTop = 306
   end
   object bnCancel: TTntButton
     Left = 91
@@ -134,10 +133,9 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     Height = 25
     Anchors = [akLeft, akBottom]
     Cancel = True
-    Caption = 'Cancel'
+    Caption = '&Cancel'
     TabOrder = 7
     OnClick = bnCancelClick
-    ExplicitTop = 305
   end
   object bnReset: TTntButton
     Left = 328
@@ -145,10 +143,9 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     Width = 130
     Height = 25
     Anchors = [akLeft, akBottom]
-    Caption = 'Reset to Default'
+    Caption = 'R&eset to Default'
     TabOrder = 8
     OnClick = bnResetClick
-    ExplicitTop = 306
   end
   object tiScroll: TTimer
     Enabled = False
