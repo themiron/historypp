@@ -57,6 +57,9 @@ implementation
 uses
   HistoryGrid, hpp_database, hpp_services, HistoryForm, Math, hpp_forms;
 
+var
+  filterAll: TMessageTypes;
+
 const
   hppIntDefEventFilters: array[0..6] of ThppEventFilter = (
     (Name: 'Show all events'; Events: []; filMode: FM_EXCLUDE; filEvents: []),
@@ -104,10 +107,8 @@ function GenerateEvents(filMode: Byte; filEvents: TMessageTypes): TMessageTypes;
 begin
   if filMode = FM_INCLUDE then
     Result := filEvents
-  else begin
-    Result := DWordToMessageTypes(High(DWord));
-    Result := Result - filEvents;
-  end;
+  else
+    Result := filterAll - filEvents;
   Result := Result - AlwaysExclude + AlwaysInclude;
 end;
 
@@ -235,6 +236,7 @@ end;
 procedure InitEventFilters;
 var
   i: Integer;
+  mt: TMessageType;
 begin
   // translate and copy internal default static array to dynamic array
   SetLength(hppDefEventFilters,Length(hppIntDefEventFilters));
@@ -243,6 +245,11 @@ begin
     hppDefEventFilters[i].filMode := hppIntDefEventFilters[i].filMode;
     hppDefEventFilters[i].filEvents := hppIntDefEventFilters[i].filEvents;
   end;
+
+  filterAll := [];
+  for mt := Low(TMessageType) to High(TMessageType) do
+    Include(filterAll,mt);
+
   GenerateEventFilters(hppDefEventFilters);
 end;
 
