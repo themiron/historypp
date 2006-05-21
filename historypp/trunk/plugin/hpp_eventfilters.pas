@@ -88,14 +88,13 @@ end;
 function DWordToMessageTypes(dwmt: DWord): TMessageTypes;
 begin
   Result := [];
-  Move(PByte(Integer(@dwmt)+(SizeOf(dwmt)-SizeOf(Result)))^,Result,SizeOf(Result));
+  Move(dwmt,Result,SizeOf(Result));
 end;
 
 function MessageTypesToDWord(mt: TMessageTypes): DWord;
 begin
   Result := 0;
-  Move(mt,PByte(Integer(@Result)+(SizeOf(Result)-SizeOf(mt)))^,SizeOf(mt));
-  //Result := DWord(PWord(@mt)^);
+  Move(mt,Result,SizeOf(mt));
 end;
 
 procedure UpdateEventFiltersOnForms;
