@@ -41,6 +41,8 @@ var
   procedure CopyEventFilters(var Src,Dest: ThppEventFilterArray);
   function GetShowAllEventsIndex(Arr: ThppEventFilterArray = nil): Integer;
 
+  function MessageTypesToDWord(mt: TMessageTypes): DWord;
+
   // compile filMode & filEvents into Events:
   function GenerateEvents(filMode: Byte; filEvents: TMessageTypes): TMessageTypes;
   // compile filMode & filEvents into Events for all filters
