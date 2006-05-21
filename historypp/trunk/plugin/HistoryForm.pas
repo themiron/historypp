@@ -600,6 +600,8 @@ begin
 
   Icon.ReleaseHandle;
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
+  // delphi 2006 doesn't save toolbar's flat property in dfm if it is True
+  Toolbar.Flat := True;
   LoadSessionIcons;
   LoadToolbarIcons;
   LoadButtonIcons;
