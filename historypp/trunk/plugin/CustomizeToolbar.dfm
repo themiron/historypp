@@ -64,6 +64,7 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     Height = 25
     Caption = '<< &Remove'
     TabOrder = 2
+    OnClick = bnRemoveClick
   end
   object lbAdded: TTntListBox
     Left = 283
