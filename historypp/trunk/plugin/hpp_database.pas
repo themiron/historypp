@@ -29,7 +29,7 @@ uses m_globaldefs, m_api, windows;
 
 procedure SetSafetyMode(Safe: Boolean);
 
-function DBGetContactSettingString(hContact: THandle; const szModule: PChar; const szSetting: PChar; ErrorValue: PChar): PChar;
+function DBGetContactSettingString(hContact: THandle; const szModule: PChar; const szSetting: PChar; ErrorValue: PChar): AnsiString;
 
 function GetDBBlob(const Module,Param: String; var Value: Pointer; var Size: Integer): Boolean; overload;
 function GetDBBlob(const hContact: THandle; const Module,Param: String; var Value: Pointer; var Size: Integer): Boolean; overload;
@@ -249,7 +249,7 @@ begin
   Result := DBGetContactSettingString(hContact,PChar(Module),PChar(Param),PChar(Default));
 end;
 
-function DBGetContactSettingString(hContact: THandle; const szModule: PChar; const szSetting: PChar; ErrorValue: PChar): PChar;
+function DBGetContactSettingString(hContact: THandle; const szModule: PChar; const szSetting: PChar; ErrorValue: PChar): AnsiString;
 var
   dbv: TDBVARIANT;
   cgs: TDBCONTACTGETSETTING;
@@ -259,8 +259,12 @@ begin
   cgs.pValue := @dbv;
   if PluginLink^.CallService(MS_DB_CONTACT_GETSETTING, hContact, lParam(@cgs)) <> 0 then
     Result := ErrorValue
-  else
-    Result := dbv.pszVal;
+  else begin
+    // copy string to result
+    Result := AnsiString(dbv.pszVal);
+    // free variant
+    DBFreeVariant(@dbv);
+  end;
 end;
 
 end.
