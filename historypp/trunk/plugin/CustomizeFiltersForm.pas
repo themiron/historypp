@@ -223,15 +223,16 @@ end;
 procedure TfmCustomizeFilters.clEventsDrawItem(Control: TWinControl;
   Index: Integer; Rect: TRect; State: TOwnerDrawState);
 var
+  txtW: WideString;
   txt: String;
   r: TRect;
-  //tf: TTextFormat;
+  tf: DWord;
   BrushColor: TColor;
 begin
   BrushColor := clEvents.Canvas.Brush.Color;
-  txt := WideToAnsiString(clEvents.Items[Index],hppCodepage);
+  txtW := clEvents.Items[Index];
   r := Rect;
-  //tf := [tfVerticalCenter,tfNoPrefix];
+  tf := DT_SINGLELINE or DT_VCENTER or DT_NOPREFIX;
   InflateRect(r,-2,0);
 
   if clEvents.Header[Index] then begin
@@ -240,8 +241,7 @@ begin
     if (IncOutWrong) and (Index <> EventsHeaderIndex) then
       if BrushColor = clEvents.HeaderBackgroundColor then clEvents.Canvas.Brush.Color := $008080FF;
     clEvents.Canvas.FillRect(Rect);
-    WideCanvasTextRect(clEvents.Canvas,r,0,0,clEvents.Items[Index]);
-    //clEvents.Canvas.TextRect(r,txt,tf);
+    DrawTextW(clEvents.Canvas.Handle,PWideChar(txtW),Length(txtW),r,tf);
     clEvents.Canvas.Brush.Color := BrushColor;
     exit;
   end;
@@ -251,8 +251,7 @@ begin
   if (IncOutWrong) and (Index < EventsHeaderIndex) then
     if BrushColor = clEvents.Color then clEvents.Canvas.Brush.Color := $008080FF;
   clEvents.Canvas.FillRect(Rect);
-  WideCanvasTextRect(clEvents.Canvas,r,0,0,clEvents.Items[Index]);
-  //clEvents.Canvas.TextRect(r,txt,tf);
+  DrawTextW(clEvents.Canvas.Handle,PWideChar(txtW),Length(txtW),r,tf);
   clEvents.Canvas.Brush.Color := BrushColor;
 end;
 
@@ -411,19 +410,18 @@ procedure TfmCustomizeFilters.lbFiltersDrawItem(Control: TWinControl;
   Index: Integer; Rect: TRect; State: TOwnerDrawState);
 var
   BrushColor: TColor;
-  txt: String;
+  txtW: WideString;
   r: TRect;
-  //tf: TTextFormat;
+  tf: DWord;
   src,dst: Integer;
 begin
   BrushColor := lbFilters.Canvas.Brush.Color;
-  txt := WideToAnsiString(lbFilters.Items[Index],hppCodepage);
+  txtW := lbFilters.Items[Index];
   r := Rect;
-  //tf := [tfVerticalCenter,tfNoPrefix];
   InflateRect(r,-2,0);
   lbFilters.Canvas.FillRect(Rect);
-  //lbFilters.Canvas.TextRect(r,txt,tf);
-  WideCanvasTextRect(clEvents.Canvas,r,0,0,lbFilters.Items[Index]);
+  tf := DT_SINGLELINE or DT_VCENTER or DT_NOPREFIX;
+  DrawTextW(lbFilters.Canvas.Handle,PWideChar(txtW),Length(txtW),r,tf);
   if lbFilters.Dragging then begin
     src := lbFilters.ItemIndex;
     dst := DragOverIndex;
