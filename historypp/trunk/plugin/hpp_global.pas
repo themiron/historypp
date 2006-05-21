@@ -41,7 +41,6 @@ type
                   mtIncoming, mtOutgoing,
                   mtMessage, mtUrl, mtFile, mtSystem,
                   mtContacts, mtSMS, mtWebPager, mtEmailExpress, mtStatus, mtSMTPSimple,
-                  mtRes1,mtRes2,mtRes3,mtRes4,
                   mtOther);
   TMessageTypes = set of TMessageType;
   PMessageTypes = ^TMessageTypes;

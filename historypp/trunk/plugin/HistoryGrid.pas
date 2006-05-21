@@ -2488,7 +2488,7 @@ var
   mts: TMessageTypes;
 begin
   mts := FItems[Index].MessageType;
-  Result := ((DWord(FFilter) and DWord(mts)) >= DWord(mts));
+  Result := ((MessageTypesToDWord(FFilter) and MessageTypesToDWord(mts)) >= MessageTypesToDWord(mts));
   if Assigned(FOnItemFilter) then
     FOnItemFilter(Self,Index,Result);
 end;
@@ -3684,7 +3684,7 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     i := 0;
     found := false;
     while (not found) and (i <= High(Options.ItemOptions)) do
-      if (DWord(Options.ItemOptions[i].MessageType) and DWord(mt)) >= DWord(mt) then
+      if (MessageTypesToDWord(Options.ItemOptions[i].MessageType) and MessageTypesToDWord(mt)) >= MessageTypesToDWord(mt) then
         found := true
       else Inc(i);
     mes_id := 'event'+intToStr(i);
@@ -3776,7 +3776,7 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     i := 0;
     found := false;
     while (not found) and (i <= High(Options.ItemOptions)) do
-      if (DWord(Options.ItemOptions[i].MessageType) and DWord(mt)) >= DWord(mt) then
+      if (MessageTypesToDWord(Options.ItemOptions[i].MessageType) and MessageTypesToDWord(mt)) >= MessageTypesToDWord(mt) then
         found := true
       else Inc(i);
     mes_id := i;
@@ -4541,7 +4541,7 @@ begin
   i := 0;
   found := false;
   while (not found) and (i <= High(FItemOptions)) do
-    if (DWord(FItemOptions[i].MessageType) and DWord(Mes)) >= DWord(Mes) then begin
+    if (MessageTypesToDWord(FItemOptions[i].MessageType) and MessageTypesToDWord(Mes)) >= MessageTypesToDWord(Mes) then begin
       textFont := FItemOptions[i].textFont;
       textColor := FItemOptions[i].textColor;
       found := true;
