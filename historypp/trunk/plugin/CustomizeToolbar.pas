@@ -13,14 +13,15 @@ type
     bnRemove: TTntButton;
     lbAdded: TTntListBox;
     lbAvailable: TTntListBox;
-    TntLabel1: TTntLabel;
-    TntLabel2: TTntLabel;
+    laAvailable: TTntLabel;
+    laAdded: TTntLabel;
     bnUp: TTntButton;
     bnDown: TTntButton;
     TntBevel1: TTntBevel;
-    TntButton1: TTntButton;
-    TntButton2: TTntButton;
-    TntButton3: TTntButton;
+    bnOK: TTntButton;
+    bnCancel: TTntButton;
+    bnReset: TTntButton;
+    tiScroll: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lbAvailableDrawItem(Control: TWinControl; Index: Integer;
@@ -33,14 +34,25 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure lbAvailableDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure TntButton3Click(Sender: TObject);
+    procedure bnResetClick(Sender: TObject);
     procedure OnWMChar(var Message: TWMChar); message WM_CHAR;
     procedure bnAddClick(Sender: TObject);
+    procedure bnOKClick(Sender: TObject);
+    procedure bnCancelClick(Sender: TObject);
+    procedure tiScrollTimer(Sender: TObject);
+    procedure lbAvailableClick(Sender: TObject);
+    procedure bnUpClick(Sender: TObject);
+    procedure bnDownClick(Sender: TObject);
   private
+    ItemBmp: TBitmap;
     DragOverIndex: Integer;
-
+    TimerScrollDirection: Integer;
     procedure FillButtons;
+    procedure UpdateControlButtons;
     procedure TranslateForm;
+
+    function GenerateToolbarString: String;
+    procedure SaveToolbar(ToolbarStr: String);
     { Private declarations }
   public
     { Public declarations }
@@ -60,6 +72,7 @@ procedure TfmCustomizeToolbar.lbAddedDragDrop(Sender, Source: TObject; X,
 var
   src,dst: Integer;
 begin
+  tiScroll.Enabled := False;
   if Source = lbAvailable then begin
     src := lbAvailable.ItemIndex;
     dst := lbAdded.ItemAtPos(Point(x,y),False);
@@ -76,6 +89,9 @@ begin
     lbAdded.Items.Move(src,dst);
   end;
   lbAdded.ItemIndex := dst;
+  lbAdded.SetFocus;
+
+  UpdateControlButtons;
 end;
 
 procedure TfmCustomizeToolbar.lbAddedDragOver(Sender, Source: TObject; X,
@@ -85,6 +101,15 @@ var
   r: TRect;
 begin
   Accept := True;
+
+  if (lbAdded.ClientHeight - Y) < 10 then
+    TimerScrollDirection := 1
+  else if Y < 10 then
+    TimerScrollDirection := 2
+  else
+    TimerScrollDirection := 0;
+
+  tiScroll.Enabled := (TimerScrollDirection <> 0); 
 
   idx := DragOverIndex;
   if idx = lbAdded.Count then Dec(idx);
@@ -96,6 +121,11 @@ begin
   r := lbAdded.ItemRect(idx);
   InvalidateRect(lbAdded.Handle,@r,False);
   lbAdded.Update;
+end;
+
+procedure TfmCustomizeToolbar.lbAvailableClick(Sender: TObject);
+begin
+  UpdateControlButtons;
 end;
 
 procedure TfmCustomizeToolbar.lbAvailableDragDrop(Sender, Source: TObject; X,
@@ -120,7 +150,12 @@ begin
   // add separator back
   lbAvailable.AddItem('-',nil);
 
+  lbAvailable.ItemIndex := lbAvailable.Items.IndexOfObject(lbAdded.Items.Objects[n]);
+  lbAvailable.SetFocus;
+
   lbAdded.Items.Delete(n);
+
+  UpdateControlButtons;
 end;
 
 procedure TfmCustomizeToolbar.lbAvailableDragOver(Sender, Source: TObject; X,
@@ -148,26 +183,39 @@ begin
     lb := lbAdded
   else
     lb := lbAvailable;
-  can := lb.Canvas;
 
-  r := Rect;
-  if (odSelected in State) then begin
+  ItemBmp.Width := Rect.Right-Rect.Left;
+  ItemBmp.Height := Rect.Bottom - Rect.Top;
+  can := ItemBmp.Canvas;
+  can.Font := lb.Font;
+
+  r := can.ClipRect;
+  if (odSelected in State) and (odFocused in State) then begin
     can.Brush.Color := clHighlight;
     can.Font.Color := clHighlightText;
-  end;
-  if lb.Items[Index] = '-' then begin
+  end
+  else begin
     can.Brush.Color := clWindow;
     can.Font.Color := clWindowText;
   end;
 
+  can.FillRect(r);
+
   tf := DT_SINGLELINE or DT_VCENTER or DT_NOPREFIX;
-  BrushColor := can.Brush.Color;
   txtW := lb.Items[Index];
+
+  if (odSelected in State) and (not (odFocused in State)) then begin
+      r2 := r;
+      InflateRect(r2,-1,-1);
+      can.Pen.Color := clHighlight;
+      can.Rectangle(r2);
+    end;
+
   if txtW <> '-' then begin
-    can.FillRect(Rect);
-    r.Left := r.Left + 20+4;
-    DrawTextW(can.Handle,PWideChar(txtW),Length(txtW),r,tf);
-    r2 := Classes.Rect(Rect.Left+2,Rect.Top+2,Rect.Left+20+2,Rect.Bottom-2);
+    r2 := r;
+    r2.Left := r2.Left + 20+4;
+    DrawTextW(can.Handle,PWideChar(txtW),Length(txtW),r2,tf);
+    r2 := Classes.Rect(r.Left+2,r.Top+2,r.Left+20+2,r.Bottom-2);
     can.Brush.Color := clBtnFace;
     can.FillRect(r2);
     fm := THistoryFrm(Owner);
@@ -178,14 +226,13 @@ begin
     end;
   end
   else begin
-    can.FillRect(Rect);
-    r := Classes.Rect(Rect.Left,Rect.Top+((Rect.Bottom-Rect.Top) div 2),
-    Rect.Right,Rect.Bottom);
-    r.Bottom := r.Top + 1;
-    InflateRect(r,-((r.Right-r.Left) div 10),0);
-    can.Pen.Color := clWindowText;
-    can.MoveTo(r.left,r.top);
-    can.LineTo(r.right,r.top);
+    r2 := Classes.Rect(r.Left,r.Top+((r.Bottom-r.Top) div 2),
+    r.Right,r.Bottom);
+    r2.Bottom := r2.Top + 1;
+    InflateRect(r2,-((r2.Right-r2.Left) div 10),0);
+    can.Pen.Color := can.Font.Color;
+    can.MoveTo(r2.left,r2.top);
+    can.LineTo(r2.right,r2.top);
   end;
 
   if (lbAdded.Dragging) or (lbAvailable.Dragging) and (lb = lbAdded) then begin
@@ -210,16 +257,17 @@ begin
       DrawLineBottom := True;
 
     if DrawLineTop then begin
-      can.MoveTo(rect.left,rect.Top);
-      can.LineTo(rect.right,rect.Top);
+      can.MoveTo(r.left,r.Top);
+      can.LineTo(r.right,r.Top);
     end;
     if DrawLineBottom then begin
-      can.MoveTo(rect.left,rect.Bottom-1);
-      can.LineTo(rect.right,rect.Bottom-1);
+      can.MoveTo(r.left,r.Bottom-1);
+      can.LineTo(r.right,r.Bottom-1);
     end;
   end;
 
-  can.Brush.Color := BrushColor;
+  BitBlt(lb.Canvas.Handle,Rect.Left,Rect.Top,ItemBmp.Width,ItemBmp.Height,
+    can.Handle,0,0,SRCCOPY);
 end;
 
 procedure TfmCustomizeToolbar.OnWMChar(var Message: TWMChar);
@@ -233,6 +281,27 @@ begin
         CharCode, KeyData) <> 0) then Exit;
       Result := 0;
     end;
+end;
+
+procedure TfmCustomizeToolbar.SaveToolbar(ToolbarStr: String);
+begin
+  if ToolbarStr = '' then ToolbarStr := DEF_HISTORY_TOOLBAR;
+  if ToolbarStr = DEF_HISTORY_TOOLBAR then
+    DBDeleteContactSetting(0,hppDBName,'HistoryToolbar')
+  else
+    WriteDBStr(hppDBName,'HistoryToolbar',ToolbarStr);
+end;
+
+procedure TfmCustomizeToolbar.tiScrollTimer(Sender: TObject);
+var
+  idx: Integer;
+begin
+  case TimerScrollDirection of
+    1: lbAdded.Perform(WM_VSCROLL,SB_LINEDOWN,0);
+    2: lbAdded.Perform(WM_VSCROLL,SB_LINEUP,0)
+  else
+    tiScroll.Enabled := False;
+  end;
 end;
 
 procedure TfmCustomizeToolbar.bnAddClick(Sender: TObject);
@@ -262,9 +331,14 @@ begin
     end
     else if but = fm.tbEventsFilter then
       txt := 'Event Filters';
+      
     if txt <> '' then begin
-      if but.Visible then
-        lbAdded.AddItem(txt,but)
+      if but.Visible then begin
+        if txt = '-' then
+          lbAdded.AddItem(txt,nil)
+        else
+          lbAdded.AddItem(txt,but);
+      end
       else
         lbAvailable.AddItem(txt,but);
     end;
@@ -288,12 +362,23 @@ begin
   MakeFontsParent(Self);
   TranslateForm;
 
+  ItemBmp := TBitmap.Create;
   FillButtons;
+  if lbAdded.Count > 0 then begin
+    lbAdded.ItemIndex := 0;
+    ActiveControl := lbAdded;
+  end
+  else begin
+    lbAvailable.ItemIndex := 0;
+    ActiveControl := lbAvailable;
+  end;
+  UpdateControlButtons;
 end;
 
 procedure TfmCustomizeToolbar.FormDestroy(Sender: TObject);
 begin
   fmCustomizeToolbar := nil;
+  ItemBmp.Free;
   try
     THistoryFrm(Owner).CustomizeToolbarForm := nil;
   except
@@ -325,16 +410,94 @@ begin
     end;
 end;
 
-procedure TfmCustomizeToolbar.TntButton3Click(Sender: TObject);
+function TfmCustomizeToolbar.GenerateToolbarString: String;
+var
+  i: Integer;
+  but: TControl;
+  but_str: String;
+  fm: THistoryFrm;
+begin
+  Result := '';
+  fm := THistoryFrm(Owner);
+  for i := 0 to lbAdded.Count - 1 do begin
+    but := TControl(lbAdded.Items.Objects[i]);
+    if but = nil then but_str := ' ';
+    if but = fm.tbSessions then but_str := '[SESS]';
+    if but = fm.tbSearch then but_str := '[SEARCH]';
+    if but = fm.tbFilter then but_str := '[FILTER]';
+    if but = fm.tbCopy then but_str := '[COPY]';
+    if but = fm.tbDelete then but_str := '[DELETE]';
+    if but = fm.tbSave then but_str := '[SAVE]';
+    if but = fm.tbHistory then but_str := '[HISTORY]';
+    if but = fm.tbHistorySearch then but_str := '[GLOBSEARCH]';
+    if but = fm.tbEventsFilter then but_str := '[EVENTS]';
+    if but = fm.tbUserMenu then but_str := '[USERMENU]';
+    if but = fm.tbUserDetails then but_str := '[USERDETAILS]';
+    Result := Result + but_str;
+  end;
+end;
+
+procedure TfmCustomizeToolbar.bnOKClick(Sender: TObject);
+begin
+  SaveToolbar(GenerateToolbarString);
+  NotifyAllForms(HM_NOTF_TOOLBARCHANGED,0,0);
+  close;
+end;
+
+procedure TfmCustomizeToolbar.bnCancelClick(Sender: TObject);
+begin
+  close;
+end;
+
+procedure TfmCustomizeToolbar.bnDownClick(Sender: TObject);
+var
+  idx: Integer;
+begin
+  idx := lbAdded.ItemIndex;
+  if (idx < 0) or (idx > lbAdded.Count -1) then exit;
+  lbAdded.Items.Move(idx,idx+1);
+  lbAdded.ItemIndex := idx + 1;
+  UpdateControlButtons;
+end;
+
+procedure TfmCustomizeToolbar.bnResetClick(Sender: TObject);
 begin
   DBDeleteContactSetting(0,hppDBName,'HistoryToolbar');
   NotifyAllForms(HM_NOTF_TOOLBARCHANGED,0,0);
   FillButtons;
 end;
 
+procedure TfmCustomizeToolbar.bnUpClick(Sender: TObject);
+var
+  idx: Integer;
+begin
+  idx := lbAdded.ItemIndex;
+  if idx < 1 then exit;
+  lbAdded.Items.Move(idx,idx-1);
+  lbAdded.ItemIndex := idx - 1;
+  UpdateControlButtons;
+end;
+
 procedure TfmCustomizeToolbar.TranslateForm;
 begin
-  ;
+  Caption := TranslateWideW(Caption);
+  laAvailable.Caption := TranslateWideW(laAvailable.Caption);
+  laAdded.Caption := TranslateWideW(laAdded.Caption);
+  bnOK.Caption := TranslateWideW(bnOK.Caption);
+  bnCancel.Caption := TranslateWideW(bnCancel.Caption);
+  bnReset.Caption := TranslateWideW(bnReset.Caption);
+  bnAdd.Caption := TranslateWideW(bnAdd.Caption);
+  bnRemove.Caption := TranslateWideW(bnRemove.Caption);
+  bnUp.Caption := TranslateWideW(bnUp.Caption);
+  bnDown.Caption := TranslateWideW(bnDown.Caption);
+end;
+
+procedure TfmCustomizeToolbar.UpdateControlButtons;
+begin
+  bnAdd.Enabled := (lbAvailable.ItemIndex <> -1);
+  bnRemove.Enabled := (lbAdded.ItemIndex <> -1);
+  bnUp.Enabled := (lbAdded.ItemIndex <> -1) and (lbAdded.ItemIndex > 0);
+  bnDown.Enabled := (lbAdded.ItemIndex <> -1) and (lbAdded.ItemIndex < lbAdded.Count-1);
 end;
 
 end.

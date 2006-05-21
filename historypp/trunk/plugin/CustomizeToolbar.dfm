@@ -3,7 +3,7 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
   Top = 0
   BorderStyle = bsDialog
   Caption = 'Customize Toolbar'
-  ClientHeight = 338
+  ClientHeight = 363
   ClientWidth = 466
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,29 +20,30 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
   OnKeyDown = FormKeyDown
   DesignSize = (
     466
-    338)
+    363)
   PixelsPerInch = 96
   TextHeight = 13
-  object TntLabel1: TTntLabel
+  object laAvailable: TTntLabel
     Left = 8
     Top = 5
-    Width = 83
+    Width = 87
     Height = 13
-    Caption = 'Available buttons'
+    Caption = 'Available buttons:'
   end
-  object TntLabel2: TTntLabel
+  object laAdded: TTntLabel
     Left = 283
     Top = 5
-    Width = 89
+    Width = 93
     Height = 13
-    Caption = 'Buttons on toolbar'
+    Caption = 'Buttons on toolbar:'
   end
   object TntBevel1: TTntBevel
     Left = 8
-    Top = 298
+    Top = 323
     Width = 449
     Height = 2
-    Anchors = [akLeft, akTop, akRight]
+    Anchors = [akLeft, akRight, akBottom]
+    ExplicitTop = 298
     ExplicitWidth = 463
   end
   object bnAdd: TTntButton
@@ -66,29 +67,35 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     Left = 283
     Top = 24
     Width = 175
-    Height = 268
+    Height = 292
     Style = lbOwnerDrawFixed
+    Anchors = [akLeft, akTop, akBottom]
     DragMode = dmAutomatic
     IntegralHeight = True
     ItemHeight = 24
     TabOrder = 5
+    OnClick = lbAvailableClick
     OnDragDrop = lbAddedDragDrop
     OnDragOver = lbAddedDragOver
     OnDrawItem = lbAvailableDrawItem
+    ExplicitHeight = 268
   end
   object lbAvailable: TTntListBox
     Left = 8
     Top = 24
     Width = 175
-    Height = 268
+    Height = 292
     Style = lbOwnerDrawFixed
+    Anchors = [akLeft, akTop, akBottom]
     DragMode = dmAutomatic
     IntegralHeight = True
     ItemHeight = 24
     TabOrder = 0
+    OnClick = lbAvailableClick
     OnDragDrop = lbAvailableDragDrop
     OnDragOver = lbAvailableDragOver
     OnDrawItem = lbAvailableDrawItem
+    ExplicitHeight = 268
   end
   object bnUp: TTntButton
     Left = 189
@@ -97,6 +104,7 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     Height = 25
     Caption = 'Up'
     TabOrder = 3
+    OnClick = bnUpClick
   end
   object bnDown: TTntButton
     Left = 189
@@ -105,32 +113,48 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     Height = 25
     Caption = 'Down'
     TabOrder = 4
+    OnClick = bnDownClick
   end
-  object TntButton1: TTntButton
+  object bnOK: TTntButton
     Left = 8
-    Top = 306
+    Top = 331
     Width = 77
     Height = 25
+    Anchors = [akLeft, akBottom]
     Caption = 'OK'
     Default = True
     TabOrder = 6
+    OnClick = bnOKClick
+    ExplicitTop = 306
   end
-  object TntButton2: TTntButton
+  object bnCancel: TTntButton
     Left = 91
-    Top = 306
+    Top = 330
     Width = 77
     Height = 25
+    Anchors = [akLeft, akBottom]
     Cancel = True
     Caption = 'Cancel'
     TabOrder = 7
+    OnClick = bnCancelClick
+    ExplicitTop = 305
   end
-  object TntButton3: TTntButton
+  object bnReset: TTntButton
     Left = 328
-    Top = 306
+    Top = 331
     Width = 130
     Height = 25
+    Anchors = [akLeft, akBottom]
     Caption = 'Reset to Default'
     TabOrder = 8
-    OnClick = TntButton3Click
+    OnClick = bnResetClick
+    ExplicitTop = 306
+  end
+  object tiScroll: TTimer
+    Enabled = False
+    Interval = 250
+    OnTimer = tiScrollTimer
+    Left = 376
+    Top = 212
   end
 end
