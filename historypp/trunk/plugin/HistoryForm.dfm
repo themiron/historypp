@@ -756,7 +756,7 @@ object HistoryFrm: THistoryFrm
       Caption = '-'
     end
     object Customize1: TTntMenuItem
-      Caption = 'Customize'
+      Caption = '&Customize...'
       Enabled = False
       OnClick = Customize1Click
     end
