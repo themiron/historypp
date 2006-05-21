@@ -80,7 +80,7 @@ var
 
 implementation
 
-uses hpp_forms, HistoryForm, hpp_options, TypInfo;
+uses hpp_forms, HistoryForm, hpp_options, TypInfo, Math;
 
 const
   FilterNames: array[0..11] of TMessageTypeNameRec = (
@@ -449,12 +449,20 @@ end;
 procedure TfmCustomizeFilters.MoveItem(Src, Dst: Integer);
 var
   ef: ThppEventFilter;
+  i: Integer;
 begin
+  if src = dst then exit;
+
   lbFilters.Items.Move(src,dst);
 
-  ef := LocalFilters[dst];
-  LocalFilters[dst] := LocalFilters[src];
-  LocalFilters[src] := ef;
+  ef := LocalFilters[src];
+  if dst > src then
+    for i := src to dst-1 do
+      LocalFilters[i] := LocalFilters[i+1]
+  else
+    for i := src downto dst+1 do
+      LocalFilters[i] := LocalFilters[i-1];
+  LocalFilters[dst] := ef;
 
   lbFilters.ItemIndex := dst;
   UpdateUpDownButtons;
