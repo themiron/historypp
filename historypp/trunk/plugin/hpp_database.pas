@@ -142,10 +142,12 @@ end;
 function WriteDBBlob(const hContact: THandle; const Module,Param: String; Value: Pointer; Size: Integer): Integer;
 var
   cws: TDBContactWriteSetting;
+  dbv: TDBVariant;
 begin
   ZeroMemory(@cws,SizeOf(cws));
-  cws.szModule := @Module[1];
-  cws.szSetting := @Param[1];
+  cws.szModule := PChar(Module);
+  cws.szSetting := PChar(Param);
+  cws.value.type_ := DBVT_BLOB;
   cws.value.pbVal := Value;
   cws.value.cpbVal := Word(Size);
   Result := PluginLink^.CallService(MS_DB_CONTACT_WRITESETTING,hContact,lParam(@cws));
@@ -163,13 +165,16 @@ var
 begin
   Result := False;
   ZeroMemory(@cgs,SizeOf(cgs));
-  cgs.szModule := @Module[1];
-  cgs.szSetting := @Param[1];
+  cgs.szModule := PChar(Module);
+  cgs.szSetting := PChar(Param);
   cgs.pValue := @dbv;
   if PluginLink^.CallService(MS_DB_CONTACT_GETSETTING, hContact, lParam(@cgs)) <> 0 then exit;
+  Size := dbv.cpbVal;
+  Value := nil;
   if dbv.cpbVal = 0 then exit;
   GetMem(Value,dbv.cpbVal);
   Move(dbv.pbVal^,PByte(Value)^,dbv.cpbVal);
+  DBFreeVariant(@dbv);
   Result := True;
 end;
 

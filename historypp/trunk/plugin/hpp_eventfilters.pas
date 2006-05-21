@@ -159,7 +159,7 @@ end;
 
 procedure ReadEventFilters;
 var
-  mem: Pointer;
+  org_mem,mem: Pointer;
   mem_size: Integer;
   i: Integer;
   ef_count,ef_size: Integer;
@@ -170,16 +170,18 @@ begin
     if not GetDBBlob(hppDBName,'EventFilters',mem,mem_size) then
       raise EAbort.Create('Custom event filters not found');
 
+    org_mem := mem;
     // load event filters from db
     ef_count := PInteger(mem)^;
     if ef_count < 1 then
       raise EAbort.Create('Negative custom event filters count');
     ef_size := PInteger(Integer(mem)+SizeOf(Integer))^;
-    if ef_size <> SizeOf(efr) then
+    if ef_size <> SizeOf(efr^) then
       raise EAbort.Create('Unknown record size for custom event filters');
     if mem_size <> (ef_size*ef_count+SizeOf(Integer)*2) then
       raise EAbort.Create('Incorrect blob size for custom events');
     mem := Pointer(Integer(mem)+SizeOf(Integer)*2);
+    SetLength(hppEventFilters,ef_count);
     for i := 0 to ef_count - 1 do begin
       efr := PhppEventFilterRec(Integer(mem)+i*SizeOf(efr^));
       hppEventFilters[i].Name := efr^.Name;
@@ -187,7 +189,7 @@ begin
       hppEventFilters[i].filMode := efr^.filMode;
     end;
     GenerateEventFilters(hppEventFilters);
-    FreeMem(mem,mem_size);
+    FreeMem(org_mem,mem_size);
   except
     ResetEventFiltersToDefault;
   end;
@@ -207,7 +209,7 @@ begin
   end;
   if IsSameAsDefault then begin
     // revert to default state
-    DBDeleteContactSetting(0,hppDBName,'FilterEvents');
+    DBDeleteContactSetting(0,hppDBName,'EventFilters');
     UpdateEventFiltersOnForms;
     exit;
   end;
@@ -228,7 +230,7 @@ begin
     efr.filMode := hppEventFilters[i].filMode;
     Move(efr,PByte(Integer(mem)+i*SizeOf(efr))^,SizeOf(efr));
   end;
-  //WriteDBBlob(hppDBName,'FilterEvents',org_mem,mem_size);
+  WriteDBBlob(hppDBName,'EventFilters',org_mem,mem_size);
   FreeMem(org_mem,mem_size);
   UpdateEventFiltersOnForms;
 end;
