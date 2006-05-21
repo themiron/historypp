@@ -184,6 +184,8 @@ begin
   FillFiltersList;
   FillEventsCheckListBox;
 
+  SaveLocalFilters;
+
   if lbFilters.Items.Count > 0 then lbFilters.ItemIndex := 0;
   lbFiltersClick(Self);
 end;
