@@ -265,6 +265,20 @@ Do you really want to delete selected item?
 [Delete]
 Delete
 
+;; CustomizeToolbar.trans.txt file 
+
+;; Text found in ..\plugin\CustomizeToolbar.dfm:
+[Customize Toolbar]
+Customize Toolbar
+[A&vailable buttons:]
+A&vailable buttons:
+[Buttons on &toolbar:]
+Buttons on &toolbar:
+[&Add >>]
+&Add >>
+[<< &Remove]
+<< &Remove
+
 ;; HistoryForm.trans.txt file 
 
 ;; Text found in ..\plugin\HistoryForm.dfm:
@@ -388,17 +402,3 @@ Unicode text file (*.txt)|*.txt
 Text file (*.txt)|*.txt
 [All files (*.*)|*.*]
 All files (*.*)|*.*
-
-;; CustomizeToolbar.trans.txt file 
-
-;; Text found in ..\plugin\CustomizeToolbar.dfm:
-[Customize Toolbar]
-Customize Toolbar
-[A&vailable buttons:]
-A&vailable buttons:
-[Buttons on &toolbar:]
-Buttons on &toolbar:
-[&Add >>]
-&Add >>
-[<< &Remove]
-<< &Remove
