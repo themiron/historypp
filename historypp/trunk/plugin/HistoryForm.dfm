@@ -390,7 +390,7 @@ object HistoryFrm: THistoryFrm
           Height = 22
           Flat = True
           Layout = blGlyphTop
-          Margin = 0
+          Margin = -1
           PopupMenu = pmEventsFilter
           Spacing = -5
           Transparent = False
