@@ -26,9 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 *)
 
 {%ToDo 'historypp.todo'}
-// we need here rc compilation to avoid errors on build
-// if they arn't exists, but anyway
-{$R 'hpp_resource.res' 'hpp_resource.rc'}
 {$R 'hpp_res_ver.res' 'hpp_res_ver.rc'}
 {$R 'hpp_opt_dialog.res' 'hpp_opt_dialog.rc'}
 
@@ -99,6 +96,7 @@ function OnContactChanged(wParam: wParam; lParam: LPARAM): Integer; cdecl; forwa
 function OnContactDelete(wParam: wParam; lParam: LPARAM): Integer; cdecl; forward;
 function OnFSChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnTTBLoaded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
+function FindIconsDll(var FileName: string): boolean; forward;
 
 //Tell Miranda about this plugin
 function MirandaPluginInfo(mirandaVersion:DWord):PPLUGININFO;cdecl;
@@ -120,15 +118,13 @@ end;
 function Load(link:PPLUGINLINK):Integer;cdecl;
 begin
   PluginLink := Pointer(link);
-
   //init history functions later
   HookModulesLoad := PluginLink.HookEvent(ME_SYSTEM_MODULESLOADED,OnModulesLoad);
   hookOptInit := PluginLink.HookEvent(ME_OPT_INITIALISE,OnOptInit);
-
-  hppRegisterServices;
   InitMMI;
-
-  Result:=0;
+  hppRegisterServices;
+  FindIconsDLL(hppIconPack);
+  Result := 0;
 end;
 
 //unload
@@ -369,6 +365,41 @@ begin
   PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[2], DWord(@menuItem));
 end;
 
+function FindIconsDll(var FileName: string): boolean;
+var
+  dir: string;
+  str: WideString;
+  hIcons: Cardinal;
+begin
+  Result := False;
+  SetLength(dir,MAX_PATH);
+  SetLength(dir,GetModuleFileName(hInstance,PAnsiChar(dir),Length(dir)));
+  dir := ExtractFilePath(dir);
+  if FileExists(dir+hppIPName) then
+    FileName := dir+hppIPName
+  else if FileExists(dir+'..\Icons\'+hppIPName) then
+    FileName := ExpandFileName(dir+'..\Icons\'+hppIPName)
+  else begin
+    str :=  'Cannot load icon pack '+hppIPName+' from'+#13#10+
+            dir+#13#10+
+            ExpandFileName(dir+'..\Icons\')+#13#10+
+            'No icons will be shown.';
+    hppMessageBox(Application.Handle,str,hppName+' Error',MB_OK);
+    exit;
+  end;
+  if not IcoLibEnabled then begin
+    hIcons := LoadLibrary(PChar(hppIconPack));
+    if hIcons = 0 then begin
+      str :=  'File '+hppIconPack+#13#10+
+              'seems to be broken. No icons will be shown.';
+      hppMessageBox(Application.Handle,str,hppName+' Error',MB_OK);
+      exit;
+    end;
+    FreeLibrary(hIcons);
+  end;
+  Result := True;
+end;
+
 exports
   MirandaPluginInfo,
   Load,
@@ -380,7 +411,8 @@ begin
   FreeLibrary(GetModuleHandle('oleaut32.dll'));
 
   TntSystem.InstallTntSystemUpdates;
-  //Forms.HintWindowClass := THppHintWindow;
+  // shadow is back again...
+  Forms.HintWindowClass := THppHintWindow;
   SysLocale.MiddleEast := true;
 
   {$IFDEF REPORT_LEAKS}
