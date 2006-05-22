@@ -90,10 +90,12 @@ echo ###
 echo ### Download gorc.exe from http://www.jorgon.freeserve.co.uk/#rc
 echo ###
 pause
-brcc32 -fohistorypp_icons.res historypp_icons.rc
+brcc32 -fohpp_resource.res hpp_resource.rc
 if errorlevel 1 goto failbcc
+brcc32 -fohistorypp_icons.res historypp_icons.rc
 goto exitgorc
 :dogorc
+%UTILS%\GoRC /r /nw hpp_resource.rc
 %UTILS%\GoRC /r/o /nw historypp_icons.rc
 :exitgorc
 
