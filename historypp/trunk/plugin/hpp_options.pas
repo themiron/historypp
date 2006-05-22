@@ -442,13 +442,10 @@ initialization
 
 finalization
 
-  // The DestroyIcon function destroys an icon and frees any memory the icon occupied.
-  // Remarks
-  // It is only necessary to call DestroyIcon for icons created with the CreateIconIndirect function.
-  {if not IcoLibEnabled then
+  if not IcoLibEnabled then
     for i := 0 to High(hppIcons) do
       if hppIcons[i].handle <> 0 then
-        DestroyIcon(hppIcons[i].handle);}
+        DestroyIcon(hppIcons[i].handle);
 
   GridOptions.Free;
 
