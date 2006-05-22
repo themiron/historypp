@@ -33,6 +33,11 @@ function DBGetContactSettingString(hContact: THandle; const szModule: PChar; con
 function DBGetContactSettingWideString(hContact: THandle; const szModule: PChar; const szSetting: PChar; ErrorValue: PWideChar): WideString;
 function DBWriteContactSettingWideString(hContact: THandle; const szModule: PChar; const szSetting: PChar; const val: PWideChar): Integer;
 
+function DBDelete(const Module, Param: String): Boolean; overload;
+function DBDelete(const hContact: THandle; const Module, Param: String): Boolean; overload;
+function DBExists(const Module, Param: String): Boolean; overload;
+function DBExists(const hContact: THandle; const Module, Param: String): Boolean; overload;
+
 function GetDBBlob(const Module,Param: String; var Value: Pointer; var Size: Integer): Boolean; overload;
 function GetDBBlob(const hContact: THandle; const Module,Param: String; var Value: Pointer; var Size: Integer): Boolean; overload;
 function GetDBStr(const Module,Param: String; Default: String): String; overload;
@@ -72,6 +77,34 @@ implementation
 procedure SetSafetyMode(Safe: Boolean);
 begin
   PluginLink.CallService(MS_DB_SETSAFETYMODE,WPARAM(Safe),0);
+end;
+
+function DBExists(const Module, Param: String): Boolean;
+begin
+  Result := DBExists(0,Module,Param);
+end;
+
+function DBExists(const hContact: THandle; const Module, Param: String): Boolean;
+var
+  dbv: TDBVARIANT;
+  cgs: TDBCONTACTGETSETTING;
+begin
+  cgs.szModule := PChar(Module);
+  cgs.szSetting := PChar(Param);
+  cgs.pValue := @dbv;
+  Result := (PluginLink^.CallService(MS_DB_CONTACT_GETSETTING, hContact, lParam(@cgs)) = 0);
+  if Result then
+    DBFreeVariant(@dbv);
+end;
+
+function DBDelete(const Module, Param: String): Boolean;
+begin
+  Result := DBDelete(0,Module,Param);
+end;
+
+function DBDelete(const hContact: THandle; const Module, Param: String): Boolean;
+begin
+  Result := (DBDeleteContactSetting(hContact,PChar(Module),PChar(Param)) = 0);
 end;
 
 function WriteDBBool(const Module,Param: String; Value: Boolean): Integer;
