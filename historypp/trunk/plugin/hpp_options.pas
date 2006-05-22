@@ -68,70 +68,70 @@ const
 
 const
 
-  HPP_ICON_CONTACTHISTORY    = 0;
-  HPP_ICON_GLOBALSEARCH      = 1;
-  HPP_ICON_SESS_DIVIDER      = 2;
-  HPP_ICON_SESSION           = 3;
-  HPP_ICON_SESS_SUMMER       = 4;
-  HPP_ICON_SESS_AUTUMN       = 5;
-  HPP_ICON_SESS_WINTER       = 6;
-  HPP_ICON_SESS_SPRING       = 7;
-  HPP_ICON_SESS_YEAR         = 8;
-  HPP_ICON_HOTFILTER         = 9;
-  HPP_ICON_HOTFILTERWAIT     = 10;
-  HPP_ICON_SEARCH_ALLRESULTS = 11;
-  HPP_ICON_TOOL_SAVEALL      = 12;
-  HPP_ICON_HOTSEARCH         = 13;
-  HPP_ICON_SEARCHUP          = 14;
-  HPP_ICON_SEARCHDOWN        = 15;
-  HPP_ICON_TOOL_DELETEALL    = 16;
-  HPP_ICON_TOOL_DELETE       = 17;
-  HPP_ICON_TOOL_SESSIONS     = 18;
-  HPP_ICON_TOOL_SAVE         = 19;
-  HPP_ICON_TOOL_COPY         = 20;
-  HPP_ICON_SEARCH_ENDOFPAGE  = 21;
-  HPP_ICON_SEARCH_NOTFOUND   = 22;
-  HPP_ICON_HOTFILTERCLEAR    = 23;
-  HPP_ICON_SESS_HIDE         = 24;
-  HPP_ICON_TOOL_EVENTSFILTER = 25;
-  HPP_ICON_CONTACDETAILS     = 26;
-  HPP_ICON_CONTACTMENU       = 27;
+  HPP_ICON_CONTACTHISTORY    = 1;
+  HPP_ICON_GLOBALSEARCH      = 2;
+  HPP_ICON_SESS_DIVIDER      = 3;
+  HPP_ICON_SESSION           = 4;
+  HPP_ICON_SESS_SUMMER       = 5;
+  HPP_ICON_SESS_AUTUMN       = 6;
+  HPP_ICON_SESS_WINTER       = 7;
+  HPP_ICON_SESS_SPRING       = 8;
+  HPP_ICON_SESS_YEAR         = 9;
+  HPP_ICON_HOTFILTER         = 10;
+  HPP_ICON_HOTFILTERWAIT     = 11;
+  HPP_ICON_SEARCH_ALLRESULTS = 12;
+  HPP_ICON_TOOL_SAVEALL      = 13;
+  HPP_ICON_HOTSEARCH         = 14;
+  HPP_ICON_SEARCHUP          = 15;
+  HPP_ICON_SEARCHDOWN        = 16;
+  HPP_ICON_TOOL_DELETEALL    = 17;
+  HPP_ICON_TOOL_DELETE       = 18;
+  HPP_ICON_TOOL_SESSIONS     = 19;
+  HPP_ICON_TOOL_SAVE         = 20;
+  HPP_ICON_TOOL_COPY         = 21;
+  HPP_ICON_SEARCH_ENDOFPAGE  = 22;
+  HPP_ICON_SEARCH_NOTFOUND   = 23;
+  HPP_ICON_HOTFILTERCLEAR    = 24;
+  HPP_ICON_SESS_HIDE         = 25;
+  HPP_ICON_TOOL_EVENTSFILTER = 26;
+  HPP_ICON_CONTACDETAILS     = 27;
+  HPP_ICON_CONTACTMENU       = 28;
 
-  hppIcons : array[0..27] of ThppIconsRec = (
-    (name:'historypp_00'; desc:'Contact history'; group: ''; i:HPP_ICON_CONTACTHISTORY; handle:0),
-    (name:'historypp_01'; desc:'History search'; group: ''; i:HPP_ICON_GLOBALSEARCH; handle:0),
-    (name:'historypp_02'; desc:'Conversation divider'; group: 'Conversations'; i:HPP_ICON_SESS_DIVIDER; handle:0),
-    (name:'historypp_03'; desc:'Conversation icon'; group: 'Conversations'; i:HPP_ICON_SESSION; handle:0),
-    (name:'historypp_04'; desc:'Conversation summer'; group: 'Conversations'; i:HPP_ICON_SESS_SUMMER; handle:0),
-    (name:'historypp_05'; desc:'Conversation autumn'; group: 'Conversations'; i:HPP_ICON_SESS_AUTUMN; handle:0),
-    (name:'historypp_06'; desc:'Conversation winter'; group: 'Conversations'; i:HPP_ICON_SESS_WINTER; handle:0),
-    (name:'historypp_07'; desc:'Conversation spring'; group: 'Conversations'; i:HPP_ICON_SESS_SPRING; handle:0),
-    (name:'historypp_08'; desc:'Conversation year'; group: 'Conversations'; i:HPP_ICON_SESS_YEAR; handle:0),
-    (name:'historypp_09'; desc:'Filter'; group: 'Toolbar'; i:HPP_ICON_HOTFILTER; handle:0),
-    (name:'historypp_10'; desc:'In-place filter wait'; group: 'Search panel'; i:HPP_ICON_HOTFILTERWAIT; handle:0),
-    (name:'historypp_11'; desc:'Search All Results'; group: ''; i:HPP_ICON_SEARCH_ALLRESULTS; handle:0),
-    (name:'historypp_12'; desc:'Save All'; group: 'Toolbar'; i:HPP_ICON_TOOL_SAVEALL; handle:0),
-    (name:'historypp_13'; desc:'Search'; group: 'Toolbar'; i:HPP_ICON_HOTSEARCH; handle:0),
-    (name:'historypp_14'; desc:'Search Up'; group: 'Search panel'; i:HPP_ICON_SEARCHUP; handle:0),
-    (name:'historypp_15'; desc:'Search Down'; group: 'Search panel'; i:HPP_ICON_SEARCHDOWN; handle:0),
-    (name:'historypp_16'; desc:'Delete All'; group: 'Toolbar'; i:HPP_ICON_TOOL_DELETEALL; handle:0),
-    (name:'historypp_17'; desc:'Delete'; group: 'Toolbar'; i:HPP_ICON_TOOL_DELETE; handle:0),
-    (name:'historypp_18'; desc:'Conversations'; group: 'Toolbar'; i:HPP_ICON_TOOL_SESSIONS; handle:0),
-    (name:'historypp_19'; desc:'Save'; group: 'Toolbar'; i:HPP_ICON_TOOL_SAVE; handle:0),
-    (name:'historypp_20'; desc:'Copy'; group: 'Toolbar'; i:HPP_ICON_TOOL_COPY; handle:0),
-    (name:'historypp_21'; desc:'End of page'; group: 'Search panel'; i:HPP_ICON_SEARCH_ENDOFPAGE; handle:0),
-    (name:'historypp_22'; desc:'Phrase not found'; group: 'Search panel'; i:HPP_ICON_SEARCH_NOTFOUND; handle:0),
-    (name:'historypp_23'; desc:'Clear in-place filter'; group: 'Search panel'; i:HPP_ICON_HOTFILTERCLEAR; handle:0),
-    (name:'historypp_24'; desc:'Conversation hide'; group: 'Conversations'; i:HPP_ICON_SESS_HIDE; handle:0),
-    (name:'historypp_25'; desc:'Events filter'; group: 'Toolbar'; i:HPP_ICON_TOOL_EVENTSFILTER; handle:0),
-    (name:'historypp_26'; desc:'User Details'; group: 'Toolbar'; i:HPP_ICON_CONTACDETAILS; handle:0),
-    (name:'historypp_27'; desc:'User Menu'; group: 'Toolbar'; i:HPP_ICON_CONTACTMENU; handle:0)
+  hppIcons : array[1..28] of ThppIconsRec = (
+    (name:'historypp_01'; desc:'Contact history'; group: 'Main'; i:HPP_ICON_CONTACTHISTORY; handle:0),
+    (name:'historypp_02'; desc:'History search'; group: 'Main'; i:HPP_ICON_GLOBALSEARCH; handle:0),
+    (name:'historypp_03'; desc:'Conversation divider'; group: 'Conversations'; i:HPP_ICON_SESS_DIVIDER; handle:0),
+    (name:'historypp_04'; desc:'Conversation icon'; group: 'Conversations'; i:HPP_ICON_SESSION; handle:0),
+    (name:'historypp_05'; desc:'Conversation summer'; group: 'Conversations'; i:HPP_ICON_SESS_SUMMER; handle:0),
+    (name:'historypp_06'; desc:'Conversation autumn'; group: 'Conversations'; i:HPP_ICON_SESS_AUTUMN; handle:0),
+    (name:'historypp_07'; desc:'Conversation winter'; group: 'Conversations'; i:HPP_ICON_SESS_WINTER; handle:0),
+    (name:'historypp_08'; desc:'Conversation spring'; group: 'Conversations'; i:HPP_ICON_SESS_SPRING; handle:0),
+    (name:'historypp_09'; desc:'Conversation year'; group: 'Conversations'; i:HPP_ICON_SESS_YEAR; handle:0),
+    (name:'historypp_10'; desc:'Filter'; group: 'Toolbar'; i:HPP_ICON_HOTFILTER; handle:0),
+    (name:'historypp_11'; desc:'In-place filter wait'; group: 'Search panel'; i:HPP_ICON_HOTFILTERWAIT; handle:0),
+    (name:'historypp_12'; desc:'Search All Results'; group: 'Main'; i:HPP_ICON_SEARCH_ALLRESULTS; handle:0),
+    (name:'historypp_13'; desc:'Save All'; group: 'Toolbar'; i:HPP_ICON_TOOL_SAVEALL; handle:0),
+    (name:'historypp_14'; desc:'Search'; group: 'Toolbar'; i:HPP_ICON_HOTSEARCH; handle:0),
+    (name:'historypp_15'; desc:'Search Up'; group: 'Search panel'; i:HPP_ICON_SEARCHUP; handle:0),
+    (name:'historypp_16'; desc:'Search Down'; group: 'Search panel'; i:HPP_ICON_SEARCHDOWN; handle:0),
+    (name:'historypp_17'; desc:'Delete All'; group: 'Toolbar'; i:HPP_ICON_TOOL_DELETEALL; handle:0),
+    (name:'historypp_18'; desc:'Delete'; group: 'Toolbar'; i:HPP_ICON_TOOL_DELETE; handle:0),
+    (name:'historypp_19'; desc:'Conversations'; group: 'Toolbar'; i:HPP_ICON_TOOL_SESSIONS; handle:0),
+    (name:'historypp_20'; desc:'Save'; group: 'Toolbar'; i:HPP_ICON_TOOL_SAVE; handle:0),
+    (name:'historypp_21'; desc:'Copy'; group: 'Toolbar'; i:HPP_ICON_TOOL_COPY; handle:0),
+    (name:'historypp_22'; desc:'End of page'; group: 'Search panel'; i:HPP_ICON_SEARCH_ENDOFPAGE; handle:0),
+    (name:'historypp_23'; desc:'Phrase not found'; group: 'Search panel'; i:HPP_ICON_SEARCH_NOTFOUND; handle:0),
+    (name:'historypp_24'; desc:'Clear in-place filter'; group: 'Search panel'; i:HPP_ICON_HOTFILTERCLEAR; handle:0),
+    (name:'historypp_25'; desc:'Conversation hide'; group: 'Conversations'; i:HPP_ICON_SESS_HIDE; handle:0),
+    (name:'historypp_26'; desc:'Events filter'; group: 'Toolbar'; i:HPP_ICON_TOOL_EVENTSFILTER; handle:0),
+    (name:'historypp_27'; desc:'User Details'; group: 'Toolbar'; i:HPP_ICON_CONTACDETAILS; handle:0),
+    (name:'historypp_28'; desc:'User Menu'; group: 'Toolbar'; i:HPP_ICON_CONTACTMENU; handle:0)
   );
 
   hppIntIcons: array[0..0] of ThppIntIconsRec = (
     (name:'z_password_protect'; handle: 0)
   );
-  
+
   hppFontItems: array[0..16] of ThppFontsRec = (
     (name: 'Incoming nick'; nameColor: 'Divider'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $6B3FC8; back: clGray),
     (name: 'Outgoing nick'; nameColor: 'Selected text'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $BD6008; back: clHighlightText),
@@ -184,7 +184,6 @@ procedure LoadIcons;
 procedure LoadIcons2;
 procedure LoadIntIcons;
 procedure OnShowIcons;
-//procedure LoadDefaultGridOptions;
 procedure hppRegisterGridOptions;
 
 implementation
@@ -266,82 +265,23 @@ procedure LoadIcons2;
 var
   hic: HIcon;
   i: integer;
+  hIcons: Cardinal;
 begin
-  for i := 0 to High(hppIcons) do begin
+  if not IcoLibEnabled then begin
+    hIcons := LoadLibrary(PChar(hppIconPack));
+    if hIcons = 0 then exit;
+  end;
+  for i := 1 to High(hppIcons) do begin
     if IcoLibEnabled then
-      hic := PluginLink.CallService(MS_SKIN2_GETICON,0,integer(hppIcons[i].name))
+      hic := PluginLink.CallService(MS_SKIN2_GETICON,0,longint(hppIcons[i].name))
     else
-      hic := LoadIcon(hInstance,hppIcons[i].name);
+      //hic := LoadIcon(hIcons,hppIcons[i].name);
+      hic := LoadIcon(hIcons,MAKEINTRESOURCE(hppIcons[i].i));
     if (hic <> 0) then
       hppIcons[i].handle := hic;
   end;
+  if not IcoLibEnabled then FreeLibrary(hIcons);
 end;
-
-{procedure LoadDefaultGridOptions;
-  procedure LoadFont(Font: TFont; SettName: String);
-  var
-    fname: String;
-    fsize: Integer;
-    fcolor: TColor;
-    fset: TFontCharset;
-    fstyle: Byte;
-    fbold,fitalic: Boolean;
-  begin
-    fname := GetDBStr('SRMsg',SettName+'','');
-    if fname = '' then exit;
-    fsize := GetDBInt('SRMsg',PChar(SettName+'Size'),-11);
-    fcolor := GetDBInt('SRMsg',PChar(SettName+'Col'),clWindowText);
-    fstyle := GetDBInt('SRMsg',PChar(SettName+'Sty'),0);
-    if (fstyle = 1) or (fstyle=3) then
-      fbold := True
-    else
-      fbold := False;
-    if (fstyle = 2) or (fstyle=3) then
-      fitalic := True
-    else
-      fitalic := False;
-    fset := GetDBDWord('SRMsg',PChar(SettName+'Set'),DEFAULT_CHARSET);
-    Font.Name := fname;
-    Font.Height := fsize;
-    Font.Charset := fset;
-    Font.Color := fcolor;
-
-    Font.Style := [];
-    if fbold then
-      Font.Style := Font.Style + [fsBold];
-    if fitalic then
-      Font.Style := Font.Style + [fsItalic];
-    end;
-begin
-  GridOptions.StartChange;
-  try
-  GridOptions.ShowIcons := GetDBBool('SRMsg','ShowLogIcons',True);
-  // Font 0  -- Outgoing Messages
-  // Font 1  -- Outgoing URL
-  // Font 2  -- Outgoing Files
-  // Font 3  -- Incoming Messages
-  // Font 4  -- Incoming Urls
-  // Font 5  -- Incoming Files
-  // Font 6  -- Profile Name
-  // Font 7  -- Profile Time
-  // Font 8  --
-  // Font 9  -- Contact Name
-  // Font 10 -- Contact Time
-
-  LoadFont(GridOptions.TextOutMes,'Font0');
-  LoadFont(GridOptions.TextOutUrl,'Font1');
-  LoadFont(GridOptions.TextOutFile,'Font2');
-  LoadFont(GridOptions.TextIncMes,'Font3');
-  LoadFont(GridOptions.TextIncUrl,'Font4');
-  LoadFont(GridOptions.TextIncFile,'Font5');
-  LoadFont(GridOptions.TextProfile,'Font6');
-  LoadFont(GridOptions.TextProfileDate,'Font7');
-  LoadFont(GridOptions.TextContact,'Font9');
-  LoadFont(GridOptions.TextContactDate,'Font10');
-  finally
-  GridOptions.EndChange;
-  end;
-end;}
 
 procedure LoadGridOptions;
   function LoadColorDB(Order: integer): TColor;
@@ -423,8 +363,8 @@ begin
   WriteDBBool(hppDBName,'Smileys',GridOptions.SmileysEnabled);
   WriteDBBool(hppDBName,'BBCodes',GridOptions.BBCodesEnabled);
   WriteDBBool(hppDBName,'MathModule',GridOptions.MathModuleEnabled);
-  WriteDBWideStr(hppDBName,'FormatCopy',GridOptions.ClipCopyFormat);
-  WriteDBWideStr(hppDBName,'FormatCopyText',GridOptions.ClipCopyTextFormat);
+  //WriteDBWideStr(hppDBName,'FormatCopy',GridOptions.ClipCopyFormat);
+  //WriteDBWideStr(hppDBName,'FormatCopyText',GridOptions.ClipCopyTextFormat);
   finally
   GridOptions.EndChange;
   end;
@@ -435,28 +375,23 @@ var
   sid: TSKINICONDESC;
   defFont : FontSettings;
   i: integer;
-  hppdll: string;
-//  upd: TUpdate;
 begin
-  //
   SmileyAddEnabled := Boolean(PluginLink.ServiceExists(MS_SMILEYADD_REPLACESMILEYS));
   MathModuleEnabled := Boolean(PluginLink.ServiceExists(MATH_GET_STARTDELIMITER));
   // Register in IcoLib
   IcoLibEnabled := Boolean(PluginLink.ServiceExists(MS_SKIN2_ADDICON));
   if IcoLibEnabled then begin
-    SetLength(hppdll, MAX_PATH);
-    SetLength(hppdll,GetModuleFileName(hInstance,PAnsiChar(hppdll),Length(hppdll)));
     ZeroMemory(@sid,SizeOf(sid));
     sid.cbSize := SizeOf(sid);
-    sid.pszDefaultFile := PChar(hppdll);
-    for i := 0 to High(hppIcons) do begin
+    sid.pszDefaultFile := PChar(hppIconPack);
+    for i := 1 to High(hppIcons) do begin
       sid.pszName := hppIcons[i].name;
       sid.pszDescription := translate(hppIcons[i].desc);
       if StrLen(hppIcons[i].group) = 0 then
         sid.pszSection := hppName
       else
         sid.pszSection := PChar(hppName+'/'+translate(hppIcons[i].group));
-      sid.iDefaultIndex := hppIcons[i].i;
+      sid.iDefaultIndex := hppIcons[i].i-1;
       PluginLink.CallService(MS_SKIN2_ADDICON,0,DWord(@sid));
     end;
   end;

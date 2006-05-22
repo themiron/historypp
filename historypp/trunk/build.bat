@@ -71,16 +71,17 @@ rem #
 rem # Find utils path relatively to our current dir
 rem #
 
-set GORC=utils\GoRC.exe
+set UTILS=utils
 set TRIES=0
 :loop1
-if exist %GORC% goto exitloop1
-set GORC=..\%GORC%
+if exist %UTILS% goto exitloop1
+set UTILS=..\%UTILS%
 if "%TRIES%"=="00000000000" goto exitloop1
 set TRIES=0%TRIES%
 goto loop1
 :exitloop1
-if exist %GORC% goto dogorc
+
+if exist %UTILS%\GoRC.exe goto dogorc
 echo ###
 echo ### Warning! GoRC not fount in Utils directory
 echo ### Using Borland Resource Compiler instead
@@ -89,11 +90,11 @@ echo ###
 echo ### Download gorc.exe from http://www.jorgon.freeserve.co.uk/#rc
 echo ###
 pause
-brcc32 -fohpp_resource.res hpp_resource.rc
+brcc32 -fohistorypp_icons.res historypp_icons.rc
 if errorlevel 1 goto failbcc
 goto exitgorc
 :dogorc
-%GORC% /r /nw hpp_resource.rc
+%UTILS%\GoRC /r/o /nw historypp_icons.rc
 :exitgorc
 
 rem #
@@ -139,6 +140,27 @@ if errorlevel 1 (
   goto faildcc
 )
 ren *.cfg-build *.cfg
+
+if exist %UTILS%\GoLink.exe goto dogolink
+echo ###
+echo ### Warning! GoLink not fount in Utils directory
+echo ### Using Borland Resource Compiler instead
+echo ### Support for icons with 32-bit color depth would be broken
+echo ### 
+echo ### Download golink.exe from http://www.jorgon.freeserve.co.uk/#linker
+echo ###
+pause
+ren *.cfg *.cfg-build
+dcc32 %ADDCMD% -B -CG -Q -W- -H- -U%INCDIR% -R%INCDIR% -I%INCDIR% -E%OUTDIR% -LE%DCUDIR% -LN%DCUDIR% -N0%DCUDIR% %COMPDIR% historypp_icons.dpr
+if errorlevel 1 ( 
+  ren *.cfg-build *.cfg
+  goto faildcc
+)
+ren *.cfg-build *.cfg
+goto exitgolink
+:dogolink
+%UTILS%\GoLink historypp_icons.obj /nw /base 10000000 /fo ..\historypp_icons.dll
+:exitgolink
 
 rd /q /s %DCUDIR%
 

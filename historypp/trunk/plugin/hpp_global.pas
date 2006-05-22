@@ -74,10 +74,11 @@ const
   hppVerBuild   = {BUILD}102{/BUILD};
   hppVersion    = hppVerMajor shl 24 + hppVerMinor shl 16 + hppVerRelease shl 8 + hppVerBuild;
 
-  hppUpdateURL = 'http://slav.pp.ru/miranda/historypp';
+  hppUpdateURL  = 'http://slav.pp.ru/miranda/historypp';
   hppVersionURL = 'http://slav.pp.ru/miranda/version';
-
   hppHomePageURL = 'http://slav.pp.ru/miranda/';
+
+  hppIPName     = 'historypp_icons.dll';
 
   hppLoadBlock  = 4096;
   hppFirstLoadBlock = 200;
@@ -91,6 +92,7 @@ var
   hppOSUnicode: Boolean;
   hppCoreUnicode: Boolean;
   hppCodepage: Cardinal;
+  hppIconPack: String;
 
 {$I m_historypp.inc}
 
