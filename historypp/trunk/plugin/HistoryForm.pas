@@ -1832,7 +1832,7 @@ procedure THistoryFrm.WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo);
 begin
   inherited;
   with Msg.MinMaxInfo^ do begin
-    ptMinTrackSize.x:= 420;
+    ptMinTrackSize.x:= 300;
     ptMinTrackSize.y:= 240;
     end
 end;
