@@ -563,12 +563,9 @@ begin
     if ThemeServices.ThemesEnabled then
     begin
       {$IFDEF COMPILER_7_UP}
-      PerformEraseBackground(Self, Canvas.Handle);
-      //PaintRect := Rect(0, 0, Width, Height);
-      //Canvas.Brush.Color := Color;
-      //Canvas.FillRect(PaintRect);
+      //PerformEraseBackground(Self, Canvas.Handle);
       {$ENDIF}
-      SelectObject(Canvas.Handle, Canvas.Font.Handle); { For some reason, PerformEraseBackground sometimes messes the font up. }
+      //SelectObject(Canvas.Handle, Canvas.Font.Handle); { For some reason, PerformEraseBackground sometimes messes the font up. }
 
       if not Enabled then
         Button := tbPushButtonDisabled
@@ -582,6 +579,7 @@ begin
             Button := tbPushButtonNormal;
 
       ToolButton := ttbToolbarDontCare;
+
       if Flat then
       begin
         case Button of
@@ -600,12 +598,14 @@ begin
       if ToolButton = ttbToolbarDontCare then
       begin
         Details := ThemeServices.GetElementDetails(Button);
+        ThemeServices.DrawParentBackground(Parent.Handle, Canvas.Handle, @Details, True);
         ThemeServices.DrawElement(Canvas.Handle, Details, PaintRect);
         PaintRect := ThemeServices.ContentRect(Canvas.Handle, Details, PaintRect);
       end
       else
       begin
         Details := ThemeServices.GetElementDetails(ToolButton);
+        ThemeServices.DrawParentBackground(Parent.Handle, Canvas.Handle, @Details, True);
         ThemeServices.DrawElement(Canvas.Handle, Details, PaintRect);
         PaintRect := ThemeServices.ContentRect(Canvas.Handle, Details, PaintRect);
       end;

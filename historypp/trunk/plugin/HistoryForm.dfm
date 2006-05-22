@@ -1,6 +1,6 @@
 object HistoryFrm: THistoryFrm
-  Left = 234
-  Top = 126
+  Left = 277
+  Top = 190
   Width = 586
   Height = 418
   VertScrollBar.Tracking = True
@@ -324,7 +324,7 @@ object HistoryFrm: THistoryFrm
         PopupMenu = pmToolbar
         ShowHint = True
         TabOrder = 0
-        Transparent = False
+        Transparent = True
         Wrapable = False
         OnDblClick = ToolbarDblClick
         object tbUserDetails: TTntToolButton
