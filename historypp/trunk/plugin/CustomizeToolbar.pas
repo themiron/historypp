@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, CheckLst, TntCheckLst, TntComCtrls, ComCtrls, CommCtrl,
-  TntStdCtrls, ExtCtrls, TntExtCtrls, m_api;
+  TntStdCtrls, TntWindows, ExtCtrls, TntExtCtrls, m_api;
 
 type
   TfmCustomizeToolbar = class(TForm)
@@ -67,7 +67,7 @@ var
 
 implementation
 
-uses HistoryForm, hpp_forms, hpp_global, hpp_database;
+uses HistoryForm, hpp_forms, hpp_global, hpp_database, hpp_options;
 
 {$R *.dfm}
 
@@ -190,15 +190,19 @@ begin
   if txtW <> '-' then begin
     r2 := r;
     r2.Left := r2.Left + 20+4;
-    DrawTextW(can.Handle,PWideChar(txtW),Length(txtW),r2,tf);
+    Tnt_DrawTextW(can.Handle,PWideChar(txtW),Length(txtW),r2,tf);
     r2 := Classes.Rect(r.Left+2,r.Top+2,r.Left+20+2,r.Bottom-2);
-    can.Brush.Color := clBtnFace;
-    can.FillRect(r2);
+    {can.Brush.Color := clBtnFace;
+    can.FillRect(r2);}
     fm := THistoryFrm(Owner);
     if lb.Items.Objects[Index] is TTntToolButton then begin
       but := TTntToolButton(lb.Items.Objects[Index]);
       ImageList_Draw(fm.ilToolbar.Handle,but.ImageIndex,can.Handle,
       r2.Left+2,r2.Top+2,ILD_NORMAL);
+    end
+    else if lb.Items.Objects[Index] = fm.tbEventsFilter then begin
+      DrawIconEx(can.Handle,r2.Left+2,r2.Top+2,hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,
+        16,16,0,0,DI_NORMAL);
     end;
   end
   else begin
