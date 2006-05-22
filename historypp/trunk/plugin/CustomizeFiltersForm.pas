@@ -88,7 +88,7 @@ const
   (mt: mtIncoming; Name: 'Incoming events'),
   (mt: mtOutgoing; Name: 'Outgoing events'),
   (mt: mtMessage; Name: 'Message'),
-  (mt: mtUrl; Name: 'Link URL'),
+  (mt: mtUrl; Name: 'Link URLs'),
   (mt: mtFile; Name: 'File'),
   (mt: mtContacts; Name: 'Contact'),
   (mt: mtSMS; Name: 'SMS'),

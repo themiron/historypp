@@ -55,11 +55,12 @@ Always LTR
 ANSI Encoding
 System default codepage
 Password protection...
-Customize
+&Customize...
 &Copy
 Select
 Delete
 Save...
+&Customize...
 ;; Text found in ..\plugin\HistoryForm.pas:
 System History
 Error
