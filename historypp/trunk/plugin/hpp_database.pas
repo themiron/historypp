@@ -76,7 +76,7 @@ implementation
 
 procedure SetSafetyMode(Safe: Boolean);
 begin
-  PluginLink.CallService(MS_DB_SETSAFETYMODE,WPARAM(Safe),0);
+  PluginLink^.CallService(MS_DB_SETSAFETYMODE,WPARAM(Safe),0);
 end;
 
 function DBExists(const Module, Param: String): Boolean;
@@ -207,7 +207,6 @@ end;
 function WriteDBBlob(const hContact: THandle; const Module,Param: String; Value: Pointer; Size: Integer): Integer;
 var
   cws: TDBContactWriteSetting;
-  dbv: TDBVariant;
 begin
   ZeroMemory(@cws,SizeOf(cws));
   cws.szModule := PChar(Module);
@@ -298,7 +297,7 @@ begin
   cws.szModule:=PChar(Module);
   cws.szSetting:=PChar(Param);
   cws.pValue:=@dbv;
-  if PluginLink.CallService(MS_DB_CONTACT_GETSETTING,hContact,DWord(@cws))<>0 then
+  if PluginLink^.CallService(MS_DB_CONTACT_GETSETTING,hContact,DWord(@cws))<>0 then
     Result:=default
   else
     Result:=dbv.dval;
