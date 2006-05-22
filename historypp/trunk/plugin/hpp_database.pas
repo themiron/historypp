@@ -25,16 +25,20 @@ unit hpp_database;
 
 interface
 
-uses m_globaldefs, m_api, windows;
+uses m_globaldefs, m_api, windows, hpp_global;
 
 procedure SetSafetyMode(Safe: Boolean);
 
 function DBGetContactSettingString(hContact: THandle; const szModule: PChar; const szSetting: PChar; ErrorValue: PChar): AnsiString;
+function DBGetContactSettingWideString(hContact: THandle; const szModule: PChar; const szSetting: PChar; ErrorValue: PWideChar): WideString;
+function DBWriteContactSettingWideString(hContact: THandle; const szModule: PChar; const szSetting: PChar; const val: PWideChar): Integer;
 
 function GetDBBlob(const Module,Param: String; var Value: Pointer; var Size: Integer): Boolean; overload;
 function GetDBBlob(const hContact: THandle; const Module,Param: String; var Value: Pointer; var Size: Integer): Boolean; overload;
 function GetDBStr(const Module,Param: String; Default: String): String; overload;
 function GetDBStr(const hContact: THandle; const Module,Param: String; Default: String): String; overload;
+function GetDBWideStr(const Module,Param: String; Default: WideString): WideString; overload;
+function GetDBWideStr(const hContact: THandle; const Module,Param: String; Default: WideString): WideString; overload;
 function GetDBInt(const Module,Param: String; Default: Integer): Integer; overload;
 function GetDBInt(const hContact: THandle; const Module,Param: String; Default: Integer): Integer; overload;
 function GetDBWord(const Module,Param: String; Default: Word): Word; overload;
@@ -58,6 +62,8 @@ function WriteDBInt(const Module,Param: String; Value: Integer): Integer; overlo
 function WriteDBInt(const hContact: THandle; const Module,Param: String; Value: Integer): Integer; overload;
 function WriteDBStr(const Module,Param: String; Value: String): Integer; overload;
 function WriteDBStr(const hContact: THandle; const Module,Param: String; Value: String): Integer; overload;
+function WriteDBWideStr(const Module,Param: String; Value: WideString): Integer; overload;
+function WriteDBWideStr(const hContact: THandle; const Module,Param: String; Value: WideString): Integer; overload;
 function WriteDBBool(const Module,Param: String; Value: Boolean): Integer; overload;
 function WriteDBBool(const hContact: THandle; const Module,Param: String; Value: Boolean): Integer; overload;
 
@@ -132,6 +138,32 @@ end;
 function WriteDBStr(const hContact: THandle; const Module,Param: String; Value: String): Integer;
 begin
   Result := DBWriteContactSettingString(hContact,PChar(Module),PChar(Param),PChar(Value));
+end;
+
+function WriteDBWideStr(const Module,Param: String; Value: WideString): Integer;
+begin
+  Result := WriteDBWideStr(0,Module,Param,Value);
+end;
+
+function WriteDBWideStr(const hContact: THandle; const Module,Param: String; Value: WideString): Integer;
+begin
+  Result := DBWriteContactSettingWideString(hContact,PChar(Module),PChar(Param),PWideChar(Value));
+end;
+
+function DBWriteContactSettingWideString(hContact: THandle; const szModule: PChar; const szSetting: PChar; const val: PWideChar): Integer;
+var
+  cws: TDBCONTACTWRITESETTING;
+begin
+  cws.szModule := szModule;
+  cws.szSetting := szSetting;
+  if hppCoreUnicode then begin
+    cws.value.type_ := DBVT_WCHAR;
+    cws.value.pwszVal := val;
+  end else begin
+    cws.value.type_ := DBVT_ASCIIZ;
+    cws.value.pszVal := PChar(WideToAnsiString(val,hppCodepage));
+  end;
+  Result := PluginLink^.CallService(MS_DB_CONTACT_WRITESETTING, hContact, lParam(@cws));
 end;
 
 function WriteDBBlob(const Module,Param: String; Value: Pointer; Size: Integer): Integer;
@@ -262,6 +294,40 @@ begin
   else begin
     // copy string to result
     Result := AnsiString(dbv.pszVal);
+    // free variant
+    DBFreeVariant(@dbv);
+  end;
+end;
+
+function GetDBWideStr(const Module,Param: String; Default: WideString): WideString;
+begin
+  Result := GetDBWideStr(0,Module,Param,Default);
+end;
+
+function GetDBWideStr(const hContact: THandle; const Module,Param: String; Default: WideString): WideString;
+begin
+  Result := DBGetContactSettingWideString(hContact,PChar(Module),PChar(Param),PWideChar(Default));
+end;
+
+function DBGetContactSettingWideString(hContact: THandle; const szModule: PChar; const szSetting: PChar; ErrorValue: PWideChar): WideString;
+var
+  dbv: TDBVARIANT;
+  cgs: TDBCONTACTGETSETTING;
+begin
+  cgs.szModule := szModule;
+  cgs.szSetting := szSetting;
+  cgs.pValue := @dbv;
+  if PluginLink^.CallService(MS_DB_CONTACT_GETSETTING, hContact, lParam(@cgs)) <> 0 then
+    Result := ErrorValue
+  else begin
+    case dbv.type_ of
+      DBVT_ASCIIZ:
+        Result := AnsiToWideString(dbv.pszVal,hppCodepage);
+      DBVT_UTF8:
+        Result := AnsiToWideString(dbv.pszVal,CP_UTF8);
+      DBVT_WCHAR:
+        Result := WideString(dbv.pwszVal);
+    end;
     // free variant
     DBFreeVariant(@dbv);
   end;
