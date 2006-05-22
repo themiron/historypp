@@ -1602,8 +1602,8 @@ begin
   try
     FormState := gsDelete;
     hg.DeleteSelected;
-    FormState := gsIdle;
   finally
+    FormState := gsIdle;
     SetSafetyMode(True);
   end;
 end;
@@ -3104,8 +3104,10 @@ begin
 
   SetSafetyMode(False);
   try
+    FormState := gsDelete;
     hg.DeleteAll;
   finally
+    FormState := gsIdle;
     SetSafetyMode(True);
     end;
 end;
