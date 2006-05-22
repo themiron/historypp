@@ -68,36 +68,36 @@ const
 
 const
 
-  HPP_ICON_CONTACTHISTORY    = 1;
-  HPP_ICON_GLOBALSEARCH      = 2;
-  HPP_ICON_SESS_DIVIDER      = 3;
-  HPP_ICON_SESSION           = 4;
-  HPP_ICON_SESS_SUMMER       = 5;
-  HPP_ICON_SESS_AUTUMN       = 6;
-  HPP_ICON_SESS_WINTER       = 7;
-  HPP_ICON_SESS_SPRING       = 8;
-  HPP_ICON_SESS_YEAR         = 9;
-  HPP_ICON_HOTFILTER         = 10;
-  HPP_ICON_HOTFILTERWAIT     = 11;
-  HPP_ICON_SEARCH_ALLRESULTS = 12;
-  HPP_ICON_TOOL_SAVEALL      = 13;
-  HPP_ICON_HOTSEARCH         = 14;
-  HPP_ICON_SEARCHUP          = 15;
-  HPP_ICON_SEARCHDOWN        = 16;
-  HPP_ICON_TOOL_DELETEALL    = 17;
-  HPP_ICON_TOOL_DELETE       = 18;
-  HPP_ICON_TOOL_SESSIONS     = 19;
-  HPP_ICON_TOOL_SAVE         = 20;
-  HPP_ICON_TOOL_COPY         = 21;
-  HPP_ICON_SEARCH_ENDOFPAGE  = 22;
-  HPP_ICON_SEARCH_NOTFOUND   = 23;
-  HPP_ICON_HOTFILTERCLEAR    = 24;
-  HPP_ICON_SESS_HIDE         = 25;
-  HPP_ICON_TOOL_EVENTSFILTER = 26;
-  HPP_ICON_CONTACDETAILS     = 27;
-  HPP_ICON_CONTACTMENU       = 28;
+  HPP_ICON_CONTACTHISTORY    = 0;
+  HPP_ICON_GLOBALSEARCH      = 1;
+  HPP_ICON_SESS_DIVIDER      = 2;
+  HPP_ICON_SESSION           = 3;
+  HPP_ICON_SESS_SUMMER       = 4;
+  HPP_ICON_SESS_AUTUMN       = 5;
+  HPP_ICON_SESS_WINTER       = 6;
+  HPP_ICON_SESS_SPRING       = 7;
+  HPP_ICON_SESS_YEAR         = 8;
+  HPP_ICON_HOTFILTER         = 9;
+  HPP_ICON_HOTFILTERWAIT     = 10;
+  HPP_ICON_SEARCH_ALLRESULTS = 11;
+  HPP_ICON_TOOL_SAVEALL      = 12;
+  HPP_ICON_HOTSEARCH         = 13;
+  HPP_ICON_SEARCHUP          = 14;
+  HPP_ICON_SEARCHDOWN        = 15;
+  HPP_ICON_TOOL_DELETEALL    = 16;
+  HPP_ICON_TOOL_DELETE       = 17;
+  HPP_ICON_TOOL_SESSIONS     = 18;
+  HPP_ICON_TOOL_SAVE         = 19;
+  HPP_ICON_TOOL_COPY         = 20;
+  HPP_ICON_SEARCH_ENDOFPAGE  = 21;
+  HPP_ICON_SEARCH_NOTFOUND   = 22;
+  HPP_ICON_HOTFILTERCLEAR    = 23;
+  HPP_ICON_SESS_HIDE         = 24;
+  HPP_ICON_TOOL_EVENTSFILTER = 25;
+  HPP_ICON_CONTACDETAILS     = 26;
+  HPP_ICON_CONTACTMENU       = 27;
 
-  hppIcons : array[1..28] of ThppIconsRec = (
+  hppIcons : array[0..27] of ThppIconsRec = (
     (name:'historypp_01'; desc:'Contact history'; group: 'Main'; i:HPP_ICON_CONTACTHISTORY; handle:0),
     (name:'historypp_02'; desc:'History search'; group: 'Main'; i:HPP_ICON_GLOBALSEARCH; handle:0),
     (name:'historypp_03'; desc:'Conversation divider'; group: 'Conversations'; i:HPP_ICON_SESS_DIVIDER; handle:0),
@@ -177,6 +177,7 @@ var
   FontServiceEnabled: Boolean;
   SmileyAddEnabled: Boolean;
   MathModuleEnabled: Boolean;
+  i: integer;
 
 procedure LoadGridOptions;
 procedure SaveGridOptions;
@@ -188,7 +189,7 @@ procedure hppRegisterGridOptions;
 
 implementation
 
-uses hpp_database;
+uses hpp_database, ShellAPI;
 
 procedure RegisterFont(Name:PChar; Order:integer; defFont:FontSettings);
 var
@@ -267,20 +268,16 @@ var
   i: integer;
   hIcons: Cardinal;
 begin
-  if not IcoLibEnabled then begin
-    hIcons := LoadLibrary(PChar(hppIconPack));
-    if hIcons = 0 then exit;
-  end;
-  for i := 1 to High(hppIcons) do begin
+  for i := 0 to High(hppIcons) do begin
     if IcoLibEnabled then
       hic := PluginLink.CallService(MS_SKIN2_GETICON,0,longint(hppIcons[i].name))
-    else
-      //hic := LoadIcon(hIcons,hppIcons[i].name);
-      hic := LoadIcon(hIcons,MAKEINTRESOURCE(hppIcons[i].i));
-    if (hic <> 0) then
+    else begin
+      hic := ExtractIcon(hInstance,PChar(hppIconPack),hppIcons[i].i);
+      if hic = 1 then hic := 0;
+    end;
+    if hic <> 0 then
       hppIcons[i].handle := hic;
   end;
-  if not IcoLibEnabled then FreeLibrary(hIcons);
 end;
 
 procedure LoadGridOptions;
@@ -390,17 +387,6 @@ begin
             ExpandFileName(dir+'..\Icons\')+#13#10+
             'No icons will be shown.';
     hppMessageBox(0,str,hppName+' Error',MB_OK);
-    exit;
-  end;
-  if not IcoLibEnabled then begin
-    hIcons := LoadLibrary(PChar(Result));
-    if hIcons = 0 then begin
-      str :=  'File '+Result+#13#10+
-              'seems to be broken. No icons will be shown.';
-      hppMessageBox(0,str,hppName+' Error',MB_OK);
-      exit;
-    end;
-    FreeLibrary(hIcons);
   end;
 end;
 
@@ -419,14 +405,14 @@ begin
     ZeroMemory(@sid,SizeOf(sid));
     sid.cbSize := SizeOf(sid);
     sid.pszDefaultFile := PChar(hppIconPack);
-    for i := 1 to High(hppIcons) do begin
+    for i := 0 to High(hppIcons) do begin
       sid.pszName := hppIcons[i].name;
       sid.pszDescription := translate(hppIcons[i].desc);
       if StrLen(hppIcons[i].group) = 0 then
         sid.pszSection := hppName
       else
         sid.pszSection := PChar(hppName+'/'+translate(hppIcons[i].group));
-      sid.iDefaultIndex := hppIcons[i].i-1;
+      sid.iDefaultIndex := hppIcons[i].i;
       PluginLink.CallService(MS_SKIN2_ADDICON,0,DWord(@sid));
     end;
   end;
@@ -455,6 +441,14 @@ initialization
   GridOptions.OnShowIcons := OnShowIcons;
 
 finalization
+
+  // The DestroyIcon function destroys an icon and frees any memory the icon occupied.
+  // Remarks
+  // It is only necessary to call DestroyIcon for icons created with the CreateIconIndirect function.
+  {if not IcoLibEnabled then
+    for i := 0 to High(hppIcons) do
+      if hppIcons[i].handle <> 0 then
+        DestroyIcon(hppIcons[i].handle);}
 
   GridOptions.Free;
 
