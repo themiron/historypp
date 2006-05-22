@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs,TntForms, StdCtrls, TntStdCtrls, CheckLst, TntCheckLst, TntGraphics, hpp_global,
-  hpp_eventfilters;
+  Dialogs,TntForms, StdCtrls, TntStdCtrls, CheckLst, TntCheckLst, TntGraphics, TntWindows,
+  hpp_global, hpp_eventfilters;
 
 type
   TfmCustomizeFilters = class(TTntForm)
@@ -243,7 +243,7 @@ begin
     if (IncOutWrong) and (Index <> EventsHeaderIndex) then
       if BrushColor = clEvents.HeaderBackgroundColor then clEvents.Canvas.Brush.Color := $008080FF;
     clEvents.Canvas.FillRect(Rect);
-    DrawTextW(clEvents.Canvas.Handle,PWideChar(txtW),Length(txtW),r,tf);
+    Tnt_DrawTextW(clEvents.Canvas.Handle,PWideChar(txtW),Length(txtW),r,tf);
     clEvents.Canvas.Brush.Color := BrushColor;
     exit;
   end;
@@ -253,7 +253,7 @@ begin
   if (IncOutWrong) and (Index < EventsHeaderIndex) then
     if BrushColor = clEvents.Color then clEvents.Canvas.Brush.Color := $008080FF;
   clEvents.Canvas.FillRect(Rect);
-  DrawTextW(clEvents.Canvas.Handle,PWideChar(txtW),Length(txtW),r,tf);
+  Tnt_DrawTextW(clEvents.Canvas.Handle,PWideChar(txtW),Length(txtW),r,tf);
   clEvents.Canvas.Brush.Color := BrushColor;
 end;
 
@@ -423,7 +423,7 @@ begin
   InflateRect(r,-2,0);
   lbFilters.Canvas.FillRect(Rect);
   tf := DT_SINGLELINE or DT_VCENTER or DT_NOPREFIX;
-  DrawTextW(lbFilters.Canvas.Handle,PWideChar(txtW),Length(txtW),r,tf);
+  Tnt_DrawTextW(lbFilters.Canvas.Handle,PWideChar(txtW),Length(txtW),r,tf);
   if lbFilters.Dragging then begin
     src := lbFilters.ItemIndex;
     dst := DragOverIndex;
