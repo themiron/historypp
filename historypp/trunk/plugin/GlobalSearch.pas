@@ -961,7 +961,7 @@ Utils_SaveWindowPosition(Self.Handle,0,'HistoryPlusPlus','GlobalSearchWindow.');
     WriteDBInt(hppDBName,'GlobalSearchWindow.AdvancedOptions',2);
 
   LastSearch := WideToAnsiString(edSearch.Text,hppCodepage);
-  WriteDBStr(hppDBName,'GlobalSearchWindow.LastSearch',LastSearch);
+  WriteDBWideStr(hppDBName,'GlobalSearchWindow.LastSearch',LastSearch);
 end;
 
 procedure TfmGlobalSearch.edSearchKeyPress(Sender: TObject; var Key: Char);
