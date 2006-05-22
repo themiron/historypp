@@ -4,7 +4,7 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
   BorderStyle = bsDialog
   Caption = 'Customize Toolbar'
   ClientHeight = 363
-  ClientWidth = 466
+  ClientWidth = 518
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,7 +19,7 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   DesignSize = (
-    466
+    518
     363)
   PixelsPerInch = 96
   TextHeight = 13
@@ -32,7 +32,7 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     FocusControl = lbAvailable
   end
   object laAdded: TTntLabel
-    Left = 283
+    Left = 310
     Top = 5
     Width = 93
     Height = 13
@@ -42,12 +42,13 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
   object TntBevel1: TTntBevel
     Left = 8
     Top = 323
-    Width = 449
+    Width = 501
     Height = 2
     Anchors = [akLeft, akRight, akBottom]
+    ExplicitWidth = 449
   end
   object bnAdd: TTntButton
-    Left = 189
+    Left = 215
     Top = 24
     Width = 88
     Height = 25
@@ -56,7 +57,7 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     OnClick = bnAddClick
   end
   object bnRemove: TTntButton
-    Left = 189
+    Left = 215
     Top = 49
     Width = 88
     Height = 25
@@ -65,12 +66,11 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     OnClick = bnRemoveClick
   end
   object lbAdded: TTntListBox
-    Left = 283
+    Left = 310
     Top = 24
-    Width = 175
+    Width = 200
     Height = 292
     Style = lbOwnerDrawFixed
-    Anchors = [akLeft, akTop, akBottom]
     DragMode = dmAutomatic
     IntegralHeight = True
     ItemHeight = 24
@@ -83,7 +83,7 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
   object lbAvailable: TTntListBox
     Left = 8
     Top = 24
-    Width = 175
+    Width = 200
     Height = 292
     Style = lbOwnerDrawFixed
     Anchors = [akLeft, akTop, akBottom]
@@ -97,7 +97,7 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     OnDrawItem = lbAvailableDrawItem
   end
   object bnUp: TTntButton
-    Left = 189
+    Left = 215
     Top = 80
     Width = 88
     Height = 25
@@ -106,7 +106,7 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     OnClick = bnUpClick
   end
   object bnDown: TTntButton
-    Left = 189
+    Left = 215
     Top = 105
     Width = 88
     Height = 25
@@ -137,14 +137,15 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     OnClick = bnCancelClick
   end
   object bnReset: TTntButton
-    Left = 328
+    Left = 380
     Top = 331
     Width = 130
     Height = 25
-    Anchors = [akLeft, akBottom]
+    Anchors = [akRight, akBottom]
     Caption = 'R&eset to Default'
     TabOrder = 8
     OnClick = bnResetClick
+    ExplicitLeft = 328
   end
   object tiScroll: TTimer
     Enabled = False
