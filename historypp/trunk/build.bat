@@ -144,12 +144,12 @@ ren *.cfg-build *.cfg
 if exist %UTILS%\GoLink.exe goto dogolink
 echo ###
 echo ### Warning! GoLink not fount in Utils directory
-echo ### Using Borland Resource Compiler instead
-echo ### Support for icons with 32-bit color depth would be broken
+echo ### Using Delphi Compiler instead
+echo ### The resulting historypp_icons.dll would be a bit bigger
 echo ### 
 echo ### Download golink.exe from http://www.jorgon.freeserve.co.uk/#linker
 echo ###
-pause
+echo:
 ren *.cfg *.cfg-build
 dcc32 %ADDCMD% -B -CG -Q -W- -H- -U%INCDIR% -R%INCDIR% -I%INCDIR% -E%OUTDIR% -LE%DCUDIR% -LN%DCUDIR% -N0%DCUDIR% %COMPDIR% historypp_icons.dpr
 if errorlevel 1 ( 
