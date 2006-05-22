@@ -1162,38 +1162,11 @@ begin
   pad := SendMessage(Toolbar.Handle,TB_GETPADDING,0,0);
   PadV := HiWord(pad);
   PadH := LoWord(pad);
+
   tbEventsFilter.Glyph.Canvas.Font := tbEventsFilter.Font;
-  //sz := WideCanvasTextExtent(tbEventsFilter.Glyph.Canvas,Name);
   sz := WideCanvasTextExtent(tbEventsFilter.Glyph.Canvas,FirstName);
-  GlyphHeight := Toolbar.ButtonHeight-PadV;
-  GlyphTopOffset := (Toolbar.ButtonHeight - GlyphHeight) div 2;
-
-  TopBorderHeight := 1; // top border height is 1 pixel normally, but if we have themes...
-  if ThemeServices.ThemesEnabled then begin
-    if not Enabled then
-      Button := tbPushButtonDisabled
-    else
-      if tbEventsFilter.Down then
-        Button := tbPushButtonPressed
-      else
-        Button := tbPushButtonNormal;
-
-    case Button of
-      tbPushButtonDisabled:
-        Toolbutton := ttbButtonDisabled;
-      tbPushButtonPressed:
-        Toolbutton := ttbButtonPressed;
-      tbPushButtonNormal:
-        Toolbutton := ttbButtonNormal;
-    end;
-
-    PaintRect := tbEventsFilter.ClientRect;
-    Details := ThemeServices.GetElementDetails(ToolButton);
-    PaintRect := ThemeServices.ContentRect(Canvas.Handle, Details, PaintRect);
-    TopBorderHeight := tbEventsFilter.ClientRect.Top - PaintRect.Top;
-  end;
-
-  Dec(GlyphTopOffset, TopBorderHeight); // decrease by top button border height
+  GlyphTopOffset := 0;
+  GlyphHeight := Max(sz.cy,16);
 
   tbEventsFilter.Glyph.Height := GlyphHeight+GlyphTopOffset;
   tbEventsFilter.Glyph.Width := 16+sz.cx+tbEventsFilter.Spacing;
