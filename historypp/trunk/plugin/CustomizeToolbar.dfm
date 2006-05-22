@@ -1,6 +1,6 @@
 object fmCustomizeToolbar: TfmCustomizeToolbar
-  Left = 0
-  Top = 0
+  Left = 362
+  Top = 240
   BorderStyle = bsDialog
   Caption = 'Customize Toolbar'
   ClientHeight = 363
@@ -45,8 +45,6 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     Width = 449
     Height = 2
     Anchors = [akLeft, akRight, akBottom]
-    ExplicitTop = 298
-    ExplicitWidth = 463
   end
   object bnAdd: TTntButton
     Left = 189
