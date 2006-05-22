@@ -270,8 +270,13 @@ begin
   //Log('OnSettChanged','Started. wParam: '+IntToStr(wParam)+', lParam: '+IntToStr(lParam));
   if wParam <> 0 then exit;
   if GridOptions.Locked then exit;
-  if (PDBContactWriteSetting(lParam).szModule <> hppDBName) and
-    (PDBContactWriteSetting(lParam).szModule <> 'SRMsg') then exit;
+  if PDBContactWriteSetting(lParam).szModule <> hppDBName then exit;
+  // place our db settings reading here
+  //
+  if (PDBContactWriteSetting(lParam).szSetting = 'FormatCopy') then
+    GridOptions.ClipCopyFormat := GetDBWideStr(hppDBName,'FormatCopy',DEFFORMAT_CLIPCOPY);
+  if (PDBContactWriteSetting(lParam).szSetting = 'FormatCopyText') then
+    GridOptions.ClipCopyTextFormat := GetDBWideStr(hppDBName,'FormatCopyText',DEFFORMAT_CLIPCOPYTEXT);
   //LoadDefaultGridOptions;
 end;
 
