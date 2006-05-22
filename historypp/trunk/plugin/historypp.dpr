@@ -96,7 +96,6 @@ function OnContactChanged(wParam: wParam; lParam: LPARAM): Integer; cdecl; forwa
 function OnContactDelete(wParam: wParam; lParam: LPARAM): Integer; cdecl; forward;
 function OnFSChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnTTBLoaded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
-function FindIconsDll(var FileName: string): boolean; forward;
 
 //Tell Miranda about this plugin
 function MirandaPluginInfo(mirandaVersion:DWord):PPLUGININFO;cdecl;
@@ -123,7 +122,6 @@ begin
   hookOptInit := PluginLink.HookEvent(ME_OPT_INITIALISE,OnOptInit);
   InitMMI;
   hppRegisterServices;
-  FindIconsDLL(hppIconPack);
   Result := 0;
 end;
 
@@ -363,41 +361,6 @@ begin
   PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[1], DWord(@menuItem));
   menuitem.hIcon := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
   PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[2], DWord(@menuItem));
-end;
-
-function FindIconsDll(var FileName: string): boolean;
-var
-  dir: string;
-  str: WideString;
-  hIcons: Cardinal;
-begin
-  Result := False;
-  SetLength(dir,MAX_PATH);
-  SetLength(dir,GetModuleFileName(hInstance,PAnsiChar(dir),Length(dir)));
-  dir := ExtractFilePath(dir);
-  if FileExists(dir+hppIPName) then
-    FileName := dir+hppIPName
-  else if FileExists(dir+'..\Icons\'+hppIPName) then
-    FileName := ExpandFileName(dir+'..\Icons\'+hppIPName)
-  else begin
-    str :=  'Cannot load icon pack '+hppIPName+' from'+#13#10+
-            dir+#13#10+
-            ExpandFileName(dir+'..\Icons\')+#13#10+
-            'No icons will be shown.';
-    hppMessageBox(Application.Handle,str,hppName+' Error',MB_OK);
-    exit;
-  end;
-  if not IcoLibEnabled then begin
-    hIcons := LoadLibrary(PChar(hppIconPack));
-    if hIcons = 0 then begin
-      str :=  'File '+hppIconPack+#13#10+
-              'seems to be broken. No icons will be shown.';
-      hppMessageBox(Application.Handle,str,hppName+' Error',MB_OK);
-      exit;
-    end;
-    FreeLibrary(hIcons);
-  end;
-  Result := True;
 end;
 
 exports
