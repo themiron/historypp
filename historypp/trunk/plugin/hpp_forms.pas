@@ -27,7 +27,6 @@ const
 procedure NotifyAllForms(Msg,wParam,lParam: DWord);
 procedure BringFormToFront(Form: TForm);
 procedure MakeFontsParent(Control: TControl);
-function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
 
 function Utils_RestoreFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
 function Utils_SaveFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
@@ -111,18 +110,6 @@ begin
 
   if Assigned(fmCustomizeFilters) then
     fmCustomizeFilters.Perform(Msg,wParam,lParam);
-end;
-
-function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
-begin
-  if not hppOSUnicode then begin
-    // ansi ver
-    Result := MessageBox(Handle,PAnsiChar(WideToAnsiString(Text,hppCodepage)),PAnsiChar(WideToAnsiString(Caption,hppCodepage)),Flags);
-  end
-  else begin
-    // unicode ver
-    Result := MessageBoxW(Handle,PWideChar(Text),PWideChar(Caption),Flags);
-  end;
 end;
 
 // This procedure scans all control children and if they have

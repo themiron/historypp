@@ -102,6 +102,7 @@ function TranslateAnsiW(const S: AnsiString): WideString;
 function TranslateWideW(const WS: WideString): WideString;
 function MakeFileName(FileName: AnsiString): AnsiString;
 procedure CopyToClip(s: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
+function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
 
 implementation
 
@@ -233,6 +234,18 @@ begin
     end;
   finally
     CloseClipBoard;
+  end;
+end;
+
+function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
+begin
+  if not hppOSUnicode then begin
+    // ansi ver
+    Result := MessageBox(Handle,PAnsiChar(WideToAnsiString(Text,hppCodepage)),PAnsiChar(WideToAnsiString(Caption,hppCodepage)),Flags);
+  end
+  else begin
+    // unicode ver
+    Result := MessageBoxW(Handle,PWideChar(Text),PWideChar(Caption),Flags);
   end;
 end;
 

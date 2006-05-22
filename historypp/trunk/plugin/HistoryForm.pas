@@ -606,7 +606,7 @@ begin
   LoadToolbarIcons;
   LoadButtonIcons;
   Image1.Picture.Icon.Handle := CopyIcon(hppIntIcons[0].handle);
-  //LoadToolbar;
+  LoadToolbar;
 
   DesktopFont := True;
   MakeFontsParent(Self);
@@ -2520,7 +2520,7 @@ end;
 
 procedure THistoryFrm.ToolbarDblClick(Sender: TObject);
 begin
-  //CustomizeToolbar;
+  CustomizeToolbar;
 end;
 
 procedure THistoryFrm.paPassHolderResize(Sender: TObject);

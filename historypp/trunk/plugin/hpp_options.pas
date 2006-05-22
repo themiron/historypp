@@ -370,6 +370,40 @@ begin
   end;
 end;
 
+function FindIconsDll: string;
+var
+  dir: string;
+  str: WideString;
+  hIcons: Cardinal;
+begin
+  SetLength(dir,MAX_PATH);
+  SetLength(dir,GetModuleFileName(hInstance,PAnsiChar(dir),Length(dir)));
+  Result := dir;
+  dir := ExtractFilePath(dir);
+  if FileExists(dir+hppIPName) then
+    Result := dir+hppIPName
+  else if FileExists(dir+'..\Icons\'+hppIPName) then
+    Result := ExpandFileName(dir+'..\Icons\'+hppIPName)
+  else begin
+    str :=  'Cannot load icon pack '+hppIPName+' from'+#13#10+
+            dir+#13#10+
+            ExpandFileName(dir+'..\Icons\')+#13#10+
+            'No icons will be shown.';
+    hppMessageBox(0,str,hppName+' Error',MB_OK);
+    exit;
+  end;
+  if not IcoLibEnabled then begin
+    hIcons := LoadLibrary(PChar(Result));
+    if hIcons = 0 then begin
+      str :=  'File '+Result+#13#10+
+              'seems to be broken. No icons will be shown.';
+      hppMessageBox(0,str,hppName+' Error',MB_OK);
+      exit;
+    end;
+    FreeLibrary(hIcons);
+  end;
+end;
+
 procedure hppRegisterGridOptions;
 var
   sid: TSKINICONDESC;
@@ -380,6 +414,7 @@ begin
   MathModuleEnabled := Boolean(PluginLink.ServiceExists(MATH_GET_STARTDELIMITER));
   // Register in IcoLib
   IcoLibEnabled := Boolean(PluginLink.ServiceExists(MS_SKIN2_ADDICON));
+  hppIconPack := FindIconsDll;
   if IcoLibEnabled then begin
     ZeroMemory(@sid,SizeOf(sid));
     sid.cbSize := SizeOf(sid);
