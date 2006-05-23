@@ -37,6 +37,9 @@ uses
 
 type
 
+  // note: add new message types to the end, or it will mess users' saved filters
+  //       don't worry about customization filters dialog, as mtOther will always
+  //       be show as the last entry
   TMessageType = (mtUnknown,
                   mtIncoming, mtOutgoing,
                   mtMessage, mtUrl, mtFile, mtSystem,
