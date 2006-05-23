@@ -2,7 +2,7 @@ unit hpp_eventfilters;
 
 interface
 
-uses SysUtils, Windows, m_api, hpp_global;
+uses SysUtils, Windows, Classes, TntSysUtils, m_api, hpp_global;
 
 const
   // filter modes
@@ -33,7 +33,7 @@ type
 var
   hppEventFilters: ThppEventFilterArray;
   hppDefEventFilters: ThppEventFilterArray;
-  
+
   procedure InitEventFilters;
   procedure ReadEventFilters;
   procedure WriteEventFilters;
@@ -61,13 +61,12 @@ var
   filterAll: TMessageTypes;
 
 const
-  hppIntDefEventFilters: array[0..6] of ThppEventFilter = (
+  hppIntDefEventFilters: array[0..5] of ThppEventFilter = (
     (Name: 'Show all events'; Events: []; filMode: FM_EXCLUDE; filEvents: []),
     (Name: 'Messages'; Events: []; filMode: FM_INCLUDE; filEvents: [mtMessage,mtIncoming,mtOutgoing]),
     (Name: 'Link URLs'; Events: []; filMode: FM_INCLUDE; filEvents: [mtUrl,mtIncoming,mtOutgoing]),
     (Name: 'Files'; Events: []; filMode: FM_INCLUDE; filEvents: [mtFile,mtIncoming,mtOutgoing]),
     (Name: 'Status changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtStatus,mtIncoming,mtOutgoing]),
-    (Name: 'SMTP Simple'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtSMTPSimple,mtIncoming,mtOutgoing]),
     (Name: 'All except status'; Events: []; filMode: FM_EXCLUDE; filEvents: [mtStatus])
     );
 
@@ -147,48 +146,83 @@ begin
     end;
 end;
 
+procedure DeleteEventFilterSettings;
+var
+  i: Integer;
+begin
+  i := 1;
+  while True do begin
+    if not DBDelete(hppDBName,'EventFilter'+IntToStr(i)) then break;
+    Inc(i);
+  end;
+end;
+
 procedure ResetEventFiltersToDefault;
 var
   i: Integer;
 begin
   CopyEventFilters(hppDefEventFilters,hppEventFilters);
-  DBDeleteContactSetting(0,hppDBName,'EventFilters');
+  DeleteEventFilterSettings;
   UpdateEventFiltersOnForms;
 end;
 
+
 procedure ReadEventFilters;
 var
-  org_mem,mem: Pointer;
-  mem_size: Integer;
   i: Integer;
-  ef_count,ef_size: Integer;
-  efr: PhppEventFilterRec;
+  FilterStr: WideString;
+  hex3,hex2,hex1: String;
+  idx: Integer;
+  filEvents: DWord;
+  filMode: Byte;
+  filFlags: Byte;
 begin
   SetLength(hppEventFilters,0);
   try
-    if not GetDBBlob(hppDBName,'EventFilters',mem,mem_size) then
-      raise EAbort.Create('Custom event filters not found');
+    i := 1;
+    while True do begin
+      if not DBExists(hppDBName,'EventFilter'+IntToStr(i)) then begin
+        if Length(hppEventFilters) = 0 then
+          raise EAbort.Create('No filters')
+        else
+          break;
+      end;
+      FilterStr := GetDBWideStr(hppDBName,'EventFilter'+IntToStr(i),'');
+      if FilterStr = '' then break;
+      SetLength(hppEventFilters,Length(hppEventFilters)+1);
+      // parse string
+      idx := WideLastDelimiter(',',FilterStr);
+      if (idx = 0) or (FilterStr[idx] <> ',') then
+        raise EAbort.Create('Wrong filter ('+IntToStr(i)+') format');
+      hex3 := Copy(FilterStr,idx+1,Length(FilterStr));
+      Delete(FilterStr,idx,Length(FilterStr));
+      idx := WideLastDelimiter(',',FilterStr);
+      if (idx = 0) or (FilterStr[idx] <> ',') then
+        raise EAbort.Create('Wrong filter ('+IntToStr(i)+') format');
+      hex2 := Copy(FilterStr,idx+1,Length(FilterStr));
+      Delete(FilterStr,idx,Length(FilterStr));
+      idx := WideLastDelimiter(',',FilterStr);
+      if (idx = 0) or (FilterStr[idx] <> ',') then
+        raise EAbort.Create('Wrong filter ('+IntToStr(i)+') format');
+      hex1 := Copy(FilterStr,idx+1,Length(FilterStr));
+      Delete(FilterStr,idx,Length(FilterStr));
 
-    org_mem := mem;
-    // load event filters from db
-    ef_count := PInteger(mem)^;
-    if ef_count < 1 then
-      raise EAbort.Create('Negative custom event filters count');
-    ef_size := PInteger(Integer(mem)+SizeOf(Integer))^;
-    if ef_size <> SizeOf(efr^) then
-      raise EAbort.Create('Unknown record size for custom event filters');
-    if mem_size <> (ef_size*ef_count+SizeOf(Integer)*2) then
-      raise EAbort.Create('Incorrect blob size for custom events');
-    mem := Pointer(Integer(mem)+SizeOf(Integer)*2);
-    SetLength(hppEventFilters,ef_count);
-    for i := 0 to ef_count - 1 do begin
-      efr := PhppEventFilterRec(Integer(mem)+i*SizeOf(efr^));
-      hppEventFilters[i].Name := efr^.Name;
-      hppEventFilters[i].filEvents := DWordToMessageTypes(efr^.filEvents);
-      hppEventFilters[i].filMode := efr^.filMode;
+      if Length(FilterStr) = 0 then
+        raise EAbort.Create('Wrong filter ('+IntToStr(i)+') format, name can not be empty');
+
+      hppEventFilters[i-1].Name := FilterStr;
+      filMode := 0;
+      filEvents := 0;
+      filFlags := 0;
+      HexToBin(PChar(hex1),@filMode,SizeOf(filMode));
+      HexToBin(PChar(hex2),@filEvents,SizeOf(filEvents));
+      HexToBin(PChar(hex3),@filFlags,SizeOf(filFlags));
+      hppEventFilters[i-1].filMode := filMode;
+      hppEventFilters[i-1].filEvents := DWordToMessageTypes(filEvents);
+
+      Inc(i);
     end;
     GenerateEventFilters(hppEventFilters);
-    FreeMem(org_mem,mem_size);
   except
     ResetEventFiltersToDefault;
   end;
@@ -197,10 +231,8 @@ end;
 procedure WriteEventFilters;
 var
   i: Integer;
-  org_mem,mem: Pointer;
-  mem_size: Integer;
-  efr: ThppEventFilterRec;
-  name_len: Integer;
+  FilterStr: WideString;
+  hex: String;
 begin
   if Length(hppEventFilters) = 0 then begin
     ResetEventFiltersToDefault;
@@ -208,29 +240,34 @@ begin
   end;
   if IsSameAsDefault then begin
     // revert to default state
-    DBDeleteContactSetting(0,hppDBName,'EventFilters');
+    DeleteEventFilterSettings;
     UpdateEventFiltersOnForms;
     exit;
   end;
-  mem_size := SizeOf(Integer)*2+Length(hppEventFilters)*SizeOf(ThppEventFilterRec);
-  GetMem(mem,mem_size);
-  org_mem := mem;
-  PInteger(mem)^ := Length(hppEventFilters);
-  Inc(Integer(mem),SizeOf(Integer));
-  PInteger(mem)^ := SizeOf(ThppEventFilterRec);
-  Inc(Integer(mem),SizeOf(Integer));
 
   for i := 0 to Length(hppEventFilters) - 1 do begin
-    ZeroMemory(@efr,SizeOf(efr));
-    name_len := Length(hppEventFilters[i].Name);
-    name_len := Min(name_len,MAX_FILTER_NAME_LENGTH);
-    Move(hppEventFilters[i].Name[1],efr.Name[0],name_len*SizeOf(WideChar));
-    efr.filEvents := MessageTypesToDWord(hppEventFilters[i].filEvents);
-    efr.filMode := hppEventFilters[i].filMode;
-    Move(efr,PByte(Integer(mem)+i*SizeOf(efr))^,SizeOf(efr));
+    FilterStr := Copy(hppEventFilters[i].Name,1,MAX_FILTER_NAME_LENGTH);
+    // add filMode
+    SetLength(hex,SizeOf(hppEventFilters[i].filMode)*2);
+    BinToHex(@hppEventFilters[i].filMode,@hex[1],SizeOf(hppEventFilters[i].filMode));
+    FilterStr := FilterStr + ','+hex;
+    // add filEvents
+    SetLength(hex,SizeOf(hppEventFilters[i].filEvents)*2);
+    BinToHex(@hppEventFilters[i].filEvents,@hex[1],SizeOf(hppEventFilters[i].filEvents));
+    FilterStr := FilterStr + ','+hex;
+    // add filFlags
+    //SetLength(hex,SizeOf(Byte)*2);
+    //BinToHex(@hppEventFilters[i].filFlags,@hex[1],SizeOf(hppEventFilters[i].filFlags));
+    hex := '00';
+    FilterStr := FilterStr + ','+hex;
+    WriteDBWideStr(hppDBName,'EventFilter'+IntToStr(i+1),FilterStr);
   end;
-  WriteDBBlob(hppDBName,'EventFilters',org_mem,mem_size);
-  FreeMem(org_mem,mem_size);
+  // delete left filters if we have more than Length(hppEventFilters)
+  i := Length(hppEventFilters)+1;
+  while True do begin
+    if not DBDelete(hppDBName,'EventFilter'+IntToStr(i)) then break;
+    Inc(i);
+  end;
   UpdateEventFiltersOnForms;
 end;
 
