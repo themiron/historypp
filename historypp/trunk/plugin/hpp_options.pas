@@ -381,12 +381,17 @@ begin
     Result := dir+hppIPName
   else if FileExists(dir+'..\Icons\'+hppIPName) then
     Result := ExpandFileName(dir+'..\Icons\'+hppIPName)
+  else if FileExists(dir+'..\'+hppIPName) then
+    Result := ExpandFileName(dir+'..\'+hppIPName)
   else begin
-    str :=  'Cannot load icon pack '+hppIPName+' from'+#13#10+
+    str :=  'Cannot load icon pack '+hppIPName+' from:'+#13#10+
+            #13#10+
             dir+#13#10+
             ExpandFileName(dir+'..\Icons\')+#13#10+
+            ExpandFileName(dir+'..\')+#13#10+
+            #13#10+
             'No icons will be shown.';
-    hppMessageBox(0,str,hppName+' Error',MB_OK);
+    hppMessageBox(0,str,hppName+' Error',MB_ICONERROR or MB_OK);
   end;
 end;
 
