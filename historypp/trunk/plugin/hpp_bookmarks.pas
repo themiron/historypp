@@ -192,17 +192,16 @@ end;
 constructor TBookmarkServer.Create;
 begin
   inherited;
+  CachedContacts := TContactsHash.Create;
   hookEventDeleted := PluginLink.HookEvent(ME_DB_EVENT_DELETED,EventDeletedHelper);
   hookEventAdded := PluginLink.HookEvent(ME_DB_EVENT_ADDED,EventAddedHelper);
-
-  CachedContacts := TContactsHash.Create;
 end;
 
 destructor TBookmarkServer.Destroy;
 begin
-  CachedContacts.Free;
   PluginLink.UnhookEvent(hookEventDeleted);
   PluginLink.UnhookEvent(hookEventAdded);
+  CachedContacts.Free;
   BookmarkServer := nil;
   inherited;
 end;
@@ -255,8 +254,7 @@ var
   i: Integer;
 begin
   ph.Key := Key;
-  Nearest := SearchDynArray(Table,SizeOf(TPseudoHashEntry),DynArrayComparePseudoHash,
-    @ph,True);
+  Nearest := SearchDynArray(Table,SizeOf(TPseudoHashEntry),DynArrayComparePseudoHash,@ph,True);
   if Nearest <> -1 then begin // we have nearest or match
     if Table[Nearest].Key = Key then
       raise Exception.Create('TPseudoHash: Key already exists');
@@ -287,8 +285,7 @@ var
 begin
   Result := False;
   ph.Key := Key;
-  res := SearchDynArray(Table,SizeOf(TPseudoHashEntry),DynArrayComparePseudoHash,
-    @ph,False);
+  res := SearchDynArray(Table,SizeOf(TPseudoHashEntry),DynArrayComparePseudoHash,@ph,False);
   if res <> -1 then begin
     Result := True;
     Value := Table[res].Value;
@@ -315,8 +312,7 @@ var
   ph: TPseudoHashEntry;
 begin
   Result := False;
-  idx := SearchDynArray(Self.Table,SizeOf(TPseudoHashEntry),DynArrayComparePseudoHash,
-    @ph,False);
+  idx := SearchDynArray(Table,SizeOf(TPseudoHashEntry),DynArrayComparePseudoHash,@ph,False);
   if idx = -1 then exit;
   RemoveByIndex(idx);
 end;
@@ -397,8 +393,8 @@ var
 begin
   Result := False;
   if GetKey(Cardinal(hDBEvent),Cardinal(ped)) then begin
-    FreeMem(ped,SizeOf(ped^));
     RemoveKey(Cardinal(hDBEvent));
+    FreeMem(ped,SizeOf(ped^));
     Result := True;
   end;
 end;
