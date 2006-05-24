@@ -1347,11 +1347,20 @@ begin
 
   Canvas.Font := timestampFont;
   if sel then Canvas.Font.Color := Options.ColorSelectedText;
+  TimeOffset := WideCanvasTextWidth(Canvas,TimeStamp);
   if RTL then
     WideCanvasTextOut(Canvas,ItemRect.Left,ItemRect.Top,TimeStamp)
   else begin
-    TimeOffset := WideCanvasTextWidth(Canvas,TimeStamp);
     WideCanvasTextOut(Canvas,ItemRect.Right-TimeOffset,ItemRect.Top,TimeStamp);
+  end;
+
+  if FItems[Index].Bookmarked then begin
+    if RTL then
+      DrawIconEx(Canvas.Handle,ItemRect.Left+TimeOffset+Padding,ItemRect.Top,
+        hppIcons[HPP_ICON_BOOKMARK].Handle,16,16,0,0,DI_NORMAL)
+    else
+      DrawIconEx(Canvas.Handle,ItemRect.Right-TimeOffset-Padding-16,ItemRect.Top,
+        hppIcons[HPP_ICON_BOOKMARK].Handle,16,16,0,0,DI_NORMAL);
   end;
 
   if mtIncoming in FItems[Index].MessageType then
