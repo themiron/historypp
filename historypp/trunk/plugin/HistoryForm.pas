@@ -1019,13 +1019,25 @@ begin
       key:=0;
       end;
     if (key=Ord('E')) and (not PasswordMode) then begin
-      SearchMode := smFilter;
-      edSearch.SetFocus;
+      if SearchMode = smFilter then
+        SearchMode := smNone
+      else begin
+        SearchMode := smFilter;
+        edSearch.SetFocus;
+      end;
       key:=0;
       end;
     if (key=Ord('F')) and (not PasswordMode) then begin
-      SearchMode := smSearch;
-      edSearch.SetFocus;
+      if SearchMode = smSearch then
+        SearchMode := smNone
+      else begin
+        SearchMode := smSearch;
+        edSearch.SetFocus;
+      end;
+      key:=0;
+      end;
+    if (key=Ord('B')) and (not PasswordMode) then begin
+      Self.Bookmark1.Click;
       key:=0;
       end;
     if ((key=Ord('C')) or (key = VK_INSERT)) and (not PasswordMode) then begin
@@ -3164,7 +3176,7 @@ procedure THistoryFrm.tbHistoryClick(Sender: TObject);
   SaveFormat: TSaveFormat;}
 begin
   if hg.SelCount > 1 then
-    Self.SaveSelected1Click(Self)
+    SaveSelected1.Click
   else begin
     tbHistory.ShowHint := false;
     tbHistory.CheckMenuDropdown;
