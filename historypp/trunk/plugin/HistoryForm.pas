@@ -807,6 +807,13 @@ begin
     tool[i].Visible := True;
     tool[i].Parent := Toolbar;
   end;
+
+  // Thanks Primoz Gabrijeleie for this trick!
+  // http://groups.google.com/group/alt.comp.lang.borland-delphi/browse_thread/thread/da77e8db6d8f418a/dc4fd87eee6b1d54
+  // This f***ing toolbar has almost got me!
+  // A bit of explanation: without the following line loading toolbar when
+  // window is show results in unpredictable buttons placed on toolbar
+  ToolBar.Perform(CM_RECREATEWND, 0, 0);
 end;
 
 procedure THistoryFrm.LoadToolbarIcons;
@@ -935,13 +942,7 @@ end;
 procedure THistoryFrm.HMToolbarChanged(var M: TMessage);
 begin
   LoadToolbar;
-  // Thanks Primoz Gabrijeleie for this trick!
-  // http://groups.google.com/group/alt.comp.lang.borland-delphi/browse_thread/thread/da77e8db6d8f418a/dc4fd87eee6b1d54
-  // This f***ing toolbar has almost got me!
-  // A bit of explanation: without the following line loading toolbar when
-  // window is show results in unpredictable buttons placed on toolbar
-  ToolBar.Perform(CM_RECREATEWND, 0, 0)
- end;
+end;
 
 {Unfortunatly when you make a form from a dll this form won't become the
 normal messages specified by the VCL but only the basic windows messages.
