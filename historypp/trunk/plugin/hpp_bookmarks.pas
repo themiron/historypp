@@ -462,8 +462,7 @@ begin
   hi := ReadEvent(hDBEvent,Contact.ContactCP);
   ped^.Timestamp := hi.Time;
   CalcCRC32(PWideChar(hi.Text),Length(hi.Text)*SizeOf(WideChar),Cardinal(ped^.CRC32));
-  AddKey(hDBEvent,Cardinal(ped));
-  Result := True;
+  Result := AddKey(hDBEvent,Cardinal(ped));
 end;
 
 constructor TBookmarksHash.Create(AContact: TContactBookmarks);
