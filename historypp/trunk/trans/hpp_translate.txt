@@ -58,6 +58,31 @@ Incoming & Outgoing
 [Events]
 Events
 
+;; PassForm.trans.txt file 
+
+;; Text found in ..\plugin\PassForm.dfm:
+[History++ Password Protection]
+History++ Password Protection
+[Password Options]
+Password Options
+[Protect all contacts]
+Protect all contacts
+[Protect only selected contacts]
+Protect only selected contacts
+[Password...]
+Password...
+[Cancel]
+Cancel
+[&Refresh List]
+&Refresh List
+;; Text found in ..\plugin\PassForm.pas:
+[System History]
+System History
+[Password not set]
+Password not set
+[Password set]
+Password set
+
 ;; HistoryForm.trans.txt file 
 
 ;; Text found in ..\plugin\HistoryForm.dfm:
@@ -141,8 +166,6 @@ Open File Fo&lder
 Copy All
 [Select &All]
 Select &All
-[Cancel]
-Cancel
 [Export as &HTML...]
 Export as &HTML...
 [Export as &XML...]
@@ -174,8 +197,6 @@ Select
 [Save...]
 Save...
 ;; Text found in ..\plugin\HistoryForm.pas:
-[System History]
-System History
 [Error]
 Error
 [HotSearch: %s (F3 to find next)]
@@ -218,8 +239,6 @@ Do you want to continue searching at the beginning?
 "%s" not found
 [You have entered the wrong password]
 You have entered the wrong password
-[History++ Password Protection]
-History++ Password Protection
 [%d event]
 %d event
 [%0.n events (%s)]
@@ -249,25 +268,6 @@ Unicode text file (*.txt)|*.txt
 Text file (*.txt)|*.txt
 [All files (*.*)|*.*]
 All files (*.*)|*.*
-
-;; PassForm.trans.txt file 
-
-;; Text found in ..\plugin\PassForm.dfm:
-[Password Options]
-Password Options
-[Protect all contacts]
-Protect all contacts
-[Protect only selected contacts]
-Protect only selected contacts
-[Password...]
-Password...
-[&Refresh List]
-&Refresh List
-;; Text found in ..\plugin\PassForm.pas:
-[Password not set]
-Password not set
-[Password set]
-Password set
 
 ;; EventDetailForm.trans.txt file 
 

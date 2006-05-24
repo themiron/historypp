@@ -2296,7 +2296,11 @@ begin
   try
 
     if tiFilter.Enabled then EndHotFilterTimer;
+
+    tbFilter.Down := (FSearchMode = smFilter);
+    tbSearch.Down := (FSearchMode = smSearch);
     paSearch.Visible := not (SearchMode = smNone);
+
     if SearchMode = smNone then begin
       edSearch.Text := '';
       edSearch.Color := clWindow;
@@ -2304,8 +2308,6 @@ begin
     end;
 
     SaveStr := edSearch.Text;
-    tbFilter.Down := (FSearchMode = smFilter);
-    tbSearch.Down := (FSearchMode = smSearch);
 
     hg.BeginUpdate;
     try
