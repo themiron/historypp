@@ -124,11 +124,12 @@ begin
     Lock := LockWindowUpdate(wHistory.Handle);
     try
       if index <> -1 then
-        wHistory.hg.Selected := index
-      else begin
-        if wHistory.hg.Count > 0 then
-          wHistory.hg.Selected := 0;
-      end;
+        wHistory.hg.Selected := index;
+      // we have multiple selection sets
+      //else begin
+      //  if wHistory.hg.Count > 0 then
+      //    wHistory.hg.Selected := 0;
+      //end;
       //wHistory.hg.EndUpdate;
       //if not wHistory.PasswordMode then
       //  wHistory.hg.PrePaintWindow;
