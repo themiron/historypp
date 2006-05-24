@@ -357,7 +357,7 @@ begin
         txt := TTntToolButton(but).Hint
     end
     else if but = fm.tbEventsFilter then
-      txt := 'Event Filters';
+      txt := TranslateWideW('Event Filters');
       
     if txt <> '' then begin
       if but.Visible then begin
