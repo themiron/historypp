@@ -136,7 +136,6 @@ const
     (name: 'Incoming nick'; nameColor: 'Divider'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $6B3FC8; back: clGray),
     (name: 'Outgoing nick'; nameColor: 'Selected text'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $BD6008; back: clHighlightText),
     (name: 'Timestamp'; nameColor: 'Selected background'; Mes: []; style:0; size: -11; color: $000000; back: clHighlight),
-    (name: 'Session header'; Mes: []; style:0; size: -11; color: $000000; back: $00D7FDFF),
     (name: 'Incoming message'; Mes: [mtMessage,mtIncoming]; style:0; size: -11; color: $000000; back: $DBDBDB),
     (name: 'Outgoing message'; Mes: [mtMessage,mtOutgoing]; style:0; size: -11; color: $000000; back: $EEEEEE),
     (name: 'Incoming file'; Mes: [mtFile,mtIncoming]; style:0; size: -11; color: $000000; back: $9BEEE3),
@@ -150,7 +149,8 @@ const
     (name: 'System message'; Mes: [mtSystem,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $CFFEDC),
     (name: 'Status change'; Mes: [mtStatus,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $F0F0F0),
     (name: 'SMTP Simple'; Mes: [mtSMTPSimple,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF),
-    (name: 'Other events'; Mes: [mtOther,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF)
+    (name: 'Other events'; Mes: [mtOther,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF),
+    (name: 'Session header'; Mes: []; style:0; size: -11; color: $000000; back: $00D7FDFF)
     );
 
   cpTable: array[0..14] of TCodePage = (
@@ -320,18 +320,18 @@ begin
   LoadFont(0,GridOptions.FontContact);
   LoadFont(1,GridOptions.FontProfile);
   LoadFont(2,GridOptions.FontTimestamp);
-  LoadFont(3,GridOptions.FontSessHeader);
+  LoadFont(High(hppFontItems),GridOptions.FontSessHeader);
   // load colors
   GridOptions.ColorDivider := LoadColorDB(0);
   GridOptions.ColorSelectedText := LoadColorDB(1);
   GridOptions.ColorSelected := LoadColorDB(2);
-  GridOptions.ColorSessHeader := LoadColorDB(3);
+  GridOptions.ColorSessHeader := LoadColorDB(High(hppFontItems));
   // load mestype-related
-  for i :=  4 to High(hppFontItems) do begin
-    if (i-4) > High(GridOptions.ItemOptions) then GridOptions.AddItemOptions;
-    GridOptions.ItemOptions[i-4].MessageType := hppFontItems[i].Mes;
-    LoadFont(i,GridOptions.ItemOptions[i-4].textFont);
-    GridOptions.ItemOptions[i-4].textColor := LoadColorDB(i);
+  for i :=  3 to High(hppFontItems)-1 do begin
+    if (i-3) > High(GridOptions.ItemOptions) then GridOptions.AddItemOptions;
+    GridOptions.ItemOptions[i-3].MessageType := hppFontItems[i].Mes;
+    LoadFont(i,GridOptions.ItemOptions[i-3].textFont);
+    GridOptions.ItemOptions[i-3].textColor := LoadColorDB(i);
   end;
   // load others
   GridOptions.ShowIcons := GetDBBool(hppDBName,'ShowIcons',True);
@@ -432,12 +432,12 @@ begin
     RegisterFont(Translate(hppFontItems[0].name),0,defFont);
     RegisterFont(Translate(hppFontItems[1].name),1,defFont);
     RegisterFont(Translate(hppFontItems[2].name),2,defFont);
-    RegisterFont(Translate(hppFontItems[3].name),3,defFont);
+    RegisterFont(Translate(hppFontItems[High(hppFontItems)].name),High(hppFontItems),defFont);
     RegisterColor(Translate(hppFontItems[0].nameColor),0,ColorToRGB(hppFontItems[0].back));
     RegisterColor(Translate(hppFontItems[1].nameColor),1,ColorToRGB(hppFontItems[1].back));
     RegisterColor(Translate(hppFontItems[2].nameColor),2,ColorToRGB(hppFontItems[2].back));
-    RegisterColor(Translate(hppFontItems[3].name),3,ColorToRGB(hppFontItems[3].back));
-    for i := 4 to High(hppFontItems) do begin
+    RegisterColor(Translate(hppFontItems[High(hppFontItems)].name),3,ColorToRGB(hppFontItems[High(hppFontItems)].back));
+    for i := 3 to High(hppFontItems)-1 do begin
       GridOptions.AddItemOptions;
       RegisterFont(Translate(hppFontItems[i].name),i,defFont);
       RegisterColor(Translate(hppFontItems[i].name),i,hppFontItems[i].back);
