@@ -159,11 +159,17 @@ begin
   if Assigned(BookmarkServer) then
     BookmarkServer.EventAdded(wParam,lParam);
   Result := 0;
+  Classes
 end;
 
 function DynArrayComparePseudoHash(Item1, Item2: Pointer): Integer;
 begin
-  Result := PInteger(@PPseudoHashEntry(Item1)^.Key)^ - PInteger(@PPseudoHashEntry(Item2)^.Key)^;
+  if PPseudoHashEntry(Item1)^.Key > PPseudoHashEntry(Item2)^.Key then
+    Result := 1
+  else if PPseudoHashEntry(Item1)^.Key < PPseudoHashEntry(Item2)^.Key then
+    Result := -1
+  else
+    Result := 0;
 end;
 
 { TBookmarkServer }
