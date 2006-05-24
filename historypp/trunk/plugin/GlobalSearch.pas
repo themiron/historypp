@@ -209,6 +209,8 @@ type
     procedure ReplyQuoted(Item: Integer);
     procedure StartHotFilterTimer;
     procedure EndHotFilterTimer;
+
+    procedure StopSearching;
   private
     LastAddedContact: TContactInfo;
     ContactList: TObjectList;
@@ -626,21 +628,26 @@ begin
   end;
 end;
 
+procedure TfmGlobalSearch.StopSearching;
+begin
+  bnSearch.Enabled := False;
+  try
+    st.Terminate;
+    while IsSearching do
+      Application.ProcessMessages;
+  finally
+    bnSearch.Enabled := True;
+  end;
+  edSearch.SetFocus;
+  exit;
+end;
+
 procedure TfmGlobalSearch.bnSearchClick(Sender: TObject);
 begin
   if IsSearching then begin
-    bnSearch.Enabled := False;
-    try
-      st.Terminate;
-      while IsSearching do
-        Application.ProcessMessages;
-    finally
-      bnSearch.Enabled := True;
-    end;
-    edSearch.SetFocus;
+    StopSearching;
     exit;
   end;
-  
   if edSearch.Text = '' then
     raise Exception.Create('Enter text to search');
   if edPass.Enabled then begin
@@ -1346,7 +1353,13 @@ begin
     key := 0;
     end;
 
-  if (Key = VK_ESCAPE) then close;
+  if (Key = VK_ESCAPE) then begin
+    if IsSearching then begin
+      StopSearching;
+      exit;
+    end else
+      close;
+  end;
 
   if hg.State = gsInline then begin
     exit;
