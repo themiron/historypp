@@ -942,9 +942,9 @@ var
 begin
   if M.WParam <> hContact then exit;
   found := false;
-  for i := 0 to HistoryLength-1 do
-    if History[i] = M.LParam then begin
-      hg.ResetItem(HistoryIndexToGrid(i));
+  for i := 0 to hg.Count-1 do
+    if History[GridIndexToHistory(i)] = M.LParam then begin
+      hg.ResetItem(i);
       found := true;
     end;
   if found then
