@@ -130,6 +130,9 @@ begin
     DoMessage(HM_SESS_PREPARE,0,0);
     hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDFIRST,FContact,0);
     while hDBEvent <> 0 do begin
+      if Terminated then
+        raise EAbort.Create('Sessions thread terminated');
+
       ZeroMemory(@Event,SizeOf(Event));
       Event.cbSize:=SizeOf(Event);
       Event.cbBlob := 0;

@@ -1071,8 +1071,9 @@ begin
 end;
 
 procedure THistoryFrm.FormClose(Sender: TObject; var Action: TCloseAction);
-//var
-  //h: hwnd;
+var
+  Flag: UINT;
+  AppSysMenu: THandle;
 begin
   try
     Action:=caFree;
@@ -1090,8 +1091,18 @@ begin
     end;
     SavePosition;
     UnhookEvents;
-    while SessThread <> nil do
+    if SessThread <> nil then begin
+      // disable close button
+      AppSysMenu:=GetSystemMenu(Handle,False);
+      Flag:=MF_GRAYED;
+      EnableMenuItem(AppSysMenu,SC_CLOSE,MF_BYCOMMAND or Flag);
+      // terminate thread
+      SessThread.Terminate;
+      SetThreadPriority(SessThread.Handle, THREAD_PRIORITY_ABOVE_NORMAL);
+    end;
+    while SessThread <> nil do begin
       Application.ProcessMessages;
+    end;
   except
   end;
 end;
@@ -1270,7 +1281,6 @@ begin
     CustomizeFiltersForm.Release;
   if Assigned(EventDetailFrom) then
     EventDetailFrom.Release;
-  Release;
 end;
 
 procedure THistoryFrm.DeleteHistoryItem(ItemIdx: Integer);
