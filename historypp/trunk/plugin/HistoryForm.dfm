@@ -1,6 +1,6 @@
 object HistoryFrm: THistoryFrm
-  Left = 252
-  Top = 172
+  Left = 232
+  Top = 210
   Width = 586
   Height = 418
   VertScrollBar.Tracking = True
@@ -331,7 +331,7 @@ object HistoryFrm: THistoryFrm
           Left = 0
           Top = 0
           Hint = 'User Details'
-          OnClick = UserDetails1Click
+          OnClick = tbUserDetailsClick
         end
         object tbUserMenu: TTntToolButton
           Left = 23
@@ -554,11 +554,6 @@ object HistoryFrm: THistoryFrm
       Caption = '&Reply Quoted'
       ShortCut = 16466
       OnClick = ReplyQuoted1Click
-    end
-    object UserDetails1: TTntMenuItem
-      Caption = 'User &Details'
-      ShortCut = 16457
-      OnClick = UserDetails1Click
     end
     object N12: TTntMenuItem
       Caption = '-'
