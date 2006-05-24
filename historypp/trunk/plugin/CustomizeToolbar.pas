@@ -333,7 +333,7 @@ end;
 
 procedure TfmCustomizeToolbar.bnAddClick(Sender: TObject);
 begin
-  AddItem(lbAvailable.ItemIndex);
+  AddItem(lbAvailable.ItemIndex,lbAdded.ItemIndex);
 end;
 
 procedure TfmCustomizeToolbar.FillButtons;
