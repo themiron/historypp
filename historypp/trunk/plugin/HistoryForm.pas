@@ -49,7 +49,7 @@ uses
   TntWindows, TntGraphics, TntSysUtils, TntForms, TntDialogs, TntComCtrls, {WFindDialog,}
   m_globaldefs, m_api,
   hpp_global, hpp_database, hpp_messages, hpp_events, hpp_contacts, hpp_itemprocess,
-  hpp_forms,
+  hpp_bookmarks, hpp_forms,
   clipbrd, {FileCtrl,} shellapi,
   HistoryGrid, Checksum, TntExtCtrls, hpp_sessionsthread, DateUtils,
   ImgList, PasswordEditControl, TntStdCtrls, TntButtons, TntMenus,
@@ -173,6 +173,7 @@ type
     TntToolButton5: TTntToolButton;
     pmToolbar: TTntPopupMenu;
     Customize2: TTntMenuItem;
+    Bookmark1: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -274,6 +275,7 @@ type
     procedure hgRTLEnabled(Sender: TObject; Enabled: Boolean);
     procedure ToolbarDblClick(Sender: TObject);
     procedure Customize2Click(Sender: TObject);
+    procedure Bookmark1Click(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -3310,13 +3312,20 @@ end;}
 
 procedure THistoryFrm.pmGridPopup(Sender: TObject);
 begin
-  Self.LoadInOptions();
+  LoadInOptions();
+  If BookmarkServer.GetBookmark(hContact,History[GridIndexToHistory(hg.Selected)]) = -1 then begin
+    Bookmark1.Checked := False;
+    Bookmark1.Caption := TranslateWideW('Set &Bookmark');
+  end else begin
+    Bookmark1.Checked := True;
+    Bookmark1.Caption := TranslateWideW('Delete &Bookmark');
+  end;
   AddMenuArray(pmGrid,[ContactRTLmode1,ANSICodepage1],-1);
 end;
 
 procedure THistoryFrm.pmHistoryPopup(Sender: TObject);
 begin
-  Self.LoadInOptions();
+  LoadInOptions();
   AddMenuArray(pmHistory,[ContactRTLmode1,ANSICodepage1],7);
 end;
 
@@ -3379,6 +3388,17 @@ begin
   hg.BiDiMode := Flag;
   if Assigned(EventDetailFrom) then
     TEventDetailsFrm(EventDetailFrom).Item := TEventDetailsFrm(EventDetailFrom).Item;
+end;
+
+procedure THistoryFrm.Bookmark1Click(Sender: TObject);
+var
+  bm: integer;
+begin
+  bm := BookmarkServer.GetBookmark(hContact,History[GridIndexToHistory(hg.Selected)]);
+  if bm = -1 then
+    BookmarkServer.AddBookmark(hContact,History[GridIndexToHistory(hg.Selected)])
+  else
+    BookmarkServer.DeleteBookmark(bm);
 end;
 
 end.

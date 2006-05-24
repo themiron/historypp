@@ -49,22 +49,25 @@ type
     destructor Destroy; override;
 
     function AddBookmark(hContact, hDBEvent: THandle): Integer;
+    function GetBookmark(hContact, hDBEvent: THandle): Integer;
+    function DeleteBookmark(Bookmark: Integer): Integer; overload;
+    function DeleteBookmark(hContact, hDBEvent: THandle): Integer; overload;
   end;
 
 var
   BookmarkServer: TBookmarkServer;
 
-procedure InitBookmarkServer;
-procedure DeinitBookmarkServer;
+procedure hppInitBookmarkServer;
+procedure hppDeinitBookmarkServer;
 
 implementation
 
-procedure InitBookmarkServer;
+procedure hppInitBookmarkServer;
 begin
   BookmarkServer := TBookmarkServer.Create;
 end;
 
-procedure DeinitBookmarkServer;
+procedure hppDeinitBookmarkServer;
 begin
   BookmarkServer.Free;
 end;
@@ -92,6 +95,27 @@ begin
   Result := 0;
 end;
 
+function TBookmarkServer.GetBookmark(hContact, hDBEvent: THandle): Integer;
+begin
+  Result := -1;
+end;
+
+function TBookmarkServer.DeleteBookmark(Bookmark: Integer): Integer;
+begin
+  Result := 0;
+end;
+
+function TBookmarkServer.DeleteBookmark(hContact, hDBEvent: THandle): Integer;
+var
+  bm: integer;
+begin
+  bm := GetBookmark(hContact, hDBEvent);
+  if bm <> -1 then
+    Result := Self.DeleteBookmark(bm)
+  else
+    Result := bm;
+end;
+
 constructor TBookmarkServer.Create;
 begin
   inherited;
@@ -114,7 +138,7 @@ end;
 
 procedure TBookmarkServer.EventDeleted(hContact, hDBEvent: THandle);
 begin
-  ;
+  DeleteBookmark(hContact, hDBEvent);
 end;
 
 end.
