@@ -331,6 +331,14 @@ object fmGlobalSearch: TfmGlobalSearch
       ShortCut = 16397
       OnClick = hgDblClick
     end
+    object Bookmark1: TTntMenuItem
+      Caption = 'Set &Bookmark'
+      ShortCut = 16450
+      OnClick = Bookmark1Click
+    end
+    object N3: TTntMenuItem
+      Caption = '-'
+    end
     object SendMessage1: TTntMenuItem
       Caption = 'Send &Message'
       ShortCut = 16461

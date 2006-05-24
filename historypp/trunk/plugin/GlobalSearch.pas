@@ -41,6 +41,7 @@ uses
   HistoryGrid,
   m_globaldefs, m_api,
   hpp_global, hpp_events, hpp_services, hpp_contacts,  hpp_database,  hpp_searchthread,
+  hpp_bookmarks, 
   ImgList, PasswordEditControl, Buttons, TntButtons, Math, CommCtrl,
   Contnrs, TntMenus, hpp_forms;
 
@@ -107,6 +108,8 @@ type
     edFilter: TTntEdit;
     pbFilter: TPaintBox;
     Delete1: TTntMenuItem;
+    N3: TTntMenuItem;
+    Bookmark1: TTntMenuItem;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -157,6 +160,7 @@ type
     procedure CopyText1Click(Sender: TObject);
     procedure Delete1Click(Sender: TObject);
     procedure hgRTLEnabled(Sender: TObject; Enabled: Boolean);
+    procedure Bookmark1Click(Sender: TObject);
   private
     WasReturnPressed: Boolean;
     LastUpdateTime: Cardinal;
@@ -191,6 +195,7 @@ type
     procedure HMPreShutdown(var M: TMessage); message HM_SRCH_PRESHUTDOWN;
 
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
+    procedure HMBookmarksChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
 
     procedure TranslateForm;
 
@@ -745,6 +750,7 @@ begin
   Item := ReadEvent(GetSearchItem(Index).hDBEvent,GetSearchItem(Index).Contact.Codepage);
   Item.Proto := GetSearchItem(Index).Contact.Proto;
   Item.RTLMode := GetSearchItem(Index).Contact.RTLMode;
+  Item.Bookmarked := BookmarkServer[GetSearchItem(Index).Contact.Handle].Bookmarked[GetSearchItem(Index).hDBEvent];
 end;
 
 procedure TfmGlobalSearch.hgItemDelete(Sender: TObject; Index: Integer);
@@ -1006,6 +1012,10 @@ begin
       SendMessage1.Visible := False;
       ReplyQuoted1.Visible := False;
     end;
+    if hg.Items[hg.Selected].Bookmarked then
+      Bookmark1.Caption := TranslateWideW('Delete &Bookmark')
+    else
+      Bookmark1.Caption := TranslateWideW('Set &Bookmark');
     pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
   end;
 end;
@@ -1158,9 +1168,25 @@ end;
 procedure TfmGlobalSearch.HMIcons2Changed(var M: TMessage);
 begin
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_GLOBALSEARCH].handle);
-  pbFilter.Repaint;
   LoadButtonIcons;
+  pbFilter.Repaint;
   LoadContactsIcons;
+  hg.Repaint;
+end;
+
+procedure TfmGlobalSearch.HMBookmarksChanged(var M: TMessage);
+var
+  i: integer;
+  found: boolean;
+begin
+  found := false;
+  for i := 0 to hg.Count-1 do
+    if GetSearchItem(i).hDBEvent = M.lParam then begin
+      hg.ResetItem(i);
+      found := true;
+    end;
+  if found then
+    hg.Repaint;
 end;
 
 procedure TfmGlobalSearch.HMPreShutdown(var M: TMessage);
@@ -1473,6 +1499,17 @@ begin
   edFilter.BiDiMode := Flag;
   //lvContacts.BiDiMode := Flag;
   hg.BiDiMode := Flag;
+end;
+
+procedure TfmGlobalSearch.Bookmark1Click(Sender: TObject);
+var
+  val: boolean;
+  hDBEvent: THandle;
+begin
+  hDBEvent := GetSearchItem(hg.Selected).hDBEvent;
+  val := not BookmarkServer[GetSearchItem(hg.Selected).Contact.Handle].Bookmarked[hDBEvent];
+  BookmarkServer[GetSearchItem(hg.Selected).Contact.Handle].Bookmarked[hDBEvent] := val;
+  NotifyAllForms(HM_NOTF_BOOKMARKCHANGED,GetSearchItem(hg.Selected).Contact.Handle,hDBEvent);
 end;
 
 initialization
