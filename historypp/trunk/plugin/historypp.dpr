@@ -131,7 +131,12 @@ function Unload:Integer;cdecl;
 begin
   // unregistering events
   hppUnregisterServices;
+
+    // unregister bookmarks
+  hppDeinitBookmarkServer;
+
   //hppUnregisterItemProcessSamples;
+
   // unhook events
   PluginLink.UnhookEvent(HookModulesLoad);
   PluginLink.UnhookEvent(hookOptInit);
@@ -157,7 +162,10 @@ var
   pszVersion: array[0..55] of Char;
   upd: TUpdate;
 begin
+  // register
   hppRegisterGridOptions;
+
+  hppInitBookmarkServer;
 
   LoadIcons;
   LoadIcons2;

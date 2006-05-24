@@ -538,6 +538,11 @@ object HistoryFrm: THistoryFrm
       ShortCut = 16397
       OnClick = Details1Click
     end
+    object Bookmark1: TTntMenuItem
+      Caption = 'Set &Bookmark'
+      ShortCut = 16450
+      OnClick = Bookmark1Click
+    end
     object N8: TTntMenuItem
       Caption = '-'
     end
