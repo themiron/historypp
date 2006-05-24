@@ -436,7 +436,7 @@ begin
     RegisterColor(Translate(hppFontItems[0].nameColor),0,ColorToRGB(hppFontItems[0].back));
     RegisterColor(Translate(hppFontItems[1].nameColor),1,ColorToRGB(hppFontItems[1].back));
     RegisterColor(Translate(hppFontItems[2].nameColor),2,ColorToRGB(hppFontItems[2].back));
-    RegisterColor(Translate(hppFontItems[High(hppFontItems)].name),3,ColorToRGB(hppFontItems[High(hppFontItems)].back));
+    RegisterColor(Translate(hppFontItems[High(hppFontItems)].name),High(hppFontItems),ColorToRGB(hppFontItems[High(hppFontItems)].back));
     for i := 3 to High(hppFontItems)-1 do begin
       GridOptions.AddItemOptions;
       RegisterFont(Translate(hppFontItems[i].name),i,defFont);
