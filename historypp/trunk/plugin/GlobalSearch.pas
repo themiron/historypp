@@ -718,12 +718,22 @@ end;
 
 procedure TfmGlobalSearch.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
+var
+  Flag: UINT;
+  AppSysMenu: THandle;
 begin
   if IsSearching then begin
+    // disable close button
+    AppSysMenu:=GetSystemMenu(Handle,False);
+    Flag:=MF_GRAYED;
+    EnableMenuItem(AppSysMenu,SC_CLOSE,MF_BYCOMMAND or Flag);
+
     st.Terminate;
     laProgress.Caption := TranslateWideW('Please wait while closing the window...');
     laProgress.Font.Style := [fsBold];
     pb.Visible := False;
+    if IsSearching then
+      SetThreadPriority(st.Handle, THREAD_PRIORITY_ABOVE_NORMAL);
     while IsSearching do
       Application.ProcessMessages;
     end;
