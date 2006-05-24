@@ -132,10 +132,11 @@ const
     (name:'z_password_protect'; handle: 0)
   );
 
-  hppFontItems: array[0..16] of ThppFontsRec = (
+  hppFontItems: array[0..17] of ThppFontsRec = (
     (name: 'Incoming nick'; nameColor: 'Divider'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $6B3FC8; back: clGray),
     (name: 'Outgoing nick'; nameColor: 'Selected text'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $BD6008; back: clHighlightText),
     (name: 'Timestamp'; nameColor: 'Selected background'; Mes: []; style:0; size: -11; color: $000000; back: clHighlight),
+    (name: 'Session header'; Mes: []; style:0; size: -11; color: $000000; back: $00D7FDFF),
     (name: 'Incoming message'; Mes: [mtMessage,mtIncoming]; style:0; size: -11; color: $000000; back: $DBDBDB),
     (name: 'Outgoing message'; Mes: [mtMessage,mtOutgoing]; style:0; size: -11; color: $000000; back: $EEEEEE),
     (name: 'Incoming file'; Mes: [mtFile,mtIncoming]; style:0; size: -11; color: $000000; back: $9BEEE3),
@@ -319,16 +320,18 @@ begin
   LoadFont(0,GridOptions.FontContact);
   LoadFont(1,GridOptions.FontProfile);
   LoadFont(2,GridOptions.FontTimestamp);
+  LoadFont(3,GridOptions.FontSessHeader);
   // load colors
   GridOptions.ColorDivider := LoadColorDB(0);
   GridOptions.ColorSelectedText := LoadColorDB(1);
   GridOptions.ColorSelected := LoadColorDB(2);
+  GridOptions.ColorSessHeader := LoadColorDB(3);
   // load mestype-related
-  for i :=  3 to High(hppFontItems) do begin
-    if (i-3) > High(GridOptions.ItemOptions) then GridOptions.AddItemOptions;
-    GridOptions.ItemOptions[i-3].MessageType := hppFontItems[i].Mes;
-    LoadFont(i,GridOptions.ItemOptions[i-3].textFont);
-    GridOptions.ItemOptions[i-3].textColor := LoadColorDB(i);
+  for i :=  4 to High(hppFontItems) do begin
+    if (i-4) > High(GridOptions.ItemOptions) then GridOptions.AddItemOptions;
+    GridOptions.ItemOptions[i-4].MessageType := hppFontItems[i].Mes;
+    LoadFont(i,GridOptions.ItemOptions[i-4].textFont);
+    GridOptions.ItemOptions[i-4].textColor := LoadColorDB(i);
   end;
   // load others
   GridOptions.ShowIcons := GetDBBool(hppDBName,'ShowIcons',True);
@@ -429,10 +432,12 @@ begin
     RegisterFont(Translate(hppFontItems[0].name),0,defFont);
     RegisterFont(Translate(hppFontItems[1].name),1,defFont);
     RegisterFont(Translate(hppFontItems[2].name),2,defFont);
+    RegisterFont(Translate(hppFontItems[3].name),3,defFont);
     RegisterColor(Translate(hppFontItems[0].nameColor),0,ColorToRGB(hppFontItems[0].back));
     RegisterColor(Translate(hppFontItems[1].nameColor),1,ColorToRGB(hppFontItems[1].back));
     RegisterColor(Translate(hppFontItems[2].nameColor),2,ColorToRGB(hppFontItems[2].back));
-    for i := 3 to High(hppFontItems) do begin
+    RegisterColor(Translate(hppFontItems[3].name),3,ColorToRGB(hppFontItems[3].back));
+    for i := 4 to High(hppFontItems) do begin
       GridOptions.AddItemOptions;
       RegisterFont(Translate(hppFontItems[i].name),i,defFont);
       RegisterColor(Translate(hppFontItems[i].name),i,hppFontItems[i].back);

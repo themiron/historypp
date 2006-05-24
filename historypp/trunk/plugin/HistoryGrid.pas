@@ -131,10 +131,12 @@ type
     FColorDivider: TColor;
     FColorSelectedText: TColor;
     FColorSelected: TColor;
+    FColorSessHeader: TColor;
 
     FFontProfile: TFont;
     FFontContact: TFont;
     FFontTimestamp: TFont;
+    FFontSessHeader: TFont;
 
     FItemFont: TFont;
     FItemOptions: TItemOptions;
@@ -160,10 +162,12 @@ type
     procedure SetColorDivider(const Value: TColor);
     procedure SetColorSelectedText(const Value: TColor);
     procedure SetColorSelected(const Value: TColor);
+    procedure SetColorSessHeader(const Value: TColor);
 
     procedure SetFontContact(const Value: TFont);
     procedure SetFontProfile(const Value: TFont);
     procedure SetFontTimestamp(const Value: TFont);
+    procedure SetFontSessHeader(const Value: TFont);
 
     procedure SetIconOther(const Value: TIcon);
     procedure SetIconFile(const Value: TIcon);
@@ -208,10 +212,12 @@ type
     property ColorDivider: TColor read FColorDivider write SetColorDivider;
     property ColorSelectedText: TColor read FColorSelectedText write SetColorSelectedText;
     property ColorSelected: TColor read FColorSelected write SetColorSelected;
+    property ColorSessHeader: TColor read FColorSessHeader write SetColorSessHeader;
 
     property FontProfile: TFont read FFontProfile write SetFontProfile;
     property FontContact: TFont read FFontContact write SetFontContact;
     property FontTimeStamp: TFont read FFontTimestamp write SetFontTimestamp;
+    property FontSessHeader: TFont read FFontSessHeader write SetFontSessHeader;
 
     property ItemOptions: TItemOptions read FItemOptions write FItemOptions;
 
@@ -954,7 +960,7 @@ begin
   //Inc(ItemRect.Top);
   Dec(ItemRect.Bottom,1);
 
-  Canvas.Brush.Color := $00D7FDFF;//$00C7FCFF;
+  Canvas.Brush.Color := Options.ColorSessHeader;
   Canvas.FillRect(ItemRect);
 
   InflateRect(ItemRect,-3,-3);
@@ -984,7 +990,7 @@ begin
   end;
 
   text := WideFormat(TranslateWideW('Conversation started at %s'),[GetTime(Items[Index].Time)]);
-  Canvas.Font := Options.FontTimeStamp;
+  Canvas.Font := Options.FontSessHeader;
   Inc(ItemRect.Left,IconOffset);
   Dec(ItemRect.Right,RIconOffset);
   if RTL then begin
@@ -3963,7 +3969,7 @@ end;
 procedure THistoryGrid.DoOptionsChanged;
 var
   i: integer;
-  ch,ph,th: Integer;
+  ch,ph,th,sh: Integer;
   //pf: PARAFORMAT2;
 begin
   // recalc fonts
@@ -3997,18 +4003,17 @@ begin
   //FRichInline.Perform(EM_SETPARAFORMAT,0,integer(@pf));
 
   Canvas.Font := Options.FontProfile;
-  //ph := Canvas.TextHeight('Wy');
   ph := WideCanvasTextHeight(Canvas,'Wy');
   Canvas.Font := Options.FontContact;
-  //ch := Canvas.TextHeight('Wy');
   ch := WideCanvasTextHeight(Canvas,'Wy');
   Canvas.Font := Options.FontTimestamp;
-  //th := Canvas.Textheight('Wy');
   th := WideCanvasTextHeight(Canvas,'Wy');
+  Canvas.Font := Options.FontSessHeader;
+  sh := WideCanvasTextHeight(Canvas,'Wy');
   // find heighest and don't forget about icons
   PHeaderHeight := Max(ph,th);
   CHeaderHeight := Max(ch,th);
-  SessHeaderHeight := th+1+3*2;
+  SessHeaderHeight := sh+1+3*2;
   if Options.ShowIcons then begin
     CHeaderHeight := Max(CHeaderHeight,16);
     PHeaderHeight := Max(PHeaderHeight,16);
@@ -4455,6 +4460,8 @@ begin
   FFontProfile.OnChange := FontChanged;
   FFontTimestamp := TFont.Create;
   FFontTimestamp.OnChange := FontChanged;
+  FFontSessHeader := TFont.Create;
+  FFontSessHeader.OnChange := FontChanged;
 
   FItemFont := TFont.Create;
 
@@ -4484,6 +4491,7 @@ begin
   FFontContact.Free;
   FFontProfile.Free;
   FFontTimestamp.Free;
+  FFontSessHeader.Free;
   FItemFont.Free;
   FIconUrl.Free;
   FIconMessage.Free;
@@ -4571,6 +4579,13 @@ procedure TGridOptions.SetColorSelected(const Value: TColor);
 begin
   if FColorSelected = Value then exit;
   FColorSelected := Value;
+  DoChange;
+end;
+
+procedure TGridOptions.SetColorSessHeader(const Value: TColor);
+begin
+  if FColorSessHeader = Value then exit;
+  FColorSessHeader := Value;
   DoChange;
 end;
 
@@ -4681,6 +4696,13 @@ procedure TGridOptions.SetFontTimestamp(const Value: TFont);
 begin
   FFontTimestamp := Value;
   FFontTimestamp.OnChange := FontChanged;
+  DoChange;
+end;
+
+procedure TGridOptions.SetFontSessHeader(const Value: TFont);
+begin
+  FFontSessHeader := Value;
+  FFontSessHeader.OnChange := FontChanged;
   DoChange;
 end;
 
