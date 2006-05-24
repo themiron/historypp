@@ -26,6 +26,7 @@ Password:
 Enter
 Save History
 &Open
+Set &Bookmark
 Send &Message
 &Reply Quoted
 User &Details
@@ -96,6 +97,8 @@ Note: It can take several minutes for large history.
 Empty History
 Full History [%s] - [%s]
 Full History [%s] - [%s]
+Set &Bookmark
+Delete &Bookmark
 ;; Text from variables in ..\plugin\HistoryForm.pas:
 Search Up (Ctrl+Up)
 Search Down (Ctrl+Down)

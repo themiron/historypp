@@ -1,6 +1,6 @@
 object HistoryFrm: THistoryFrm
-  Left = 277
-  Top = 190
+  Left = 252
+  Top = 172
   Width = 586
   Height = 418
   VertScrollBar.Tracking = True
@@ -390,7 +390,6 @@ object HistoryFrm: THistoryFrm
           Height = 22
           Flat = True
           Layout = blGlyphTop
-          Margin = -1
           PopupMenu = pmEventsFilter
           Spacing = -5
           Transparent = False
