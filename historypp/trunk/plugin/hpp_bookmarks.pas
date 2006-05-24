@@ -153,7 +153,12 @@ end;
 
 function DynArrayComparePseudoHash(Item1, Item2: Pointer): Integer;
 begin
-  Result := PPseudoHashEntry(Item1)^.Key - PPseudoHashEntry(Item2)^.Key;
+  if PPseudoHashEntry(Item1)^.Key > PPseudoHashEntry(Item2)^.Key then
+    Result := 1
+  else if PPseudoHashEntry(Item1)^.Key < PPseudoHashEntry(Item2)^.Key then
+    Result := -1
+  else
+    Result := 0;
 end;
 
 { TBookmarkServer }
@@ -238,10 +243,12 @@ end;
 
 procedure TContactBookmarks.SetBookmarked(Index: THandle; const Value: Boolean);
 begin
-  if Value then
-    Bookmarks.AddItem(Index)
-  else
-    Bookmarks.RemoveItem(Index);
+  if Value <> Bookmarks[Index] then begin
+    if Value then
+      Bookmarks.AddItem(Index)
+    else
+      Bookmarks.RemoveItem(Index);
+  end;
 end;
 
 
