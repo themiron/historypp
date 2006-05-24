@@ -29,7 +29,6 @@ Save History
 Set &Bookmark
 Send &Message
 &Reply Quoted
-User &Details
 &Copy
 Copy &Text
 &Delete
@@ -97,8 +96,8 @@ Note: It can take several minutes for large history.
 Empty History
 Full History [%s] - [%s]
 Full History [%s] - [%s]
-Set &Bookmark
 Delete &Bookmark
+Set &Bookmark
 ;; Text from variables in ..\plugin\HistoryForm.pas:
 Search Up (Ctrl+Up)
 Search Down (Ctrl+Down)

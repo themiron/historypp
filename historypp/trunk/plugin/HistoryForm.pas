@@ -92,7 +92,6 @@ type
     CopyText1: TTntMenuItem;
     Copy1: TTntMenuItem;
     N12: TTntMenuItem;
-    UserDetails1: TTntMenuItem;
     ReplyQuoted1: TTntMenuItem;
     SendMessage1: TTntMenuItem;
     N8: TTntMenuItem;
@@ -253,7 +252,6 @@ type
     procedure CancelInline1Click(Sender: TObject);
     procedure SendMessage1Click(Sender: TObject);
     procedure ReplyQuoted1Click(Sender: TObject);
-    procedure UserDetails1Click(Sender: TObject);
     procedure CodepageChangeClick(Sender: TObject);
     procedure sbClearFilterClick(Sender: TObject);
     procedure pbFilterPaint(Sender: TObject);
@@ -276,6 +274,7 @@ type
     procedure ToolbarDblClick(Sender: TObject);
     procedure Customize2Click(Sender: TObject);
     procedure Bookmark1Click(Sender: TObject);
+    procedure tbUserDetailsClick(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -366,6 +365,7 @@ type
     procedure SetEventFilter(FilterIndex: Integer = -1);
     procedure CreateEventsFilterMenu;
     procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED;
+    procedure HMBookmarksChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
   protected
     procedure LoadPendingHeaders(rowidx: integer; count: integer);
     property SearchMode: TSearchMode read FSearchMode write SetSearchMode;
@@ -932,6 +932,23 @@ begin
   pbFilter.Repaint;
   if Assigned(EventDetailFrom) then
     EventDetailFrom.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
+  hg.Repaint;
+end;
+
+procedure THistoryFrm.HMBookmarksChanged(var M: TMessage);
+var
+  i: integer;
+  found: boolean;
+begin
+  if M.WParam <> hContact then exit;
+  found := false;
+  for i := 0 to HistoryLength-1 do
+    if History[i] = M.LParam then begin
+      hg.ResetItem(HistoryIndexToGrid(i));
+      found := true;
+    end;
+  if found then
+    hg.Repaint;
 end;
 
 procedure THistoryFrm.HMPreShutdown(var Message: TMessage);
@@ -1016,7 +1033,7 @@ begin
       key:=0;
       end;
     if (key=Ord('I')) and (not PasswordMode) then begin
-      UserDetails1.Click;
+      tbUserDetails.Click;
       key:=0;
       end;
     if (key=Ord('E')) and (not PasswordMode) then begin
@@ -1388,6 +1405,7 @@ end;
 procedure THistoryFrm.hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
 var
   PrevTimestamp: DWord;
+  hDBEvent: THandle;
 begin
   Item := GetItemData(GridIndexToHistory(Index));
   Item.Proto := Protocol;
@@ -1399,6 +1417,7 @@ begin
     PrevTimestamp := GetEventTimestamp(History[GridIndexToHistory(Index)-1]);
     Item.HasHeader := ((DWord(Item.Time) - PrevTimestamp) > SESSION_TIMEDIFF);
   end;
+  Item.Bookmarked := BookmarkServer[hContact].Bookmarked[History[GridIndexToHistory(Index)]];
 end;
 
 procedure THistoryFrm.hgTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
@@ -1420,7 +1439,6 @@ begin
   if hContact = 0 then begin
     SendMessage1.Visible := False;
     ReplyQuoted1.Visible := False;
-    UserDetails1.Visible := False;
   end;
   if hg.Selected <> -1 then begin
     //Details1.Default := True;
@@ -3051,12 +3069,6 @@ begin
     ReplyQuoted(hg.Selected);
 end;
 
-procedure THistoryFrm.UserDetails1Click(Sender: TObject);
-begin
-  if hContact = 0 then exit;
-  PluginLink.CallService(MS_USERINFO_SHOWDIALOG,hContact,0);
-end;
-
 procedure THistoryFrm.CodepageChangeClick(Sender: TObject);
 var
   val: Cardinal;
@@ -3338,13 +3350,10 @@ end;}
 procedure THistoryFrm.pmGridPopup(Sender: TObject);
 begin
   LoadInOptions();
-  If BookmarkServer.GetBookmark(hContact,History[GridIndexToHistory(hg.Selected)]) = -1 then begin
-    Bookmark1.Checked := False;
+  if hg.Items[hg.Selected].Bookmarked then
+     Bookmark1.Caption := TranslateWideW('Delete &Bookmark')
+  else
     Bookmark1.Caption := TranslateWideW('Set &Bookmark');
-  end else begin
-    Bookmark1.Checked := True;
-    Bookmark1.Caption := TranslateWideW('Delete &Bookmark');
-  end;
   AddMenuArray(pmGrid,[ContactRTLmode1,ANSICodepage1],-1);
 end;
 
@@ -3417,13 +3426,19 @@ end;
 
 procedure THistoryFrm.Bookmark1Click(Sender: TObject);
 var
-  bm: integer;
+  val: boolean;
+  hDBEvent: THandle;
 begin
-  bm := BookmarkServer.GetBookmark(hContact,History[GridIndexToHistory(hg.Selected)]);
-  if bm = -1 then
-    BookmarkServer.AddBookmark(hContact,History[GridIndexToHistory(hg.Selected)])
-  else
-    BookmarkServer.DeleteBookmark(bm);
+  hDBEvent := History[GridIndexToHistory(hg.Selected)];
+  val := not BookmarkServer[hContact].Bookmarked[hDBEvent];
+  BookmarkServer[hContact].Bookmarked[hDBEvent] := val;
+  NotifyAllForms(HM_NOTF_BOOKMARKCHANGED,hContact,hDBEvent);
+end;
+
+procedure THistoryFrm.tbUserDetailsClick(Sender: TObject);
+begin
+  if hContact = 0 then exit;
+  PluginLink.CallService(MS_USERINFO_SHOWDIALOG,hContact,0);
 end;
 
 end.
