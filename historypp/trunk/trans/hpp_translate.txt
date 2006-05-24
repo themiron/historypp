@@ -7,6 +7,57 @@
 ;; Trac: https://opensvn.csie.org/traccgi/historypp/trac.cgi/
 ;; 
 
+;; CustomizeToolbar.trans.txt file 
+
+;; Text found in ..\plugin\CustomizeToolbar.dfm:
+[Customize Toolbar]
+Customize Toolbar
+[A&vailable buttons:]
+A&vailable buttons:
+[Buttons on &toolbar:]
+Buttons on &toolbar:
+[&Add >>]
+&Add >>
+[<< &Remove]
+<< &Remove
+[&Up]
+&Up
+[&Down]
+&Down
+[OK]
+OK
+[&Cancel]
+&Cancel
+[R&eset to Default]
+R&eset to Default
+
+;; CustomizeFiltersForm.trans.txt file 
+
+;; Text found in ..\plugin\CustomizeFiltersForm.dfm:
+[Customize Filters]
+Customize Filters
+[Filter Properties]
+Filter Properties
+[&Name:]
+&Name:
+[Show all except selected events]
+Show all except selected events
+[Show only selected events]
+Show only selected events
+[Filters]
+Filters
+[&Delete]
+&Delete
+[&Add]
+&Add
+;; Text found in ..\plugin\CustomizeFiltersForm.pas:
+[New Filter #%d]
+New Filter #%d
+[Incoming & Outgoing]
+Incoming & Outgoing
+[Events]
+Events
+
 ;; PassForm.trans.txt file 
 
 ;; Text found in ..\plugin\PassForm.dfm:
@@ -22,8 +73,6 @@ Protect only selected contacts
 Password...
 [Cancel]
 Cancel
-[OK]
-OK
 [&Refresh List]
 &Refresh List
 ;; Text found in ..\plugin\PassForm.pas:
@@ -33,41 +82,6 @@ System History
 Password not set
 [Password set]
 Password set
-
-;; CustomizeFiltersForm.trans.txt file 
-
-;; Text found in ..\plugin\CustomizeFiltersForm.dfm:
-[Customize Filters]
-Customize Filters
-[&Cancel]
-&Cancel
-[Filter Properties]
-Filter Properties
-[&Name:]
-&Name:
-[Show all except selected events]
-Show all except selected events
-[Show only selected events]
-Show only selected events
-[R&eset to Default]
-R&eset to Default
-[Filters]
-Filters
-[&Down]
-&Down
-[&Up]
-&Up
-[&Delete]
-&Delete
-[&Add]
-&Add
-;; Text found in ..\plugin\CustomizeFiltersForm.pas:
-[New Filter #%d]
-New Filter #%d
-[Incoming & Outgoing]
-Incoming & Outgoing
-[Events]
-Events
 
 ;; EventDetailForm.trans.txt file 
 
@@ -264,20 +278,6 @@ Delete Selected
 Do you really want to delete selected item?
 [Delete]
 Delete
-
-;; CustomizeToolbar.trans.txt file 
-
-;; Text found in ..\plugin\CustomizeToolbar.dfm:
-[Customize Toolbar]
-Customize Toolbar
-[A&vailable buttons:]
-A&vailable buttons:
-[Buttons on &toolbar:]
-Buttons on &toolbar:
-[&Add >>]
-&Add >>
-[<< &Remove]
-<< &Remove
 
 ;; HistoryForm.trans.txt file 
 

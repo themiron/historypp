@@ -2559,11 +2559,12 @@ begin
 
   TranslateToolbar(Toolbar);
 
-  TranslateMenu(pmHistory.Items);
   TranslateMenu(pmGrid.Items);
   TranslateMenu(pmGridInline.Items);
   TranslateMenu(pmLink.Items);
   TranslateMenu(pmFile.Items);
+  TranslateMenu(pmHistory.Items);
+  TranslateMenu(pmEventsFilter.Items);
   TranslateMenu(pmSessions.Items);
   TranslateMenu(pmToolbar.Items);
 
@@ -3273,10 +3274,10 @@ begin
   if SessThread <> nil then exit;
   BuildIndexesFromSession(tvSess.Selected);
   //hg.MakeRangeSelected();
-  hg.Selected := -1;
-  for i := 0 to High(Items) do begin
+  hg.Selected := Items[0];
+  for i := 1 to High(Items) do begin
     hg.SelItems[0] := Items[i];
-    Application.ProcessMessages;
+    //Application.ProcessMessages;
   end;
   hg.Invalidate;
   //w := w + hg.Items[i].Text+#13#10+'--------------'+#13#10;
