@@ -1,6 +1,6 @@
 object fmCustomizeToolbar: TfmCustomizeToolbar
-  Left = 362
-  Top = 240
+  Left = 264
+  Top = 202
   BorderStyle = bsDialog
   Caption = 'Customize Toolbar'
   ClientHeight = 363
@@ -45,7 +45,6 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     Width = 501
     Height = 2
     Anchors = [akLeft, akRight, akBottom]
-    ExplicitWidth = 449
   end
   object bnAdd: TTntButton
     Left = 215
@@ -145,7 +144,6 @@ object fmCustomizeToolbar: TfmCustomizeToolbar
     Caption = 'R&eset to Default'
     TabOrder = 8
     OnClick = bnResetClick
-    ExplicitLeft = 328
   end
   object tiScroll: TTimer
     Enabled = False
