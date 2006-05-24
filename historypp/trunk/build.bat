@@ -127,7 +127,7 @@ set DCUDIR="tmp"
 : Q  Integer overflow checking
 : R- Range checking (NEED OFF?)
 : Y  Symbol reference info
-set COMPDIR=-$A4 -$D- -$J+ -$L- -$O+ -$Q+ -$R- -$Y-
+set COMPDIR=-$A4 -$D- -$J+ -$L- -$O+ -$Q- -$R- -$Y-
 
 set ADDCMD=
 if %DVER% GEQ 2006 set ADDCMD=--no-config
