@@ -66,7 +66,7 @@ type
     CurContactCP: Cardinal;
     CurProgress: Integer;
     MaxProgress: Integer;
-    FParentHandle: THandle;
+    FParentHandle: Hwnd;
     FSearchTime: Cardinal;
     SearchStart: Cardinal;
     SearchWords: array of WideString;
@@ -99,7 +99,7 @@ type
     property SearchText: WideString read FSearchText write FSearchText;
     property SearchMethod: TSearchMethod read FSearchMethod write FSearchMethod;
     property SearchTime: Cardinal read FSearchTime;
-    property ParentHandle: THandle read FParentHandle write FParentHandle;
+    property ParentHandle: Hwnd read FParentHandle write FParentHandle;
 
     property Terminated;
   end;
