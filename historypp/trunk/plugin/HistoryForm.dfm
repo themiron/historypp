@@ -83,6 +83,7 @@ object HistoryFrm: THistoryFrm
         OnRTLChange = hgRTLEnabled
         OnUrlClick = hgUrlClick
         OnUrlPopup = hgUrlPopup
+        OnBookmarkClick = hgBookmarkClick
         OnItemFilter = hgItemFilter
         OnProcessRichText = hgProcessRichText
         OnSearchItem = hgSearchItem

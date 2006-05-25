@@ -51,11 +51,15 @@ type
     procedure DeleteBookmarks;
     procedure LoadBookmarks;
     procedure SaveBookmarks;
+    function GetCount: Integer;
+    function GetItems(Index: Integer): THandle;
   public
     constructor Create(AContact: THandle);
     destructor Destroy; override;
 
     property Bookmarked[Index: THandle]: Boolean read GetBookmarked write SetBookmarked;
+    property Items[Index: Integer]: THandle read GetItems;
+    property Count: Integer read GetCount;
     property Contact: THandle read hContact;
     property ContactCP: Cardinal read FContactCP;
   end;
@@ -163,12 +167,9 @@ end;
 
 function DynArrayComparePseudoHash(Item1, Item2: Pointer): Integer;
 begin
-  if PPseudoHashEntry(Item1)^.Key > PPseudoHashEntry(Item2)^.Key then
-    Result := 1
-  else if PPseudoHashEntry(Item1)^.Key < PPseudoHashEntry(Item2)^.Key then
-    Result := -1
-  else
-    Result := 0;
+  {$OVERFLOWCHECKS ON}
+  Result := PInteger(@PPseudoHashEntry(Item1)^.Key)^ - PInteger(@PPseudoHashEntry(Item2)^.Key)^;
+  {$OVERFLOWCHECKS OFF}
 end;
 
 { TBookmarkServer }
@@ -256,6 +257,16 @@ end;
 function TContactBookmarks.GetBookmarked(Index: THandle): Boolean;
 begin
   Result := Bookmarks[Index];
+end;
+
+function TContactBookmarks.GetCount: Integer;
+begin
+  Result := Length(Bookmarks.Table);
+end;
+
+function TContactBookmarks.GetItems(Index: Integer): THandle;
+begin
+  Result := PEventData(Bookmarks.Table[Index].Value)^.hDBEvent;
 end;
 
 procedure TContactBookmarks.LoadBookmarks;

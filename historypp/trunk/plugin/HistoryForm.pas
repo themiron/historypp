@@ -275,6 +275,7 @@ type
     procedure Customize2Click(Sender: TObject);
     procedure Bookmark1Click(Sender: TObject);
     procedure tbUserDetailsClick(Sender: TObject);
+    procedure hgBookmarkClick(Sender: TObject; Item: Integer);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -1524,6 +1525,16 @@ begin
                else t := Text;
   sb.SimpleText := WideFormat(TranslateWideW('HotSearch: %s (F3 to find next)'),[t]);
   //if Found then HotString := Text;
+end;
+
+procedure THistoryFrm.hgBookmarkClick(Sender: TObject; Item: Integer);
+var
+  val: boolean;
+  hDBEvent: THandle;
+begin
+  hDBEvent := History[GridIndexToHistory(Item)];
+  val := not BookmarkServer[hContact].Bookmarked[hDBEvent];
+  BookmarkServer[hContact].Bookmarked[hDBEvent] := val;
 end;
 
 procedure THistoryFrm.hgChar(Sender: TObject; Char: WideChar;
