@@ -207,7 +207,7 @@ procedure TBookmarkServer.ContactDeleted(hContact: THandle);
 begin
   // do we really need to delete bookmarks from contact,
   // if he is about to be deleted? I think don't
-  Contacts[hContact].DeleteBookmarks;
+  //Contacts[hContact].DeleteBookmarks;
   CachedContacts.RemoveItem(hContact);
 end;
 

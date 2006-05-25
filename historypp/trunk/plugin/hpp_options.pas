@@ -63,7 +63,7 @@ type
   end;
 
 const
-  DEFFORMAT_CLIPCOPY     = '%nick%, %smart_datetime%:\n%mes%';
+  DEFFORMAT_CLIPCOPY     = '%nick%, %smart_datetime%:\n%mes%\n';
   DEFFORMAT_CLIPCOPYTEXT = '%mes%\n';
 
 const
@@ -156,7 +156,7 @@ const
     (name: 'Status change'; Mes: [mtStatus,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $F0F0F0),
     (name: 'SMTP Simple'; Mes: [mtSMTPSimple,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF),
     (name: 'Other events'; Mes: [mtOther,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF),
-    (name: 'Session header'; Mes: []; style:0; size: -11; color: $000000; back: $00D7FDFF)
+    (name: 'Conversation header'; Mes: []; style:0; size: -11; color: $000000; back: $00D7FDFF)
     );
 
   cpTable: array[0..14] of TCodePage = (

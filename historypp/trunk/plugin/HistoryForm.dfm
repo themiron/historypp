@@ -1,6 +1,6 @@
 object HistoryFrm: THistoryFrm
-  Left = 384
-  Top = 177
+  Left = 305
+  Top = 154
   Width = 586
   Height = 418
   VertScrollBar.Tracking = True
@@ -344,7 +344,6 @@ object HistoryFrm: THistoryFrm
           Left = 46
           Top = 0
           Width = 8
-          Caption = 'TntToolButton1'
           Style = tbsSeparator
         end
         object tbSessions: TTntToolButton
@@ -510,6 +509,7 @@ object HistoryFrm: THistoryFrm
           item
             AutoSize = True
           end>
+        FlatScrollBars = True
         ReadOnly = True
         RowSelect = True
         PopupMenu = pmBook
@@ -876,6 +876,7 @@ object HistoryFrm: THistoryFrm
     Top = 60
   end
   object pmBook: TTntPopupMenu
+    OnPopup = pmBookPopup
     Left = 42
     Top = 61
     object DeleteBookmark1: TTntMenuItem

@@ -289,6 +289,7 @@ type
     procedure tbBookmarksClick(Sender: TObject);
     procedure sbCloseBookClick(Sender: TObject);
     procedure lvBookSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+    procedure pmBookPopup(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -2708,6 +2709,7 @@ begin
   laPass.Caption := TranslateWideW(laPass.Caption);
   laPass2.Caption := TranslateWideW(laPass2.Caption);
   laSess.Caption := TranslateWideW(laSess.Caption);
+  laBook.Caption := TranslateWideW(laBook.Caption);
 
   SaveDialog.Title := Translate(PAnsiChar(SaveDialog.Title));
 
@@ -3583,6 +3585,15 @@ begin
   Index := HistoryIndexToGrid(Index);
   hg.MakeTopmost(Index);
   hg.Selected := Index;
+end;
+
+procedure THistoryFrm.pmBookPopup(Sender: TObject);
+var
+  Item: TTntListItem;
+  p: TPoint;
+begin
+  p := lvBook.ScreenToClient(Mouse.CursorPos);
+  DeleteBookmark1.Visible := (lvBook.GetItemAt(p.X,p.Y) <> nil);
 end;
 
 end.
