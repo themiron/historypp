@@ -79,7 +79,7 @@ type
     pmGridInline: TTntPopupMenu;
     spSess: TTntSplitter;
     ilSessions: TImageList;
-    Panel1: TPanel;
+    paSessInt: TPanel;
     laSess: TTntLabel;
     sbCloseSess: TTntSpeedButton;
     CopyFile1: TTntMenuItem;
@@ -175,12 +175,14 @@ type
     Customize2: TTntMenuItem;
     Bookmark1: TTntMenuItem;
     paBook: TPanel;
-    Panel3: TPanel;
+    paBookInt: TPanel;
     laBook: TTntLabel;
     sbCloseBook: TTntSpeedButton;
     lvBook: TTntListView;
     ilBook: TImageList;
     tbBookmarks: TTntToolButton;
+    pmBook: TTntPopupMenu;
+    DeleteBookmark1: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -286,6 +288,7 @@ type
     procedure hgBookmarkClick(Sender: TObject; Item: Integer);
     procedure tbBookmarksClick(Sender: TObject);
     procedure sbCloseBookClick(Sender: TObject);
+    procedure lvBookSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -622,9 +625,9 @@ begin
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
   // delphi 2006 doesn't save toolbar's flat property in dfm if it is True
   Toolbar.Flat := True;
-  LoadSessionIcons;
   LoadToolbarIcons;
   LoadButtonIcons;
+  LoadSessionIcons;
   LoadBookIcons;
   Image1.Picture.Icon.Handle := CopyIcon(hppIntIcons[0].handle);
 
@@ -947,9 +950,10 @@ end;
 procedure THistoryFrm.HMIcons2Changed(var M: TMessage);
 begin
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
-  LoadSessionIcons;
   LoadToolbarIcons;
   LoadButtonIcons;
+  LoadSessionIcons;
+  LoadBookIcons;
   pbFilter.Repaint;
   if Assigned(EventDetailFrom) then
     EventDetailFrom.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
@@ -2365,7 +2369,8 @@ var
   Lock: Boolean;
 begin
   FPanel := Value;
-  if ((hContact = 0) or (HistoryLength = 0)) then
+
+  if ((FPanel=hpSessions) and (hContact = 0)) or (HistoryLength = 0) then
     FPanel := hpNone;
 
   tbSessions.Down := (Panel = hpSessions);
@@ -2716,6 +2721,7 @@ begin
   TranslateMenu(pmEventsFilter.Items);
   TranslateMenu(pmSessions.Items);
   TranslateMenu(pmToolbar.Items);
+  TranslateMenu(pmBook.Items);
 
   HtmlFilter := Translate(PChar(HtmlFilter));
   XmlFilter := Translate(PChar(XmlFilter));
@@ -3553,6 +3559,30 @@ procedure THistoryFrm.tbUserDetailsClick(Sender: TObject);
 begin
   if hContact = 0 then exit;
   PluginLink.CallService(MS_USERINFO_SHOWDIALOG,hContact,0);
+end;
+
+procedure THistoryFrm.lvBookSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+var
+  Index,i: Integer;
+  Event: THandle;
+begin
+  Event := DWord(Item.Data);
+  Index := -1;
+  // looks like history starts to load from end?
+  // well, of course, we load from the last event!
+  for i := Length(History) - 1 downto 0 do begin
+    if History[i] = 0 then
+      LoadPendingHeaders(i,HistoryLength);
+    if History[i] = Event then begin
+      Index := i;
+      break;
+    end;
+  end;
+  if Index = -1 then exit;
+  if hg.State = gsInline then hg.CancelInline;
+  Index := HistoryIndexToGrid(Index);
+  hg.MakeTopmost(Index);
+  hg.Selected := Index;
 end;
 
 end.
