@@ -129,30 +129,31 @@ end;
 //unload
 function Unload:Integer;cdecl;
 begin
-  // unregistering events
-  hppUnregisterServices;
+  Result:=0;
+  try
+    // unhook events
+    PluginLink.UnhookEvent(HookModulesLoad);
+    PluginLink.UnhookEvent(hookOptInit);
+    PluginLink.UnhookEvent(HookSettingsChanged);
+    PluginLink.UnhookEvent(HookIconChanged);
+    PluginLink.UnhookEvent(HookContactDelete);
+
+    if SmileyAddEnabled then
+      PluginLink.UnhookEvent(HookSmAddChanged);
+    if IcoLibEnabled then
+      PluginLink.UnhookEvent(HookIcon2Changed);
+    if FontServiceEnabled then
+      PluginLink.UnhookEvent(HookFSChanged);
+
+    // unregistering events
+    hppUnregisterServices;
 
     // unregister bookmarks
-  hppDeinitBookmarkServer;
-
-  //hppUnregisterItemProcessSamples;
-
-  // unhook events
-  PluginLink.UnhookEvent(HookModulesLoad);
-  PluginLink.UnhookEvent(hookOptInit);
-  PluginLink.UnhookEvent(HookSettingsChanged);
-  PluginLink.UnhookEvent(HookIconChanged);
-  PluginLink.UnhookEvent(HookContactDelete);
-
-  if SmileyAddEnabled then
-    PluginLink.UnhookEvent(HookSmAddChanged);
-  if IcoLibEnabled then
-    PluginLink.UnhookEvent(HookIcon2Changed);
-  if FontServiceEnabled then
-    PluginLink.UnhookEvent(HookFSChanged);
-
-  // return successfully
-  Result:=0;
+    hppDeinitBookmarkServer;
+  except
+    on E: Exception do
+      HppMessageBox(0,'Error while closing '+hppName+':'+#10#13+E.Message,hppName+' Error',MB_OK or MB_ICONERROR);
+  end;
 end;
 
 //init plugin
