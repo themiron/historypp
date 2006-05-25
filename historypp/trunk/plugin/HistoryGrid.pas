@@ -1022,7 +1022,7 @@ begin
   if Bookmarked[Index] = Value then exit;
   FItems[Index].Bookmarked := Value;
   if IsVisible(Index) then begin
-    r := GetItemRect(i);
+    r := GetItemRect(Index);
     InvalidateRect(Handle,@r,False);
     Update;
   end;
