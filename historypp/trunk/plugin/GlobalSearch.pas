@@ -161,6 +161,7 @@ type
     procedure Delete1Click(Sender: TObject);
     procedure hgRTLEnabled(Sender: TObject; Enabled: Boolean);
     procedure Bookmark1Click(Sender: TObject);
+    procedure hgBookmarkClick(Sender: TObject; Item: Integer);
   private
     WasReturnPressed: Boolean;
     LastUpdateTime: Cardinal;
@@ -780,6 +781,17 @@ begin
   if HotFilterString = '' then exit;
   if Pos(WideUpperCase(HotFilterString),WideUpperCase(hg.Items[Index].Text)) = 0 then
     Show := False;
+end;
+
+procedure TfmGlobalSearch.hgBookmarkClick(Sender: TObject; Item: Integer);
+var
+  val: boolean;
+  hContact,hDBEvent: THandle;
+begin
+  hContact := GetSearchItem(Item).Contact.Handle;
+  hDBEvent := GetSearchItem(Item).hDBEvent;
+  val := not BookmarkServer[hContact].Bookmarked[hDBEvent];
+  BookmarkServer[hContact].Bookmarked[hDBEvent] := val;
 end;
 
 procedure TfmGlobalSearch.hgDblClick(Sender: TObject);
