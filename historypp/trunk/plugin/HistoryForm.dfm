@@ -1,12 +1,12 @@
 object HistoryFrm: THistoryFrm
   Left = 232
   Top = 210
-  Width = 586
-  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   Caption = '%s - History++'
+  ClientHeight = 391
+  ClientWidth = 578
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -34,17 +34,18 @@ object HistoryFrm: THistoryFrm
     BorderWidth = 2
     TabOrder = 0
     object spSess: TTntSplitter
-      Left = 158
+      Left = 314
       Top = 33
       Height = 312
       AutoSnap = False
       MinSize = 100
       Visible = False
+      ExplicitLeft = 158
     end
     object paGrid: TPanel
-      Left = 161
+      Left = 317
       Top = 33
-      Width = 415
+      Width = 259
       Height = 312
       Align = alClient
       BevelOuter = bvNone
@@ -53,7 +54,7 @@ object HistoryFrm: THistoryFrm
       object hg: THistoryGrid
         Left = 0
         Top = 0
-        Width = 411
+        Width = 255
         Height = 308
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
@@ -99,7 +100,7 @@ object HistoryFrm: THistoryFrm
       end
     end
     object paSess: TPanel
-      Left = 2
+      Left = 158
       Top = 33
       Width = 156
       Height = 312
@@ -285,6 +286,7 @@ object HistoryFrm: THistoryFrm
           Align = alRight
           Caption = '>>'
           Layout = tlCenter
+          ExplicitHeight = 13
         end
         object imSearchEndOfPage: TTntImage
           Left = 3
@@ -319,7 +321,6 @@ object HistoryFrm: THistoryFrm
         BorderWidth = 2
         EdgeInner = esNone
         EdgeOuter = esNone
-        Flat = True
         Images = ilToolbar
         ParentShowHint = False
         PopupMenu = pmToolbar
@@ -350,18 +351,27 @@ object HistoryFrm: THistoryFrm
         object tbSessions: TTntToolButton
           Left = 54
           Top = 0
-          Hint = 'Show conversations (F4)'
+          Hint = 'Conversations (F4)'
+          AllowAllUp = True
           Style = tbsCheck
           OnClick = tbSessionsClick
         end
-        object TntToolButton2: TTntToolButton
+        object tbBookmarks: TTntToolButton
           Left = 77
+          Top = 0
+          Hint = 'Bookmarks'
+          AllowAllUp = True
+          Style = tbsCheck
+          OnClick = tbBookmarksClick
+        end
+        object TntToolButton2: TTntToolButton
+          Left = 100
           Top = 0
           Width = 7
           Style = tbsSeparator
         end
         object tbSearch: TTntToolButton
-          Left = 84
+          Left = 107
           Top = 0
           Hint = 'Find'
           AllowAllUp = True
@@ -370,7 +380,7 @@ object HistoryFrm: THistoryFrm
           OnClick = tbFilterClick
         end
         object tbFilter: TTntToolButton
-          Left = 107
+          Left = 130
           Top = 0
           Hint = 'Filter'
           AllowAllUp = True
@@ -379,13 +389,13 @@ object HistoryFrm: THistoryFrm
           OnClick = tbFilterClick
         end
         object TntToolButton3: TTntToolButton
-          Left = 130
+          Left = 153
           Top = 0
           Width = 7
           Style = tbsSeparator
         end
         object tbEventsFilter: TTntSpeedButton
-          Left = 137
+          Left = 160
           Top = 0
           Width = 110
           Height = 22
@@ -397,48 +407,115 @@ object HistoryFrm: THistoryFrm
           OnClick = tbEventsFilterClick
         end
         object TntToolButton4: TTntToolButton
-          Left = 247
+          Left = 270
           Top = 0
           Width = 7
           Style = tbsSeparator
         end
         object tbCopy: TTntToolButton
-          Left = 254
+          Left = 277
           Top = 0
           Hint = 'Copy'
           OnClick = Copy1Click
         end
         object tbDelete: TTntToolButton
-          Left = 277
+          Left = 300
           Top = 0
           Hint = 'Delete'
           OnClick = tbDeleteClick
         end
         object tbSave: TTntToolButton
-          Left = 300
+          Left = 323
           Top = 0
           Hint = 'Save'
           Visible = False
         end
         object TntToolButton5: TTntToolButton
-          Left = 323
+          Left = 346
           Top = 0
           Width = 8
           Style = tbsSeparator
         end
         object tbHistory: TTntToolButton
-          Left = 331
+          Left = 354
           Top = 0
           Hint = 'History'
           DropdownMenu = pmHistory
           OnClick = tbHistoryClick
         end
         object tbHistorySearch: TTntToolButton
-          Left = 354
+          Left = 377
           Top = 0
           Hint = 'History Search'
           OnClick = tbHistorySearchClick
         end
+      end
+    end
+    object paBook: TPanel
+      Left = 2
+      Top = 33
+      Width = 156
+      Height = 312
+      Align = alLeft
+      BevelOuter = bvLowered
+      TabOrder = 4
+      Visible = False
+      object Panel3: TPanel
+        Left = 1
+        Top = 1
+        Width = 154
+        Height = 21
+        Align = alTop
+        TabOrder = 0
+        DesignSize = (
+          154
+          21)
+        object laBook: TTntLabel
+          Left = 6
+          Top = 2
+          Width = 126
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
+          AutoSize = False
+          Caption = 'Bookmarks'
+          Layout = tlCenter
+        end
+        object sbCloseBook: TTntSpeedButton
+          Left = 133
+          Top = 2
+          Width = 18
+          Height = 17
+          AllowAllUp = True
+          Anchors = [akTop, akRight]
+          Flat = True
+          Glyph.Data = {
+            BE000000424DBE0000000000000076000000280000000A000000090000000100
+            04000000000048000000C40E0000C40E00001000000000000000000000000000
+            80000080000000808000800000008000800080800000C0C0C000808080000000
+            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777700
+            0000700777700700000077007700770000007770000777000000777700777700
+            0000777000077700000077007700770000007007777007000000777777777700
+            0000}
+          OnClick = sbCloseBookClick
+        end
+      end
+      object lvBook: TTntListView
+        Left = 1
+        Top = 22
+        Width = 154
+        Height = 289
+        Align = alClient
+        BevelOuter = bvNone
+        BorderStyle = bsNone
+        Columns = <
+          item
+            AutoSize = True
+          end>
+        ReadOnly = True
+        ShowColumnHeaders = False
+        SmallImages = ilBook
+        TabOrder = 1
+        ViewStyle = vsReport
       end
     end
   end
@@ -658,7 +735,7 @@ object HistoryFrm: THistoryFrm
   object ilSessions: TImageList
     BkColor = clWhite
     ShareImages = True
-    Left = 28
+    Left = 164
     Top = 68
   end
   object tiFilter: TTimer
@@ -763,8 +840,8 @@ object HistoryFrm: THistoryFrm
   object pmSessions: TTntPopupMenu
     BiDiMode = bdLeftToRight
     ParentBiDiMode = False
-    Left = 30
-    Top = 205
+    Left = 166
+    Top = 129
     object SessCopy: TTntMenuItem
       Caption = '&Copy'
       Enabled = False
@@ -789,5 +866,11 @@ object HistoryFrm: THistoryFrm
       Caption = '&Customize...'
       OnClick = Customize2Click
     end
+  end
+  object ilBook: TImageList
+    BkColor = clWhite
+    ShareImages = True
+    Left = 92
+    Top = 120
   end
 end

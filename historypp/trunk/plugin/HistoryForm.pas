@@ -64,6 +64,7 @@ type
 
   TLastSearch = (lsNone,lsHotSearch,lsSearch);
   TSearchMode = (smNone, smSearch, smFilter, smHotSearch); // smHotSearch for possible future use
+  THistoryPanel = (hpNone, hpSessions, hpBookmarks);
 
   THistoryFrm = class(TTntForm)
     SaveDialog: TSaveDialog;
@@ -173,6 +174,13 @@ type
     pmToolbar: TTntPopupMenu;
     Customize2: TTntMenuItem;
     Bookmark1: TTntMenuItem;
+    paBook: TPanel;
+    Panel3: TPanel;
+    laBook: TTntLabel;
+    sbCloseBook: TTntSpeedButton;
+    lvBook: TTntListView;
+    ilBook: TImageList;
+    tbBookmarks: TTntToolButton;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -276,6 +284,8 @@ type
     procedure Bookmark1Click(Sender: TObject);
     procedure tbUserDetailsClick(Sender: TObject);
     procedure hgBookmarkClick(Sender: TObject; Item: Integer);
+    procedure tbBookmarksClick(Sender: TObject);
+    procedure sbCloseBookClick(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -288,6 +298,7 @@ type
     PreHotSearchMode: TSearchMode;
     FSearchMode: TSearchMode;
     UserMenu: hMenu;
+    FPanel: THistoryPanel;
 
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo); message WM_GetMinMaxInfo;
     procedure WndProc(var Message: TMessage); override;
@@ -314,6 +325,7 @@ type
     procedure PreLoadHistory;
     procedure PostLoadHistory;
     procedure SetSearchMode(const Value: TSearchMode);
+    procedure SetPanel(const Value: THistoryPanel);
 
   public
     UserCodepage: Cardinal;
@@ -348,9 +360,11 @@ type
     procedure SMFinished(var M: TMessage); message HM_SESS_FINISHED;
     procedure AddEventToSessions(hDBEvent: THandle);
     procedure DeleteEventFromSessions(ItemIdx: Integer);
-    procedure ShowSessions(Show: Boolean);
+
+    procedure ShowPanel(Panel: THistoryPanel);
 
     procedure LoadSessionIcons;
+    procedure LoadBookIcons;
     procedure LoadToolbarIcons;
     procedure LoadEventFilterButton;
     procedure LoadButtonIcons;
@@ -366,10 +380,13 @@ type
     procedure SetEventFilter(FilterIndex: Integer = -1);
     procedure CreateEventsFilterMenu;
     procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED;
+
+    procedure FillBookmarks;
     procedure HMBookmarkChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
   protected
     procedure LoadPendingHeaders(rowidx: integer; count: integer);
     property SearchMode: TSearchMode read FSearchMode write SetSearchMode;
+    property Panel: THistoryPanel read FPanel write SetPanel;
   published
     procedure AlignControls(Control: TControl; var ARect: TRect); override;
   public
@@ -381,7 +398,7 @@ var
   HistoryFrm: THistoryFrm;
 
 const
-  DEF_HISTORY_TOOLBAR='[SESS] [SEARCH][FILTER] [EVENTS] [COPY][DELETE] [HISTORY]';
+  DEF_HISTORY_TOOLBAR='[SESS][BOOK] [SEARCH][FILTER] [EVENTS] [COPY][DELETE] [HISTORY]';
 
 procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
 function ParseUrlItem(Item: THistoryItem; out Url,Mes: WideString): Boolean;
@@ -608,6 +625,7 @@ begin
   LoadSessionIcons;
   LoadToolbarIcons;
   LoadButtonIcons;
+  LoadBookIcons;
   Image1.Picture.Icon.Handle := CopyIcon(hppIntIcons[0].handle);
 
   DesktopFont := True;
@@ -756,6 +774,7 @@ begin
         Delete(str,1,n);
         butt := nil;
         if butt_str = 'SESS' then butt := tbSessions;
+        if butt_str = 'BOOK' then butt := tbBookmarks;
         if butt_str = 'SEARCH' then butt := tbSearch;
         if butt_str = 'FILTER' then butt := tbFilter;
         if butt_str = 'COPY' then butt := tbCopy;
@@ -854,6 +873,8 @@ begin
     tbCopy.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_GLOBALSEARCH].Handle);
     tbHistorySearch.ImageIndex := ii;
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_BOOKMARK].Handle);
+    tbBookmarks.ImageIndex := ii;
 
     //ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle);
     //tbEventsFilter.ImageIndex := ii;
@@ -944,13 +965,8 @@ begin
   for i := 0 to hg.Count-1 do
     if History[GridIndexToHistory(i)] = M.LParam then begin
       hg.Bookmarked[i] := BookmarkServer[hContact].Bookmarked[M.LParam];
-      if hg.IsVisible(i) then begin
-        r := hg.GetItemRect(i);
-        InvalidateRect(hg.Handle,@r,False);
-        UpdateWindow(hg.Handle);
-        hg.Repaint;
-      end;
     end;
+  FillBookmarks;
 end;
 
 procedure THistoryFrm.HMPreShutdown(var Message: TMessage);
@@ -993,7 +1009,10 @@ begin
   end;
 
   if (key = VK_F4) and (Shift=[]) and (not PasswordMode) then begin
-    ShowSessions(not paSess.Visible);
+    if Panel <> hpSessions then
+      Panel := hpSessions
+    else
+      Panel := hpNone;
     key := 0;
     end;
 
@@ -1089,6 +1108,36 @@ begin
     end;
 end;
 
+procedure THistoryFrm.FillBookmarks;
+var
+  li: TTntListItem;
+  cb: TContactBookmarks;
+  i: Integer;
+  hi: THistoryItem;
+  hDBEvent: THandle;
+  txt: WideString;
+begin
+  lvBook.Items.BeginUpdate;
+  try
+    lvBook.Items.Clear;
+    // prefetch contact bookmarks object so we don't seek for it every time
+    cb := BookmarkServer[hContact];
+    for i := 0 to cb.Count-1 do begin
+      li := lvBook.Items.Add;
+      hDBEvent := cb.Items[i];
+      hi := ReadEvent(hDBEvent);
+      txt := Copy(hi.Text,1,100);
+      txt := Tnt_WideStringReplace(txt,#13#10,' ',[rfReplaceAll]);
+      // compress spaces?
+      li.Caption := txt;
+      li.Data := Pointer(hDBEvent);
+      li.ImageIndex := 0;
+    end;
+  finally
+    lvBook.Items.EndUpdate;
+  end;
+end;
+
 procedure THistoryFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 var
   Flag: UINT;
@@ -1136,6 +1185,27 @@ end;
 var
   SearchUpHint: WideString = 'Search Up (Ctrl+Up)';
   SearchDownHint: WideString = 'Search Down (Ctrl+Down)';
+
+procedure THistoryFrm.LoadBookIcons;
+var
+  il: THandle;
+begin
+  lvBook.Items.BeginUpdate;
+  try
+    ImageList_Remove(ilBook.Handle,-1); // clears image list
+    il := ImageList_Create(16,16,ILC_COLOR32 or ILC_MASK,8,2);
+    if il <> 0 then
+      ilBook.Handle := il
+    else
+      il := ilBook.Handle;
+
+    ImageList_AddIcon(il,hppIcons[HPP_ICON_BOOKMARK].handle);
+  finally
+    lvBook.Items.EndUpdate;
+  end;
+  // simple hack to avoid dark icons
+  ilBook.BkColor := lvBook.Color;
+end;
 
 procedure THistoryFrm.LoadButtonIcons;
 var
@@ -1386,8 +1456,8 @@ begin
   History[HistoryLength-1] := hDBEvent;
   hg.AddItem;
   if HistoryLength = 1 then
-    if GetDBBool(hppDBName,'ShowSessions',False) then
-      ShowSessions(True);
+    if GetDBBool(hppDBName,'ShowSessions',False) and (Panel = hpNone) then
+      Panel := hpSessions;
 end;
 
 procedure THistoryFrm.HookEvents;
@@ -1584,9 +1654,14 @@ begin
   WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
 end;
 
+procedure THistoryFrm.sbCloseBookClick(Sender: TObject);
+begin
+  Panel := hpNone;
+end;
+
 procedure THistoryFrm.sbCloseSessClick(Sender: TObject);
 begin
-  ShowSessions(False);
+  Panel := hpNone;
 end;
 
 procedure THistoryFrm.sbSearchNextClick(Sender: TObject);
@@ -2285,6 +2360,30 @@ begin
 OpenOptions;
 end;}
 
+procedure THistoryFrm.SetPanel(const Value: THistoryPanel);
+var
+  Lock: Boolean;
+begin
+  FPanel := Value;
+  if ((hContact = 0) or (HistoryLength = 0)) then
+    FPanel := hpNone;
+
+  tbSessions.Down := (Panel = hpSessions);
+  tbBookmarks.Down := (Panel = hpBookmarks);
+
+  hg.BeginUpdate;
+  if Visible then Lock := LockWindowUpdate(Handle);
+  try
+    paBook.Visible := (FPanel = hpBookmarks);
+    paSess.Visible := (FPanel = hpSessions);
+    spSess.Visible := paBook.Visible or paSess.Visible;
+    spSess.Left := paSess.Left + paSess.Width + paBook.Left + paBook.Width + 1;
+  finally
+    if Visible and Lock then LockWindowUpdate(0);
+    hg.EndUpdate;
+  end;
+end;
+
 procedure THistoryFrm.SetPasswordMode(const Value: Boolean);
 var
 enb: Boolean;
@@ -2389,25 +2488,10 @@ begin
   EndHotFilterTimer;
 end;
 
-procedure THistoryFrm.ShowSessions(Show: Boolean);
-var
-  Lock: Boolean;
+procedure THistoryFrm.ShowPanel(Panel: THistoryPanel);
 begin
-  if (hContact = 0) or (HistoryLength = 0) then Show := False;
-  tbSessions.Down := Show;
-  
-  hg.BeginUpdate;
-  if Visible then Lock := LockWindowUpdate(Handle);
-  try
-    paSess.Visible := Show;
-    spSess.Visible := Show;
-    spSess.Left := paSess.Left + paSess.Width + 1;
-  finally
-    if Visible and Lock then LockWindowUpdate(0);
-    hg.EndUpdate;
-  end;
-end;
 
+end;
 procedure THistoryFrm.SMFinished(var M: TMessage);
 begin
   SessThread.Free;
@@ -2497,9 +2581,11 @@ begin
   // "features", we'll load end of the list if put before Allocate
   SetRecentEventsPosition(GetDBInt(hppDBName,'SortOrder',0) <> 0);
   // set ShowSessions here because we check for empty history
-  ShowSessions(GetDBBool(hppDBName,'ShowSessions',False));
-  paSess.Width := GetDBInt(hppDBName,'SessionsWidth',150);
-  
+  if GetDBBool(hppDBName,'ShowSessions',False) then begin
+    Panel := hpSessions;
+    paSess.Width := GetDBInt(hppDBName,'SessionsWidth',150);
+  end;
+
   HookEvents;
   CreateEventsFilterMenu;
   if hContact <> 0 then
@@ -2551,6 +2637,7 @@ begin
   hg.EndUpdate;
 
   LoadToolbar;
+  FillBookmarks;
 end;
 
 procedure THistoryFrm.ToolbarDblClick(Sender: TObject);
@@ -3184,6 +3271,14 @@ begin
     edSearch.Color := clWindow;
 end;
 
+procedure THistoryFrm.tbBookmarksClick(Sender: TObject);
+begin
+  if tbBookmarks.Down then
+    Panel := hpBookmarks
+  else
+    Panel := hpNone;
+end;
+
 procedure THistoryFrm.tbDeleteClick(Sender: TObject);
 begin
   Delete1.Click;
@@ -3246,7 +3341,10 @@ end;
 
 procedure THistoryFrm.tbSessionsClick(Sender: TObject);
 begin
-  ShowSessions(tbSessions.Down);
+  if tbSessions.Down then
+    Panel := hpSessions
+  else
+    Panel := hpNone;
 end;
 
 procedure THistoryFrm.tiFilterTimer(Sender: TObject);

@@ -1372,38 +1372,26 @@ begin
   end else
     WideCanvasTextOut(Canvas,ItemRect.Left+IconOffset,ItemRect.Top,HeaderName);
 
-  IconOffset := 0;
+  Canvas.Font := timestampFont;
+  if sel then Canvas.Font.Color := Options.ColorSelectedText;
+  TimeOffset := WideCanvasTextWidth(Canvas,TimeStamp);
+  if RTL then
+    WideCanvasTextOut(Canvas,ItemRect.Left,ItemRect.Top,TimeStamp)
+  else begin
+    WideCanvasTextOut(Canvas,ItemRect.Right-TimeOffset,ItemRect.Top,TimeStamp);
+  end;
+
   if Sel or FItems[Index].Bookmarked then begin
+    IconOffset := TimeOffset + Padding;
     if FItems[Index].Bookmarked then
       ic := hppIcons[HPP_ICON_BOOKMARK_ON].handle
     else
       ic := hppIcons[HPP_ICON_BOOKMARK_OFF].handle;
     if RTL then
-      DrawIconEx(Canvas.Handle,ItemRect.Left,ItemRect.Top,ic,16,16,0,0,DI_NORMAL)
+      DrawIconEx(Canvas.Handle,ItemRect.Left+IconOffset,ItemRect.Top,ic,16,16,0,0,DI_NORMAL)
     else
-      DrawIconEx(Canvas.Handle,ItemRect.Right-16,ItemRect.Top,ic,16,16,0,0,DI_NORMAL);
-    Inc(IconOffset,16+Padding);
+      DrawIconEx(Canvas.Handle,ItemRect.Right-IconOffset-16,ItemRect.Top,ic,16,16,0,0,DI_NORMAL);
   end;
-
-  Canvas.Font := timestampFont;
-  if sel then Canvas.Font.Color := Options.ColorSelectedText;
-  TimeOffset := WideCanvasTextWidth(Canvas,TimeStamp);
-  if RTL then
-    WideCanvasTextOut(Canvas,ItemRect.Left+IconOffset,ItemRect.Top,TimeStamp)
-  else begin
-    WideCanvasTextOut(Canvas,ItemRect.Right-TimeOffset-IconOffset,ItemRect.Top,TimeStamp);
-  end;
-
-  {if FItems[Index].Bookmarked then begin
-    if True then
-
-    if RTL then
-      DrawIconEx(Canvas.Handle,ItemRect.Left+TimeOffset+Padding,ItemRect.Top,
-        hppIcons[HPP_ICON_BOOKMARK].Handle,16,16,0,0,DI_NORMAL)
-    else
-      DrawIconEx(Canvas.Handle,ItemRect.Right-TimeOffset-Padding-16,ItemRect.Top,
-        hppIcons[HPP_ICON_BOOKMARK].Handle,16,16,0,0,DI_NORMAL);
-  end;}
 
   if mtIncoming in FItems[Index].MessageType then
     hh := CHeaderHeight
@@ -4256,6 +4244,9 @@ var
   p: TPoint;
   RTL: Boolean;
   Sel: Boolean;
+  TimeStamp: WideString;
+  TimestampFont: TFont;
+  TimestampOffset: Integer;
 begin
   Result := [];
   Item := FindItemAt(X,Y);
@@ -4310,10 +4301,14 @@ begin
         Include(Result,ghtSessShowButton);
     end;
     if Sel or FItems[Item].Bookmarked then begin
+      TimestampFont := Options.FontTimeStamp;
+      TimeStamp := GetTime(FItems[Item].Time);
+      Canvas.Font := TimestampFont;
+      TimestampOffset := WideCanvasTextWidth(Canvas,TimeStamp) + Padding;
       if RTL then
-        ButtonRect := Rect(HeaderRect.Left,HeaderRect.Top,HeaderRect.Left+16,HeaderRect.Bottom)
+        ButtonRect := Rect(HeaderRect.Left+TimestampOffset,HeaderRect.Top,HeaderRect.Left+TimestampOffset+16,HeaderRect.Bottom)
       else
-        ButtonRect := Rect(HeaderRect.Right-16,HeaderRect.Top,HeaderRect.Right,HeaderRect.Bottom);
+        ButtonRect := Rect(HeaderRect.Right-16-TimestampOffset,HeaderRect.Top,HeaderRect.Right-TimestampOffset,HeaderRect.Bottom);
     if PtInRect(ButtonRect,p) then
       Include(Result,ghtBookmark);
     end;

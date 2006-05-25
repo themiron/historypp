@@ -457,6 +457,7 @@ begin
     but := TControl(lbAdded.Items.Objects[i]);
     if but = nil then but_str := ' ';
     if but = fm.tbSessions then but_str := '[SESS]';
+    if but = fm.tbBookmarks then but_str := '[BOOK]';
     if but = fm.tbSearch then but_str := '[SEARCH]';
     if but = fm.tbFilter then but_str := '[FILTER]';
     if but = fm.tbCopy then but_str := '[COPY]';
