@@ -86,6 +86,7 @@ type
   end;
 
   TOnSelect = procedure(Sender: TObject; Item, OldItem: Integer) of object;
+  TOnBookmarkClick = procedure(Sender: TObject; Item: Integer) of object;
   TGetItemData = procedure(Sender: TObject; Index: Integer; var Item: THistoryItem) of object;
   TGetNameData = procedure(Sender: TObject; Index: Integer; var Name: WideString) of object;
   TGetXMLData = procedure(Sender: TObject; Index: Integer; var Item: TXMLItem) of object;
@@ -360,6 +361,7 @@ type
     FExpandHeaders: Boolean;
 
     FirstRun: Boolean;
+    FOnBookmarkClick: TOnBookmarkClick;
 
     procedure SetCodepage(const Value: Cardinal);
     procedure SetShowHeaders(const Value: Boolean);
@@ -565,6 +567,7 @@ type
     property OnUrlClick: TUrlEvent read FOnUrlClick write FOnUrlClick;
     property OnUrlPopup: TUrlEvent read FOnUrlPopup write FOnUrlPopup;
     {ENDIF}
+    property OnBookmarkClick: TOnBookmarkClick read FOnBookmarkClick write FOnBookmarkClick;
     property OnItemFilter: TOnItemFilter read FOnItemFilter write FOnItemFilter;
     property OnProcessRichText: TOnProcessRichText read FOnProcessRichText write FOnProcessRichText;
     property OnSearchItem: TOnSearchItem read FOnSearchItem write FOnSearchItem;
@@ -687,9 +690,9 @@ var
   dc: HDC;
 begin
   inherited;
+  ShowHint := True;
   {$IFDEF RENDER_RICH}
   FRichCache := TRichCache.Create(Self);
-
   {tmp
   FRich := TTntRichEdit.Create(Self);
   FRich.Name := 'OrgFRich';
@@ -1887,10 +1890,8 @@ begin
 
   if (ghtBookmark in ht) then begin
     Item := FindItemAt(x,y);
-    if FItems[Item].Bookmarked then
-      MessageBox(Handle,'Bookmark!','Bookmarks',MB_OK)
-    else
-      MessageBox(Handle,'Not bookmark','Bookmarks',MB_OK);
+    if Assigned(FOnBookmarkClick) then
+      FOnBookmarkClick(Self,Item);
     exit;
   end;
 
@@ -1917,12 +1918,18 @@ var
   Item: Integer;
   ht: TGridHitTests;
   NewCursor: TCursor;
+  NewHint: WideString;
+  SelectMove: Boolean;
 begin
   CheckBusy;
   if Count = 0 then exit;
+  ht := GetHitTests(x,y);
   // do we need to process control here?
-  if ((mmkLButton in Keys) and not (mmkControl in Keys) and
-  not (mmkShift in Keys)) and (MultiSelect) and (WasDownOnGrid) then begin
+  SelectMove := ((mmkLButton in Keys) and not (mmkControl in Keys) and
+  not (mmkShift in Keys)) and (MultiSelect) and (WasDownOnGrid);
+  SelectMove := SelectMove and not ((ghtSessHideButton in ht) or (ghtSessShowButton in ht) or
+    (ghtBookmark in ht));
+  if SelectMove then begin
     if SelCount = 0 then exit;
     Item := FindItemAt(x,y);
     if Item = -1 then exit;
@@ -1937,7 +1944,7 @@ begin
     exit;
   end;
 
-  ht := GetHitTests(x,y);
+  NewHint := '';
   NewCursor := crDefault;
   if ghtText in ht then begin
     OverURL := False;
@@ -1945,9 +1952,21 @@ begin
     if OverURL then NewCursor := crHandPoint
   end
   else if (ghtSessHideButton in ht) or (ghtSessShowButton in ht) or
-    (ghtBookmark in ht) then
+  (ghtBookmark in ht) then begin
+    Item := FindItemAt(x,y);
     NewCursor := crHandPoint;
+    if ghtBookmark in ht then
+      if FItems[Item].Bookmarked then
+        NewHint := TranslateWideW('Remove bookmark')
+      else
+        NewHint := TranslateWideW('Bookmark')
+    else if ghtSessHideButton in ht then
+      NewHint := TranslateWideW('Hide headers')
+    else if ghtSessShowButton in ht then
+      NewHint := TranslateWideW('Show headers');
+    end;
   Cursor := NewCursor;
+  Hint := NewHint;
 end;
 
 procedure THistoryGrid.WMLButtonDblClick(var Message: TWMLButtonDblClk);
