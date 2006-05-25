@@ -9,3 +9,5 @@ Buttons on &toolbar:
 OK
 &Cancel
 R&eset to Default
+;; Text found in ..\plugin\CustomizeToolbar.pas:
+Event Filters

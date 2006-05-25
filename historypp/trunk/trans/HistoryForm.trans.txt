@@ -12,8 +12,8 @@ Conversations
 Clear Search
 User Details
 User Menu
-TntToolButton1
-Show conversations (F4)
+Conversations (F4)
+Bookmarks
 Find
 Filter
 Copy
@@ -21,6 +21,7 @@ Delete
 Save
 History
 History Search
+Bookmarks
 You need password to access this history
 Password:
 Enter
@@ -61,6 +62,7 @@ Select
 Delete
 Save...
 &Customize...
+Delete &Bookmark
 ;; Text found in ..\plugin\HistoryForm.pas:
 System History
 Error
