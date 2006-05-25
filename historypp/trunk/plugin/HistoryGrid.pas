@@ -109,7 +109,7 @@ type
   TOnProcessRichText = procedure(Sender: TObject; Handle: THandle; Item: Integer) of object;
   TOnSearchItem = procedure(Sender: TObject; Item: Integer; ID: Integer; var Found: Boolean) of object;
 
-  TGridHitTest = (ghtItem, ghtHeader, ghtText, ghtLink, ghtSession, ghtSessHideButton, ghtSessShowButton);
+  TGridHitTest = (ghtItem, ghtHeader, ghtText, ghtLink, ghtSession, ghtSessHideButton, ghtSessShowButton, ghtBookmark);
   TGridHitTests = set of TGridHitTest;
 
   TOnEvent = procedure;
@@ -431,7 +431,10 @@ type
     {$ENDIF}
     procedure SetRTLMode(const Value: TRTLMode);
     procedure SetExpandHeaders(const Value: Boolean);
+    function GetBookmarked(Index: Integer): Boolean;
+    procedure SetBookmarked(Index: Integer; const Value: Boolean);
   protected
+    DownHitTests: TGridHitTests;
     procedure CreateWindowHandle(const Params: TCreateParams); override;
     procedure CreateParams(var Params: TCreateParams); override;
     property Canvas: TCanvas read FCanvas;
@@ -483,6 +486,7 @@ type
     procedure DeleteSelected;
     procedure DeleteAll;
     property Items[Index: Integer]: THistoryItem read GetItems;
+    property Bookmarked[Index: Integer]: Boolean read GetBookmarked write SetBookmarked;
     property SelItems[Index: Integer]: Integer read GetSelItems write SetSelItems;
     function Search(Text: WideString; CaseSensitive: Boolean; FromStart: Boolean = False; SearchAll: Boolean = False; FromNext: Boolean = False; Down: Boolean = True): Integer;
     function SearchItem(ItemID: Integer): Integer;
@@ -813,6 +817,11 @@ if Assigned(Options) then
 inherited;
 end;
 
+function THistoryGrid.GetBookmarked(Index: Integer): Boolean;
+begin
+  Result := Items[Index].Bookmarked;
+end;
+
 function THistoryGrid.GetBottomItem: Integer;
 begin
   if Reversed then
@@ -999,6 +1008,21 @@ begin
   end
   else
     WideCanvasTextRect(Canvas,ItemRect,ItemRect.Left,ItemRect.Top,text);
+end;
+
+procedure THistoryGrid.SetBookmarked(Index: Integer; const Value: Boolean);
+var
+  r: TRect;
+begin
+  // don't set unknown items, we'll got correct bookmarks when we load them anyway
+  if IsUnknown(Index) then exit;
+  if Bookmarked[Index] = Value then exit;
+  FItems[Index].Bookmarked := Value;
+  if IsVisible(Index) then begin
+    r := GetItemRect(i);
+    InvalidateRect(Handle,@r,False);
+    Update;
+  end;
 end;
 
 procedure THistoryGrid.SetCodepage(const Value: Cardinal);
@@ -1256,7 +1280,7 @@ var
   Sel: Boolean;
   RTL: Boolean;
   RichBMP: TBitmap;
-
+  ic: HICON;
 begin
   {$IFDEF DEBUG}
   OutputDebugString(PChar('Paint item '+intToStr(Index)+' to screen'));
@@ -1345,23 +1369,38 @@ begin
   end else
     WideCanvasTextOut(Canvas,ItemRect.Left+IconOffset,ItemRect.Top,HeaderName);
 
+  IconOffset := 0;
+  if Sel or FItems[Index].Bookmarked then begin
+    if FItems[Index].Bookmarked then
+      ic := hppIcons[HPP_ICON_BOOKMARK].handle
+    else
+      ic := hppIcons[HPP_ICON_BOOKMARK_OFF].handle;
+    if RTL then
+      DrawIconEx(Canvas.Handle,ItemRect.Left,ItemRect.Top,ic,16,16,0,0,DI_NORMAL)
+    else
+      DrawIconEx(Canvas.Handle,ItemRect.Right-16,ItemRect.Top,ic,16,16,0,0,DI_NORMAL);
+    Inc(IconOffset,16+Padding);
+  end;
+
   Canvas.Font := timestampFont;
   if sel then Canvas.Font.Color := Options.ColorSelectedText;
   TimeOffset := WideCanvasTextWidth(Canvas,TimeStamp);
   if RTL then
-    WideCanvasTextOut(Canvas,ItemRect.Left,ItemRect.Top,TimeStamp)
+    WideCanvasTextOut(Canvas,ItemRect.Left+IconOffset,ItemRect.Top,TimeStamp)
   else begin
-    WideCanvasTextOut(Canvas,ItemRect.Right-TimeOffset,ItemRect.Top,TimeStamp);
+    WideCanvasTextOut(Canvas,ItemRect.Right-TimeOffset-IconOffset,ItemRect.Top,TimeStamp);
   end;
 
-  if FItems[Index].Bookmarked then begin
+  {if FItems[Index].Bookmarked then begin
+    if True then
+
     if RTL then
       DrawIconEx(Canvas.Handle,ItemRect.Left+TimeOffset+Padding,ItemRect.Top,
         hppIcons[HPP_ICON_BOOKMARK].Handle,16,16,0,0,DI_NORMAL)
     else
       DrawIconEx(Canvas.Handle,ItemRect.Right-TimeOffset-Padding-16,ItemRect.Top,
         hppIcons[HPP_ICON_BOOKMARK].Handle,16,16,0,0,DI_NORMAL);
-  end;
+  end;}
 
   if mtIncoming in FItems[Index].MessageType then
     hh := CHeaderHeight
@@ -1614,7 +1653,9 @@ begin
   Item := FindItemAt(x,y);
 
   ht := GetHitTests(x,y);
-  if (ghtSessShowButton in ht) or (ghtSessHideButton in ht) then
+  DownHitTests := ht;
+  if (ghtSessShowButton in ht) or (ghtSessHideButton in ht) or
+  (ghtBookmark in ht) then
     exit; // we'll hide/show session headers on button up, don't select item
 
   if Item <> -1 then begin
@@ -1835,14 +1876,24 @@ var
   Item: Integer;
   ht: TGridHitTests;
 begin
-  ht := GetHitTests(x,y);
-  if ((ghtSessHideButton in ht) or (ghtSessShowButton in ht)) and (WasDownOnGrid) then begin
+  ht := GetHitTests(x,y) * DownHitTests;
+  DownHitTests := [];
+  WasDownOnGrid := False;
+
+  if ((ghtSessHideButton in ht) or (ghtSessShowButton in ht)) then begin
     ExpandHeaders := (ghtSessShowButton in ht);
-    WasDownOnGrid := False;
     exit;
   end;
 
-  WasDownOnGrid := False;
+  if (ghtBookmark in ht) then begin
+    Item := FindItemAt(x,y);
+    if FItems[Item].Bookmarked then
+      MessageBox(Handle,'Bookmark!','Bookmarks',MB_OK)
+    else
+      MessageBox(Handle,'Not bookmark','Bookmarks',MB_OK);
+    exit;
+  end;
+
   if OverURL then begin
     if Assigned(FOnUrlClick) then begin
       Item := FindItemAt(x,y);
@@ -1893,7 +1944,8 @@ begin
     HandleRichEditMouse(WM_MOUSEMOVE,X,Y);
     if OverURL then NewCursor := crHandPoint
   end
-  else if (ghtSessHideButton in ht) or (ghtSessShowButton in ht) then
+  else if (ghtSessHideButton in ht) or (ghtSessShowButton in ht) or
+    (ghtBookmark in ht) then
     NewCursor := crHandPoint;
   Cursor := NewCursor;
 end;
@@ -4184,6 +4236,7 @@ var
   ButtonRect: TRect;
   p: TPoint;
   RTL: Boolean;
+  Sel: Boolean;
 begin
   Result := [];
   Item := FindItemAt(X,Y);
@@ -4193,6 +4246,7 @@ begin
     exit;
   ItemRect := GetItemRect(Item);
   RTL := GetItemRTL(Item);
+  Sel := IsSelected(Item);
   p := Point(x,y);
 
   if (ShowHeaders) and (ExpandHeaders) and (FItems[Item].HasHeader) then begin
@@ -4235,6 +4289,14 @@ begin
         ButtonRect := Rect(HeaderRect.Left,HeaderRect.Top,HeaderRect.Left+16,HeaderRect.Bottom);
       if PtInRect(ButtonRect,p) then
         Include(Result,ghtSessShowButton);
+    end;
+    if Sel or FItems[Item].Bookmarked then begin
+      if RTL then
+        ButtonRect := Rect(HeaderRect.Left,HeaderRect.Top,HeaderRect.Left+16,HeaderRect.Bottom)
+      else
+        ButtonRect := Rect(HeaderRect.Right-16,HeaderRect.Top,HeaderRect.Right,HeaderRect.Bottom);
+    if PtInRect(ButtonRect,p) then
+      Include(Result,ghtBookmark);
     end;
   end;
 

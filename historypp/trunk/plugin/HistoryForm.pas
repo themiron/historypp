@@ -365,7 +365,7 @@ type
     procedure SetEventFilter(FilterIndex: Integer = -1);
     procedure CreateEventsFilterMenu;
     procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED;
-    procedure HMBookmarksChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
+    procedure HMBookmarkChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
   protected
     procedure LoadPendingHeaders(rowidx: integer; count: integer);
     property SearchMode: TSearchMode read FSearchMode write SetSearchMode;
@@ -608,7 +608,6 @@ begin
   LoadToolbarIcons;
   LoadButtonIcons;
   Image1.Picture.Icon.Handle := CopyIcon(hppIntIcons[0].handle);
-  LoadToolbar;
 
   DesktopFont := True;
   MakeFontsParent(Self);
@@ -802,10 +801,10 @@ begin
   // thanks Luu Tran for this tip
   // http://groups.google.com/group/borland.public.delphi.vcl.components.using/browse_thread/thread/da4e4da814baa745/c1ce8b671c1dac20
   for i := High(tool) downto 0 do begin
-    tool[i].Parent := nil;
+    if not (tool[i] is TTntSpeedButton) then tool[i].Parent := nil;
     tool[i].Left := -3;
     tool[i].Visible := True;
-    tool[i].Parent := Toolbar;
+    if not (tool[i] is TTntSpeedButton) then tool[i].Parent := Toolbar;
   end;
 
   // Thanks Primoz Gabrijeleie for this trick!
@@ -935,20 +934,22 @@ begin
   hg.Repaint;
 end;
 
-procedure THistoryFrm.HMBookmarksChanged(var M: TMessage);
+procedure THistoryFrm.HMBookmarkChanged(var M: TMessage);
 var
   i: integer;
-  found: boolean;
+  r: TRect;
 begin
   if M.WParam <> hContact then exit;
-  found := false;
   for i := 0 to hg.Count-1 do
     if History[GridIndexToHistory(i)] = M.LParam then begin
-      hg.ResetItem(i);
-      found := true;
+      hg.Bookmarked[i] := BookmarkServer[hContact].Bookmarked[M.LParam];
+      if hg.IsVisible(i) then begin
+        r := hg.GetItemRect(i);
+        InvalidateRect(hg.Handle,@r,False);
+        UpdateWindow(hg.Handle);
+        hg.Repaint;
+      end;
     end;
-  if found then
-    hg.Repaint;
 end;
 
 procedure THistoryFrm.HMPreShutdown(var Message: TMessage);
@@ -2528,12 +2529,17 @@ begin
 end;
 
 procedure THistoryFrm.TntFormShow(Sender: TObject);
+var
+  book: Boolean;
+  i,n: Integer;
 begin
   // EndUpdate is better here, not in PostHistoryLoad, because it's faster
   // when called from OnShow. Don't know why.
   // Other form-modifying routines are better be kept at PostHistoryLoad for
   // speed too.
   hg.EndUpdate;
+
+  LoadToolbar;
 end;
 
 procedure THistoryFrm.ToolbarDblClick(Sender: TObject);
@@ -3432,7 +3438,6 @@ begin
   hDBEvent := History[GridIndexToHistory(hg.Selected)];
   val := not BookmarkServer[hContact].Bookmarked[hDBEvent];
   BookmarkServer[hContact].Bookmarked[hDBEvent] := val;
-  NotifyAllForms(HM_NOTF_BOOKMARKCHANGED,hContact,hDBEvent);
 end;
 
 procedure THistoryFrm.tbUserDetailsClick(Sender: TObject);
