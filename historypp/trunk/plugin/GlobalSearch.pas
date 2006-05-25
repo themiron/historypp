@@ -1534,7 +1534,7 @@ begin
   hDBEvent := GetSearchItem(hg.Selected).hDBEvent;
   val := not BookmarkServer[GetSearchItem(hg.Selected).Contact.Handle].Bookmarked[hDBEvent];
   BookmarkServer[GetSearchItem(hg.Selected).Contact.Handle].Bookmarked[hDBEvent] := val;
-  NotifyAllForms(HM_NOTF_BOOKMARKCHANGED,GetSearchItem(hg.Selected).Contact.Handle,hDBEvent);
+  //NotifyAllForms(HM_NOTF_BOOKMARKCHANGED,GetSearchItem(hg.Selected).Contact.Handle,hDBEvent);
 end;
 
 initialization

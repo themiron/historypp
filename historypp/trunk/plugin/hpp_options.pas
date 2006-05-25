@@ -129,9 +129,9 @@ const
     (name:'historypp_26'; desc:'Events filter'; group: 'Toolbar'; i:HPP_ICON_TOOL_EVENTSFILTER; handle:0),
     (name:'historypp_27'; desc:'User Details'; group: 'Toolbar'; i:HPP_ICON_CONTACDETAILS; handle:0),
     (name:'historypp_28'; desc:'User Menu'; group: 'Toolbar'; i:HPP_ICON_CONTACTMENU; handle:0),
-    (name:'historypp_29'; desc:'Bookmark'; group: 'Main'; i:HPP_ICON_BOOKMARK; handle:0),
-    (name:'historypp_30'; desc:'Bookmark On'; group: 'Main'; i:HPP_ICON_BOOKMARK_ON; handle:0),
-    (name:'historypp_31'; desc:'Bookmark Off'; group: 'Main'; i:HPP_ICON_BOOKMARK_OFF; handle:0)
+    (name:'historypp_29'; desc:'Bookmarks'; group: 'Toolbar'; i:HPP_ICON_BOOKMARK; handle:0),
+    (name:'historypp_30'; desc:'Bookmark enabled'; group: 'Main'; i:HPP_ICON_BOOKMARK_ON; handle:0),
+    (name:'historypp_31'; desc:'Bookmark disabled'; group: 'Main'; i:HPP_ICON_BOOKMARK_OFF; handle:0)
   );
 
   hppIntIcons: array[0..0] of ThppIntIconsRec = (

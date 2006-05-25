@@ -111,21 +111,18 @@ type
 
   TBookmarkServer = class(TObject)
   private
-    hookEventDeleted,hookEventAdded: THandle;
+    hookContactDeleted,
+    hookEventDeleted,
+    hookEventAdded: THandle;
     CachedContacts: TContactsHash;
     function GetContacts(Index: THandle): TContactBookmarks;
   protected
+    procedure ContactDeleted(hContact: THandle);
     procedure EventDeleted(hContact,hDBEvent: THandle);
     procedure EventAdded(hContact,hDBEvent: THandle);
   public
     constructor Create;
     destructor Destroy; override;
-
-    function AddBookmark(hContact, hDBEvent: THandle): Integer;
-    function GetBookmark(hContact, hDBEvent: THandle): Integer;
-    function DeleteBookmark(Bookmark: Integer): Integer; overload;
-    function DeleteBookmark(hContact, hDBEvent: THandle): Integer; overload;
-
     property Contacts[Index: THandle]: TContactBookmarks read GetContacts; default;
   end;
 
@@ -147,6 +144,14 @@ end;
 procedure hppDeinitBookmarkServer;
 begin
   BookmarkServer.Free;
+end;
+
+function ContactDeletedHelper(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
+// wParam: hContact, lParam: 0
+begin
+  if Assigned(BookmarkServer) then
+    BookmarkServer.ContactDeleted(wParam);
+  Result := 0;
 end;
 
 function EventDeletedHelper(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
@@ -174,47 +179,23 @@ end;
 
 { TBookmarkServer }
 
-function TBookmarkServer.AddBookmark(hContact, hDBEvent: THandle): Integer;
-begin
-  Result := 0;
-end;
-
-function TBookmarkServer.GetBookmark(hContact, hDBEvent: THandle): Integer;
-begin
-  Result := -1;
-end;
-
 function TBookmarkServer.GetContacts(Index: THandle): TContactBookmarks;
 begin
   Result := CachedContacts[Index];
-end;
-
-function TBookmarkServer.DeleteBookmark(Bookmark: Integer): Integer;
-begin
-  Result := 0;
-end;
-
-function TBookmarkServer.DeleteBookmark(hContact, hDBEvent: THandle): Integer;
-var
-  bm: integer;
-begin
-  bm := GetBookmark(hContact, hDBEvent);
-  if bm <> -1 then
-    Result := Self.DeleteBookmark(bm)
-  else
-    Result := bm;
 end;
 
 constructor TBookmarkServer.Create;
 begin
   inherited;
   CachedContacts := TContactsHash.Create;
+  hookContactDeleted := PluginLink.HookEvent(ME_DB_CONTACT_DELETED,ContactDeletedHelper);
   hookEventDeleted := PluginLink.HookEvent(ME_DB_EVENT_DELETED,EventDeletedHelper);
   hookEventAdded := PluginLink.HookEvent(ME_DB_EVENT_ADDED,EventAddedHelper);
 end;
 
 destructor TBookmarkServer.Destroy;
 begin
+  PluginLink.UnhookEvent(hookContactDeleted);
   PluginLink.UnhookEvent(hookEventDeleted);
   PluginLink.UnhookEvent(hookEventAdded);
   CachedContacts.Free;
@@ -222,14 +203,22 @@ begin
   inherited;
 end;
 
-procedure TBookmarkServer.EventAdded(hContact, hDBEvent: THandle);
+procedure TBookmarkServer.ContactDeleted(hContact: THandle);
 begin
-  ;
+  // do we really need to delete bookmarks from contact,
+  // if he is about to be deleted? I think don't
+  Contacts[hContact].DeleteBookmarks;
+  Contacts[hContact].Destroy;
 end;
 
 procedure TBookmarkServer.EventDeleted(hContact, hDBEvent: THandle);
 begin
-  DeleteBookmark(hContact, hDBEvent);
+  Contacts[hContact].Bookmarked[hDBEvent] := false;
+end;
+
+procedure TBookmarkServer.EventAdded(hContact, hDBEvent: THandle);
+begin
+  ;
 end;
 
 { TContactBookmarks }
