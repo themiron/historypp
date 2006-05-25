@@ -57,7 +57,7 @@ type
     Buffer: TSessArray;
     BufCount: Integer;
     FirstBatch: Boolean;
-    FParentHandle: THandle;
+    FParentHandle: Hwnd;
     FSearchTime: Cardinal;
     SearchStart: Cardinal;
     FContact: THandle;
@@ -76,7 +76,7 @@ type
 
     property Contact: THandle read FContact write FContact;
     property SearchTime: Cardinal read FSearchTime;
-    property ParentHandle: THandle read FParentHandle write FParentHandle;
+    property ParentHandle: Hwnd read FParentHandle write FParentHandle;
 
     property Terminated;
   end;
