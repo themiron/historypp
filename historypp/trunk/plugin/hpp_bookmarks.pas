@@ -86,10 +86,10 @@ type
 
   TContactsHash = class(TPseudoHash)
   private
-    function GetContactBookmarks(Index: Integer): TContactBookmarks;
+    function GetContactBookmarks(Index: THandle): TContactBookmarks;
   public
     property Items[Index: THandle]: TContactBookmarks read GetContactBookmarks; default;
-
+    function RemoveItem(Index: THandle): Boolean;
     destructor Destroy; override;
   end;
 
@@ -208,7 +208,7 @@ begin
   // do we really need to delete bookmarks from contact,
   // if he is about to be deleted? I think don't
   Contacts[hContact].DeleteBookmarks;
-  Contacts[hContact].Destroy;
+  CachedContacts.RemoveItem(hContact);
 end;
 
 procedure TBookmarkServer.EventDeleted(hContact, hDBEvent: THandle);
@@ -417,7 +417,7 @@ begin
   inherited;
 end;
 
-function TContactsHash.GetContactBookmarks(Index: Integer): TContactBookmarks;
+function TContactsHash.GetContactBookmarks(Index: THandle): TContactBookmarks;
 var
   val: Pointer;
 begin
@@ -427,6 +427,18 @@ begin
   else begin
     Result := TContactBookmarks.Create(Index);
     AddKey(Cardinal(Index),Cardinal(Pointer(Result)));
+  end;
+end;
+
+function TContactsHash.RemoveItem(Index: THandle): Boolean;
+var
+  val: Pointer;
+begin
+  Result := False;
+  if GetKey(Cardinal(Index),Cardinal(val)) then begin
+    RemoveKey(Cardinal(Index));
+    TContactBookmarks(val).Free;
+    Result := True;
   end;
 end;
 
