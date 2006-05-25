@@ -133,7 +133,7 @@ procedure hppDeinitBookmarkServer;
 
 implementation
 
-uses hpp_events, hpp_contacts, hpp_global, Checksum, hpp_database;
+uses hpp_events, hpp_contacts, hpp_global, Checksum, hpp_database, hpp_forms;
 
 procedure hppInitBookmarkServer;
 begin
@@ -159,7 +159,6 @@ begin
   if Assigned(BookmarkServer) then
     BookmarkServer.EventAdded(wParam,lParam);
   Result := 0;
-  Classes
 end;
 
 function DynArrayComparePseudoHash(Item1, Item2: Pointer): Integer;
@@ -308,6 +307,7 @@ begin
       Move(src^,dst^,SizeOf(src^));
     end;
     WriteDBBlob(hContact,hppDBName,'Bookmarks',mem,mem_len);
+    FreeMem(mem,mem_len);
   end
   else begin
     DeleteBookmarks;
@@ -322,7 +322,10 @@ begin
     res := Bookmarks.AddItem(Index)
   else
     res := Bookmarks.RemoveItem(Index);
-  if res then SaveBookmarks;
+  if res then begin
+    SaveBookmarks;
+    NotifyAllForms(HM_NOTF_BOOKMARKCHANGED,hContact,Index);
+  end;
 end;
 
 
@@ -396,9 +399,11 @@ var
   ph: TPseudoHashEntry;
 begin
   Result := False;
+  ph.Key := Key;
   idx := SearchDynArray(Table,SizeOf(TPseudoHashEntry),DynArrayComparePseudoHash,@ph,False);
   if idx = -1 then exit;
   RemoveByIndex(idx);
+  Result := True;
 end;
 
 { TContactsHash }

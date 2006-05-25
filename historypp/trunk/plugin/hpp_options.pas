@@ -97,8 +97,9 @@ const
   HPP_ICON_CONTACDETAILS     = 26;
   HPP_ICON_CONTACTMENU       = 27;
   HPP_ICON_BOOKMARK          = 28;
+  HPP_ICON_BOOKMARK_OFF      = 29;
 
-  hppIcons : array[0..28] of ThppIconsRec = (
+  hppIcons : array[0..29] of ThppIconsRec = (
     (name:'historypp_01'; desc:'Contact history'; group: 'Main'; i:HPP_ICON_CONTACTHISTORY; handle:0),
     (name:'historypp_02'; desc:'History search'; group: 'Main'; i:HPP_ICON_GLOBALSEARCH; handle:0),
     (name:'historypp_03'; desc:'Conversation divider'; group: 'Conversations'; i:HPP_ICON_SESS_DIVIDER; handle:0),
@@ -127,7 +128,8 @@ const
     (name:'historypp_26'; desc:'Events filter'; group: 'Toolbar'; i:HPP_ICON_TOOL_EVENTSFILTER; handle:0),
     (name:'historypp_27'; desc:'User Details'; group: 'Toolbar'; i:HPP_ICON_CONTACDETAILS; handle:0),
     (name:'historypp_28'; desc:'User Menu'; group: 'Toolbar'; i:HPP_ICON_CONTACTMENU; handle:0),
-    (name:'historypp_29'; desc:'Bookmark'; group: 'Main'; i:HPP_ICON_BOOKMARK; handle:0)
+    (name:'historypp_29'; desc:'Bookmark'; group: 'Main'; i:HPP_ICON_BOOKMARK; handle:0),
+    (name:'historypp_30'; desc:'Bookmark Off'; group: 'Main'; i:HPP_ICON_BOOKMARK_OFF; handle:0)
   );
 
   hppIntIcons: array[0..0] of ThppIntIconsRec = (
