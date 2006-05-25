@@ -3582,8 +3582,6 @@ begin
   end;
   if Index = -1 then exit;
   if hg.State = gsInline then hg.CancelInline;
-  Index := HistoryIndexToGrid(Index);
-  hg.MakeTopmost(Index);
   hg.Selected := Index;
 end;
 
