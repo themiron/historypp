@@ -219,6 +219,7 @@ object fmGlobalSearch: TfmGlobalSearch
         SmallImages = ilContacts
         TabOrder = 0
         ViewStyle = vsReport
+        OnContextPopup = lvContactsContextPopup
         OnSelectItem = lvContactsSelectItem
       end
     end

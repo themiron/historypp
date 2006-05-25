@@ -162,7 +162,11 @@ type
     procedure hgRTLEnabled(Sender: TObject; Enabled: Boolean);
     procedure Bookmark1Click(Sender: TObject);
     procedure hgBookmarkClick(Sender: TObject; Item: Integer);
+    procedure lvContactsContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
   private
+    UserMenu: hMenu;
+    UserMenuContact: THandle;
     WasReturnPressed: Boolean;
     LastUpdateTime: Cardinal;
     HotString: WideString;
@@ -181,7 +185,9 @@ type
     AllContacts: Integer;
     HotFilterString: WideString;
     FormState: TGridState;
-    
+
+    procedure WndProc(var Message: TMessage); override;
+
     procedure SMPrepare(var M: TMessage); message HM_STRD_PREPARE;
     procedure SMProgress(var M: TMessage); message HM_STRD_PROGRESS;
     procedure SMItemsFound(var M: TMessage); message HM_STRD_ITEMSFOUND;
@@ -872,6 +878,29 @@ begin
   edSearch.Text := AnsiToWideString(GetDBStr(hppDBName,'GlobalSearchWindow.LastSearch',DEFAULT_SEARCH_TEXT),hppCodepage);
 end;
 
+procedure TfmGlobalSearch.lvContactsContextPopup(Sender: TObject;
+  MousePos: TPoint; var Handled: Boolean);
+var
+  hm: hMenu;
+  Item: TTntListItem;
+  hContact: THandle;
+begin
+  Handled := True;
+  Item := TTntListItem(lvContacts.GetItemAt(MousePos.X,MousePos.Y));
+  if Item = nil then exit;
+  hContact := Integer(Item.Data);
+  if hContact = 0 then exit;  
+  UserMenu := PluginLink.CallService(MS_CLIST_MENUBUILDCONTACT,hContact,0);
+  if UserMenu <> 0 then begin
+    UserMenuContact := hContact;
+    MousePos := lvContacts.ClientToScreen(MousePos);
+    TrackPopupMenu(UserMenu,TPM_TOPALIGN or TPM_LEFTALIGN or TPM_LEFTBUTTON,MousePos.x,MousePos.y,0,Handle,nil);
+    DestroyMenu(UserMenu);
+    UserMenu := 0;
+    UserMenuContact := 0;
+  end;
+end;
+
 procedure TfmGlobalSearch.lvContactsSelectItem(Sender: TObject; Item: TListItem;
   Selected: Boolean);
 var
@@ -1083,6 +1112,30 @@ begin
   PluginLink.UnhookEvent(hHookContactDeleted);
   PluginLink.UnhookEvent(hHookContactIconChanged);
   PluginLink.UnhookEvent(hHookEventPreShutdown);
+end;
+
+procedure TfmGlobalSearch.WndProc(var Message: TMessage);
+var
+  res: Integer;
+begin
+  if UserMenu <> 0 then begin
+    case Message.Msg of
+      WM_COMMAND: begin
+        res := PluginLink.CallService(MS_CLIST_MENUPROCESSCOMMAND,MAKEWPARAM(Message.WParamLo,MPCF_CONTACTMENU),UserMenuContact);
+        if res = 0 then exit;
+      end;
+      WM_MEASUREITEM: begin
+ 	      Message.Result := PluginLink.CallService(MS_CLIST_MENUMEASUREITEM,Message.WParam,Message.LParam);
+        exit;
+       end;
+      WM_DRAWITEM:
+        if TWMDrawItem(Message).DrawItemStruct^.hwndItem = UserMenu then begin
+   		    Message.Result := PluginLink.CallService(MS_CLIST_MENUDRAWITEM,Message.WParam,Message.LParam);
+          exit;
+       end;
+    end;
+  end;
+  inherited;
 end;
 
 procedure TfmGlobalSearch.FormShow(Sender: TObject);
