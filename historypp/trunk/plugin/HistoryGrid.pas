@@ -1375,7 +1375,7 @@ begin
   IconOffset := 0;
   if Sel or FItems[Index].Bookmarked then begin
     if FItems[Index].Bookmarked then
-      ic := hppIcons[HPP_ICON_BOOKMARK].handle
+      ic := hppIcons[HPP_ICON_BOOKMARK_ON].handle
     else
       ic := hppIcons[HPP_ICON_BOOKMARK_OFF].handle;
     if RTL then
