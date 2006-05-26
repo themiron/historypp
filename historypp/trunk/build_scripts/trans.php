@@ -51,7 +51,7 @@ while(false !== ($entry = $d->read())) {
 		$files[] = $entry;
 }*/
 
-$lines = file($file_to_parse.'.dfm');
+$lines = @file($file_to_parse.'.dfm');
 $lineid = 0;
 $no_add = false;
 $dfm_str = array();
