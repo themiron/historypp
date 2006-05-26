@@ -9,6 +9,20 @@ Changelog
 
 Timeline: https://opensvn.csie.org/traccgi/historypp/trac.cgi/timeline
 
+1.5.0.103
+Major changes:
++ Added toolbar with customization
++ Added event filter customization
++ Added event bookmarks
++ Added support for external iconpacks
++ Reworked text filter and search interface
++ Improoved BiDi interface
++ Added copy text & copy templates limited support.
+  (read here: https://opensvn.csie.org/traccgi/historypp/trac.cgi/wiki/TextFormatting)
++ Finished conversation log
++ Numerous fixes and small features
+Full changelog http://slav.pp.ru/miranda/historypp-1.5.0.103-changelog-full.txt
+
 1.5.0.102
 Major changes:
 + Fixed 217 Runtime error on miranda shutdown
