@@ -1,9 +1,9 @@
 object fmGlobalSearch: TfmGlobalSearch
   Left = 289
   Top = 114
+  Width = 559
+  Height = 552
   Caption = 'Global History Search'
-  ClientHeight = 525
-  ClientWidth = 551
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -214,7 +214,9 @@ object fmGlobalSearch: TfmGlobalSearch
               -1)
           end>
         ColumnClick = False
+        FlatScrollBars = True
         ReadOnly = True
+        RowSelect = True
         ShowColumnHeaders = False
         SmallImages = ilContacts
         TabOrder = 0

@@ -881,7 +881,6 @@ end;
 procedure TfmGlobalSearch.lvContactsContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  hm: hMenu;
   Item: TTntListItem;
   hContact: THandle;
 begin
@@ -897,7 +896,7 @@ begin
     TrackPopupMenu(UserMenu,TPM_TOPALIGN or TPM_LEFTALIGN or TPM_LEFTBUTTON,MousePos.x,MousePos.y,0,Handle,nil);
     DestroyMenu(UserMenu);
     UserMenu := 0;
-    UserMenuContact := 0;
+    //UserMenuContact := 0;
   end;
 end;
 
@@ -1118,22 +1117,20 @@ procedure TfmGlobalSearch.WndProc(var Message: TMessage);
 var
   res: Integer;
 begin
-  if UserMenu <> 0 then begin
-    case Message.Msg of
-      WM_COMMAND: begin
-        res := PluginLink.CallService(MS_CLIST_MENUPROCESSCOMMAND,MAKEWPARAM(Message.WParamLo,MPCF_CONTACTMENU),UserMenuContact);
-        if res = 0 then exit;
-      end;
-      WM_MEASUREITEM: begin
- 	      Message.Result := PluginLink.CallService(MS_CLIST_MENUMEASUREITEM,Message.WParam,Message.LParam);
-        exit;
-       end;
-      WM_DRAWITEM:
-        if TWMDrawItem(Message).DrawItemStruct^.hwndItem = UserMenu then begin
-   		    Message.Result := PluginLink.CallService(MS_CLIST_MENUDRAWITEM,Message.WParam,Message.LParam);
-          exit;
-       end;
+  case Message.Msg of
+    WM_COMMAND: begin
+      res := PluginLink.CallService(MS_CLIST_MENUPROCESSCOMMAND,MAKEWPARAM(Message.WParamLo,MPCF_CONTACTMENU),UserMenuContact);
+      if res = 0 then exit;
     end;
+    WM_MEASUREITEM: begin
+      Message.Result := PluginLink.CallService(MS_CLIST_MENUMEASUREITEM,Message.WParam,Message.LParam);
+      exit;
+    end;
+    WM_DRAWITEM:
+      if TWMDrawItem(Message).DrawItemStruct^.hwndItem = UserMenu then begin
+		    Message.Result := PluginLink.CallService(MS_CLIST_MENUDRAWITEM,Message.WParam,Message.LParam);
+        exit;
+      end;
   end;
   inherited;
 end;
