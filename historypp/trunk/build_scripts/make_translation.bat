@@ -30,7 +30,8 @@ call change_vars.bat r+ trans_header.txt ..\trans\hpp_t.txt
 
 echo Running PHP to grab all translations...
 
-FOR %%A IN (..\plugin\*.dfm) DO (
+rem FOR %%A IN (..\plugin\*.dfm) DO (
+FOR %%A IN (..\plugin\*.pas) DO (
   %PHPBIN% -q -d html_errors=false trans.php %%A
 )
 
@@ -40,20 +41,13 @@ move *.trans.txt ..\trans\ > nul 2>&1
 move *.trans-err.txt ..\trans\ > nul 2>&1
 move *.trans-detailed.txt ..\trans\ > nul 2>&1
 
-cd ..\trans
+rem # cd ..\trans
 
-echo Putting them together...
-
-FOR %%A IN (*.trans.txt) DO (
-echo:>>%TRANS%
-echo:>>%TRANS%
-rem echo ;;>> %TRANS%
-echo ;; %%A file >> %TRANS%
-echo:>>%TRANS%
-rem echo ;;>> %TRANS%
-type %%A >> %TRANS%
-)
 cd ..\build_scripts
+
+echo Running PHP to put them together...
+
+%PHPBIN% -q -d html_errors=false implode.php ..\trans\*.trans.txt >> ..\trans\%TRANS%
 
 rem #
 rem # Find Utils path relatively to our current dir
