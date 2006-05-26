@@ -184,7 +184,6 @@ var
   FontServiceEnabled: Boolean;
   SmileyAddEnabled: Boolean;
   MathModuleEnabled: Boolean;
-  i: integer;
 
 procedure LoadGridOptions;
 procedure SaveGridOptions;
@@ -197,6 +196,8 @@ procedure hppRegisterGridOptions;
 implementation
 
 uses hpp_database, ShellAPI;
+
+var i: integer;
 
 procedure RegisterFont(Name:PChar; Order:integer; defFont:FontSettings);
 var
@@ -273,7 +274,7 @@ procedure LoadIcons2;
 var
   hic: HIcon;
   i: integer;
-  hIcons: Cardinal;
+  //hIcons: Cardinal;
 begin
   for i := 0 to High(hppIcons) do begin
     if IcoLibEnabled then
@@ -380,7 +381,7 @@ function FindIconsDll: string;
 var
   dir: string;
   str: WideString;
-  hIcons: Cardinal;
+  //hIcons: Cardinal;
 begin
   SetLength(dir,MAX_PATH);
   SetLength(dir,GetModuleFileName(hInstance,PAnsiChar(dir),Length(dir)));

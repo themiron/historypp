@@ -161,12 +161,10 @@ end;
 
 procedure TfmCustomizeFilters.bnDownClick(Sender: TObject);
 var
-  ef: ThppEventFilter;
   i: Integer;
 begin
   if lbFilters.ItemIndex = -1 then exit;
   if lbFilters.ItemIndex = lbFilters.Count-1 then exit;
-
   i := lbFilters.ItemIndex;
   MoveItem(i,i+1);
 end;
@@ -192,12 +190,10 @@ end;
 
 procedure TfmCustomizeFilters.bnUpClick(Sender: TObject);
 var
-  ef: ThppEventFilter;
   i: Integer;
 begin
   if lbFilters.ItemIndex = -1 then exit;
   if lbFilters.ItemIndex = 0 then exit;
-
   i := lbFilters.ItemIndex;
   MoveItem(i,i-1);
 end;
@@ -226,7 +222,6 @@ procedure TfmCustomizeFilters.clEventsDrawItem(Control: TWinControl;
   Index: Integer; Rect: TRect; State: TOwnerDrawState);
 var
   txtW: WideString;
-  txt: String;
   r: TRect;
   tf: DWord;
   BrushColor: TColor;

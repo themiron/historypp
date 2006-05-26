@@ -186,8 +186,6 @@ type
     HotFilterString: WideString;
     FormState: TGridState;
 
-    procedure WndProc(var Message: TMessage); override;
-
     procedure SMPrepare(var M: TMessage); message HM_STRD_PREPARE;
     procedure SMProgress(var M: TMessage); message HM_STRD_PROGRESS;
     procedure SMItemsFound(var M: TMessage); message HM_STRD_ITEMSFOUND;
@@ -226,6 +224,7 @@ type
   protected
     procedure LoadWindowPosition;
     procedure SaveWindowPosition;
+    procedure WndProc(var Message: TMessage); override;
   public
     procedure SetRecentEventsPosition(OnTop: Boolean);
   published

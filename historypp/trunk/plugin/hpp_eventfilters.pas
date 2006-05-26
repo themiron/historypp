@@ -158,8 +158,6 @@ begin
 end;
 
 procedure ResetEventFiltersToDefault;
-var
-  i: Integer;
 begin
   CopyEventFilters(hppDefEventFilters,hppEventFilters);
   DeleteEventFilterSettings;
