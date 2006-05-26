@@ -1,7 +1,7 @@
 {-----------------------------------------------------------------------------
  hpp_events (historypp project)
 
- Version:   1.0
+ Version:   1.5
  Created:   05.08.2004
  Author:    Oxygen
 
@@ -35,28 +35,34 @@ uses
   m_globaldefs, m_api, {WideStrUtils,} TntWindows,
   hpp_global, hpp_contacts;
 
+type
+
+  TTextFunction = function(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+
+  TEventTableItem = record
+    EventType: Word;
+    MessageType: TMessageType;
+    TextFunction: TTextFunction;
+  end;
+
 // Miranda timestamp to TDateTime
 function TimestampToDateTime(Timestamp: DWord): TDateTime;
 function TimestampToString(Timestamp: DWord): WideString;
+// general routine
 function ReadEvent(hDBEvent: THandle; UseCP: Cardinal = CP_ACP): THistoryItem;
 function GetEventTimestamp(hDBEvent: THandle): DWord;
-//function MessageTypeToEventType(mt: TMessageTypes): Word;
-
-// general routine
-function GetEventText(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
 // specific routines
-function GetEventTextForMessage(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
-function GetEventTextForFile(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
-function GetEventTextForUrl(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
-function GetEventTextForAuthRequest(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
-function GetEventTextForYouWereAdded(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
-function GetEventTextForSms(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
-function GetEventTextForContacts(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
-function GetEventTextForWebPager(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
-function GetEventTextForEmailExpress(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
-function GetEventTextForStatusChange(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
-function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
-
+function GetEventTextForMessage(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForFile(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForUrl(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForAuthRequest(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForYouWereAdded(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForSms(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForContacts(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForWebPager(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForEmailExpress(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForStatusChange(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 // service routines
 function TextHasUrls(var Text: WideString): Boolean;
 procedure ShrinkTextHasUrlsBuf;
@@ -70,9 +76,30 @@ implementation
 // JclDateTime.pas is part of Project JEDI Code Library (JCL)
 // [http://www.delphi-jedi.org], [http://jcl.sourceforge.net]
 const
+
   // 1970-01-01T00:00:00 in TDateTime
   UnixTimeStart = 25569;
   SecondsPerDay = 60* 24 * 60;
+
+var
+
+  EventTable : array[0..11] of TEventTableItem = (
+    // must be the first item in array for unknown events
+    (EventType: MaxWord; MessageType: mtOther; TextFunction: GetEventTextForOther),
+    // events definitions
+    (EventType: EVENTTYPE_MESSAGE; MessageType: mtMessage; TextFunction: GetEventTextForMessage),
+    (EventType: EVENTTYPE_FILE; MessageType: mtFile; TextFunction: GetEventTextForFile),
+    (EventType: EVENTTYPE_URL; MessageType: mtUrl; TextFunction: GetEventTextForUrl),
+    (EventType: EVENTTYPE_AUTHREQUEST; MessageType: mtSystem; TextFunction: GetEventTextForAuthRequest),
+    (EventType: EVENTTYPE_ADDED; MessageType: mtSystem; TextFunction: GetEventTextForYouWereAdded),
+    (EventType: EVENTTYPE_CONTACTS; MessageType: mtContacts; TextFunction: GetEventTextForContacts),
+    (EventType: EVENTTYPE_STATUSCHANGE; MessageType: mtStatus; TextFunction: GetEventTextForStatusChange),
+    (EventType: EVENTTYPE_SMTPSIMPLE; MessageType: mtSMTPSimple; TextFunction: GetEventTextForMessage),
+    (EventType: ICQEVENTTYPE_SMS; MessageType: mtOther; TextFunction: GetEventTextForSMS),
+    (EventType: ICQEVENTTYPE_WEBPAGER; MessageType: mtOther; TextFunction: GetEventTextForWebPager),
+    (EventType: ICQEVENTTYPE_EMAILEXPRESS; MessageType: mtOther; TextFunction: GetEventTextForEmailExpress)
+  );
+
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;
 begin
   Result:= UnixTimeStart + (UnixTime / SecondsPerDay);
@@ -184,6 +211,52 @@ begin
   end;
 end;
 
+function GetEventInfo(hDBEvent: DWord): TDBEventInfo;
+var
+  BlobSize:Integer;
+begin
+  ZeroMemory(@Result,SizeOf(Result));
+  Result.cbSize:=SizeOf(Result);
+  BlobSize:=PluginLink.CallService(MS_DB_EVENT_GETBLOBSIZE,hDBEvent,0);
+  GetMem(Result.pBlob,BlobSize);
+  Result.cbBlob:=BlobSize;
+  PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,Integer(@Result));
+end;
+
+// reads event from hDbEvent handle
+// reads all THistoryItem fields
+// *EXCEPT* Proto field. Fill it manually, plz
+function ReadEvent(hDBEvent: THandle; UseCP: Cardinal = CP_ACP): THistoryItem;
+var
+  EventInfo: TDBEventInfo;
+  i,EventIndex: integer;
+  mt: TMessageType;
+begin
+  ZeroMemory(@Result,SizeOf(Result));
+  Result.Height := -1;
+  EventInfo := GetEventInfo(hDBEvent);
+  Result.Module := EventInfo.szModule;
+  Result.Proto := '';
+  Result.Time := EventInfo.timestamp;
+  Result.EventType := EventInfo.EventType;
+  if (EventInfo.flags and DBEF_SENT) = 0 then
+    Result.MessageType := [mtIncoming]
+  else
+    Result.MessageType := [mtOutgoing];
+  EventIndex := 0;
+  for i := 1 to High(EventTable) do
+    if EventTable[i].EventType = EventInfo.EventType then begin
+      EventIndex := i;
+      break;
+    end;
+  mt := EventTable[EventIndex].MessageType;
+  Result.Text := EventTable[EventIndex].TextFunction(EventInfo,UseCP,mt);
+  Result.Text := TntAdjustLineBreaks(Result.Text);
+  Result.Text := TrimRight(Result.Text);
+  include(Result.MessageType,mt);
+  if Assigned(EventInfo.pBlob) then FreeMem(EventInfo.pBlob);
+end;
+
 procedure ReadStringTillZero(Text: PChar; TextLength: LongWord; var Result: String; var Pos: LongWord);
 begin
   while ((Text+Pos)^ <> #0) and (Pos < TextLength) do begin
@@ -193,7 +266,7 @@ begin
   Inc(Pos);
 end;
 
-function GetEventTextForMessage(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
+function GetEventTextForMessage(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 var
   //PEnd: PWideChar;
   lenW,lenA : Cardinal;
@@ -223,9 +296,10 @@ begin
       Result := AnsiToWideString(PChar(EventInfo.pBlob),UseCP);
   end else
     Result := AnsiToWideString(PChar(EventInfo.pBlob),UseCP);
+  if TextHasUrls(Result) then MessType := mtUrl;
 end;
 
-function GetEventTextForUrl(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
+function GetEventTextForUrl(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 var
   BytePos:LongWord;
   Url,Desc: String;
@@ -236,7 +310,7 @@ begin
   Result := WideFormat(TranslateWideW('URL: %s'),[AnsiToWideString(url+#13#10+desc,UseCP)]);
 end;
 
-function GetEventTextForFile(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
+function GetEventTextForFile(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 var
   BytePos: LongWord;
   FileName,Desc: String;
@@ -252,7 +326,7 @@ begin
   Result := WideFormat(Result,[AnsiToWideString(FileName+#13#10+Desc,UseCP)]);
 end;
 
-function GetEventTextForAuthRequest(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
+function GetEventTextForAuthRequest(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 var
   BytePos: LongWord;
   uin,hContact: integer;
@@ -290,7 +364,7 @@ begin
             [NickW,AnsiToWideString(Name+Email,hppCodepage),uin,ReasonW]);
 end;
 
-function GetEventTextForYouWereAdded(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
+function GetEventTextForYouWereAdded(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 var
   BytePos: LongWord;
   uin,hContact: integer;
@@ -320,12 +394,12 @@ begin
             [NickW,AnsiToWideString(Name+Email,hppCodepage),uin]);
 end;
 
-function GetEventTextForSms(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
+function GetEventTextForSms(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 begin
   Result := AnsiToWideString(PChar(EventInfo.pBlob),UseCP);
 end;
 
-function GetEventTextForContacts(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
+function GetEventTextForContacts(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 var
   BytePos: LongWord;
   Contacts: String;
@@ -346,155 +420,45 @@ begin
   Result := WideFormat(Result ,[AnsiToWideString(Contacts,UseCP)]);
 end;
 
-function GetEventTextForWebPager(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
+function GetEventTextForWebPager(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+var
+  BytePos: LongWord;
+  Body,Name,Email: String;
 begin
-  Result := AnsiToWideString(PChar(EventInfo.pBlob),hppCodepage);
+  ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
+  ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
+  ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
+  Result := TranslateWideW('Webpager message from %s (%s): %s');
+  Result := WideFormat(Result ,[AnsiToWideString(Name,hppCodepage),
+                                AnsiToWideString(Email,hppCodepage),
+                                AnsiToWideString(Body,hppCodepage)]);
 end;
 
-function GetEventTextForEmailExpress(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
+function GetEventTextForEmailExpress(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+var
+  BytePos: LongWord;
+  Body,Name,Email: String;
 begin
-  Result := AnsiToWideString(PChar(EventInfo.pBlob),hppCodepage);
+  ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
+  ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
+  ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
+  Result := TranslateWideW('Email express from %s (%s): %s');
+  Result := WideFormat(Result ,[AnsiToWideString(Name,hppCodepage),
+                                AnsiToWideString(Email,hppCodepage),
+                                AnsiToWideString(Body,hppCodepage)]);
 end;
 
-function GetEventTextForStatusChange(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
+function GetEventTextForStatusChange(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+var
+  mt: TMessageType;
 begin
-  Result := WideFormat(TranslateWideW('Status change: %s'),[GetEventTextForMessage(EventInfo,UseCP)]);
+  Result := WideFormat(TranslateWideW('Status change: %s'),[GetEventTextForMessage(EventInfo,hppCodepage,mt)]);
 end;
 
-function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
+function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 begin
   Result := AnsiToWideString(PChar(EventInfo.pBlob),UseCP);
 end;
-
-function GetEventText(EventInfo: TDBEventInfo; UseCP: Cardinal): WideString;
-begin
-  case EventInfo.eventType of
-    EVENTTYPE_MESSAGE:
-      Result := GetEventTextForMessage(EventInfo,UseCP);
-    EVENTTYPE_URL:
-      Result := GetEventTextForUrl(EventInfo,UseCP);
-    EVENTTYPE_AUTHREQUEST:
-      Result := GetEventTextForAuthRequest(EventInfo,UseCP);
-    EVENTTYPE_ADDED:
-      Result := GetEventTextForYouWereAdded(EventInfo,UseCP);
-    EVENTTYPE_FILE:
-      Result := GetEventTextForFile(EventInfo,UseCP);
-    EVENTTYPE_CONTACTS:
-      Result := GetEventTextForContacts(EventInfo,UseCP);
-    ICQEVENTTYPE_SMS:
-      Result := GetEventTextForSms(EventInfo,UseCP);
-    ICQEVENTTYPE_WEBPAGER:
-      Result := GetEventTextForWebPager(EventInfo,UseCP);
-    ICQEVENTTYPE_EMAILEXPRESS:
-      Result := GetEventTextForEmailExpress(EventInfo,UseCP);
-    EVENTTYPE_STATUSCHANGE:
-      //Result := GetEventTextForStatusChange(EventInfo,UseCP);
-      Result := GetEventTextForStatusChange(EventInfo,hppCodepage);
-    EVENTTYPE_SMTPSIMPLE:
-      Result := GetEventTextForMessage(EventInfo,UseCP);
-  else
-      Result := GetEventTextForOther(EventInfo,UseCP);
-  end;
-end;
-
-function GetEventInfo(hDBEvent: DWord): TDBEventInfo;
-var
-  BlobSize:Integer;
-begin
-  ZeroMemory(@Result,SizeOf(Result));
-  Result.cbSize:=SizeOf(Result);
-  BlobSize:=PluginLink.CallService(MS_DB_EVENT_GETBLOBSIZE,hDBEvent,0);
-  GetMem(Result.pBlob,BlobSize);
-  Result.cbBlob:=BlobSize;
-  PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,Integer(@Result));
-end;
-
-{function MessageTypeToEventType(mt: TMessageTypes): Word;
-begin
-  Result := 9999;
-  if mtMessage in mt then begin
-    Result := EVENTTYPE_MESSAGE; exit; end;
-  if mtAdded in mt then begin
-    Result := EVENTTYPE_ADDED; exit; end;
-  if mtAuthRequest in mt then begin
-    Result := EVENTTYPE_AUTHREQUEST; exit; end;
-  if mtUrl in mt then begin
-    Result := EVENTTYPE_URL; exit; end;
-  if mtAuthRequest in mt then begin
-    Result := EVENTTYPE_AUTHREQUEST; exit; end;
-  if mtContacts in mt then begin
-    Result := EVENTTYPE_CONTACTS; exit; end;
-  if mtSMS in mt then begin
-    Result := ICQEVENTTYPE_SMS; exit; end;
-  if mtWebPager in mt then begin
-    Result := ICQEVENTTYPE_WEBPAGER; exit; end;
-  if mtEmailExpress in mt then begin
-    Result := ICQEVENTTYPE_EMAILEXPRESS; exit; end;
-end;}
-
-// reads event from hDbEvent handle
-// reads all THistoryItem fields
-// *EXCEPT* Proto field. Fill it manually, plz
-function ReadEvent(hDBEvent: THandle; UseCP: Cardinal = CP_ACP): THistoryItem;
-var
-  EventInfo: TDBEventInfo;
-begin
-  ZeroMemory(@Result,SizeOf(Result));
-  Result.Height := -1;
-  // get details
-  EventInfo := GetEventInfo(hDBEvent);
-  // get module
-  Result.Module := EventInfo.szModule;
-  // get proto
-  Result.Proto := '';
-  // read text
-  Result.Text := GetEventText(EventInfo,UseCP);
-  Result.Text := TntAdjustLineBreaks(Result.Text);
-  Result.Text := TrimRight(Result.Text);
-  // free mememory for message
-  if Assigned(EventInfo.pBlob) then
-    FreeMem(EventInfo.pBlob);
-  // get incoming or outgoing
-  if ((EventInfo.flags and DBEF_SENT)=0) then
-    Result.MessageType := [mtIncoming]
-  else
-    Result.MessageType := [mtOutgoing];
-  Result.Time := EventInfo.timestamp;
-  Result.EventType := EventInfo.EventType;
-  case EventInfo.EventType of
-    EVENTTYPE_MESSAGE: begin
-      if TextHasUrls(Result.Text) then
-        Include(Result.MessageType,mtUrl)
-      else
-        Include(Result.MessageType,mtMessage);
-    end;
-    EVENTTYPE_FILE:
-      Include(Result.MessageType,mtFile);
-    EVENTTYPE_URL:
-      Include(Result.MessageType,mtUrl);
-    EVENTTYPE_AUTHREQUEST:
-      Include(Result.MessageType,mtSystem);
-    EVENTTYPE_ADDED:
-      Include(Result.MessageType,mtSystem);
-    EVENTTYPE_CONTACTS:
-      Include(Result.MessageType,mtContacts);
-    ICQEVENTTYPE_SMS:
-      Include(Result.MessageType,mtSMS);
-    ICQEVENTTYPE_WEBPAGER:
-      //Include(Result.MessageType,mtWebPager);
-      Include(Result.MessageType,mtOther);
-    ICQEVENTTYPE_EMAILEXPRESS:
-      //Include(Result.MessageType,mtEmailExpress);
-      Include(Result.MessageType,mtOther);
-    EVENTTYPE_STATUSCHANGE:
-      Include(Result.MessageType,mtStatus);
-    EVENTTYPE_SMTPSIMPLE:
-      Include(Result.MessageType,mtSMTPSimple);
-  else
-    Include(Result.MessageType,mtOther);
-  end;
-end;
-
 
 initialization
   // allocate some mem, so first ReadEvents would start faster
