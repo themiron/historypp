@@ -438,7 +438,6 @@ object HistoryFrm: THistoryFrm
           Left = 354
           Top = 0
           Hint = 'History'
-          DropdownMenu = pmHistory
           OnClick = tbHistoryClick
         end
         object tbHistorySearch: TTntToolButton
@@ -512,11 +511,11 @@ object HistoryFrm: THistoryFrm
         FlatScrollBars = True
         ReadOnly = True
         RowSelect = True
-        PopupMenu = pmBook
         ShowColumnHeaders = False
         SmallImages = ilBook
         TabOrder = 1
         ViewStyle = vsReport
+        OnContextPopup = lvBookContextPopup
         OnSelectItem = lvBookSelectItem
       end
     end
@@ -759,6 +758,13 @@ object HistoryFrm: THistoryFrm
     OnPopup = pmHistoryPopup
     Left = 444
     Top = 4
+    object SaveSelected2: TTntMenuItem
+      Caption = '&Save Selected...'
+      OnClick = SaveSelected1Click
+    end
+    object N4: TTntMenuItem
+      Caption = '-'
+    end
     object SaveasHTML2: TTntMenuItem
       Caption = 'Export as &HTML...'
       OnClick = SaveasHTML2Click
@@ -776,7 +782,7 @@ object HistoryFrm: THistoryFrm
       Caption = 'Export as &Text...'
       OnClick = SaveasText2Click
     end
-    object N4: TTntMenuItem
+    object N3: TTntMenuItem
       Caption = '-'
     end
     object Emptyhistory1: TTntMenuItem
@@ -876,7 +882,6 @@ object HistoryFrm: THistoryFrm
     Top = 60
   end
   object pmBook: TTntPopupMenu
-    OnPopup = pmBookPopup
     Left = 42
     Top = 61
     object DeleteBookmark1: TTntMenuItem
