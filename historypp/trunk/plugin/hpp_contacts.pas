@@ -62,10 +62,10 @@ var
   RetPWideChar,UW: PWideChar;
 begin
   if (hContact = 0) and Contact then
-    Result := AnsiToWideString(Translate('Server'),hppCodepage)
+    Result := TranslateWideW('Server')
   else begin
     if Proto = '' then Proto := GetContactProto(hContact);
-    if Proto = '' then Result := TranslateWideW('''(Unknown Contact)''')
+    if Proto = '' then Result := TranslateWideW('''(Unknown Contact)'''{TRANSLATE-IGNORE})
     else begin
       ci.cbSize := SizeOf(ci);
       ci.hContact := hContact;
@@ -75,7 +75,7 @@ begin
       if PluginLink.CallService(MS_CONTACT_GETCONTACTINFO,0,Integer(@ci)) = 0 then begin
         if hppCoreUnicode then begin
           RetPWideChar := PWideChar(ci.retval.pszVal);
-          UW := TranslateW('''(Unknown Contact)''');
+          UW := TranslateW('''(Unknown Contact)'''{TRANSLATE-IGNORE});
           if WideCompareText(RetPWideChar,UW) = 0 then
             Result := AnsiToWideString(GetContactID(hContact,Proto),CP_ACP)
           else
@@ -83,7 +83,7 @@ begin
           MirandaFree(RetPWideChar);
         end else begin
           RetPAnsiChar := ci.retval.pszVal;
-          UA := Translate('''(Unknown Contact)''');
+          UA := Translate('''(Unknown Contact)'''{TRANSLATE-IGNORE});
           if AnsiCompareText(RetPAnsiChar,UA) = 0 then
             Result := AnsiToWideString(GetContactID(hContact,Proto),CP_ACP)
           else
@@ -92,7 +92,7 @@ begin
         end;
       end else
         Result := GetContactID(hContact,Proto);
-      if Result = '' then Result := TranslateAnsiW(Proto);
+      if Result = '' then Result := TranslateAnsiW(Proto{TRANSLATE-IGNORE});
     end;
   end;
 end;

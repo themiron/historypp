@@ -305,7 +305,7 @@ procedure LoadGridOptions;
     if FontServiceEnabled then begin
       fid.cbSize := sizeof(fid);
       fid.group := hppName;
-      lstrcpy(fid.name,Translate(hppFontItems[Order].name));
+      lstrcpy(fid.name,Translate(hppFontItems[Order].name){TRANSLATE-IGNORE});
       col := PluginLink.CallService(MS_FONT_GET,integer(@fid),integer(@lf));
       F.Handle := CreateFontIndirect(lf);
       F.Color := col;
@@ -422,11 +422,11 @@ begin
     sid.pszDefaultFile := PChar(hppIconPack);
     for i := 0 to High(hppIcons) do begin
       sid.pszName := hppIcons[i].name;
-      sid.pszDescription := translate(hppIcons[i].desc);
+      sid.pszDescription := translate(hppIcons[i].desc{TRANSLATE-IGNORE});
       if StrLen(hppIcons[i].group) = 0 then
         sid.pszSection := hppName
       else
-        sid.pszSection := PChar(hppName+'/'+translate(hppIcons[i].group));
+        sid.pszSection := PChar(hppName+'/'+translate(hppIcons[i].group){TRANSLATE-IGNORE});
       sid.iDefaultIndex := hppIcons[i].i;
       PluginLink.CallService(MS_SKIN2_ADDICON,0,DWord(@sid));
     end;
@@ -436,18 +436,18 @@ begin
   if FontServiceEnabled then begin
     defFont.szFace := 'Tahoma';
     defFont.charset := DEFAULT_CHARSET;
-    RegisterFont(Translate(hppFontItems[0].name),0,defFont);
-    RegisterFont(Translate(hppFontItems[1].name),1,defFont);
-    RegisterFont(Translate(hppFontItems[2].name),2,defFont);
-    RegisterFont(Translate(hppFontItems[High(hppFontItems)].name),High(hppFontItems),defFont);
-    RegisterColor(Translate(hppFontItems[0].nameColor),0,ColorToRGB(hppFontItems[0].back));
-    RegisterColor(Translate(hppFontItems[1].nameColor),1,ColorToRGB(hppFontItems[1].back));
-    RegisterColor(Translate(hppFontItems[2].nameColor),2,ColorToRGB(hppFontItems[2].back));
-    RegisterColor(Translate(hppFontItems[High(hppFontItems)].name),High(hppFontItems),ColorToRGB(hppFontItems[High(hppFontItems)].back));
+    RegisterFont(Translate(hppFontItems[0].name),0,defFont{TRANSLATE-IGNORE});
+    RegisterFont(Translate(hppFontItems[1].name),1,defFont{TRANSLATE-IGNORE});
+    RegisterFont(Translate(hppFontItems[2].name),2,defFont{TRANSLATE-IGNORE});
+    RegisterFont(Translate(hppFontItems[High(hppFontItems)].name),High(hppFontItems),defFont{TRANSLATE-IGNORE});
+    RegisterColor(Translate(hppFontItems[0].nameColor),0,ColorToRGB(hppFontItems[0].back){TRANSLATE-IGNORE});
+    RegisterColor(Translate(hppFontItems[1].nameColor),1,ColorToRGB(hppFontItems[1].back){TRANSLATE-IGNORE});
+    RegisterColor(Translate(hppFontItems[2].nameColor),2,ColorToRGB(hppFontItems[2].back){TRANSLATE-IGNORE});
+    RegisterColor(Translate(hppFontItems[High(hppFontItems)].name),High(hppFontItems),ColorToRGB(hppFontItems[High(hppFontItems)].back){TRANSLATE-IGNORE});
     for i := 3 to High(hppFontItems)-1 do begin
       GridOptions.AddItemOptions;
-      RegisterFont(Translate(hppFontItems[i].name),i,defFont);
-      RegisterColor(Translate(hppFontItems[i].name),i,hppFontItems[i].back);
+      RegisterFont(Translate(hppFontItems[i].name),i,defFont{TRANSLATE-IGNORE});
+      RegisterColor(Translate(hppFontItems[i].name),i,hppFontItems[i].back{TRANSLATE-IGNORE});
     end;
   end;
 end;
