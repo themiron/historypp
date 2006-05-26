@@ -1276,7 +1276,7 @@ procedure THistoryGrid.PaintItem(Index: Integer; ItemRect: TRect);
 var
   TimeStamp,HeaderName: WideString;
   OrgRect: TRect;
-  hh,IconOffset,NickOffset,TimeOffset: Integer;
+  hh,TopIconOffset,IconOffset,NickOffset,TimeOffset: Integer;
   icon: TIcon;
   BackColor: TColor;
   nameFont,timestampFont,textFont: TFont;
@@ -1284,6 +1284,8 @@ var
   RTL: Boolean;
   RichBMP: TBitmap;
   ic: HICON;
+  HeadRect: TRect;
+  offset,dtf: Integer;
 begin
   {$IFDEF DEBUG}
   OutputDebugString(PChar('Paint item '+intToStr(Index)+' to screen'));
@@ -1308,12 +1310,18 @@ begin
   //BackColor := SendMessage(FRich.Handle,EM_SETBKGNDCOLOR,0,0);
   //SendMessage(FRich.Handle,EM_SETBKGNDCOLOR,0,ColorToRGB(BackColor));
 
+  HeadRect := ItemRect;
+  InflateRect(HeadRect,-Padding,-Padding);
+  Dec(HeadRect.Top,Padding);
+  Inc(HeadRect.Top,Padding div 2);
   if mtIncoming in FItems[Index].MessageType then begin
     nameFont := Options.FontContact;
     HeaderName := ContactName;
+    HeadRect.Bottom := HeadRect.Top+CHeaderHeight;
   end else begin
     nameFont := Options.FontProfile;
     HeaderName := ProfileName;
+    HeadRect.Bottom := HeadRect.Top+PHeaderHeight;
   end;
   if Assigned(FGetNameData) then
     FGetNameData(Self,Index,HeaderName);
@@ -1331,17 +1339,21 @@ begin
   Canvas.FillRect(ItemRect);
 
   InflateRect(ItemRect,-Padding,-Padding);
+  Dec(ItemRect.Top,Padding);
 
   IconOffset := 0;
-
+  TopIconOffset := ((HeadRect.Bottom-HeadRect.Top)-16) div 2;
   if (FItems[Index].HasHeader) and (ShowHeaders) and (not ExpandHeaders) then begin
-    if RTL then
-      DrawIconEx(Canvas.Handle,ItemRect.Right-16-IconOffset,ItemRect.Top,
-        hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL)
-    else
-      DrawIconEx(Canvas.Handle,ItemRect.Left+IconOffset,ItemRect.Top,
+    if RTL then begin
+      DrawIconEx(Canvas.Handle,HeadRect.Right-16,HeadRect.Top+TopIconOffset,
         hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL);
-    Inc(IconOffset,16+Padding);
+      Dec(HeadRect.Right,16+Padding);
+    end
+    else begin
+      DrawIconEx(Canvas.Handle,HeadRect.Left,HeadRect.Top+TopIconOffset,
+        hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL);
+      Inc(HeadRect.Left,16+Padding);
+    end;
   end;
 
   if Options.ShowIcons then begin
@@ -1355,31 +1367,35 @@ begin
       Icon := Options.IconOther;
     if Icon <> nil then begin
       // canvas. draw here can sometimes draw 32x32 icon (sic!)
-      if RTL then
-        DrawIconEx(Canvas.Handle,ItemRect.Right-16-IconOffset,ItemRect.Top,Icon.Handle,16,16,0,0,DI_NORMAL)
-      else
-        DrawIconEx(Canvas.Handle,ItemRect.Left+IconOffset,ItemRect.Top,Icon.Handle,16,16,0,0,DI_NORMAL);
-      Inc(IconOffset,16+Padding);
+      if RTL then begin
+        DrawIconEx(Canvas.Handle,HeadRect.Right-16,HeadRect.Top+TopIconOffset,Icon.Handle,16,16,0,0,DI_NORMAL);
+        Dec(HeadRect.Right,16+Padding);
+      end
+      else begin
+        DrawIconEx(Canvas.Handle,HeadRect.Left,HeadRect.Top+TopIconOffset,Icon.Handle,16,16,0,0,DI_NORMAL);
+        Inc(HeadRect.Left,16+Padding);
+      end;
     end;
   end;
 
   Canvas.Font := nameFont;
   if sel then Canvas.Font.Color := Options.ColorSelectedText;
-
-  if RTL then begin
-    NickOffset := WideCanvasTextWidth(Canvas,HeaderName);
-    WideCanvasTextOut(Canvas,ItemRect.Right-IconOffset-NickOffset,ItemRect.Top,HeaderName)
-  end else
-    WideCanvasTextOut(Canvas,ItemRect.Left+IconOffset,ItemRect.Top,HeaderName);
+  dtf := DT_NOPREFIX or DT_SINGLELINE or DT_VCENTER;
+  if RTL then
+    dtf := dtf or DT_RTLREADING or DT_RIGHT
+  else
+    dtf := dtf or DT_LEFT;
+  Tnt_DrawTextW(Canvas.Handle,PWideChar(HeaderName),Length(HeaderName),HeadRect,dtf);
 
   Canvas.Font := timestampFont;
   if sel then Canvas.Font.Color := Options.ColorSelectedText;
   TimeOffset := WideCanvasTextWidth(Canvas,TimeStamp);
+  dtf := DT_NOPREFIX or DT_SINGLELINE or DT_VCENTER;
   if RTL then
-    WideCanvasTextOut(Canvas,ItemRect.Left,ItemRect.Top,TimeStamp)
-  else begin
-    WideCanvasTextOut(Canvas,ItemRect.Right-TimeOffset,ItemRect.Top,TimeStamp);
-  end;
+    dtf := dtf or DT_RTLREADING or DT_LEFT
+  else
+    dtf := dtf or DT_RIGHT;
+  Tnt_DrawTextW(Canvas.Handle,PWideChar(TimeStamp),Length(TimeStamp),HeadRect,dtf);
 
   if Sel or FItems[Index].Bookmarked then begin
     IconOffset := TimeOffset + Padding;
@@ -1388,9 +1404,9 @@ begin
     else
       ic := hppIcons[HPP_ICON_BOOKMARK_OFF].handle;
     if RTL then
-      DrawIconEx(Canvas.Handle,ItemRect.Left+IconOffset,ItemRect.Top,ic,16,16,0,0,DI_NORMAL)
+      DrawIconEx(Canvas.Handle,HeadRect.Left+IconOffset,HeadRect.Top+TopIconOffset,ic,16,16,0,0,DI_NORMAL)
     else
-      DrawIconEx(Canvas.Handle,ItemRect.Right-IconOffset-16,ItemRect.Top,ic,16,16,0,0,DI_NORMAL);
+      DrawIconEx(Canvas.Handle,HeadRect.Right-IconOffset-16,HeadRect.Top+TopIconOffset,ic,16,16,0,0,DI_NORMAL);
   end;
 
   if mtIncoming in FItems[Index].MessageType then
@@ -1398,7 +1414,8 @@ begin
   else
     hh := PHeaderHeight;
 
-  Inc(ItemRect.Top,hh);
+  ItemRect.Top := HeadRect.Bottom + Padding - (Padding div 2);
+  //Inc(ItemRect.Top,hh+);
 
   ApplyItemToRich(Index);
   RichBMP := FRichCache.GetItemRichBitmap(Index);
@@ -4282,14 +4299,16 @@ begin
 
   Dec(ItemRect.Bottom); // divider
   InflateRect(ItemRect,-Padding,-Padding); // paddings
-
+  Dec(ItemRect.Top,Padding);
+  Inc(ItemRect.Top,Padding div 2);
+  
   if mtIncoming in FItems[Item].MessageType then
     HeaderHeight := CHeaderHeight
   else
     HeaderHeight := PHeaderHeight;
 
   HeaderRect := Rect(ItemRect.Left,ItemRect.Top,ItemRect.Right,ItemRect.Top + HeaderHeight);
-  Inc(ItemRect.Top,HeaderHeight);
+  Inc(ItemRect.Top,HeaderHeight+(Padding - (Padding div 2)));
   if PtInRect(HeaderRect,p) then begin
     Include(Result,ghtHeader);
     if (ShowHeaders) and (not ExpandHeaders) and (FItems[Item].HasHeader) then begin
