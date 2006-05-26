@@ -308,7 +308,6 @@ type
     FPanel: THistoryPanel;
 
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo); message WM_GetMinMaxInfo;
-    procedure WndProc(var Message: TMessage); override;
     //procedure WMSize(var Message: TWMSize); message WM_SIZE;
     procedure LoadPosition;
     procedure SavePosition;
@@ -394,6 +393,7 @@ type
     procedure LoadPendingHeaders(rowidx: integer; count: integer);
     property SearchMode: TSearchMode read FSearchMode write SetSearchMode;
     property Panel: THistoryPanel read FPanel write SetPanel;
+    procedure WndProc(var Message: TMessage); override;
   published
     procedure AlignControls(Control: TControl; var ARect: TRect); override;
   public
@@ -673,9 +673,9 @@ end;
 
 procedure THistoryFrm.LoadPosition;
 //load last position and filter setting
-var
-  filt: Integer;
-  w,h,l,t: Integer;
+//var
+  //filt: Integer;
+  //w,h,l,t: Integer;
 begin
   // removed Utils_RestoreWindowPosition because it shows window sooner than we expect
   Utils_RestoreFormPosition(Self,0,hppDBName,'HistoryWindow.');
@@ -728,7 +728,7 @@ var
 begin
   tb_str := GetDBStr(hppDBName,'HistoryToolbar',DEF_HISTORY_TOOLBAR);
   str := tb_str;
-  
+
   i := 0;
   while True do begin
     if i = Toolbar.ControlCount then break;
@@ -846,8 +846,8 @@ procedure THistoryFrm.LoadToolbarIcons;
 var
   il: HIMAGELIST;
   ii: Integer;
-  ic: HICON;
-  icInfo: _IconInfo;
+  //ic: HICON;
+  //icInfo: _IconInfo;
 begin
   //tvSess.Items.BeginUpdate;
   try
@@ -967,7 +967,7 @@ end;
 procedure THistoryFrm.HMBookmarkChanged(var M: TMessage);
 var
   i: integer;
-  r: TRect;
+  //r: TRect;
 begin
   if M.WParam <> hContact then exit;
   for i := 0 to hg.Count-1 do
@@ -1219,7 +1219,7 @@ procedure THistoryFrm.LoadButtonIcons;
 var
   previc: HICON;
   nextic: HICON;
-  prev_hint, next_hint: WideString;
+  //prev_hint, next_hint: WideString;
 begin
   if hg.Reversed then begin
     nextic := hppIcons[HPP_ICON_SEARCHUP].Handle;
@@ -1267,13 +1267,13 @@ procedure THistoryFrm.LoadEventFilterButton;
 var
   pad: DWord;
   PadV, PadH, GlyphHeight, GlyphTopOffset: Integer;
-  TopBorderHeight: Integer;
+  //TopBorderHeight: Integer;
   sz: TSize;
   FirstName, Name: WideString;
 
-  Button: TThemedButton;
-  ToolButton: TThemedToolBar;
-  Details: TThemedElementDetails;
+  //Button: TThemedButton;
+  //ToolButton: TThemedToolBar;
+  //Details: TThemedElementDetails;
   PaintRect: TRect;
   DrawTextFlags: Cardinal;
 begin
@@ -1485,7 +1485,7 @@ end;
 procedure THistoryFrm.hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
 var
   PrevTimestamp: DWord;
-  hDBEvent: THandle;
+  //hDBEvent: THandle;
 begin
   Item := GetItemData(GridIndexToHistory(Index));
   Item.Proto := Protocol;
@@ -2044,11 +2044,11 @@ begin
 end;
 
 procedure THistoryFrm.SearchNext(Rev: Boolean; Warp: Boolean = True);
-var
-  stext,t,tCap: WideString;
-  res: Integer;
-  mcase,down: Boolean;
-  WndHandle: HWND;
+//var
+  //stext,t,tCap: WideString;
+  //res: Integer;
+  //mcase,down: Boolean;
+  //WndHandle: HWND;
 begin
   {if LastSearch = lsNone then exit;
   if LastSearch = lsHotSearch then begin
@@ -2289,16 +2289,16 @@ begin
 end;
 
 procedure THistoryFrm.OpenFile1Click(Sender: TObject);
-var
-  FileName: string;
+//var
+  //FileName: string;
 begin
   //FileName := GetItemFile(hg.Items[hg.Selected],hContact);
   //ShellExecute(0,nil,PChar(FileName),nil,PChar(ExtractFileDir(FileName)),SW_SHOWDEFAULT);
 end;
 
 procedure THistoryFrm.OpenFileFolder1Click(Sender: TObject);
-var
-  FileName: string;
+//var
+  //FileName: string;
 begin
 //  FileName := GetItemFile(hg.Items[hg.Selected],hContact);
 //  FileName := ExtractFileDir(FileName);
@@ -2635,9 +2635,9 @@ begin
 end;
 
 procedure THistoryFrm.TntFormShow(Sender: TObject);
-var
-  book: Boolean;
-  i,n: Integer;
+//var
+  //book: Boolean;
+  //i,n: Integer;
 begin
   // EndUpdate is better here, not in PostHistoryLoad, because it's faster
   // when called from OnShow. Don't know why.
@@ -3235,8 +3235,8 @@ begin
 end;
 
 procedure THistoryFrm.StartHotFilterTimer;
-var
-  RepaintIcon: Boolean;
+//var
+  //RepaintIcon: Boolean;
 begin
   if tiFilter.Interval = 0 then
     EndHotFilterTimer
@@ -3521,7 +3521,7 @@ end;
 procedure THistoryFrm.tbUserMenuClick(Sender: TObject);
 var
   p: TPoint;
-  hm: hMenu;
+  //hm: hMenu;
 begin
   UserMenu := PluginLink.CallService(MS_CLIST_MENUBUILDCONTACT,hContact,0);
   if UserMenu <> 0 then begin
