@@ -183,6 +183,8 @@ type
     tbBookmarks: TTntToolButton;
     pmBook: TTntPopupMenu;
     DeleteBookmark1: TTntMenuItem;
+    N3: TTntMenuItem;
+    SaveSelected2: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -289,7 +291,8 @@ type
     procedure tbBookmarksClick(Sender: TObject);
     procedure sbCloseBookClick(Sender: TObject);
     procedure lvBookSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
-    procedure pmBookPopup(Sender: TObject);
+    procedure lvBookContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -3298,6 +3301,7 @@ var
 begin
   p := tbEventsFilter.ClientOrigin;
   tbEventsFilter.ClientToScreen(p);
+  Application.CancelHint;
   tbEventsFilter.ShowHint := false;
   pmEventsFilter.Popup(p.X,p.Y+tbEventsFilter.Height);
   tbEventsFilter.ShowHint := true;
@@ -3316,17 +3320,22 @@ begin
 end;
 
 procedure THistoryFrm.tbHistoryClick(Sender: TObject);
-{var
-  t: String;
-  SaveFormat: TSaveFormat;}
+var
+  //t: String;
+  //SaveFormat: TSaveFormat;}
+  p: TPoint;
 begin
-  if hg.SelCount > 1 then
-    SaveSelected1.Click
-  else begin
+  //if hg.SelCount > 1 then
+  //  SaveSelected1.Click
+  //else begin
+    p := tbHistory.ClientOrigin;
+    tbHistory.ClientToScreen(p);
+    Application.CancelHint;
     tbHistory.ShowHint := false;
-    tbHistory.CheckMenuDropdown;
+    //tbHistory.CheckMenuDropdown;
+    pmHistory.Popup(p.X,p.Y+tbHistory.Height);
     tbHistory.ShowHint := true;
-  end;
+  //end;
   {RecentFormat := TSaveFormat(GetDBInt(hppDBName,'ExportFormat',0));
   SaveFormat := RecentFormat;
   PrepareSaveDialog(SaveDialog,SaveFormat,True);
@@ -3483,6 +3492,7 @@ end;
 procedure THistoryFrm.pmHistoryPopup(Sender: TObject);
 begin
   LoadInOptions();
+  SaveSelected2.Visible := (hg.SelCount > 1);
   AddMenuArray(pmHistory,[ContactRTLmode1,ANSICodepage1],7);
 end;
 
@@ -3518,6 +3528,7 @@ begin
     p.x := 0;
     p.y := tbUserMenu.Height;
     p := tbUserMenu.ClientToScreen(p);
+    Application.CancelHint;
     tbUserMenu.ShowHint := false;
     TrackPopupMenu(UserMenu,TPM_TOPALIGN or TPM_LEFTALIGN or TPM_LEFTBUTTON,p.x,p.y,0,Handle,nil);
     DestroyMenu(UserMenu);
@@ -3586,13 +3597,18 @@ begin
   hg.Selected := Index;
 end;
 
-procedure THistoryFrm.pmBookPopup(Sender: TObject);
+procedure THistoryFrm.lvBookContextPopup(Sender: TObject; MousePos: TPoint;
+  var Handled: Boolean);
 var
   Item: TTntListItem;
-  p: TPoint;
 begin
-  p := lvBook.ScreenToClient(Mouse.CursorPos);
-  DeleteBookmark1.Visible := (lvBook.GetItemAt(p.X,p.Y) <> nil);
+  Handled := True;
+  Item := TTntListItem(lvBook.GetItemAt(MousePos.X,MousePos.Y));
+  if  Item = nil then exit;
+  if BookmarkServer[hContact].Bookmarked[THandle(Item.Data)] then begin
+    MousePos := lvBook.ClientToScreen(MousePos);
+    pmBook.Popup(MousePos.X,MousePos.Y);
+  end;
 end;
 
 end.

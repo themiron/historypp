@@ -34,31 +34,6 @@ R&eset to Default
 [Event Filters]
 Event Filters
 
-;; PassForm.trans.txt file 
-
-;; Text found in ..\plugin\PassForm.dfm:
-[History++ Password Protection]
-History++ Password Protection
-[Password Options]
-Password Options
-[Protect all contacts]
-Protect all contacts
-[Protect only selected contacts]
-Protect only selected contacts
-[Password...]
-Password...
-[Cancel]
-Cancel
-[&Refresh List]
-&Refresh List
-;; Text found in ..\plugin\PassForm.pas:
-[System History]
-System History
-[Password not set]
-Password not set
-[Password set]
-Password set
-
 ;; CustomizeFiltersForm.trans.txt file 
 
 ;; Text found in ..\plugin\CustomizeFiltersForm.dfm:
@@ -85,6 +60,31 @@ New Filter #%d
 Incoming & Outgoing
 [Events]
 Events
+
+;; PassForm.trans.txt file 
+
+;; Text found in ..\plugin\PassForm.dfm:
+[History++ Password Protection]
+History++ Password Protection
+[Password Options]
+Password Options
+[Protect all contacts]
+Protect all contacts
+[Protect only selected contacts]
+Protect only selected contacts
+[Password...]
+Password...
+[Cancel]
+Cancel
+[&Refresh List]
+&Refresh List
+;; Text found in ..\plugin\PassForm.pas:
+[System History]
+System History
+[Password not set]
+Password not set
+[Password set]
+Password set
 
 ;; EventDetailForm.trans.txt file 
 
