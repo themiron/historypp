@@ -277,7 +277,7 @@ begin
   // translate and copy internal default static array to dynamic array
   SetLength(hppDefEventFilters,Length(hppIntDefEventFilters));
   for i := 0 to High(hppIntDefEventFilters) do begin
-    hppDefEventFilters[i].Name := Copy(TranslateWideW(hppIntDefEventFilters[i].Name),1,MAX_FILTER_NAME_LENGTH);
+    hppDefEventFilters[i].Name := Copy(TranslateWideW(hppIntDefEventFilters[i].Name),1,MAX_FILTER_NAME_LENGTH{TRANSLATE-IGNORE});
     hppDefEventFilters[i].filMode := hppIntDefEventFilters[i].filMode;
     hppDefEventFilters[i].filEvents := hppIntDefEventFilters[i].filEvents;
   end;

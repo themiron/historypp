@@ -102,8 +102,8 @@ var
 
 function AnsiToWideString(const S: AnsiString; CodePage: Cardinal): WideString;
 function WideToAnsiString(const WS: WideString; CodePage: Cardinal): AnsiString;
-function TranslateAnsiW(const S: AnsiString): WideString;
-function TranslateWideW(const WS: WideString): WideString;
+function TranslateAnsiW(const S: AnsiString{TRANSLATE-IGNORE}): WideString;
+function TranslateWideW(const WS: WideString{TRANSLATE-IGNORE}): WideString;
 function MakeFileName(FileName: AnsiString): AnsiString;
 procedure CopyToClip(s: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
@@ -146,17 +146,17 @@ begin
   end;
 end;
 
-function TranslateAnsiW(const S: AnsiString): WideString;
+function TranslateAnsiW(const S: AnsiString{TRANSLATE-IGNORE}): WideString;
 begin
-  Result := AnsiToWideString(Translate(PChar(S)),hppCodepage);
+  Result := AnsiToWideString(Translate(PChar(S)),hppCodepage{TRANSLATE-IGNORE});
 end;
 
-function TranslateWideW(const WS: WideString): WideString;
+function TranslateWideW(const WS: WideString{TRANSLATE-IGNORE}): WideString;
 begin
   if hppCoreUnicode then
-    Result := TranslateW(PWideChar(WS))
+    Result := TranslateW(PWideChar(WS){TRANSLATE-IGNORE})
   else
-    Result := AnsiToWideString(Translate(PChar(WideToAnsiString(WS,hppCodepage))),hppCodepage);
+    Result := AnsiToWideString(Translate(PChar(WideToAnsiString(WS,hppCodepage))),hppCodepage{TRANSLATE-IGNORE});
 end;
 
 (*
