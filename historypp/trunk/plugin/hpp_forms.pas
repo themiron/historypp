@@ -40,12 +40,14 @@ uses hpp_global, hpp_services, HistoryForm, GlobalSearch, hpp_opt_dialog,
 function Utils_RestoreFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
 var
   w,h,l,t: Integer;
+  max: Boolean;
 begin
   Result := True;
   w := GetDBInt(Module,Prefix+'width',Form.Width);
   h := GetDBInt(Module,Prefix+'height',Form.Height);
   l := GetDBInt(Module,Prefix+'x',(Screen.Width - w) div 2);
   t := GetDBInt(Module,Prefix+'y',(Screen.Height - h) div 2);
+  max := GetDBBool(Module,Prefix+'maximized',False);
 
   // just to be safe, don't let window jump out of the screen
   // at least 40 px from each side should be visible
@@ -53,17 +55,19 @@ begin
   if l+w < 40 then l := 40-w;
   if Screen.Width - l < 40 then l := Screen.Width - 40;
   if Screen.Height - t < 40 then t := Screen.Height - 40;
-  
+
   Form.SetBounds(l,t,w,h);
+  if max then
+    Form.WindowState := wsMaximized;
 end;
 
 function Utils_SaveFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
 var
   w,h,l,t: Integer;
   wp: TWindowPlacement;
+  max: Boolean;
 begin
   Result := True;
-
   if Form.WindowState = wsMaximized then begin
     wp.length := SizeOf(wp);
     GetWindowPlacement(Form.Handle,@wp);
@@ -71,18 +75,21 @@ begin
     t := wp.rcNormalPosition.Top;
     h := wp.rcNormalPosition.Bottom - wp.rcNormalPosition.Top;
     w := wp.rcNormalPosition.Right - wp.rcNormalPosition.Left;
+    max := True;
   end
   else begin
     w := Form.Width;
     h := Form.Height;
     l := Form.Left;
     t := Form.Top;
+    max := False;
   end;
 
   WriteDBInt(Module,Prefix+'width',w);
   WriteDBInt(Module,Prefix+'height',h);
   WriteDBInt(Module,Prefix+'x',l);
   WriteDBInt(Module,Prefix+'y',t);
+  WriteDBBool(Module,Prefix+'maximized',max);
 end;
 
 procedure BringFormToFront(Form: TForm);
