@@ -30,7 +30,7 @@ uses
   Windows, SysUtils, TntSysUtils,
   m_globaldefs, hpp_global;
 
-function QuoteText(Text: WideString): WideString;
+//function QuoteText(Text: WideString): WideString;
 function SendMessageTo(hContact: Integer; Text: WideString = ''): Boolean;
 //function ForwardMessage(Text: String): Boolean;
 
@@ -44,12 +44,12 @@ text here 2
 to
 > text here 1
 > text here 2 *)
-function QuoteText(Text: WideString): WideString;
+{function QuoteText(Text: WideString): WideString;
 begin
   Text := TrimRight(Text);
   Result := Tnt_WideStringReplace('> '+Text,#13#10,#13#10'> ',[rfReplaceAll]);
   Result := Result + #13#10; // to move caret to next line
-end;
+end;}
 
 function SendMessageTo(hContact: Integer; Text: WideString): Boolean;
 var

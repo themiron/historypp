@@ -2095,12 +2095,9 @@ begin
 end;
 
 procedure THistoryFrm.ReplyQuoted(Item: Integer);
-var
-  Txt: WideString;
 begin
   if (hContact = 0) or (hg.SelCount = 0) then exit;
-  Txt := QuoteText(hg.FormatSelected(hg.Options.ClipCopyFormat));
-  SendMessageTo(hContact,Txt);
+  SendMessageTo(hContact,hg.FormatSelected(hg.Options.ReplyQuotedFormat));
 end;
 
 var
