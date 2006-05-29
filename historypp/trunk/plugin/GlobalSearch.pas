@@ -959,12 +959,9 @@ begin
 end;
 
 procedure TfmGlobalSearch.ReplyQuoted(Item: Integer);
-var
-  Txt: WideString;
 begin
   if (GetSearchItem(Item).Contact.Handle = 0) or (hg.SelCount = 0) then exit;
-  Txt := QuoteText(hg.FormatSelected(hg.Options.ClipCopyFormat));
-  SendMessageTo(GetSearchItem(Item).Contact.Handle,Txt);
+  SendMessageTo(GetSearchItem(Item).Contact.Handle,hg.FormatSelected(hg.Options.ReplyQuotedFormat));
 end;
 
 procedure TfmGlobalSearch.ReplyQuoted1Click(Sender: TObject);

@@ -65,6 +65,7 @@ type
 const
   DEFFORMAT_CLIPCOPY     = '%nick%, %smart_datetime%:\n%mes%\n';
   DEFFORMAT_CLIPCOPYTEXT = '%mes%\n';
+  DEFFORMAT_REPLYQUOTED  = '%nick%, %smart_datetime%:\n%quot_mes%\n';
 
 const
 
@@ -354,6 +355,7 @@ begin
   //GridOptions.ClipCopyTextFormat := DEFFORMAT_CLIPCOPYTEXT;
   GridOptions.ClipCopyFormat := GetDBWideStr(hppDBName,'FormatCopy',DEFFORMAT_CLIPCOPY);
   GridOptions.ClipCopyTextFormat := GetDBWideStr(hppDBName,'FormatCopyText',DEFFORMAT_CLIPCOPYTEXT);
+  GridOptions.ReplyQuotedFormat := GetDBWideStr(hppDBName,'FormatReplyQuoted',DEFFORMAT_REPLYQUOTED);
 
   finally
   GridOptions.EndChange;

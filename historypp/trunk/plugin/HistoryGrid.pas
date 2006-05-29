@@ -159,6 +159,7 @@ type
     FMathModuleEnabled: Boolean;
     FClipCopyTextFormat: WideString;
     FClipCopyFormat: WideString;
+    FReplyQuotedFormat: WideString;
 
     procedure SetColorDivider(const Value: TColor);
     procedure SetColorSelectedText(const Value: TColor);
@@ -199,6 +200,7 @@ type
   published
     property ClipCopyFormat: WideString read FClipCopyFormat write FClipCopyFormat;
     property ClipCopyTextFormat: WideString read FClipCopyTextFormat write FClipCopyTextFormat;
+    property ReplyQuotedFormat: WideString read FReplyQuotedFormat write FReplyQuotedFormat; 
 
     property Locked: Boolean read GetLocked;
 
@@ -2550,12 +2552,13 @@ begin
       if tok[toksp[i]] = '%mes%' then
         subst := mes
       else
-      if tok[toksp[i]] = '%adj_mes%' then
+      if tok[toksp[i]] = '%adj_mes%' then begin
         subst := WideWrapText(mes,#13#10,[' ',#9,'-'],72)
-      else
-      if tok[toksp[i]] = '%quot_mes%' then
-        subst := '> '+WideWrapText(mes,#13#10+'> ',[' ',#9,'-'],70)
-      else
+      end else
+      if tok[toksp[i]] = '%quot_mes%' then begin
+        subst := Tnt_WideStringReplace('> '+mes,#13#10,#13#10+'> ',[rfReplaceAll]);
+        subst := WideWrapText(subst,#13#10+'> ',[' ',#9,'-'],70)
+      end else
       if tok[toksp[i]] = '%nick%' then subst := nick
       else
       if tok[toksp[i]] = '%from_nick%' then subst := from_nick
