@@ -1,6 +1,6 @@
 ;;
 ;; History++ plugin translation
-;; Part of 1.5.0.103 distribution
+;; Part of 1.5.0.103 alpha distribution
 ;; 
 ;; Project: http://slav.pp.ru/miranda
 ;; SVN: http://opensvn.csie.org/historypp/
