@@ -1080,7 +1080,9 @@ begin
   if FProcessInline = Value then exit;
   FProcessInline := Value;
   if State = gsInline then begin
+    FRichInline.Lines.BeginUpdate;
     ApplyItemToRich(Selected, FRichInline);
+    FRichInline.Lines.EndUpdate;
   end;
 end;
 
