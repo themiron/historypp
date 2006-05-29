@@ -102,7 +102,7 @@ function OnTTBLoaded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function MirandaPluginInfo(mirandaVersion:DWord):PPLUGININFO;cdecl;
 begin
   PluginInfo.cbSize := sizeof(TPLUGININFO);
-  PluginInfo.shortName := hppName + ' (2in1)';
+  PluginInfo.shortName := hppName + ' (2in1) '+{TEXT}'alpha'{/TEXT};
   PluginInfo.version := hppVersion;
   PluginInfo.description := 'Easy, fast and feature complete history viewer';
   PluginInfo.author := 'theMIROn, Art Fedorov';
@@ -281,6 +281,8 @@ begin
     GridOptions.ClipCopyFormat := GetDBWideStr(hppDBName,'FormatCopy',DEFFORMAT_CLIPCOPY);
   if (PDBContactWriteSetting(lParam).szSetting = 'FormatCopyText') then
     GridOptions.ClipCopyTextFormat := GetDBWideStr(hppDBName,'FormatCopyText',DEFFORMAT_CLIPCOPYTEXT);
+  if (PDBContactWriteSetting(lParam).szSetting = 'FormatReplyQuoted') then
+    GridOptions.ReplyQuotedFormat := GetDBWideStr(hppDBName,'FormatReplyQuoted',DEFFORMAT_REPLYQUOTED);
   //LoadDefaultGridOptions;
 end;
 
