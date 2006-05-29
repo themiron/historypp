@@ -16,7 +16,7 @@ Major changes:
 + Added event bookmarks
 + Added support for external iconpacks
 + Reworked text filter and search interface
-+ Improoved BiDi interface
++ Improved BiDi interface
 + Added copy text & copy templates limited support.
   (read here: https://opensvn.csie.org/traccgi/historypp/trac.cgi/wiki/TextFormatting)
 + Finished conversation log

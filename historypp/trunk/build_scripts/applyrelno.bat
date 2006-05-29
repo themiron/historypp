@@ -23,9 +23,12 @@ set SUB1="s/{SUB_VER}.*{\/SUB_VER}/{SUB_VER}%SUBVER%{\/SUB_VER}/g"
 set SUB2="s/{\[SUB_VER\]}/%SUBVER%/g"
 set BLD1="s/{BUILD}.*{\/BUILD}/{BUILD}%BUILDNO%{\/BUILD}/g"
 set BLD2="s/{\[BUILD\]}/%BUILDNO%/g"
+set TXT1="s/{TEXT}.*{\/TEXT}/{TEXT}'%TEXT%'{\/TEXT}/g"
+set TXT2="s/{\[TEXT\]}/%TEXT%/g"
 
-set SED_NOREPL=-e %MAJ1% -e %MIN1% -e %SUB1% -e %BLD1% -e %VER1% -e %VERNO1% 
-set SED_REPL=-e %MAJ2% -e %MIN2% -e %SUB2% -e %BLD2% -e %VER2% -e %VERNO2%
+
+set SED_NOREPL=-e %MAJ1% -e %MIN1% -e %SUB1% -e %BLD1% -e %TXT1% -e %VER1% -e %VERNO1% 
+set SED_REPL=-e %MAJ2% -e %MIN2% -e %SUB2% -e %BLD2% -e %TXT2% -e %VER2% -e %VERNO2%
 
 cd ..\plugin
 
@@ -50,6 +53,9 @@ if errorlevel 0 move hpp_global.pas.sed hpp_global.pas
 
 %SED% --text %SED_NOREPL% %SED_REPL% hpp_res_ver.rc.txt > hpp_res_ver.rc.sed
 if errorlevel 0 move hpp_res_ver.rc.sed hpp_res_ver.rc
+
+%SED% --text %SED_NOREPL% %SED_REPL% historypp.dpr > historypp.dpr.sed
+if errorlevel 0 move historypp.dpr.sed historypp.dpr
 
 goto end
 

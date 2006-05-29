@@ -86,7 +86,7 @@ move historypp.dll ..\bin
 move historypp_icons.dll ..\bin
 copy hpp_translate.txt ..\bin
 copy ..\..\hpp_changelog.txt ..\bin
-copy ..\plugin\m_historypp.inc ..\bin
+copy ..\..\plugin\m_historypp.inc ..\bin
 
 cd ..\bin
 
