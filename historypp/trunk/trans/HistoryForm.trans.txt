@@ -43,6 +43,7 @@ Open File Fo&lder
 &Copy
 Copy All
 Select &All
+Disable &Processing
 Cancel
 &Save Selected...
 Export as &HTML...
@@ -94,6 +95,8 @@ You have entered the wrong password
 History++ Password Protection
 %d event
 %0.n events (%s)
+Disable &Processing
+Enable &Processing
 Do you really want to delete ALL items (%.0f) for this contact?
 Note: It can take several minutes for large history.
 Empty History

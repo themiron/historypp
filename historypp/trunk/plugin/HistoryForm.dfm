@@ -728,6 +728,14 @@ object HistoryFrm: THistoryFrm
     object N10: TTntMenuItem
       Caption = '-'
     end
+    object ToogleItemProcessing: TTntMenuItem
+      Caption = 'Disable &Processing'
+      ShortCut = 16464
+      OnClick = ToogleItemProcessingClick
+    end
+    object N9: TTntMenuItem
+      Caption = '-'
+    end
     object CancelInline1: TTntMenuItem
       Caption = 'Cancel'
       OnClick = CancelInline1Click

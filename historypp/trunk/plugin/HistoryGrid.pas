@@ -147,8 +147,8 @@ type
     FIconUrl: TIcon;
     FIconOther: TIcon;
 
-    FIconHistory: hIcon;
-    FIconSearch: hIcon;
+    //FIconHistory: hIcon;
+    //FIconSearch: hIcon;
 
     FShowIcons: Boolean;
     FOnShowIcons: TOnShowIcons;
@@ -209,8 +209,8 @@ type
     property IconUrl: TIcon read FIconUrl write SetIconUrl;
     property IconMessage: TIcon read FIconMessage write SetIconMessage;
 
-    property IconHistory: hIcon read FIconHistory write FIconHistory;
-    property IconSearch: hIcon read FIconSearch write FIconSearch;
+    //property IconHistory: hIcon read FIconHistory write FIconHistory;
+    //property IconSearch: hIcon read FIconSearch write FIconSearch;
 
     property ColorDivider: TColor read FColorDivider write SetColorDivider;
     property ColorSelectedText: TColor read FColorSelectedText write SetColorSelectedText;
@@ -361,8 +361,8 @@ type
     WindowPrePainting: Boolean;
     WindowPrePainted: Boolean;
     FExpandHeaders: Boolean;
+    FProcessInline: Boolean;
 
-    FirstRun: Boolean;
     FOnBookmarkClick: TOnBookmarkClick;
 
     procedure SetCodepage(const Value: Cardinal);
@@ -435,6 +435,7 @@ type
     {$ENDIF}
     procedure SetRTLMode(const Value: TRTLMode);
     procedure SetExpandHeaders(const Value: Boolean);
+    procedure SetProcessInline(const Value: Boolean);
     function GetBookmarked(Index: Integer): Boolean;
     procedure SetBookmarked(Index: Integer; const Value: Boolean);
   protected
@@ -483,6 +484,7 @@ type
     function GetItemRect(Item: Integer): TRect;
     function IsSelected(Item: Integer): Boolean;
     procedure MakeVisible(Item: Integer; BottomAlign: boolean = false);
+    procedure MakeSelected(Value: Integer; BottomAlign: boolean = false);
     procedure BeginUpdate;
     procedure EndUpdate;
     function IsVisible(Item: Integer): Boolean;
@@ -539,6 +541,7 @@ type
     property MultiSelect: Boolean read FMultiSelect write SetMultiSelect;
     property ShowHeaders: Boolean read FShowHeaders write SetShowHeaders;
     property ExpandHeaders: Boolean read FExpandHeaders write SetExpandHeaders default True;
+    property ProcessInline: Boolean read FProcessInline write SetProcessInline default True;
     property TxtStartup: WideString read FTxtStartup write FTxtStartup;
     property TxtNoItems: WideString read FTxtNoItems write FTxtNoItems;
     property TxtNoSuch: WideString read FTxtNoSuch write FTxtNoSuch;
@@ -748,7 +751,8 @@ begin
 
   CHeaderHeight := -1;
   PHeaderHeight := -1;
-  FExpandHeaders := True;
+  FExpandHeaders := False;
+  FProcessInline := True;
 
   TabStop := True;
   MultiSelect := True;
@@ -801,8 +805,6 @@ begin
   LogY := GetDeviceCaps(dc, LOGPIXELSY);
   ReleaseDC(0,dc);
   VLineScrollSize := Round(LogY*((13*5)/96));
-
-  FirstRun := true;
 end;
 
 destructor THistoryGrid.Destroy;
@@ -1069,6 +1071,17 @@ begin
   BarAdjusted := False;
   AdjustScrollBar;
   Invalidate;
+end;
+
+procedure THistoryGrid.SetProcessInline(const Value: Boolean);
+var
+  i: Integer;
+begin
+  if FProcessInline = Value then exit;
+  FProcessInline := Value;
+  if State = gsInline then begin
+    ApplyItemToRich(Selected, FRichInline);
+  end;
 end;
 
 procedure THistoryGrid.WMEraseBkgnd(var Message: TWMEraseBkgnd);
@@ -1438,7 +1451,7 @@ begin
   WindowPrePainted := True;
 end;
 
-procedure THistoryGrid.SetSelected(const Value: Integer);
+procedure THistoryGrid.MakeSelected(Value: Integer; BottomAlign: boolean = false);
 var
   OldSelected: Integer;
 begin
@@ -1455,17 +1468,17 @@ begin
     FRichCache.ResetItems(FSelItems);
     SetLength(FSelItems,0);
   end;
-  if FSelected <> -1 then begin
-    if FirstRun then begin
-      MakeVisible(Selected,(Value=0) and Reversed);
-      FirstRun := false;
-    end else
-      MakeVisible(Selected);
-  end;
+  if FSelected <> -1 then
+    MakeVisible(Selected,BottomAlign and Reversed);
   if Assigned(FOnSelect) then
     FOnSelect(Self,Selected,OldSelected);
   Invalidate;
   Update;
+end;
+
+procedure THistoryGrid.SetSelected(const Value: Integer);
+begin
+  MakeSelected(Value, false);
 end;
 
 procedure THistoryGrid.SetShowHeaders(const Value: Boolean);
@@ -1818,7 +1831,7 @@ begin
 
   RichEdit.Text := FItems[Item].Text;
 
-  if Assigned(FOnProcessRichText) then begin
+  if not ((State = gsInline) and not ProcessInline) and Assigned(FOnProcessRichText) then begin
     try
       FOnProcessRichText(Self,RichEdit.Handle,Item);
     except

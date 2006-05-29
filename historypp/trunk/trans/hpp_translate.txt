@@ -282,6 +282,8 @@ Open &File
 Open File Fo&lder
 [Select &All]
 Select &All
+[Disable &Processing]
+Disable &Processing
 [Cancel]
 Cancel
 [Export as &HTML...]
@@ -337,6 +339,8 @@ You have entered the wrong password
 %d event
 [%0.n events (%s)]
 %0.n events (%s)
+[Enable &Processing]
+Enable &Processing
 [Do you really want to delete ALL items (%.0f) for this contact?]
 Do you really want to delete ALL items (%.0f) for this contact?
 [Note: It can take several minutes for large history.]

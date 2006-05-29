@@ -185,6 +185,8 @@ type
     DeleteBookmark1: TTntMenuItem;
     N3: TTntMenuItem;
     SaveSelected2: TTntMenuItem;
+    N9: TTntMenuItem;
+    ToogleItemProcessing: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -293,6 +295,7 @@ type
     procedure lvBookSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure lvBookContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
+    procedure ToogleItemProcessingClick(Sender: TObject);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -3134,7 +3137,11 @@ end;
 
 procedure THistoryFrm.pmGridInlinePopup(Sender: TObject);
 begin
-   CopyInline.Enabled := (hg.InlineRichEdit.SelLength > 0);
+  if hg.ProcessInline then
+    ToogleItemProcessing.Caption := TranslateWideW('Disable &Processing')
+  else
+    ToogleItemProcessing.Caption := TranslateWideW('Enable &Processing');
+  CopyInline.Enabled := (hg.InlineRichEdit.SelLength > 0);
 end;
 
 procedure THistoryFrm.CopyInlineClick(Sender: TObject);
@@ -3606,6 +3613,11 @@ begin
     MousePos := lvBook.ClientToScreen(MousePos);
     pmBook.Popup(MousePos.X,MousePos.Y);
   end;
+end;
+
+procedure THistoryFrm.ToogleItemProcessingClick(Sender: TObject);
+begin
+  hg.ProcessInline := not hg.ProcessInline;
 end;
 
 end.
