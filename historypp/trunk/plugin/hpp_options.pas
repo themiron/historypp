@@ -273,16 +273,18 @@ end;
 
 procedure LoadIcons2;
 var
-  hic: HIcon;
-  i: integer;
-  //hIcons: Cardinal;
+  lhic,hic: HIcon;
+  res,i: integer;
 begin
   for i := 0 to High(hppIcons) do begin
     if IcoLibEnabled then
       hic := PluginLink.CallService(MS_SKIN2_GETICON,0,longint(hppIcons[i].name))
     else begin
-      hic := ExtractIcon(hInstance,PChar(hppIconPack),hppIcons[i].i);
-      if hic = 1 then hic := 0;
+      hic := 0;
+      res := ExtractIconEx(PChar(hppIconPack),hppIcons[i].i,lhic,hic,1);
+      DestroyIcon(lhic);
+      if res = 0 then
+        hic := 0;
     end;
     if hic <> 0 then
       hppIcons[i].handle := hic;
