@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, CheckLst, TntCheckLst, TntComCtrls, ComCtrls, CommCtrl,
-  TntStdCtrls, TntWindows, ExtCtrls, TntExtCtrls, m_api;
+  TntStdCtrls, TntWindows, ExtCtrls, TntExtCtrls, m_api, hpp_forms;
 
 type
   TfmCustomizeToolbar = class(TForm)
@@ -57,17 +57,18 @@ type
 
     function GenerateToolbarString: String;
     procedure SaveToolbar(ToolbarStr: String);
-    { Private declarations }
+
+    procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
   public
     { Public declarations }
   end;
 
 var
-  fmCustomizeToolbar: TfmCustomizeToolbar;
+  fmCustomizeToolbar: TfmCustomizeToolbar = nil;
 
 implementation
 
-uses HistoryForm, hpp_forms, hpp_global, hpp_database, hpp_options;
+uses HistoryForm, hpp_global, hpp_database, hpp_options;
 
 {$R *.dfm}
 
@@ -470,6 +471,12 @@ begin
     if but = fm.tbUserDetails then but_str := '[USERDETAILS]';
     Result := Result + but_str;
   end;
+end;
+
+procedure TfmCustomizeToolbar.HMIcons2Changed(var M: TMessage);
+begin
+  lbAvailable.Repaint;
+  lbAdded.Repaint;
 end;
 
 procedure TfmCustomizeToolbar.bnOKClick(Sender: TObject);

@@ -35,7 +35,7 @@ function Utils_SaveFormPosition(Form: TForm; hContact: THandle; Module,Prefix: S
 implementation
 
 uses hpp_global, hpp_services, HistoryForm, GlobalSearch, hpp_opt_dialog,
-  CustomizeFiltersForm, hpp_database;
+  CustomizeFiltersForm, hpp_database, CustomizeToolbar;
 
 function Utils_RestoreFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
 var
@@ -118,6 +118,9 @@ begin
 
   if Assigned(fmCustomizeFilters) then
     fmCustomizeFilters.Perform(Msg,wParam,lParam);
+
+  if Assigned(fmCustomizeToolbar) then
+    fmCustomizeToolbar.Perform(Msg,wParam,lParam);
 end;
 
 // This procedure scans all control children and if they have
