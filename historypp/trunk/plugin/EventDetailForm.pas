@@ -86,11 +86,9 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CloseBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure FormHide(Sender: TObject);
     procedure bnReplyClick(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure pmETextPopup(Sender: TObject);
@@ -244,35 +242,21 @@ end;
 
 
 procedure TEventDetailsFrm.LoadPosition;
-//load last position and filter setting
 begin
-  if DBGetContactSettingDWord(0,'HistoryPlusPlus','EDPosWidth',0)<>0 then begin
-    Top:=DBGetContactSettingDWord(0,'HistoryPlusPlus','EDPosTop',0);
-    Left:=DBGetContactSettingDWord(0,'HistoryPlusPlus','EDPosLeft',0);
-    Height:=DBGetContactSettingDWord(0,'HistoryPlusPlus','EDPosHeight',0);
-    Width:=DBGetContactSettingDWord(0,'HistoryPlusPlus','EDPosWidth',0);
-  end;
+  Utils_RestoreFormPosition(Self,0,hppDBName,'EventDetail.');
 end;
 
 procedure TEventDetailsFrm.SavePosition;
-//load position and filter setting
 begin
-  DBWriteContactSettingDWord(0,'HistoryPlusPlus','EDPosTop',Top);
-  DBWriteContactSettingDWord(0,'HistoryPlusPlus','EDPosLeft',Left);
-  DBWriteContactSettingDWord(0,'HistoryPlusPlus','EDPosHeight',Height);
-  DBWriteContactSettingDWord(0,'HistoryPlusPlus','EDPosWidth',Width);
+  Utils_SaveFormPosition(Self,0,hppDBName,'EventDetail.')
 end;
 
-
-procedure TEventDetailsFrm.FormShow(Sender: TObject);
-begin
-  LoadPosition;
-end;
 
 procedure TEventDetailsFrm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
   Action:=caFree;
+  SavePosition;
 end;
 
 procedure TEventDetailsFrm.CloseBtnClick(Sender: TObject);
@@ -296,6 +280,8 @@ begin
   SendMessage(EText.Handle,EM_SETMARGINS,EC_RIGHTMARGIN or EC_LEFTMARGIN,MakeLParam(3,3));
   SendMessage(EText.Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK);
   SendMessage(EText.Handle,EM_AUTOURLDETECT,1,0);
+
+  LoadPosition;
 end;
 
 procedure TEventDetailsFrm.SetItem(const Value: Integer);
@@ -380,11 +366,6 @@ begin
 
   if FParentForm.hg.selected <> FItem then
     FParentForm.hg.Selected := FItem;
-end;
-
-procedure TEventDetailsFrm.FormHide(Sender: TObject);
-begin
-  SavePosition;
 end;
 
 procedure TEventDetailsFrm.bnReplyClick(Sender: TObject);
