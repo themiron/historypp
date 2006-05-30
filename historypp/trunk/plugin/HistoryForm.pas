@@ -730,6 +730,11 @@ var
   butt_str,tb_str,str: String;
 begin
   tb_str := GetDBStr(hppDBName,'HistoryToolbar',DEF_HISTORY_TOOLBAR);
+  if hContact = 0 then begin
+    tb_str := StringReplace(tb_str,'[SESS]','',[rfReplaceAll]);
+    tb_str := StringReplace(tb_str,'[BOOK]','',[rfReplaceAll]);
+    tb_str := StringReplace(tb_str,'[EVENTS]','',[rfReplaceAll]);
+  end;
   str := tb_str;
 
   i := 0;
@@ -758,11 +763,17 @@ begin
       if str = '' then break;
       if (str[1] = ' ') or (str[1] = '|') then begin
         if (Length(tool) > 0) and (tool[High(tool)] is TTntToolButton) then begin
+          // don't add separator if previous button is separator
           tb_butt := TTntToolButton(tool[High(tool)]);
           if (tb_butt.Style = tbsDivider) or (tb_butt.Style = tbsSeparator) then begin
             Delete(str,1,1);
             continue;
           end;
+        end
+        else if (Length(tool) = 0) then begin
+          // don't add separator as first button
+          Delete(str,1,1);
+          continue;
         end;
         SetLength(tool,Length(tool)+1);
         tb_butt := TTntToolButton.Create(Toolbar);
@@ -2615,6 +2626,8 @@ begin
     tbUserMenu.Enabled := False;
     tbEventsFilter.Enabled := False;
     tbSessions.Enabled := False;
+
+    Customize2.Enabled := False; // disable toolbar customization
   end;
 
   SessThread := nil;
@@ -2898,6 +2911,8 @@ end;
 
 procedure THistoryFrm.CustomizeToolbar;
 begin
+  if hContact = 0 then exit;
+  
   if not Assigned(fmCustomizeToolbar)  then begin
     CustomizeToolbarForm := TfmCustomizeToolbar.Create(Self);
     CustomizeToolbarForm.Show;
@@ -2948,7 +2963,7 @@ begin
   else
     ItemRenderDetails.bHistoryWindow := IRDHW_CONTACTHISTORY;
 
-  PluginLink.NotifyEventHooks(hHppRichEditItemProcess,Handle,Integer(@ItemRenderDetails));
+  PluginLink.NotifyEventHooks(hHppRichEditItemProcess,WPARAM(Handle),LPARAM(@ItemRenderDetails));
 end;
 
 procedure THistoryFrm.hgSearchItem(Sender: TObject; Item, ID: Integer; var Found: Boolean);
