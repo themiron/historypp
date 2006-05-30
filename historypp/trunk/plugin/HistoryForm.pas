@@ -1139,10 +1139,12 @@ begin
       hi := ReadEvent(hDBEvent);
       txt := Copy(hi.Text,1,100);
       txt := Tnt_WideStringReplace(txt,#13#10,' ',[rfReplaceAll]);
-      // compress spaces?
+      // compress spaces here!
       li.Caption := txt;
       li.Data := Pointer(hDBEvent);
       li.ImageIndex := 0;
+      // without freeing Module string mem manager complains about memory leak! WTF???
+      hi.Module := '';
     end;
   finally
     lvBook.Items.EndUpdate;
