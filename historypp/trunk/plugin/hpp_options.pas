@@ -196,7 +196,7 @@ procedure hppRegisterGridOptions;
 
 implementation
 
-uses hpp_database, ShellAPI;
+uses hpp_database, ShellAPI, Math;
 
 var i: integer;
 
@@ -274,20 +274,23 @@ end;
 procedure LoadIcons2;
 var
   lhic,hic: HIcon;
-  res,i: integer;
+  i: integer;
+  NeedIcons,CountIconsDll: Integer;
+  SmallIcons: array of HICON;
 begin
-  for i := 0 to High(hppIcons) do begin
-    if IcoLibEnabled then
-      hic := PluginLink.CallService(MS_SKIN2_GETICON,0,longint(hppIcons[i].name))
-    else begin
-      hic := 0;
-      res := ExtractIconEx(PChar(hppIconPack),hppIcons[i].i,lhic,hic,1);
-      DestroyIcon(lhic);
-      if res = 0 then
-        hic := 0;
-    end;
-    if hic <> 0 then
-      hppIcons[i].handle := hic;
+  if IcoLibEnabled then begin
+    for i := 0 to High(hppIcons) do
+      hppIcons[i].handle := PluginLink.CallService(MS_SKIN2_GETICON,0,longint(hppIcons[i].name));
+  end
+  else begin
+    CountIconsDll := ExtractIconEx(PChar(hppIconPack),-1,HICON(nil^),HICON(nil^),0);
+    NeedIcons := Min(Length(hppIcons),CountIconsDll);
+    if NeedIcons <= 0 then exit;
+    SetLength(SmallIcons,NeedIcons);
+    CountIconsDll := ExtractIconEx(PChar(hppIconPack),0,HICON(nil^),SmallIcons[0],NeedIcons);
+    for i := 0 to CountIconsDll - 1 do
+      hppIcons[i].handle := SmallIcons[i];
+    Finalize(SmallIcons);
   end;
 end;
 
