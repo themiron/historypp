@@ -2617,11 +2617,14 @@ begin
     tbSessions.Enabled := False;
   end;
 
-  SessThread := TSessionsThread.Create(True);
-  SessThread.ParentHandle := Self.Handle;
-  SessThread.Contact := hContact;
-  SessThread.Priority := tpLower;
-  SessThread.Resume;
+  SessThread := nil;
+  if tbSessions.Enabled then begin
+    SessThread := TSessionsThread.Create(True);
+    SessThread.ParentHandle := Self.Handle;
+    SessThread.Contact := hContact;
+    SessThread.Priority := tpLower;
+    SessThread.Resume;
+  end;
 end;
 
 procedure THistoryFrm.ProcessPassword;
@@ -3012,7 +3015,7 @@ begin
   for i := 0 to pmEventsFilter.Items.Count-1 do
     if pmEventsFilter.Items[i].RadioItem then
       pmEventsFilter.Items[i].Checked := (pmEventsFilter.Items[i].Tag = fi);
-  hg.ShowHeaders := (mtMessage in hppEventFilters[fi].Events);
+  hg.ShowHeaders := (tbSessions.Enabled) and (mtMessage in hppEventFilters[fi].Events);
   hg.Filter := hppEventFilters[fi].Events;
 end;
 
