@@ -1,6 +1,6 @@
 object EventDetailsFrm: TEventDetailsFrm
-  Left = 375
-  Top = 149
+  Left = 308
+  Top = 168
   Width = 466
   Height = 396
   BorderWidth = 4
@@ -18,10 +18,8 @@ object EventDetailsFrm: TEventDetailsFrm
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  OnHide = FormHide
   OnKeyDown = FormKeyDown
   OnResize = FormResize
-  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object paBottom: TTntPanel
