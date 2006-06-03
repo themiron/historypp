@@ -2387,7 +2387,7 @@ var
 begin
   FPanel := Value;
 
-  if ((FPanel=hpSessions) and (hContact = 0)) or (HistoryLength = 0) then
+  if (hContact = 0) or (HistoryLength = 0) then
     FPanel := hpNone;
 
   tbSessions.Down := (Panel = hpSessions);
@@ -2626,7 +2626,7 @@ begin
     tbUserMenu.Enabled := False;
     tbEventsFilter.Enabled := False;
     tbSessions.Enabled := False;
-
+    hg.ShowBookmarks := False;
     Customize2.Enabled := False; // disable toolbar customization
   end;
 
