@@ -364,6 +364,7 @@ type
     FProcessInline: Boolean;
 
     FOnBookmarkClick: TOnBookmarkClick;
+    FShowBookmarks: Boolean;
 
     procedure SetCodepage(const Value: Cardinal);
     procedure SetShowHeaders(const Value: Boolean);
@@ -538,6 +539,7 @@ type
     function FormatSelected(const Format: WideString): WideString;
     procedure MakeRangeSelected(FromItem,ToItem: Integer);
   published
+    property ShowBookmarks: Boolean read FShowBookmarks write FShowBookmarks;
     property MultiSelect: Boolean read FMultiSelect write SetMultiSelect;
     property ShowHeaders: Boolean read FShowHeaders write SetShowHeaders;
     property ExpandHeaders: Boolean read FExpandHeaders write SetExpandHeaders default True;
@@ -787,6 +789,7 @@ begin
   FSelected := -1;
   FContact := 0;
   FPadding := 4;
+  FShowBookmarks := True;
 
   FClient := TBitmap.Create;
   FClient.Width := 1;
@@ -1414,7 +1417,7 @@ begin
     dtf := dtf or DT_RIGHT;
   Tnt_DrawTextW(Canvas.Handle,PWideChar(TimeStamp),Length(TimeStamp),HeadRect,dtf);
 
-  if Sel or FItems[Index].Bookmarked then begin
+  if ShowBookmarks and (Sel or FItems[Index].Bookmarked) then begin
     IconOffset := TimeOffset + Padding;
     if FItems[Index].Bookmarked then
       ic := hppIcons[HPP_ICON_BOOKMARK_ON].handle
@@ -4337,7 +4340,7 @@ begin
       if PtInRect(ButtonRect,p) then
         Include(Result,ghtSessShowButton);
     end;
-    if Sel or FItems[Item].Bookmarked then begin
+    if ShowBookmarks and (Sel or FItems[Item].Bookmarked) then begin
       TimestampFont := Options.FontTimeStamp;
       TimeStamp := GetTime(FItems[Item].Time);
       Canvas.Font := TimestampFont;
