@@ -1056,7 +1056,7 @@ begin
       ReplyQuoted1.Visible := False;
     end;
     if hg.Items[hg.Selected].Bookmarked then
-      Bookmark1.Caption := TranslateWideW('Delete &Bookmark')
+      Bookmark1.Caption := TranslateWideW('Remove &Bookmark')
     else
       Bookmark1.Caption := TranslateWideW('Set &Bookmark');
     pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);

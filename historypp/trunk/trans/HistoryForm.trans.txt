@@ -64,7 +64,7 @@ Select
 Delete
 Save...
 &Customize...
-Delete &Bookmark
+Remove &Bookmark
 ;; Text found in ..\plugin\HistoryForm.pas:
 System History
 Error
@@ -102,7 +102,7 @@ Note: It can take several minutes for large history.
 Empty History
 Full History [%s] - [%s]
 Full History [%s] - [%s]
-Delete &Bookmark
+Remove &Bookmark
 Set &Bookmark
 ;; Text from variables in ..\plugin\HistoryForm.pas:
 Search Up (Ctrl+Up)

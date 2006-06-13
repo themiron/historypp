@@ -3506,7 +3506,7 @@ procedure THistoryFrm.pmGridPopup(Sender: TObject);
 begin
   LoadInOptions();
   if hg.Items[hg.Selected].Bookmarked then
-     Bookmark1.Caption := TranslateWideW('Delete &Bookmark')
+     Bookmark1.Caption := TranslateWideW('Remove &Bookmark')
   else
     Bookmark1.Caption := TranslateWideW('Set &Bookmark');
   AddMenuArray(pmGrid,[ContactRTLmode1,ANSICodepage1],-1);
