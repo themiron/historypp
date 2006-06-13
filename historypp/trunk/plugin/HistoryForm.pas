@@ -270,7 +270,7 @@ type
     procedure sbClearFilterClick(Sender: TObject);
     procedure pbFilterPaint(Sender: TObject);
     procedure StartHotFilterTimer;
-    procedure EndHotFilterTimer;
+    procedure EndHotFilterTimer(DoClearFilter: Boolean = False);
     procedure tiFilterTimer(Sender: TObject);
     procedure tbHistorySearchClick(Sender: TObject);
     procedure Emptyhistory1Click(Sender: TObject);
@@ -2448,29 +2448,26 @@ procedure THistoryFrm.SetSearchMode(const Value: TSearchMode);
 var
   SaveStr: WideString;
   NotFound,Lock: Boolean;
+  DoUpdateFilter: Boolean;
 begin
   if FSearchMode = Value then exit;
-  if Value = smHotSearch then PreHotSearchMode := FSearchMode;
-  FSearchMode := Value;
 
+  if Value = smHotSearch then PreHotSearchMode := FSearchMode;
+  if FSearchMode = smFilter then EndHotFilterTimer(True);
+
+  FSearchMode := Value;
 
   if Visible then Lock := LockWindowUpdate(Handle);
   try
-
-    if tiFilter.Enabled then EndHotFilterTimer;
-
     tbFilter.Down := (FSearchMode = smFilter);
     tbSearch.Down := (FSearchMode = smSearch);
     paSearch.Visible := not (SearchMode = smNone);
-
     if SearchMode = smNone then begin
       edSearch.Text := '';
       edSearch.Color := clWindow;
       exit;
     end;
-
     SaveStr := edSearch.Text;
-
     hg.BeginUpdate;
     try
       pbSearch.Visible := (FSearchMode in [smSearch,smHotSearch]);
@@ -2479,11 +2476,10 @@ begin
       paSearchButtons.Visible := not (FSearchMode = smFilter);
       NotFound := not (edSearch.Color = clWindow);
       edSearch.Text := '';
-      edSearch.Color := clWindow
+      edSearch.Color := clWindow;
     finally
       hg.EndUpdate;
     end;
-
     // don't search or filter if the string is not found
     if not NotFound then
       edSearch.Text := SaveStr;
@@ -3291,10 +3287,13 @@ begin
     end;
 end;
 
-procedure THistoryFrm.EndHotFilterTimer;
+procedure THistoryFrm.EndHotFilterTimer(DoClearFilter: Boolean = False);
 begin
   tiFilter.Enabled := False;
-  HotFilterString := edSearch.Text;
+  if DoClearFilter then
+    HotFilterString := ''
+  else
+    HotFilterString := edSearch.Text;
   hg.UpdateFilter;
   if pbFilter.Tag <> 0 then begin
     pbFilter.Tag := 0;
