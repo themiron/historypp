@@ -1982,9 +1982,9 @@ begin
     NewCursor := crHandPoint;
     if ghtBookmark in ht then
       if FItems[Item].Bookmarked then
-        NewHint := TranslateWideW('Remove bookmark')
+        NewHint := TranslateWideW('Remove Bookmark')
       else
-        NewHint := TranslateWideW('Bookmark')
+        NewHint := TranslateWideW('Set Bookmark')
     else if ghtSessHideButton in ht then
       NewHint := TranslateWideW('Hide headers')
     else if ghtSessShowButton in ht then
@@ -2795,7 +2795,9 @@ begin
   SumHeight := -TopItemOffset;
   idx := GetFirstVisible;
   LoadItem(idx,True);
-  while (SumHeight+FItems[idx].Height <= ClientHeight) and (Item <> -1) and (Item < Count) do begin
+  //or we wouldn't get visible status on long events 
+  //while (SumHeight+FItems[idx].Height <= ClientHeight) and (Item <> -1) and (Item < Count) do begin
+  while (SumHeight <= ClientHeight) and (Item <> -1) and (Item < Count) do begin
     if Item = idx then begin
       Result := True;
       break;
@@ -2810,10 +2812,13 @@ end;
 procedure THistoryGrid.DoLButtonDblClick(X, Y: Integer; Keys: TMouseMoveKeys);
 var
   Item: Integer;
+  ht: TGridHitTests;
 begin
   SearchPattern := '';
   CheckBusy;
   Item := FindItemAt(x,y);
+  ht := GetHitTests(x,y);
+  if (ghtSessShowButton in ht) or (ghtSessHideButton in ht) or (ghtBookmark in ht) then exit;
   if Item <> Selected then begin
     Selected := Item;
     exit;
