@@ -198,8 +198,8 @@ You have entered the wrong password.
 Please wait while closing the window...
 [Partial History [%s] - [%s]]
 Partial History [%s] - [%s]
-[Delete &Bookmark]
-Delete &Bookmark
+[Remove &Bookmark]
+Remove &Bookmark
 [Ready to search]
 Ready to search
 [Click Search button to start]
@@ -370,10 +370,10 @@ All files (*.*)|*.*
 ;; Text found in ..\plugin\HistoryGrid.pas:
 [Conversation started at %s]
 Conversation started at %s
-[Remove bookmark]
-Remove bookmark
-[Bookmark]
-Bookmark
+[Remove Bookmark]
+Remove Bookmark
+[Set Bookmark]
+Set Bookmark
 [Hide headers]
 Hide headers
 [Show headers]

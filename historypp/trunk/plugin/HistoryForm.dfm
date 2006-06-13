@@ -893,7 +893,7 @@ object HistoryFrm: THistoryFrm
     Left = 42
     Top = 61
     object DeleteBookmark1: TTntMenuItem
-      Caption = 'Delete &Bookmark'
+      Caption = 'Remove &Bookmark'
       OnClick = Bookmark1Click
     end
   end

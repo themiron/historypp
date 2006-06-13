@@ -43,7 +43,7 @@ You have entered the wrong password.
 History++ Password Protection
 Please wait while closing the window...
 Partial History [%s] - [%s]
-Delete &Bookmark
+Remove &Bookmark
 Set &Bookmark
 Ready to search
 Click Search button to start
