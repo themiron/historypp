@@ -99,7 +99,6 @@ const
 
 function DoSupportSmileys(wParam{hRichEdit}, lParam{PItemRenderDetails}: DWord): Integer; cdecl;
 var
-  //sare: TSmAddRichEdit2;
   sare: TSmAddRichEdit3;
   ird: PItemRenderDetails;
 begin
@@ -108,7 +107,8 @@ begin
   sare.hwndRichEditControl := wParam;
   sare.rangeToReplace := nil;
   sare.ProtocolName := ird^.pProto;
-  sare.flags := SAFLRE_INSERTEMF;
+  //sare.flags := SAFLRE_INSERTEMF;
+  sare.flags := 0;
   sare.disableRedraw := True;
   sare.hContact := ird^.hContact;
   PluginLink.CallService(MS_SMILEYADD_REPLACESMILEYS,0,Integer(@sare));
