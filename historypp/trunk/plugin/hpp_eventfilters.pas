@@ -214,7 +214,7 @@ begin
       filFlags := 0;
       HexToBin(PChar(hex1),@filMode,SizeOf(filMode));
       HexToBin(PChar(hex2),@filEvents,SizeOf(filEvents));
-      HexToBin(PChar(hex3),@filFlags,SizeOf(filFlags));
+      //HexToBin(PChar(hex3),@filFlags,SizeOf(filFlags));
       hppEventFilters[i-1].filMode := filMode;
       hppEventFilters[i-1].filEvents := DWordToMessageTypes(filEvents);
 
