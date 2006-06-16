@@ -783,7 +783,6 @@ object HistoryFrm: THistoryFrm
     end
     object SaveasRTF2: TTntMenuItem
       Caption = 'Export as &RTF...'
-      Enabled = False
       OnClick = SaveasRTF2Click
     end
     object SaveasText2: TTntMenuItem
