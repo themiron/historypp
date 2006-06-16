@@ -112,7 +112,7 @@ begin
   NewNameFmt := TranslateWideW('New Filter #%d');
   num := 1;
   while True do begin
-    NewName := Format(NewNameFmt,[num]);
+    NewName := WideFormat(NewNameFmt,[num]);
     NameExists := False;
     for i := 0 to Length(LocalFilters) - 1 do
       if NewName = LocalFilters[i].Name then begin
