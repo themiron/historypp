@@ -1223,7 +1223,7 @@ begin
     else
       il := ilBook.Handle;
 
-    ImageList_AddIcon(il,hppIcons[HPP_ICON_BOOKMARK].handle);
+    ImageList_AddIcon(il,hppIcons[HPP_ICON_BOOKMARK_ON].handle);
   finally
     lvBook.Items.EndUpdate;
   end;
