@@ -116,8 +116,16 @@ end;
 
 //load function called by miranda
 function Load(link:PPLUGINLINK):Integer;cdecl;
+var
+  pszVersion: array[0..55] of Char;
 begin
   PluginLink := Pointer(link);
+  // Checking if core is unicode
+  PluginLink.CallService(MS_SYSTEM_GETVERSIONTEXT,SizeOf(pszVersion),integer(@pszVersion));
+  hppCoreUnicode := StrPos(pszVersion,'Unicode') <> nil;
+  // Getting langpack codepage for ansi translation
+  hppCodepage := PluginLink.CallService(MS_LANGPACK_GETCODEPAGE,0,0);
+  if hppCodepage = CALLSERVICE_NOTFOUND then hppCodepage := CP_ACP;
   //init history functions later
   HookModulesLoad := PluginLink.HookEvent(ME_SYSTEM_MODULESLOADED,OnModulesLoad);
   hookOptInit := PluginLink.HookEvent(ME_OPT_INITIALISE,OnOptInit);
@@ -160,31 +168,25 @@ end;
 function OnModulesLoad(wParam{0},lParam{0}:DWord):integer;cdecl;
 var
   menuitem:TCLISTMENUITEM;
-  pszVersion: array[0..55] of Char;
   upd: TUpdate;
 begin
+
   // register
   hppRegisterGridOptions;
-
-  hppInitBookmarkServer;
 
   LoadIcons;
   LoadIcons2;
   LoadIntIcons;
-  InitEventFilters;
-  ReadEventFilters;
 
   // TopToolBar support
   HookTTBLoaded := PluginLink.HookEvent(ME_TTB_MODULELOADED,OnTTBLoaded);
 
-  ZeroMemory(@menuitem,SizeOf(menuItem));
-  // Checking if core is unicode
-  PluginLink.CallService(MS_SYSTEM_GETVERSIONTEXT,SizeOf(pszVersion),integer(@pszVersion));
-  hppCoreUnicode := StrPos(pszVersion,'Unicode') <> nil;
+  hppInitBookmarkServer;
 
-  // Getting langpack codepage for ansi translation
-  hppCodepage := PluginLink.CallService(MS_LANGPACK_GETCODEPAGE,0,0);
-  if hppCodepage = CALLSERVICE_NOTFOUND then hppCodepage := CP_ACP;
+  InitEventFilters;
+  ReadEventFilters;
+
+  ZeroMemory(@menuitem,SizeOf(menuItem));
 
   //create menu item in contact menu
   menuitem.cbSize := SizeOf(menuItem);
