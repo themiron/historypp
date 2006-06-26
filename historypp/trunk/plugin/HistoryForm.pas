@@ -611,6 +611,8 @@ begin
   FastLoadHandles;
   if hContact = 0 then Protocol := 'ICQ'
                   else Protocol := GetContactProto(hContact);
+  hg.Contact := hContact;
+  hg.Protocol := Protocol;
   hg.ProfileName := GetContactDisplayName(0, Protocol);
   hg.ContactName := GetContactDisplayName(hContact, Protocol, true);
   UserCodepage := GetContactCodePage(hContact,Protocol,UseDefaultCP);
