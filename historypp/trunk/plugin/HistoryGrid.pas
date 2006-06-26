@@ -3563,7 +3563,7 @@ end;
 
 procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; Caption: WideString);
 var
-  ProfileID,ContactID: WideString;
+  ProfileID,ContactID,Proto: WideString;
 
   procedure SaveHTML;
   var
@@ -3572,7 +3572,7 @@ var
   begin
   title := UTF8Encode(WideFormat('%s [%s] - [%s]',[Caption,ProfileName,ContactName]));
   head1 := UTF8Encode(WideFormat('%s',[Caption]));
-  head2 := UTF8Encode(WideFormat('%s (%s) - %s (%s)',[ProfileName,ProfileID,ContactName,ContactID]));
+  head2 := UTF8Encode(WideFormat('%s (%s: %s) - %s (%s: %s)',[ProfileName,Proto,ProfileID,ContactName,Proto,ContactID]));
   WriteString(Stream,'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">'+#13#10);
   //if Options.RTLEnabled then WriteString(Stream,'<html dir="rtl">')
   if (RTLMode = hppRTLEnable) or ((RTLMode = hppRTLDefault) and Options.RTLEnabled) then
@@ -3621,7 +3621,7 @@ var
     WriteWideString(Stream,'###'#13#10);
     if Caption = '' then Caption := TxtHistExport;
     WriteWideString(Stream,WideFormat('### %s'#13#10,[Caption]));
-    WriteWideString(Stream,WideFormat('### %s (%s) - %s (%s)'#13#10,[ProfileName,ProfileID,ContactName,ContactID]));
+    WriteWideString(Stream,WideFormat('### %s (%s: %s) - %s (%s: %s)'#13#10,[ProfileName,Proto,ProfileID,ContactName,Proto,ContactID]));
     WriteWideString(Stream,TxtGenHist1+#13#10);
     WriteWideString(Stream,'###'#13#10#13#10);
   end;
@@ -3632,7 +3632,7 @@ var
     if Caption = '' then
       Caption := TxtHistExport;
     WriteString(Stream,WideToAnsiString(WideFormat('### %s'#13#10,[Caption]),Codepage));
-    WriteString(Stream,WideToAnsiString(WideFormat('### %s (%s) - %s (%s)'#13#10,[ProfileName,ProfileID,ContactName,ContactID]),Codepage));
+    WriteString(Stream,WideToAnsiString(WideFormat('### %s (%s: %s) - %s (%s: %s)'#13#10,[ProfileName,Proto,ProfileID,ContactName,Proto,ContactID]),Codepage));
     WriteString(Stream,WideToAnsiString(TxtGenHist1+#13#10,Codepage));
     WriteString(Stream,'###'#13#10#13#10);
   end;
@@ -3707,6 +3707,7 @@ var
   end;
 
 begin
+  Proto :=  AnsiToWideString(Protocol,Codepage);
   ProfileId := AnsiToWideString(GetContactID(0,Protocol,false),Codepage);
   ContactID := AnsiToWideString(GetContactID(Contact,Protocol,true),Codepage);
   case SaveFormat of
