@@ -303,6 +303,7 @@ type
     FClient: TBitmap;
     FCanvas: TCanvas;
     FContact: THandle;
+    FProtocol: String;
     FLoadedCount: Integer;
     FContactName: WideString;
     FProfileName: WideString;
@@ -474,6 +475,7 @@ type
     destructor Destroy; override;
     property Count: Integer read GetCount;
     property Contact: THandle read FContact write SetContact;
+    property Protocol: String read FProtocol write FProtocol; 
     property LoadedCount: Integer read FLoadedCount;
     procedure Allocate(ItemsCount: Integer);
     property Selected: Integer read FSelected write SetSelected;
@@ -788,6 +790,7 @@ begin
   FFilter := GenerateEvents(FM_EXCLUDE,[]);
   FSelected := -1;
   FContact := 0;
+  FProtocol := '';
   FPadding := 4;
   FShowBookmarks := True;
 
@@ -3559,6 +3562,8 @@ begin
 end;
 
 procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; Caption: WideString);
+var
+  ProfileID,ContactID: WideString;
 
   procedure SaveHTML;
   var
@@ -3567,7 +3572,7 @@ procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; C
   begin
   title := UTF8Encode(WideFormat('%s [%s] - [%s]',[Caption,ProfileName,ContactName]));
   head1 := UTF8Encode(WideFormat('%s',[Caption]));
-  head2 := UTF8Encode(WideFormat('%s - %s',[ProfileName,ContactName]));
+  head2 := UTF8Encode(WideFormat('%s (%s) - %s (%s)',[ProfileName,ProfileID,ContactName,ContactID]));
   WriteString(Stream,'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">'+#13#10);
   //if Options.RTLEnabled then WriteString(Stream,'<html dir="rtl">')
   if (RTLMode = hppRTLEnable) or ((RTLMode = hppRTLDefault) and Options.RTLEnabled) then
@@ -3616,7 +3621,7 @@ procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; C
     WriteWideString(Stream,'###'#13#10);
     if Caption = '' then Caption := TxtHistExport;
     WriteWideString(Stream,WideFormat('### %s'#13#10,[Caption]));
-    WriteWideString(Stream,WideFormat('### %s - %s'#13#10,[ProfileName,ContactName]));
+    WriteWideString(Stream,WideFormat('### %s (%s) - %s (%s)'#13#10,[ProfileName,ProfileID,ContactName,ContactID]));
     WriteWideString(Stream,TxtGenHist1+#13#10);
     WriteWideString(Stream,'###'#13#10#13#10);
   end;
@@ -3627,7 +3632,7 @@ procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; C
     if Caption = '' then
       Caption := TxtHistExport;
     WriteString(Stream,WideToAnsiString(WideFormat('### %s'#13#10,[Caption]),Codepage));
-    WriteString(Stream,WideToAnsiString(WideFormat('### %s - %s'#13#10,[ProfileName,ContactName]),Codepage));
+    WriteString(Stream,WideToAnsiString(WideFormat('### %s (%s) - %s (%s)'#13#10,[ProfileName,ProfileID,ContactName,ContactID]),Codepage));
     WriteString(Stream,WideToAnsiString(TxtGenHist1+#13#10,Codepage));
     WriteString(Stream,'###'#13#10#13#10);
   end;
@@ -3702,6 +3707,8 @@ procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; C
   end;
 
 begin
+  ProfileId := AnsiToWideString(GetContactID(0,Protocol,false),Codepage);
+  ContactID := AnsiToWideString(GetContactID(Contact,Protocol,true),Codepage);
   case SaveFormat of
     sfHTML: SaveHTML;
     sfXML: SaveXML;
