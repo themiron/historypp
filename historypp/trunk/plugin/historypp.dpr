@@ -72,6 +72,12 @@ uses
   CustomizeFiltersForm in 'CustomizeFiltersForm.pas' {fmCustomizeFilters},
   CustomizeToolbar in 'CustomizeToolbar.pas' {fmCustomizeToolbar};
 
+type
+  TMenuHandles = record
+    Handle: THandle;
+    Status: Boolean;
+  end;
+
 var
   HookModulesLoad,
   HookOptInit,
@@ -82,10 +88,9 @@ var
   //hookContactChanged,
   HookContactDelete,
   HookFSChanged,
-  HookTTBLoaded: THandle;
-  //HistoryIcon, GlobalSearchIcon: HIcon;
-  MenuHandles: array[0..2] of THandle;
-  //icBitmap: hBitmap;
+  HookTTBLoaded,
+  HookBuildMenu: THandle;
+  MenuHandles: array[0..2] of TMenuHandles;
 
 function OnModulesLoad(wParam,lParam:DWord):integer;cdecl; forward;
 function OnSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
@@ -97,6 +102,7 @@ function OnContactChanged(wParam: wParam; lParam: LPARAM): Integer; cdecl; forwa
 function OnContactDelete(wParam: wParam; lParam: LPARAM): Integer; cdecl; forward;
 function OnFSChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnTTBLoaded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
+function OnBuildContactMenu(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 
 //Tell Miranda about this plugin
 function MirandaPluginInfo(mirandaVersion:DWord):PPLUGININFO;cdecl;
@@ -145,6 +151,7 @@ begin
     PluginLink.UnhookEvent(HookSettingsChanged);
     PluginLink.UnhookEvent(HookIconChanged);
     PluginLink.UnhookEvent(HookContactDelete);
+    PluginLink.UnhookEvent(HookBuildMenu);
 
     if SmileyAddEnabled then
       PluginLink.UnhookEvent(HookSmAddChanged);
@@ -197,18 +204,21 @@ begin
   //menuitem.hIcon := HistoryIcon;
   menuitem.hIcon := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
   menuitem.pszContactOwner := nil;    //all contacts
-  MenuHandles[0] := PluginLink.CallService(MS_CLIST_ADDCONTACTMENUITEM,0,DWord(@menuItem));
+  MenuHandles[0].Handle := PluginLink.CallService(MS_CLIST_ADDCONTACTMENUITEM,0,DWord(@menuItem));
+  MenuHandles[0].Status := True;
   //create menu item in main menu for system history
   menuitem.Position:=500060000;
   menuitem.pszName:=PChar(translate('&System History'));
-  MenuHandles[1] := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWord(@menuitem));
+  MenuHandles[1].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWord(@menuitem));
+  MenuHandles[1].Status := True;
   //create menu item in main menu for history search
   menuitem.Position:=500060001;
   menuitem.pszService := MS_HPP_SHOWGLOBALSEARCH;
   //menuitem.hIcon := GlobalSearchIcon;
   menuitem.hIcon := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
   menuitem.pszName:=PChar(translate('His&tory Search'));
-  MenuHandles[2] := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWord(@menuItem));
+  MenuHandles[2].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWord(@menuItem));
+  MenuHandles[2].Status := True;
 
   //Register in updater
   ZeroMemory(@upd,SizeOf(upd));
@@ -231,6 +241,7 @@ begin
   HookSettingsChanged := PluginLink.HookEvent(ME_DB_CONTACT_SETTINGCHANGED,OnSettingsChanged);
   HookIconChanged := PluginLink.HookEvent(ME_SKIN_ICONSCHANGED,OnIconChanged);
   HookContactDelete := PluginLink.HookEvent(ME_DB_CONTACT_DELETED,OnContactDelete);
+  HookBuildMenu := PluginLink.HookEvent(ME_CLIST_PREBUILDCONTACTMENU,OnBuildContactMenu);
 
   if SmileyAddEnabled then
     HookSmAddChanged := PluginLink.HookEvent(ME_SMILEYADD_OPTIONSCHANGED,OnSmAddSettingsChanged);
@@ -351,6 +362,9 @@ begin
   Result:=0;
 end;
 
+//sent when the icons DLL has been changed in the options dialog, and everyone
+//should re-make their image lists
+//wParam=lParam=0
 function OnIconChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
 begin
   Result := 0;
@@ -371,10 +385,45 @@ begin
   menuitem.cbSize := SizeOf(menuItem);
   menuitem.flags := CMIM_ICON;
   menuitem.hIcon := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
-  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0], DWord(@menuItem));
-  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[1], DWord(@menuItem));
+  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0].Handle, DWord(@menuItem));
+  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[1].Handle, DWord(@menuItem));
   menuitem.hIcon := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
-  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[2], DWord(@menuItem));
+  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[2].Handle, DWord(@menuItem));
+end;
+
+//the context menu for a contact is about to be built     v0.1.0.1+
+//wParam=(WPARAM)(HANDLE)hContact
+//lParam=0
+//modules should use this to change menu items that are specific to the
+//contact that has them
+function OnBuildContactMenu(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
+var
+  menuitem: TCLISTMENUITEM;
+  //tmp: string;
+  tmp: boolean;
+begin
+  Result := 0;
+  {tmp := GetContactProto(THandle(wParam));
+  if tmp <> '' then begin
+    tmp := GetDBStr(wParam,tmp,'ChatRoomID','');
+    ZeroMemory(@menuitem,SizeOf(menuItem));
+    menuitem.cbSize := SizeOf(menuItem);
+    menuitem.flags := CMIM_FLAGS;
+    if tmp = '' then menuitem.flags := CMIM_FLAGS
+                else menuitem.flags := CMIM_FLAGS or CMIF_GRAYED;
+    if PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0].Handle, DWord(@menuItem)) = 0 then
+      MenuHandles[0].Status := (tmp = '');
+  end;}
+  tmp := (PluginLink.CallService(MS_DB_EVENT_GETCOUNT,THandle(wParam),0) > 0);
+  if tmp <> MenuHandles[0].Status then begin
+    ZeroMemory(@menuitem,SizeOf(menuItem));
+    menuitem.cbSize := SizeOf(menuItem);
+    menuitem.flags := CMIM_FLAGS;
+    if tmp then menuitem.flags := CMIM_FLAGS
+           else menuitem.flags := CMIM_FLAGS or CMIF_GRAYED;
+    if PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0].Handle, DWord(@menuItem)) = 0 then
+      MenuHandles[0].Status := tmp;
+  end;
 end;
 
 exports
