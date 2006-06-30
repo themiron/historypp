@@ -47,18 +47,21 @@ type
     FContactCP: Cardinal;
     function GetBookmarked(Index: THandle): Boolean;
     procedure SetBookmarked(Index: THandle; const Value: Boolean);
-
+    function GetBookmarkName(Index: THandle): WideString;
+    procedure SetBookmarkName(Index: THandle; const Value: WideString);
     procedure DeleteBookmarks;
     procedure LoadBookmarks;
     procedure SaveBookmarks;
     function GetCount: Integer;
     function GetItems(Index: Integer): THandle;
+    function GetNames(Index: Integer): WideString;
   public
     constructor Create(AContact: THandle);
     destructor Destroy; override;
-
     property Bookmarked[Index: THandle]: Boolean read GetBookmarked write SetBookmarked;
+    property BookmarkName[Index: THandle]: WideString read GetBookmarkName write SetBookmarkName;
     property Items[Index: Integer]: THandle read GetItems;
+    property Names[Index: Integer]: WideString read GetNames;
     property Count: Integer read GetCount;
     property Contact: THandle read hContact;
     property ContactCP: Cardinal read FContactCP;
@@ -100,6 +103,9 @@ type
     function GetBookmark(hDBEvent: THandle; var EventData: TEventData): Boolean;
     function AddItem(hDBEvent: THandle): Boolean;
     function RemoveItem(hDBEvent: THandle): Boolean;
+    function AddItemName(hDBEvent: THandle; Value: WideString): Boolean;
+    function GetItemName(hDBEvent: THandle): WideString;
+    function RemoveItemName(hDBEvent: THandle): Boolean;
     function FindEventByTimestampAndCrc(ped: PEventData): Boolean;
   public
     constructor Create(AContact: TContactBookmarks);
@@ -258,6 +264,14 @@ begin
   Result := PEventData(Bookmarks.Table[Index].Value)^.hDBEvent;
 end;
 
+function TContactBookmarks.GetNames(Index: Integer): WideString;
+var
+  hDBEvent: THandle;
+begin
+  hDBEvent := PEventData(Bookmarks.Table[Index].Value)^.hDBEvent;
+  Result := Bookmarks.GetItemName(hDBEvent)
+end;
+
 procedure TContactBookmarks.LoadBookmarks;
 var
   i: Integer;
@@ -328,6 +342,17 @@ begin
   end;
 end;
 
+procedure TContactBookmarks.SetBookmarkName(Index: THandle; const Value: WideString);
+var
+  res: Boolean;
+begin
+  Bookmarks.AddItemName(Index,Value);
+end;
+
+function TContactBookmarks.GetBookmarkName(Index: THandle): WideString;
+begin
+  Result := Bookmarks.GetItemName(Index);
+end;
 
 { TPseudoHash }
 
@@ -488,6 +513,24 @@ begin
   Result := AddKey(hDBEvent,Cardinal(ped));
 end;
 
+function TBookmarksHash.AddItemName(hDBEvent: THandle; Value: WideString): Boolean;
+begin
+  Result := (WriteDBWideStr(Contact.hContact,hppDBName,'bm'+intToStr(hDBEvent),Value) = 0);
+end;
+
+function TBookmarksHash.GetItemName(hDBEvent: THandle): WideString;
+begin
+  Result := GetDBWideStr(Contact.hContact,hppDBName,'bm'+intToStr(hDBEvent),'');
+end;
+
+function TBookmarksHash.RemoveItemName(hDBEvent: THandle): Boolean;
+begin
+  if DBExists(Contact.hContact,hppDBName,'bm'+intToStr(hDBEvent)) then
+    Result := DBDelete(Contact.hContact,hppDBName,'bm'+intToStr(hDBEvent))
+  else
+    Result := True;
+end;
+
 constructor TBookmarksHash.Create(AContact: TContactBookmarks);
 begin
   Contact := AContact;
@@ -578,6 +621,7 @@ begin
   if GetKey(Cardinal(hDBEvent),Cardinal(ped)) then begin
     RemoveKey(Cardinal(hDBEvent));
     FreeMem(ped,SizeOf(ped^));
+    RemoveItemName(hDBEvent);
     Result := True;
   end;
 end;

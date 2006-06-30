@@ -509,13 +509,13 @@ object HistoryFrm: THistoryFrm
             AutoSize = True
           end>
         FlatScrollBars = True
-        ReadOnly = True
         RowSelect = True
         ShowColumnHeaders = False
         SmallImages = ilBook
         TabOrder = 1
         ViewStyle = vsReport
         OnContextPopup = lvBookContextPopup
+        OnEdited = lvBookEdited
         OnSelectItem = lvBookSelectItem
       end
     end
