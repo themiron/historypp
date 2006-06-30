@@ -296,6 +296,8 @@ type
     procedure lvBookContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
     procedure ToogleItemProcessingClick(Sender: TObject);
+    procedure lvBookEdited(Sender: TObject; Item: TTntListItem;
+      var S: WideString);
   private
     StartTimestamp: DWord;
     EndTimestamp: DWord;
@@ -922,9 +924,12 @@ var
 begin
   Utils_SaveFormPosition(Self,0,hppDBName,'HistoryWindow.');
   if (hContact <> 0) and (not PasswordMode) and not ((HistoryLength = 0) and (not paSess.Visible)) then begin
-     WriteDBBool(hppDBName,'ShowSessions',paSess.Visible);
-     if paSess.Visible then
-        WriteDBInt(hppDBName,'SessionsWidth',paSess.Width);
+    WriteDBBool(hppDBName,'ShowSessions',paSess.Visible);
+    if paSess.Visible then
+      WriteDBInt(hppDBName,'SessionsWidth',paSess.Width);
+    WriteDBBool(hppDBName,'ShowBookmarks',paBook.Visible);
+    if paSess.Visible then
+      WriteDBInt(hppDBName,'BookmarksWidth',paBook.Width);
   end;
   if (hContact <> 0) then
     WriteDBBool(hppDBName,'ExpandHeaders',hg.ExpandHeaders);
@@ -1149,15 +1154,18 @@ begin
     for i := 0 to cb.Count-1 do begin
       li := lvBook.Items.Add;
       hDBEvent := cb.Items[i];
-      hi := ReadEvent(hDBEvent);
-      txt := Copy(hi.Text,1,100);
-      txt := Tnt_WideStringReplace(txt,#13#10,' ',[rfReplaceAll]);
+      txt := cb.Names[i];
+      if txt = '' then begin
+        hi := ReadEvent(hDBEvent);
+        txt := Copy(hi.Text,1,100);
+        txt := Tnt_WideStringReplace(txt,#13#10,' ',[rfReplaceAll]);
+        // without freeing Module string mem manager complains about memory leak! WTF???
+        hi.Module := '';
+      end;
       // compress spaces here!
       li.Caption := txt;
       li.Data := Pointer(hDBEvent);
       li.ImageIndex := 0;
-      // without freeing Module string mem manager complains about memory leak! WTF???
-      hi.Module := '';
     end;
   finally
     lvBook.Items.EndUpdate;
@@ -2604,8 +2612,10 @@ begin
   if GetDBBool(hppDBName,'ShowSessions',False) then begin
     Panel := hpSessions;
     paSess.Width := GetDBInt(hppDBName,'SessionsWidth',150);
+  end else if GetDBBool(hppDBName,'ShowBookmarks',False) then begin
+    Panel := hpBookmarks;
+    paSess.Width := GetDBInt(hppDBName,'BookmarksWidth',150);
   end;
-
   HookEvents;
   CreateEventsFilterMenu;
   if hContact <> 0 then
@@ -3639,6 +3649,11 @@ end;
 procedure THistoryFrm.ToogleItemProcessingClick(Sender: TObject);
 begin
   hg.ProcessInline := not hg.ProcessInline;
+end;
+
+procedure THistoryFrm.lvBookEdited(Sender: TObject; Item: TTntListItem;  var S: WideString);
+begin
+  BookmarkServer[hContact].BookmarkName[THandle(Item.Data)] := S;
 end;
 
 end.
