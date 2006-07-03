@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.4                                                       }
+{        Version: 2.2.5                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -47,7 +47,8 @@ type
     procedure DefineProperties(Filer: TFiler); override;
     function GetActionLinkClass: TControlActionLinkClass; override;
     procedure ActionChange(Sender: TObject; CheckDefaults: Boolean); override;
-    procedure WndProc(var Message: TMessage); override;
+    // theMIROn hack to avoid buttons always hovered in Deplhi 7
+    {$IFDEF COMPILER_7}procedure WndProc(var Message: TMessage); override;{$ENDIF}
   published
     property Caption: TWideCaption read GetCaption write SetCaption stored IsCaptionStored;
     property Hint: WideString read GetHint write SetHint stored IsHintStored;
@@ -259,7 +260,7 @@ begin
       {$IFDEF COMPILER_7_UP}
       if WordWrap then
         Tnt_DrawTextW(Handle, PWideChar(Caption), Length(Caption), TextBounds,
-          DT_CENTER or DT_VCENTER or BiDiFlags or DT_WORDBREAK)
+          DT_CENTER or DT_VCENTER or BiDiFlags or DT_WORDBREAK) 
       else
       {$ENDIF}
         Tnt_DrawTextW(Handle, PWideChar(Caption), Length(Caption), TextBounds,
@@ -562,10 +563,12 @@ begin
     {$IFDEF THEME_7_UP}
     if ThemeServices.ThemesEnabled then
     begin
-      {$IFDEF COMPILER_7_UP}
+      // theMIROn fix for correct background drawing of speedbutton {
+      //{$IFDEF COMPILER_7_UP}
       //PerformEraseBackground(Self, Canvas.Handle);
-      {$ENDIF}
+      //{$ENDIF}
       //SelectObject(Canvas.Handle, Canvas.Font.Handle); { For some reason, PerformEraseBackground sometimes messes the font up. }
+      // } theMIROn
 
       if not Enabled then
         Button := tbPushButtonDisabled
@@ -579,7 +582,6 @@ begin
             Button := tbPushButtonNormal;
 
       ToolButton := ttbToolbarDontCare;
-
       if Flat then
       begin
         case Button of
@@ -598,14 +600,18 @@ begin
       if ToolButton = ttbToolbarDontCare then
       begin
         Details := ThemeServices.GetElementDetails(Button);
+        // theMIROn fix for correct background drawing of speedbutton {
         ThemeServices.DrawParentBackground(Parent.Handle, Canvas.Handle, @Details, True);
+        // } theMIROn
         ThemeServices.DrawElement(Canvas.Handle, Details, PaintRect);
         PaintRect := ThemeServices.ContentRect(Canvas.Handle, Details, PaintRect);
       end
       else
       begin
         Details := ThemeServices.GetElementDetails(ToolButton);
+        // theMIROn fix for correct background drawing of speedbutton {
         ThemeServices.DrawParentBackground(Parent.Handle, Canvas.Handle, @Details, True);
+        // } theMIROn
         ThemeServices.DrawElement(Canvas.Handle, Details, PaintRect);
         PaintRect := ThemeServices.ContentRect(Canvas.Handle, Details, PaintRect);
       end;
@@ -679,13 +685,12 @@ begin
   Result := TntControl_GetActionLinkClass(Self, inherited GetActionLinkClass);
 end;
 
+{$IFDEF COMPILER_7} // theMIROn hack to avoid buttons always hovered in Deplhi 7
 procedure TTntSpeedButton.WndProc(var Message: TMessage);
 var
   mic: Boolean;
   P : TPoint;
 begin
-  {$IFNDEF COMPILER_10_UP}
-  // hack to avoid buttons always hovered in deplhi 7
   if ((Message.Msg = WM_MOUSEMOVE) or (Message.Msg = WM_NCMOUSEMOVE)) then begin
     P := Point(Message.LParamLo, Message.LParamHi);
     mic := PtInRect(ClientRect,P);
@@ -697,9 +702,9 @@ begin
       THackSpeedButton(Self).FMouseInControl := false;
     end;
   end;
-  {$ENDIF}
   inherited;
 end;
+{$ENDIF} // } theMIROn
 
 {$IFDEF COMPILER_10_UP}
 type

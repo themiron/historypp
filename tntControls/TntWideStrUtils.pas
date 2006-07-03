@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.4                                                       }
+{        Version: 2.2.5                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -44,14 +44,12 @@ function WStrPLCopy{TNT-ALLOW WStrPLCopy}(Dest: PWideChar; const Source: AnsiStr
 {$ENDIF}
 {$IFNDEF COMPILER_10_UP}
 function WStrScan(const Str: PWideChar; Chr: WideChar): PWideChar;
+// WStrComp and WStrPos were introduced as broken in Delphi 2006, but fixed in Delphi 2006 Update 2
+function WStrComp(Str1, Str2: PWideChar): Integer;
+function WStrPos(Str, SubStr: PWideChar): PWideChar;
 {$ENDIF}
-
-{TNT-WARN WStrComp} // these are introduced but broken in Delphi 2006
-{TNT-WARN WStrPos}  // these are introduced but broken in Delphi 2006
-function Tnt_WStrComp(Str1, Str2: PWideChar): Integer;
-function Tnt_WStrPos(Str, SubStr: PWideChar): PWideChar;
-function WStrComp{TNT-ALLOW WStrComp}(Str1, Str2: PWideChar): Integer; deprecated;
-function WStrPos{TNT-ALLOW WStrPos}(Str, SubStr: PWideChar): PWideChar; deprecated;
+function Tnt_WStrComp(Str1, Str2: PWideChar): Integer; deprecated;
+function Tnt_WStrPos(Str, SubStr: PWideChar): PWideChar; deprecated;
 
 { ------------ introduced --------------- }
 function WStrECopy(Dest, Source: PWideChar): PWideChar;
@@ -207,14 +205,13 @@ begin
     Inc(Result);
   end;
 end;
-{$ENDIF}
 
-function Tnt_WStrComp(Str1, Str2: PWideChar): Integer;
+function WStrComp(Str1, Str2: PWideChar): Integer;
 begin
   Result := WStrLComp(Str1, Str2, MaxInt);
 end;
 
-function Tnt_WStrPos(Str, SubStr: PWideChar): PWideChar;
+function WStrPos(Str, SubStr: PWideChar): PWideChar;
 var
   PSave: PWideChar;
   P: PWideChar;
@@ -245,16 +242,18 @@ begin
     end;
   end;
 end;
+{$ENDIF}
 
-function WStrComp{TNT-ALLOW WStrComp}(Str1, Str2: PWideChar): Integer; deprecated;
+function Tnt_WStrComp(Str1, Str2: PWideChar): Integer; deprecated;
 begin
-  Result := Tnt_WStrComp(Str1, Str2);
+  Result := WStrComp(Str1, Str2);
 end;
 
-function WStrPos{TNT-ALLOW WStrPos}(Str, SubStr: PWideChar): PWideChar; deprecated;
+function Tnt_WStrPos(Str, SubStr: PWideChar): PWideChar; deprecated;
 begin
-  Result := Tnt_WStrPos(Str, SubStr);
+  Result := WStrPos(Str, SubStr);
 end;
+
 //------------------------------------------------------------------------------
 
 function WStrECopy(Dest, Source: PWideChar): PWideChar;

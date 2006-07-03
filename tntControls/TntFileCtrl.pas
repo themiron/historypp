@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.4                                                       }
+{        Version: 2.2.5                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -38,9 +38,11 @@ end;
 
 function WideSelectDirectory(const Caption: WideString; const Root: WideString;
   var Directory: WideString): Boolean;
+{$IFNDEF COMPILER_7_UP}
 const
-  BIF_NEWDIALOGSTYLE = $0040;
-  BIF_USENEWUI = (BIF_NEWDIALOGSTYLE or BIF_EDITBOX);
+  BIF_NEWDIALOGSTYLE     = $0040;
+  BIF_USENEWUI = BIF_NEWDIALOGSTYLE or BIF_EDITBOX;
+{$ENDIF}
 var
   WindowList: Pointer;
   BrowseInfo: TBrowseInfoW;
@@ -98,7 +100,7 @@ begin
         Result :=  ItemIDList <> nil;
         if Result then
         begin
-          Win32Check(Tnt_ShGetPathFromIDListW(ItemIDList, Buffer));
+          Tnt_ShGetPathFromIDListW(ItemIDList, Buffer);
           ShellMalloc.Free(ItemIDList);
           Directory := Buffer;
         end;
