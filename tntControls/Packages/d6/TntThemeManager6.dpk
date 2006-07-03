@@ -1,8 +1,8 @@
 package TntThemeManager6;
 
-{$R '..\Design\TntThemeMgr.dcr'}
-{$R '..\Design\TntThemeMgrDB.dcr'}
 {$R *.res}
+{$R '..\..\Design\TntThemeMgr.dcr'}
+{$R '..\..\Design\TntThemeMgrDB.dcr'}
 {$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
@@ -28,7 +28,7 @@ package TntThemeManager6;
 {$IMPLICITBUILD ON}
 
 requires
-  ThemeManager6,
+  ThemeManagerD6,
   TntUnicodeVcl_R60;
 
 contains
