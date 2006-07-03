@@ -167,16 +167,14 @@ var
   len: Integer;
   HasProto, HasWWW: Boolean;
 begin
-  // we are using Tnt_WStrPos because delphi's WStrPos even in Delphi2006 returns weird results
-
   // shrink find_buf on every SHRINK_ON_CALL event, so it's not growing to infinity
   Inc(calls_count);
   if (calls_count >= SHRINK_ON_CALL) then
     ShrinkTextHasUrlsBuf;
 
   Result := False;
-  HasProto := Tnt_WStrPos(@Text[1],'://') <> nil;
-  HasWWW := Tnt_WStrPos(@Text[1],'www.') <> nil;
+  HasProto := WStrPos(@Text[1],'://') <> nil;
+  HasWWW := WStrPos(@Text[1],'www.') <> nil;
   if (not HasProto) and (not HasWWW) then exit;
   if HasWWW then begin
     Result := True;
@@ -194,19 +192,19 @@ begin
   if HasProto then begin
     // note: we can make it one big OR clause, but it's more readable this way
     // list strings in order of probability
-    Result := Tnt_WStrPos(find_buf, 'http://') <> nil;
+    Result := WStrPos(find_buf, 'http://') <> nil;
     if Result then exit;
-    Result := Tnt_WStrPos(find_buf, 'ftp://') <> nil;
+    Result := WStrPos(find_buf, 'ftp://') <> nil;
     if Result then exit;
-    Result := Tnt_WStrPos(find_buf, 'https://') <> nil;
+    Result := WStrPos(find_buf, 'https://') <> nil;
     if Result then exit;
-    Result := Tnt_WStrPos(find_buf, 'nntp://') <> nil;
+    Result := WStrPos(find_buf, 'nntp://') <> nil;
     if Result then exit;
-    Result := Tnt_WStrPos(find_buf, 'irc://') <> nil;
+    Result := WStrPos(find_buf, 'irc://') <> nil;
     if Result then exit;
-    Result := Tnt_WStrPos(find_buf, 'news://') <> nil;
+    Result := WStrPos(find_buf, 'news://') <> nil;
     if Result then exit;
-    //Result := Tnt_WStrPos(find_buf, 'opera:') <> nil;
+    //Result := WStrPos(find_buf, 'opera:') <> nil;
     //if Result then exit;
   end;
 end;
