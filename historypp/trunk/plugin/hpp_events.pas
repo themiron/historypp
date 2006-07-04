@@ -266,27 +266,35 @@ end;
 
 function GetEventTextForMessage(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 var
-  //PEnd: PWideChar;
   lenW,lenA : Cardinal;
-  //buf: String;
   PBlobEnd: Pointer;
+  PAnsiEnd: PChar;
   PWideStart,
   PWideEnd: PWideChar;
-  FoundWideEnd: Boolean;
+  FoundEnd: Boolean;
 begin
   PBlobEnd := PChar(EventInfo.pBlob) + EventInfo.cbBlob;
-  PWideStart := Pointer(StrEnd(PChar(EventInfo.pBlob))+1);
-  lenA := PChar(PWideStart) - PChar(EventInfo.pBlob)-1;
+  PAnsiEnd := PChar(EventInfo.pBlob);
+  FoundEnd := false;
+  while PAnsiEnd < PBlobEnd do begin
+    if PAnsiEnd^ = #0 then begin
+      FoundEnd := true;
+      break;
+    end;
+    Inc(PAnsiEnd);
+  end;
+  lenA := PAnsiEnd - PChar(EventInfo.pBlob);
+  PWideStart := Pointer(PAnsiEnd+1);
   PWideEnd := PWideStart;
-  FoundWideEnd := false;
+  FoundEnd := false;
   While PWideEnd < PBlobEnd do begin
     if PWideEnd^ = #0 then begin
-      FoundWideEnd := true;
+      FoundEnd := true;
       break;
     end;
     Inc(PWideEnd);
   end;
-  if FoundWideEnd then begin
+  if FoundEnd then begin
     lenW := PWideEnd - PWideStart;
     if lenA = lenW then
       SetString(Result,PWideStart,lenW)
