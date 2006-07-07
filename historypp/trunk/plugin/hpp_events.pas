@@ -65,8 +65,7 @@ function GetEventTextForStatusChange(EventInfo: TDBEventInfo; UseCP: Cardinal; v
 function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 // service routines
 function TextHasUrls(var Text: WideString): Boolean;
-function AllocateTextBufferA(len: integer): integer;
-function AllocateTextBufferW(len: integer): integer;
+function AllocateTextBuffer(len: integer): integer;
 procedure CleanupTextBuffer;
 procedure ShrinkTextBuffer;
 
@@ -167,7 +166,7 @@ begin
     Inc(calls_count);
 end;
 
-function AllocateTextBufferA(len: integer): integer;
+function AllocateTextBuffer(len: integer): integer;
 begin
   ShrinkTextBuffer;
   if len > buflen then begin
@@ -175,19 +174,6 @@ begin
     buflen := len;
   end;
   Result := len;
-end;
-
-function AllocateTextBufferW(len: integer): integer;
-var
-  lenW: integer;
-begin
-  ShrinkTextBuffer;
-  lenW := len shl 1; // should be a bit faster then lenW := len*SizeOf(WideChar)
-  if lenW > buflen then begin
-    ReallocMem(buffer,lenW);
-    buflen := lenW;
-  end;
-  Result := lenW;
 end;
 
 function TextHasUrls(var Text: WideString): Boolean;
@@ -205,8 +191,8 @@ begin
   end;
 
   len := Length(Text);
-  lenW := AllocateTextBufferW(len+1);
-  Move(Text[1],buffer^,lenW);
+  lenW := AllocateTextBuffer((len+1)*SizeOf(WideChar));
+  Move(Text[1],PWideChar(buffer)^,lenW);
   Tnt_CharLowerBuffW(PWideChar(buffer),len);
 
   if HasProto then begin
@@ -292,7 +278,7 @@ var
   Source,Dest: PWideChar;
 begin
   PBlobEnd := PChar(EventInfo.pBlob) + EventInfo.cbBlob;
-  AllocateTextBufferA(EventInfo.cbBlob+3);
+  AllocateTextBuffer(EventInfo.cbBlob+3);
   lenA :=  StrLen(StrLCopy(buffer,PChar(EventInfo.pBlob),EventInfo.cbBlob));
   PUnicode := Pointer(buffer+lenA+1);
   Dest := PUnicode;
