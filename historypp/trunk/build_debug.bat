@@ -28,20 +28,18 @@ rem #    Make sure historypp.dpr uses clause is as peviously written
 rem #    (ExceptionLog unit between ifdef's)
 rem #
 
-cd ..
-
-set D6LIB=c:\program files\borland\delphi6\lib\debug;c:\program files\borland\delphi6\lib
-set D7LIB=c:\program files\borland\delphi7\lib\debug;c:\program files\borland\delphi7\lib
-set D8LIB=c:\program files\borland\bds\2.0\lib\debug;c:\program files\borland\bds\2.0\lib
-set D2005LIB=c:\program files\borland\bds\3.0\lib\debug;c:\program files\borland\bds\3.0\lib
-set D2006LIB=c:\program files\borland\bds\4.0\lib\debug;c:\program files\borland\bds\4.0\lib
-
-cd plugin
+set D6LIB=c:\program files\borland\delphi6\lib
+set D7LIB=c:\program files\borland\delphi7\lib
+set D8LIB=c:\program files\borland\bds\2.0\lib
+set D2005LIB=c:\program files\borland\bds\3.0\lib
+set D2006LIB=c:\program files\borland\bds\4.0\lib
 
 brcc32 > nul 2>&1
 if errorlevel 2 goto nobcc
 dcc32 > nul 2>&1
 if errorlevel 1 goto nodcc
+
+cd plugin
 
 rem #
 rem # Get delphi compiler version
@@ -82,6 +80,7 @@ if %DVER%==7 set DELPHILIB=%D7LIB%
 if %DVER%==8 set DELPHILIB=%D8LIB%
 if %DVER%==2005 set DELPHILIB=%D2005LIB%
 if %DVER%==2006 set DELPHILIB=%D2006LIB%
+if not exist "%DELPHILIB%" set DELPHILIB=
 if "%DELPHILIB%"=="" goto nolib
 
 echo:
@@ -91,12 +90,42 @@ echo * %DELPHILIB%
 echo * Building project...
 echo:
 
-brcc32 -fohpp_resource.res hpp_resource.rc
-if errorlevel 1 goto failbcc
 brcc32 -fohpp_res_ver.res hpp_res_ver.rc
 if errorlevel 1 goto failbcc
 brcc32 -fohpp_opt_dialog.res hpp_opt_dialog.rc
 if errorlevel 1 goto failbcc
+
+rem #
+rem # Find utils path relatively to our current dir
+rem #
+
+set UTILS=utils
+set TRIES=0
+:loop1
+if exist %UTILS% goto exitloop1
+set UTILS=..\%UTILS%
+if "%TRIES%"=="00000000000" goto exitloop1
+set TRIES=0%TRIES%
+goto loop1
+:exitloop1
+
+if exist %UTILS%\GoRC.exe goto dogorc
+echo ###
+echo ### Warning! GoRC not fount in Utils directory
+echo ### Using Borland Resource Compiler instead
+echo ### Support for icons with 32-bit color depth would be broken
+echo ### 
+echo ### Download gorc.exe from http://www.jorgon.freeserve.co.uk/#rc
+echo ###
+pause
+brcc32 -fohpp_resource.res hpp_resource.rc
+if errorlevel 1 goto failbcc
+brcc32 -fohistorypp_icons.res historypp_icons.rc
+goto exitgorc
+:dogorc
+%UTILS%\GoRC /r /nw hpp_resource.rc
+%UTILS%\GoRC /r/o /nw historypp_icons.rc
+:exitgorc
 
 rem #
 rem # Find tntControls path relatively to our current dir
@@ -115,7 +144,6 @@ goto loop
 :exitloop
 set JCLPATH=%LIBPATH%jcl
 
-
 set INCDIR="%DELPHILIB%;%TNTPATH%;%JCLPATH%;..\inc;"
 set OUTDIR=".."
 set DCUDIR="tmp"
@@ -127,7 +155,6 @@ set DCUDIR="tmp"
 : Q  Integer overflow checking
 : R- Range checking (NEED OFF?)
 : Y  Symbol reference info
-: W  Generate stack frames
 set COMPDIR=-$A4 -$D+ -$J+ -$L+ -$O+ -$Q+ -$R- -$Y+ -$W+
 
 set EUDIR=--el_config"historypp.eof" -DEUREKALOG;EUREKALOG_VER5
@@ -138,15 +165,34 @@ if %DVER% GEQ 2006 set ADDCMD=--no-config
 md %OUTDIR% 2>nul
 md %DCUDIR% 2>nul
 
-ren *.cfg *.cfg-build
 ecc32 %ADDCMD% %EUDIR%  -B -CG -Q -W- -H- -U%INCDIR% -R%INCDIR% -I%INCDIR% -E%OUTDIR% -LE%DCUDIR% -LN%DCUDIR% -N0%DCUDIR% %COMPDIR% historypp.dpr
 if errorlevel 1 ( 
   ren *.cfg-build *.cfg
   goto faildcc
 )
-ren *.cfg-build *.cfg
 
 del %OUTDIR%\historypp.map
+
+if exist %UTILS%\GoLink.exe goto dogolink
+echo ###
+echo ### Warning! GoLink not fount in Utils directory
+echo ### Using Delphi Compiler instead
+echo ### The resulting historypp_icons.dll would be a bit bigger
+echo ### 
+echo ### Download golink.exe from http://www.jorgon.freeserve.co.uk/#linker
+echo ###
+echo:
+ren *.cfg *.cfg-build
+dcc32 %ADDCMD% -B -CG -Q -W- -H- -U%INCDIR% -R%INCDIR% -I%INCDIR% -E%OUTDIR% -LE%DCUDIR% -LN%DCUDIR% -N0%DCUDIR% %COMPDIR% historypp_icons.dpr
+if errorlevel 1 ( 
+  ren *.cfg-build *.cfg
+  goto faildcc
+)
+ren *.cfg-build *.cfg
+goto exitgolink
+:dogolink
+%UTILS%\GoLink historypp_icons.obj /nw /base 10000000 /fo ..\historypp_icons.dll
+:exitgolink
 
 rd /q /s %DCUDIR%
 
