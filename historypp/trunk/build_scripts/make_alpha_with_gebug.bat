@@ -146,6 +146,7 @@ if errorlevel 1 goto ziperr
 cd ..
 rd /q/s src
 rd /q/s bin
+rd /q/s dbg
 
 goto end
 
