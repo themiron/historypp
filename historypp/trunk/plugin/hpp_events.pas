@@ -151,7 +151,7 @@ var
 
 procedure CleanupTextBuffer;
 begin
-  FreeMem(buffer,buflen*SizeOf(WideChar));
+  FreeMem(buffer,buflen);
   buffer := nil;
   buflen := 0;
 end;
