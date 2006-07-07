@@ -65,8 +65,10 @@ function GetEventTextForStatusChange(EventInfo: TDBEventInfo; UseCP: Cardinal; v
 function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 // service routines
 function TextHasUrls(var Text: WideString): Boolean;
-procedure ShrinkTextHasUrlsBuf;
-procedure CleanupTextHasUrlsBuf;
+function AllocateTextBufferA(len: integer): integer;
+function AllocateTextBufferW(len: integer): integer;
+procedure CleanupTextBuffer;
+procedure ShrinkTextBuffer;
 
 implementation
 
@@ -137,41 +139,62 @@ begin
 end;
 
 var
-  find_buf: PWideChar = nil;
-  find_len: Integer = 0;
+  buffer: PChar = nil;
+  buflen: Integer = 0;
 
 const
   SHRINK_ON_CALL = 50;
-  SHRINK_TO_LEN  = 250;
+  SHRINK_TO_LEN  = 500;
 
 var
   calls_count: Integer = 0;
 
-// call this procedure periodically to limit find_buf growing
-procedure ShrinkTextHasUrlsBuf;
+procedure CleanupTextBuffer;
 begin
-  find_len := SHRINK_TO_LEN;
-  ReallocMem(find_buf,find_len*SizeOf(WideChar));
-  calls_count := 0;
+  FreeMem(buffer,buflen*SizeOf(WideChar));
+  buffer := nil;
+  buflen := 0;
 end;
 
-procedure CleanupTextHasUrlsBuf;
+procedure ShrinkTextBuffer;
 begin
-  FreeMem(find_buf,find_len*SizeOf(WideChar));
-  find_buf := nil;
-  find_len := 0;
+  // shrink find_buf on every SHRINK_ON_CALL event, so it's not growing to infinity
+  if calls_count >= SHRINK_ON_CALL then begin
+    buflen := SHRINK_TO_LEN;
+    ReallocMem(buffer,buflen);
+    calls_count := 0;
+  end else
+    Inc(calls_count);
+end;
+
+function AllocateTextBufferA(len: integer): integer;
+begin
+  ShrinkTextBuffer;
+  if len > buflen then begin
+    ReallocMem(buffer,len);
+    buflen := len;
+  end;
+  Result := len;
+end;
+
+function AllocateTextBufferW(len: integer): integer;
+var
+  lenW: integer;
+begin
+  ShrinkTextBuffer;
+  lenW := len shl 1; // should be a bit faster then lenW := len*SizeOf(WideChar)
+  if lenW > buflen then begin
+    ReallocMem(buffer,lenW);
+    buflen := lenW;
+  end;
+  Result := lenW;
 end;
 
 function TextHasUrls(var Text: WideString): Boolean;
 var
-  len: Integer;
+  len,lenW: Integer;
   HasProto, HasWWW: Boolean;
 begin
-  // shrink find_buf on every SHRINK_ON_CALL event, so it's not growing to infinity
-  Inc(calls_count);
-  if (calls_count >= SHRINK_ON_CALL) then
-    ShrinkTextHasUrlsBuf;
-
   Result := False;
   HasProto := WStrPos(@Text[1],'://') <> nil;
   HasWWW := WStrPos(@Text[1],'www.') <> nil;
@@ -182,27 +205,24 @@ begin
   end;
 
   len := Length(Text);
-  if len+1 > find_len then begin
-    ReallocMem(find_buf,(len+1)*SizeOf(WideChar));
-    find_len := len+1;
-  end;
-  Move(Text[1],find_buf^,(len+1)*SizeOf(WideChar));
-  Tnt_CharLowerBuffW(find_buf,len);
+  lenW := AllocateTextBufferW(len+1);
+  Move(Text[1],buffer^,lenW);
+  Tnt_CharLowerBuffW(PWideChar(buffer),len);
 
   if HasProto then begin
     // note: we can make it one big OR clause, but it's more readable this way
     // list strings in order of probability
-    Result := WStrPos(find_buf, 'http://') <> nil;
+    Result := WStrPos(PWideChar(buffer), 'http://') <> nil;
     if Result then exit;
-    Result := WStrPos(find_buf, 'ftp://') <> nil;
+    Result := WStrPos(PWideChar(buffer), 'ftp://') <> nil;
     if Result then exit;
-    Result := WStrPos(find_buf, 'https://') <> nil;
+    Result := WStrPos(PWideChar(buffer), 'https://') <> nil;
     if Result then exit;
-    Result := WStrPos(find_buf, 'nntp://') <> nil;
+    Result := WStrPos(PWideChar(buffer), 'nntp://') <> nil;
     if Result then exit;
-    Result := WStrPos(find_buf, 'irc://') <> nil;
+    Result := WStrPos(PWideChar(buffer), 'irc://') <> nil;
     if Result then exit;
-    Result := WStrPos(find_buf, 'news://') <> nil;
+    Result := WStrPos(PWideChar(buffer), 'news://') <> nil;
     if Result then exit;
     //Result := WStrPos(find_buf, 'opera:') <> nil;
     //if Result then exit;
@@ -268,40 +288,27 @@ function GetEventTextForMessage(EventInfo: TDBEventInfo; UseCP: Cardinal; var Me
 var
   lenW,lenA : Cardinal;
   PBlobEnd: Pointer;
-  PAnsiEnd: PChar;
-  PWideStart,
-  PWideEnd: PWideChar;
-  FoundEnd: Boolean;
+  PUnicode: PWideChar;
+  Source,Dest: PWideChar;
 begin
   PBlobEnd := PChar(EventInfo.pBlob) + EventInfo.cbBlob;
-  PAnsiEnd := PChar(EventInfo.pBlob);
-  FoundEnd := false;
-  while PAnsiEnd < PBlobEnd do begin
-    if PAnsiEnd^ = #0 then begin
-      FoundEnd := true;
-      break;
-    end;
-    Inc(PAnsiEnd);
+  AllocateTextBufferA(EventInfo.cbBlob+3);
+  lenA :=  StrLen(StrLCopy(buffer,PChar(EventInfo.pBlob),EventInfo.cbBlob));
+  PUnicode := Pointer(buffer+lenA+1);
+  Dest := PUnicode;
+  Source := Pointer(PChar(EventInfo.pBlob)+lenA+1);
+  lenW := 0;
+  While (Source < PBlobEnd) and (Source^ <> #0) do begin
+    Dest^ := Source^;
+    Inc(Source);
+    Inc(Dest);
+    Inc(lenW);
   end;
-  lenA := PAnsiEnd - PChar(EventInfo.pBlob);
-  PWideStart := Pointer(PAnsiEnd+1);
-  PWideEnd := PWideStart;
-  FoundEnd := false;
-  While PWideEnd < PBlobEnd do begin
-    if PWideEnd^ = #0 then begin
-      FoundEnd := true;
-      break;
-    end;
-    Inc(PWideEnd);
-  end;
-  if FoundEnd then begin
-    lenW := PWideEnd - PWideStart;
-    if lenA = lenW then
-      SetString(Result,PWideStart,lenW)
-    else
-      Result := AnsiToWideString(PChar(EventInfo.pBlob),UseCP);
-  end else
-    Result := AnsiToWideString(PChar(EventInfo.pBlob),UseCP);
+  Dest^ := #0;
+  if lenA = lenW then
+    SetString(Result,PUnicode,lenW)
+  else
+    Result := AnsiToWideString(buffer,UseCP);
   if TextHasUrls(Result) then MessType := mtUrl;
 end;
 
@@ -468,7 +475,7 @@ end;
 
 initialization
   // allocate some mem, so first ReadEvents would start faster
-  ShrinkTextHasUrlsBuf;
+  ShrinkTextBuffer;
 finalization
-  CleanupTextHasUrlsBuf;
+  CleanupTextBuffer;
 end.
