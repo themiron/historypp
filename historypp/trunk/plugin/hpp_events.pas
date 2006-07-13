@@ -32,7 +32,7 @@ interface
 
 uses
   Windows, TntSystem, SysUtils, TntSysUtils, TntWideStrUtils,
-  m_globaldefs, m_api, {WideStrUtils,} TntWindows,
+  m_globaldefs, m_api, WideStrUtils, TntWindows,
   hpp_global, hpp_contacts;
 
 type
@@ -461,6 +461,7 @@ end;
 
 initialization
   // allocate some mem, so first ReadEvents would start faster
+  calls_count := SHRINK_ON_CALL + 1;
   ShrinkTextBuffer;
 finalization
   CleanupTextBuffer;
