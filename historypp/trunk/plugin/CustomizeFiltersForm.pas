@@ -83,7 +83,7 @@ implementation
 uses hpp_forms, HistoryForm, hpp_options, TypInfo, Math;
 
 const
-  FilterNames: array[0..11] of TMessageTypeNameRec = (
+  FilterNames: array[0..12] of TMessageTypeNameRec = (
   // !!! mtUnknown is used internally for not loaded events, should not be shown to users, should not be selectable
   (mt: mtIncoming; Name: 'Incoming events'),
   (mt: mtOutgoing; Name: 'Outgoing events'),
@@ -96,7 +96,8 @@ const
   (mt: mtEmailExpress; Name: 'Email Express'),
   (mt: mtSMTPSimple; Name: 'SMTP Simple Email'),
   (mt: mtStatus; Name: 'Status'),
-  (mt: mtOther; Name: 'Other (unknown)')
+  (mt: mtOther; Name: 'Other (unknown)'),
+  (mt: mtNickChange; Name: 'Nick change')
   );
 
   IgnoreEvents: TMessageTypes = [mtSystem, mtWebPager, mtEmailExpress];

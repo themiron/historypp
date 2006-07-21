@@ -139,7 +139,7 @@ type
     FFontTimestamp: TFont;
     FFontSessHeader: TFont;
 
-    FItemFont: TFont;
+    //FItemFont: TFont;
     FItemOptions: TItemOptions;
 
     FIconMessage: TIcon;
@@ -815,16 +815,16 @@ end;
 
 destructor THistoryGrid.Destroy;
 begin
-{$IFDEF CUST_SB}
-VertScrollBar.Free;
-{$ENDIF}
-{$IFDEF RENDER_RICH}
-// it gets deleted autmagically because FRich.Owner = Self
-// FRich.Free;
-FRichCache.Free;
-{$ENDIF}
-if Assigned(Options) then
-  Options.DeleteGrid(Self);
+  {$IFDEF CUST_SB}
+  VertScrollBar.Free;
+  {$ENDIF}
+  {$IFDEF RENDER_RICH}
+  // it gets deleted autmagically because FRich.Owner = Self
+  // FRich.Free;
+  FRichCache.Free;
+  {$ENDIF}
+  if Assigned(Options) then
+    Options.DeleteGrid(Self);
   FClient.Free;
   Finalize(FItems);
 inherited;
@@ -1012,7 +1012,8 @@ begin
   end;
 
   text := WideFormat(TranslateWideW('Conversation started at %s'),[GetTime(Items[Index].Time)]);
-  Canvas.Font := Options.FontSessHeader;
+  //Canvas.Font := Options.FontSessHeader;
+  Canvas.Font.Assign(Options.FontSessHeader);
   Inc(ItemRect.Left,IconOffset);
   Dec(ItemRect.Right,RIconOffset);
   if RTL then begin
@@ -1302,7 +1303,8 @@ var
   hh,TopIconOffset,IconOffset,NickOffset,TimeOffset: Integer;
   icon: TIcon;
   BackColor: TColor;
-  nameFont,timestampFont,textFont: TFont;
+  //nameFont,timestampFont,textFont: TFont;
+  nameFont,textFont: TFont;
   Sel: Boolean;
   RTL: Boolean;
   RichBMP: TBitmap;
@@ -1349,7 +1351,7 @@ begin
   if Assigned(FGetNameData) then
     FGetNameData(Self,Index,HeaderName);
   HeaderName := HeaderName + ':';
-  timestampFont := Options.FontTimeStamp;
+  //timestampFont := Options.FontTimeStamp;
   TimeStamp := GetTime(FItems[Index].Time);
 
   if Sel then begin
@@ -1401,7 +1403,8 @@ begin
     end;
   end;
 
-  Canvas.Font := nameFont;
+  //Canvas.Font := nameFont;
+  Canvas.Font.Assign(nameFont);
   if sel then Canvas.Font.Color := Options.ColorSelectedText;
   dtf := DT_NOPREFIX or DT_SINGLELINE or DT_VCENTER;
   if RTL then
@@ -1410,7 +1413,8 @@ begin
     dtf := dtf or DT_LEFT;
   Tnt_DrawTextW(Canvas.Handle,PWideChar(HeaderName),Length(HeaderName),HeadRect,dtf);
 
-  Canvas.Font := timestampFont;
+  //Canvas.Font := timestampFont;
+  Canvas.Font.Assign(Options.FontTimeStamp);
   if sel then Canvas.Font.Color := Options.ColorSelectedText;
   TimeOffset := WideCanvasTextWidth(Canvas,TimeStamp);
   dtf := DT_NOPREFIX or DT_SINGLELINE or DT_VCENTER;
@@ -1448,6 +1452,7 @@ begin
   if (Focused or WindowPrePainting) and (Index = Selected) then begin
     DrawFocusRect(Canvas.Handle,OrgRect);
   end;
+
 end;
 
 procedure THistoryGrid.PrePaintWindow;
@@ -1800,8 +1805,8 @@ var
 begin
   if RichEdit = nil then begin
      RichItem := FRichCache.RequestItem(Item);
-     FRich := RichItem.Rich;
-     FRichHeight := RichItem.Height;
+     FRich := RichItem^.Rich;
+     FRichHeight := RichItem^.Height;
      exit;
   end
   else
@@ -1831,7 +1836,7 @@ begin
 
   //SendMessage(RichEdit.Handle,EM_SETBKGNDCOLOR,0,ColorToRGB(BackColor));
   RichEdit.Perform(EM_SETBKGNDCOLOR,0,ColorToRGB(BackColor));
-  RichEdit.Font := textFont;
+  RichEdit.Font.Assign(textFont);
   RichEdit.DefAttributes.Color := FontColor;
   //RichEdit.Font.Color := FontColor;
 
@@ -3291,13 +3296,13 @@ const
   // #9 -- TAB
   // #13 -- ENTER
   // #27 -- ESC
-  ForbiddenChars = [WideChar(#9),WideChar(#13),WideChar(#27)];
+  ForbiddenChars: array[0..2] of WideChar = (#9,#13,#27);
 
 procedure THistoryGrid.DoChar(Ch: WideChar; ShiftState: TShiftState);
 var
   OldPattern: WideString;
   Down: Boolean;
-  Sr: Integer;
+  Sr,i: Integer;
 begin
   CheckBusy;
   if (ssAlt in ShiftState) or (ssCtrl in ShiftState) then exit;
@@ -3311,7 +3316,8 @@ begin
     exit;
   end;}
 
-  if (Ch in ForbiddenChars) then exit;
+  for i := 0 to High(ForbiddenChars) do
+    if Ch = ForbiddenChars[i] then exit;
 
   if Assigned(FOnChar) then begin
     FOnChar(Self,Ch,ShiftState);
@@ -4272,7 +4278,7 @@ var
   RTL: Boolean;
   Sel: Boolean;
   TimeStamp: WideString;
-  TimestampFont: TFont;
+  //TimestampFont: TFont;
   TimestampOffset: Integer;
 begin
   Result := [];
@@ -4311,7 +4317,7 @@ begin
   InflateRect(ItemRect,-Padding,-Padding); // paddings
   Dec(ItemRect.Top,Padding);
   Inc(ItemRect.Top,Padding div 2);
-  
+
   if mtIncoming in FItems[Item].MessageType then
     HeaderHeight := CHeaderHeight
   else
@@ -4330,9 +4336,10 @@ begin
         Include(Result,ghtSessShowButton);
     end;
     if ShowBookmarks and (Sel or FItems[Item].Bookmarked) then begin
-      TimestampFont := Options.FontTimeStamp;
       TimeStamp := GetTime(FItems[Item].Time);
-      Canvas.Font := TimestampFont;
+      //TimestampFont := Options.FontTimeStamp;
+      //Canvas.Font := TimestampFont;
+      Canvas.Font.Assign(Options.FontTimeStamp);
       TimestampOffset := WideCanvasTextWidth(Canvas,TimeStamp) + Padding;
       if RTL then
         ButtonRect := Rect(HeaderRect.Left+TimestampOffset,HeaderRect.Top,HeaderRect.Left+TimestampOffset+16,HeaderRect.Bottom)
@@ -4580,7 +4587,7 @@ begin
   FFontSessHeader := TFont.Create;
   FFontSessHeader.OnChange := FontChanged;
 
-  FItemFont := TFont.Create;
+  //FItemFont := TFont.Create;
 
 end;
 
@@ -4609,7 +4616,7 @@ begin
   FFontProfile.Free;
   FFontTimestamp.Free;
   FFontSessHeader.Free;
-  FItemFont.Free;
+  //FItemFont.Free;
   FIconUrl.Free;
   FIconMessage.Free;
   FIconFile.Free;
@@ -4617,8 +4624,10 @@ begin
   for i := 0 to Length(FItemOptions) - 1 do begin
     FItemOptions[i].textFont.Free;
   end;
-  SetLength(FItemOptions,0);
-  SetLength(Grids,0);
+  //SetLength(FItemOptions,0);
+  Finalize(FItemOptions);
+  //SetLength(Grids,0);
+  Finalize(Grids);
   inherited;
 end;
 
@@ -4670,7 +4679,13 @@ begin
       textFont := FItemOptions[i].textFont;
       textColor := FItemOptions[i].textColor;
       found := true;
-    end else Inc(i);
+    end else begin
+      if mtOther in FItemOptions[i].MessageType then begin
+        textFont := FItemOptions[i].textFont;
+        textColor := FItemOptions[i].textColor;
+      end;
+      Inc(i);
+    end;
 end;
 
 function TGridOptions.GetLocked: Boolean;
@@ -4811,14 +4826,14 @@ end;
 
 procedure TGridOptions.SetFontTimestamp(const Value: TFont);
 begin
-  FFontTimestamp := Value;
+  FFontTimestamp.Assign(Value);
   FFontTimestamp.OnChange := FontChanged;
   DoChange;
 end;
 
 procedure TGridOptions.SetFontSessHeader(const Value: TFont);
 begin
-  FFontSessHeader := Value;
+  FFontSessHeader.Assign(Value);
   FFontSessHeader.OnChange := FontChanged;
   DoChange;
 end;
@@ -4834,18 +4849,18 @@ procedure TRichCache.ApplyItemToRich(Item: PRichItem);
 var
   str: String;
 begin
-  Grid.ApplyItemToRich(Item.GridItem,Item.Rich);
+  Grid.ApplyItemToRich(Item^.GridItem,Item^.Rich);
 
   //str := 'Apply item ['+IntToStr(Item.GridItem)+'] for "'+Copy(Item.Rich.Text,1,15)+'"';
   //OutputDebugString(PChar(str));
 
   // force to send the size:
-  SendMessage(Item.Rich.Handle,EM_SETEVENTMASK, 0, ENM_REQUESTRESIZE);
-  SendMessage(Item.Rich.Handle,EM_REQUESTRESIZE,0, 0);
+  SendMessage(Item^.Rich.Handle,EM_SETEVENTMASK, 0, ENM_REQUESTRESIZE);
+  SendMessage(Item^.Rich.Handle,EM_REQUESTRESIZE,0, 0);
   if FRichHeight = 0 then begin
     // try to "update" richedit here
-    Item.Rich.Text := Item.Rich.Text + 'sasme/m,ds ad34!a9-1da'; // any junk here
-    Item.Rich.Text := Item.Rich.Text;
+    Item^.Rich.Text := Item.Rich.Text + 'sasme/m,ds ad34!a9-1da'; // any junk here
+    Item^.Rich.Text := Item.Rich.Text;
     Grid.ApplyItemToRich(Item.GridItem,Item.Rich);
     SendMessage(Item.Rich.Handle,EM_REQUESTRESIZE,0, 0);
   end;
@@ -4859,7 +4874,7 @@ var
 begin
   Item := RequestItem(GridItem);
   Assert(Item <> nil);
-  Result := Item.Height;
+  Result := Item^.Height;
 end;
 
 constructor TRichCache.Create(AGrid: THistoryGrid);
@@ -4884,7 +4899,7 @@ begin
 
   for i := 0 to Length(Items) - 1 do begin
     New(RichItem);
-    RichItem.Bitmap := TBitmap.Create;
+    RichItem^.Bitmap := TBitmap.Create;
     RichItem^.Height := -1;
     RichItem^.GridItem := -1;
     RichItem^.Rich := TTntRichEdit.Create(nil);
@@ -4910,11 +4925,12 @@ var
   i: Integer;
 begin
   for i := 0 to Length(Items) - 1 do begin
-    FreeAndNil(Items[i].Rich);
-    FreeAndNil(Items[i].Bitmap);
+    FreeAndNil(Items[i]^.Rich);
+    FreeAndNil(Items[i]^.Bitmap);
     Dispose(Items[i]);
   end;
-  SetLength(Items,0);
+  //SetLength(Items,0);
+  Finalize(Items);
   inherited;
 end;
 
@@ -4937,7 +4953,7 @@ var
 begin
   Item := RequestItem(GridItem);
   Assert(Item <> nil);
-  Result := Item.Rich;
+  Result := Item^.Rich;
 end;
 
 function TRichCache.GetItemRichBitmap(GridItem: Integer): TBitmap;
@@ -4945,10 +4961,10 @@ var
   Item: PRichItem;
 begin
   Item := RequestItem(GridItem);
-  if not Item.BitmapDrawn then
+  if not Item^.BitmapDrawn then
     PaintRichToBitmap(Item);
   Assert(Item <> nil);
-  Result := Item.Bitmap;
+  Result := Item^.Bitmap;
 end;
 
 procedure TRichCache.MoveToTop(Index: Integer);
@@ -4977,39 +4993,39 @@ var
   str: String;
 begin
   {$IFDEF DELPHI_9_UP}
-  Item.Bitmap.SetSize(Item.Rich.Width,Item.Height);
+  Item^.Bitmap.SetSize(Item^.Rich.Width,Item^.Height);
   {$ELSE}
-  Item.Bitmap.Width := Item.Rich.Width;
-  Item.Bitmap.Height := Item.Height;
+  Item^.Bitmap.Width := Item^.Rich.Width;
+  Item^.Bitmap.Height := Item^.Height;
   {$ENDIF}
 
   //str := 'Painted bitmap ['+IntToStr(item.GridItem)+'] for rich "'+Copy(Item.Rich.Text,1,15)+'"';
   //OutputDebugString(PChar(str));
 
-  rc := Rect(0,0,Item.Bitmap.Width,Item.Bitmap.Height);
+  rc := Rect(0,0,Item^.Bitmap.Width,Item^.Bitmap.Height);
 
   // because RichEdit sometimes paints smaller image
   // than it said when calculating height, we need
   // to fill the background
-  BkColor := Item.Rich.Perform(EM_SETBKGNDCOLOR, 0,0);
-  Item.Rich.Perform(EM_SETBKGNDCOLOR, 0, BkColor);
-  Item.Bitmap.Canvas.Brush.Color := BkColor;
-  Item.Bitmap.Canvas.FillRect(rc);
+  BkColor := Item^.Rich.Perform(EM_SETBKGNDCOLOR, 0,0);
+  Item^.Rich.Perform(EM_SETBKGNDCOLOR, 0, BkColor);
+  Item^.Bitmap.Canvas.Brush.Color := BkColor;
+  Item^.Bitmap.Canvas.FillRect(rc);
 
   rc.Left := rc.left * 1440 div LogX;
   rc.Top := rc.Top * 1440 div LogY;
   rc.Right := rc.Right * 1440 div LogX;
   rc.Bottom := rc.Bottom * 1440 div LogY;
 
-  Range.hdc := Item.Bitmap.Canvas.Handle;
-  Range.hdcTarget := Item.Bitmap.Canvas.Handle;
+  Range.hdc := Item^.Bitmap.Canvas.Handle;
+  Range.hdcTarget := Item^.Bitmap.Canvas.Handle;
   Range.rc := rc;
   Range.rcPage := rc;
   Range.chrg.cpMin := 0;
   Range.chrg.cpMax := -1;
 
-  Item.Rich.Perform(EM_FORMATRANGE, 1, Longint(@Range));
-  Item.BitmapDrawn := True;
+  Item^.Rich.Perform(EM_FORMATRANGE, 1, Longint(@Range));
+  Item^.BitmapDrawn := True;
 end;
 
 function TRichCache.RequestItem(GridItem: Integer): PRichItem;

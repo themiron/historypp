@@ -84,7 +84,7 @@ const
 
 var
 
-  EventTable : array[0..11] of TEventTableItem = (
+  EventTable : array[0..12] of TEventTableItem = (
     // must be the first item in array for unknown events
     (EventType: MaxWord; MessageType: mtOther; TextFunction: GetEventTextForOther),
     // events definitions
@@ -98,7 +98,8 @@ var
     (EventType: EVENTTYPE_SMTPSIMPLE; MessageType: mtSMTPSimple; TextFunction: GetEventTextForMessage),
     (EventType: ICQEVENTTYPE_SMS; MessageType: mtOther; TextFunction: GetEventTextForSMS),
     (EventType: ICQEVENTTYPE_WEBPAGER; MessageType: mtOther; TextFunction: GetEventTextForWebPager),
-    (EventType: ICQEVENTTYPE_EMAILEXPRESS; MessageType: mtOther; TextFunction: GetEventTextForEmailExpress)
+    (EventType: ICQEVENTTYPE_EMAILEXPRESS; MessageType: mtOther; TextFunction: GetEventTextForEmailExpress),
+    (EventType: EVENTTYPE_NICKNAMECHANGE; MessageType: mtNickChange; TextFunction: GetEventTextForMessage)
   );
 
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;

@@ -1161,6 +1161,8 @@ begin
         txt := Tnt_WideStringReplace(txt,#13#10,' ',[rfReplaceAll]);
         // without freeing Module string mem manager complains about memory leak! WTF???
         hi.Module := '';
+        hi.Proto := '';
+        hi.Text := '';
       end;
       // compress spaces here!
       li.Caption := txt;
