@@ -44,7 +44,7 @@ type
                   mtIncoming, mtOutgoing,
                   mtMessage, mtUrl, mtFile, mtSystem,
                   mtContacts, mtSMS, mtWebPager, mtEmailExpress, mtStatus, mtSMTPSimple,
-                  mtOther);
+                  mtOther, mtNickChange);
   TMessageTypes = set of TMessageType;
   PMessageTypes = ^TMessageTypes;
 
@@ -87,8 +87,9 @@ const
   hppLoadBlock  = 4096;
   hppFirstLoadBlock = 200;
 
-  EVENTTYPE_STATUSCHANGE = 25368;	// from srmm's
-  EVENTTYPE_SMTPSIMPLE = 2350;		// from SMTP Simple
+  EVENTTYPE_STATUSCHANGE    = 25368;	// from srmm's
+  EVENTTYPE_SMTPSIMPLE      = 2350;		// from SMTP Simple
+  EVENTTYPE_NICKNAMECHANGE  = 9001;		// from SMTP Simple
 
 var
   hppVersionStr: String;

@@ -52,7 +52,7 @@ type
     nameColor: PChar;
     mes: TMessageTypes;
     style: byte;
-    size: longint;
+    size: Integer;
     color: TColor;
     back: TColor;
   end;
@@ -139,7 +139,7 @@ const
     (name:'z_password_protect'; handle: 0)
   );
 
-  hppFontItems: array[0..17] of ThppFontsRec = (
+  hppFontItems: array[0..18] of ThppFontsRec = (
     (name: 'Incoming nick'; nameColor: 'Divider'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $6B3FC8; back: clGray),
     (name: 'Outgoing nick'; nameColor: 'Selected text'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $BD6008; back: clHighlightText),
     (name: 'Timestamp'; nameColor: 'Selected background'; Mes: []; style:0; size: -11; color: $000000; back: clHighlight),
@@ -157,7 +157,8 @@ const
     (name: 'Status change'; Mes: [mtStatus,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $F0F0F0),
     (name: 'SMTP Simple'; Mes: [mtSMTPSimple,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF),
     (name: 'Other events'; Mes: [mtOther,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF),
-    (name: 'Conversation header'; Mes: []; style:0; size: -11; color: $000000; back: $00D7FDFF)
+    (name: 'Conversation header'; Mes: []; style:0; size: -11; color: $000000; back: $00D7FDFF),
+    (name: 'Nickname change'; Mes: [mtNickChange,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $00D7FDFF)
     );
 
   cpTable: array[0..14] of TCodePage = (
@@ -325,7 +326,7 @@ procedure LoadGridOptions;
     end;
   end;
 var
-  i: integer;
+  i,index: integer;
 begin
   GridOptions.StartChange;
   try
@@ -333,19 +334,30 @@ begin
   LoadFont(0,GridOptions.FontContact);
   LoadFont(1,GridOptions.FontProfile);
   LoadFont(2,GridOptions.FontTimestamp);
-  LoadFont(High(hppFontItems),GridOptions.FontSessHeader);
+  LoadFont(17,GridOptions.FontSessHeader);
   // load colors
   GridOptions.ColorDivider := LoadColorDB(0);
   GridOptions.ColorSelectedText := LoadColorDB(1);
   GridOptions.ColorSelected := LoadColorDB(2);
-  GridOptions.ColorSessHeader := LoadColorDB(High(hppFontItems));
+  GridOptions.ColorSessHeader := LoadColorDB(17);
   // load mestype-related
-  for i :=  3 to High(hppFontItems)-1 do begin
-    if (i-3) > High(GridOptions.ItemOptions) then GridOptions.AddItemOptions;
-    GridOptions.ItemOptions[i-3].MessageType := hppFontItems[i].Mes;
-    LoadFont(i,GridOptions.ItemOptions[i-3].textFont);
-    GridOptions.ItemOptions[i-3].textColor := LoadColorDB(i);
+  index := 0;
+  for i :=  0 to High(hppFontItems) do begin
+    if hppFontItems[i].mes <> [] then begin
+      if index > High(GridOptions.ItemOptions) then GridOptions.AddItemOptions;
+      GridOptions.ItemOptions[index].MessageType := hppFontItems[i].Mes;
+      LoadFont(i,GridOptions.ItemOptions[index].textFont);
+      GridOptions.ItemOptions[index].textColor := LoadColorDB(i);
+      Inc(index);
+    end;
   end;
+
+  //for i :=  3 to High(hppFontItems)-1 do begin
+  //  if (i-3) > High(GridOptions.ItemOptions) then GridOptions.AddItemOptions;
+  //  GridOptions.ItemOptions[i-3].MessageType := hppFontItems[i].Mes;
+  //  LoadFont(i,GridOptions.ItemOptions[i-3].textFont);
+  //  GridOptions.ItemOptions[i-3].textColor := LoadColorDB(i);
+  //end;
   // load others
   GridOptions.ShowIcons := GetDBBool(hppDBName,'ShowIcons',True);
 
@@ -443,19 +455,27 @@ begin
   if FontServiceEnabled then begin
     defFont.szFace := 'Tahoma';
     defFont.charset := DEFAULT_CHARSET;
-    RegisterFont(Translate(hppFontItems[0].name),0,defFont{TRANSLATE-IGNORE});
-    RegisterFont(Translate(hppFontItems[1].name),1,defFont{TRANSLATE-IGNORE});
-    RegisterFont(Translate(hppFontItems[2].name),2,defFont{TRANSLATE-IGNORE});
-    RegisterFont(Translate(hppFontItems[High(hppFontItems)].name),High(hppFontItems),defFont{TRANSLATE-IGNORE});
-    RegisterColor(Translate(hppFontItems[0].nameColor),0,ColorToRGB(hppFontItems[0].back){TRANSLATE-IGNORE});
-    RegisterColor(Translate(hppFontItems[1].nameColor),1,ColorToRGB(hppFontItems[1].back){TRANSLATE-IGNORE});
-    RegisterColor(Translate(hppFontItems[2].nameColor),2,ColorToRGB(hppFontItems[2].back){TRANSLATE-IGNORE});
-    RegisterColor(Translate(hppFontItems[High(hppFontItems)].name),High(hppFontItems),ColorToRGB(hppFontItems[High(hppFontItems)].back){TRANSLATE-IGNORE});
-    for i := 3 to High(hppFontItems)-1 do begin
-      GridOptions.AddItemOptions;
+    for i := 0 to High(hppFontItems) do begin
+      if hppFontItems[i].mes <> [] then GridOptions.AddItemOptions;
       RegisterFont(Translate(hppFontItems[i].name),i,defFont{TRANSLATE-IGNORE});
-      RegisterColor(Translate(hppFontItems[i].name),i,hppFontItems[i].back{TRANSLATE-IGNORE});
+      if hppFontItems[i].nameColor = '' then
+        RegisterColor(Translate(hppFontItems[i].name),i,ColorToRGB(hppFontItems[i].back){TRANSLATE-IGNORE})
+      else
+        RegisterColor(Translate(hppFontItems[i].nameColor),i,ColorToRGB(hppFontItems[i].back){TRANSLATE-IGNORE});
     end;
+    //RegisterFont(Translate(hppFontItems[0].name),0,defFont{TRANSLATE-IGNORE});
+    //RegisterFont(Translate(hppFontItems[1].name),1,defFont{TRANSLATE-IGNORE});
+    //RegisterFont(Translate(hppFontItems[2].name),2,defFont{TRANSLATE-IGNORE});
+    //RegisterFont(Translate(hppFontItems[High(hppFontItems)].name),High(hppFontItems),defFont{TRANSLATE-IGNORE});
+    //RegisterColor(Translate(hppFontItems[0].nameColor),0,ColorToRGB(hppFontItems[0].back){TRANSLATE-IGNORE});
+    //RegisterColor(Translate(hppFontItems[1].nameColor),1,ColorToRGB(hppFontItems[1].back){TRANSLATE-IGNORE});
+    //RegisterColor(Translate(hppFontItems[2].nameColor),2,ColorToRGB(hppFontItems[2].back){TRANSLATE-IGNORE});
+    //RegisterColor(Translate(hppFontItems[17].name),High(hppFontItems),ColorToRGB(hppFontItems[High(hppFontItems)].back){TRANSLATE-IGNORE});
+    //for i := 3 to High(hppFontItems)-1 do begin
+    //  GridOptions.AddItemOptions;
+    //  RegisterFont(Translate(hppFontItems[i].name),i,defFont{TRANSLATE-IGNORE});
+    //  RegisterColor(Translate(hppFontItems[i].name),i,hppFontItems[i].back{TRANSLATE-IGNORE});
+    //end;
   end;
 end;
 
@@ -470,6 +490,9 @@ finalization
     for i := 0 to High(hppIcons) do
       if hppIcons[i].handle <> 0 then
         DestroyIcon(hppIcons[i].handle);
+  for i := 0 to High(hppIntIcons) do
+    if hppIntIcons[i].handle <> 0 then
+        DestroyIcon(hppIntIcons[i].handle);
 
   GridOptions.Free;
 
