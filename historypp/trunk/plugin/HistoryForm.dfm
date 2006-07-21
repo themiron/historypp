@@ -743,7 +743,6 @@ object HistoryFrm: THistoryFrm
   end
   object ilSessions: TImageList
     BkColor = clWhite
-    ShareImages = True
     Left = 164
     Top = 60
   end
@@ -756,7 +755,6 @@ object HistoryFrm: THistoryFrm
   end
   object ilToolbar: TImageList
     DrawingStyle = dsFocus
-    ShareImages = True
     Left = 540
     Top = 4
   end
@@ -884,7 +882,6 @@ object HistoryFrm: THistoryFrm
   end
   object ilBook: TImageList
     BkColor = clWhite
-    ShareImages = True
     Left = 8
     Top = 60
   end
