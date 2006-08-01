@@ -3248,12 +3248,14 @@ State := gsSearch;
 try
 while (Item >= 0) and (Item < C) do begin
   if CaseSensitive then begin
+    // need to strip bbcodes
     if Pos(Text,FItems[Item].Text) <> 0 then begin
       Result := Item;
       break;
       end;
     end
   else begin
+    // need to strip bbcodes
     if Pos(Text,Tnt_WideUpperCase(FItems[Item].Text)) <> 0 then begin
       Result := Item;
       break;
