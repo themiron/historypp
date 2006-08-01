@@ -9,6 +9,9 @@ Changelog
 
 Timeline: https://opensvn.csie.org/traccgi/historypp/trac.cgi/timeline
 
+1.5.0.105
++ Added support for updating from File Listing
+
 1.5.0.104
 + Added ability for windows to save normal/maximized state
 + Added saving/restoring position of event details form
