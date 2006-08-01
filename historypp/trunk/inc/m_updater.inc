@@ -1,23 +1,32 @@
 {$IFNDEF M_UPDATER_H}
 {$DEFINE M_UPDATER_H}
 
+const
+ // if you set Update.szUpdateURL to the following value when registering, as well as setting your beta site and version data,
+ // Updater will ignore szVersionURL and pbVersionPrefix, and attempt to find the file listing URL's from the backend XML data.
+ // for this to work, the plugin name in pluginInfo.shortName must match the file listing exactly (except for case)
+	UPDATER_AUTOREGISTER = 'UpdaterAUTOREGISTER';
+  // Updater will also use the backend xml data if you provide URL's that reference the miranda file listing for updates (so you can use that method
+// if e.g. your plugin shortName does not match the file listing) - it will grab the file listing id from the end of these URLs
+
 type
 
     PUpdate = ^TUpdate;
     TUpdate = record
         cbSize: int;
-        szComponentName: PChar;		// component name as it will appear in the UI (will be translated before displaying)
-        szVersionURL: PChar;		// URL where the current version can be found (NULL to disable)
-        pbVersionPrefix: PByte;		// bytes occuring in VersionURL before the version, used to locate the version information within the URL data
-					// (not that this URL could point at a binary file - dunno why, but it could :)
-        cpbVersionPrefix: int;		// number of bytes pionted to by pbVersionPrefix
-        szUpdateURL: PChar;		// URL where dll/zip is located
-        szBetaVersionURL: PChar;	// URL where the beta version can be found (NULL to disable betas)
-	pbBetaVersionPrefix: PByte;	// bytes occuring in VersionURL before the version, used to locate the version information within the URL data
-	cpbBetaVersionPrefix: int;	// number of bytes pionted to by pbVersionPrefix
-        szBetaUpdateURL: PChar;		// URL where dll/zip is located
-	pbVersion: PByte;		// bytes of current version, used for comparison with those in VersionURL
-        cpbVersion: int;		// number of bytes pionted to by pbVersion
+        szComponentName: PChar;		  // component name as it will appear in the UI (will be translated before displaying)
+        szVersionURL: PChar;	  	  // URL where the current version can be found (NULL to disable)
+        pbVersionPrefix: PChar;		  // bytes occuring in VersionURL before the version, used to locate the version information within the URL data
+                                    // (not that this URL could point at a binary file - dunno why, but it could :)
+        cpbVersionPrefix: int;		  // number of bytes pionted to by pbVersionPrefix
+        szUpdateURL: PChar;		      // URL where dll/zip is located
+        szBetaVersionURL: PChar;	  // URL where the beta version can be found (NULL to disable betas)
+      	pbBetaVersionPrefix: PChar;	// bytes occuring in VersionURL before the version, used to locate the version information within the URL data
+      	cpbBetaVersionPrefix: int;	// number of bytes pionted to by pbVersionPrefix
+        szBetaUpdateURL: PChar;		  // URL where dll/zip is located
+      	pbVersion: PByte;		        // bytes of current version, used for comparison with those in VersionURL
+        cpbVersion: int;		        // number of bytes pionted to by pbVersion
+      	szBetaChangelogURL: PChar;	// URL for displaying changelog for beta versions
     end;
 
 const
