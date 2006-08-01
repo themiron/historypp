@@ -108,9 +108,9 @@ function OnBuildContactMenu(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; for
 function MirandaPluginInfo(mirandaVersion:DWord):PPLUGININFO;cdecl;
 begin
   PluginInfo.cbSize := sizeof(TPLUGININFO);
-  PluginInfo.shortName := hppName + ' (2in1) '+{TEXT}''{/TEXT};
+  PluginInfo.shortName := hppShortHame;
   PluginInfo.version := hppVersion;
-  PluginInfo.description := 'Easy, fast and feature complete history viewer';
+  PluginInfo.description := 'Easy, fast and feature complete history viewer. '+{TEXT}''{/TEXT};
   PluginInfo.author := 'theMIROn, Art Fedorov';
   PluginInfo.authorEmail := 'themiron@mail.ru, artemf@mail.ru';
   PluginInfo.copyright := '© 2006 theMIROn, 2003-2006 Art Fedorov. History+ parts © 2001 Christian Kastner';
@@ -226,14 +226,19 @@ begin
   upd.szComponentName := PluginInfo.shortName;
   upd.pbVersion := @hppVersionStr[1];
   upd.cpbVersion := Length(hppVersionStr);
-  //upd.szUpdateURL := hppUpdateURL;
+
+  upd.szUpdateURL := hppFLUpdateURL;
+  upd.szVersionURL := hppFLVersionURL;
+  upd.pbVersionPrefix := hppFLVersionPrefix;
+  upd.cpbVersionPrefix := Length(hppFLVersionPrefix);
+
   upd.szBetaUpdateURL := hppUpdateURL;
-  //upd.szVersionURL := hppVersionURL;
   upd.szBetaVersionURL := hppVersionURL;
-  //upd.pbVersionPrefix := @hppVersionPrefix[1];
-  upd.pbBetaVersionPrefix := @hppVersionPrefix[1];
-  //upd.cpbVersionPrefix := Length(hppVersionPrefix);
+  upd.pbBetaVersionPrefix := hppVersionPrefix;
   upd.cpbBetaVersionPrefix := Length(hppVersionPrefix);
+
+  upd.szBetaChangelogURL := hppChangelogURL;
+
   PluginLink.CallService(MS_UPDATE_REGISTER, 0, integer(@upd));
 
   LoadGridOptions;
