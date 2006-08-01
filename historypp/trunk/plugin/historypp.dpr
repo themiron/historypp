@@ -108,7 +108,7 @@ function OnBuildContactMenu(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; for
 function MirandaPluginInfo(mirandaVersion:DWord):PPLUGININFO;cdecl;
 begin
   PluginInfo.cbSize := sizeof(TPLUGININFO);
-  PluginInfo.shortName := hppName + ' (2in1) '+{TEXT}'alpha'{/TEXT};
+  PluginInfo.shortName := hppName + ' (2in1) '+{TEXT}''{/TEXT};
   PluginInfo.version := hppVersion;
   PluginInfo.description := 'Easy, fast and feature complete history viewer';
   PluginInfo.author := 'theMIROn, Art Fedorov';
