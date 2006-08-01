@@ -1,0 +1,13 @@
+#http://www.rtfiber.com.tw/~changyj/sed/html/p.20021022a.html
+/^$/!{
+/^;;/!{
+#s/^\(.*\)\n\(.*\)/\1\1/
+s/^/\[/
+s/$/\]/
+p
+s/^\[//
+s/\]$//
+p
+d
+}
+}
