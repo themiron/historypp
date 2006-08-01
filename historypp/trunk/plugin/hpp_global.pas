@@ -71,16 +71,23 @@ type
 const
 
   hppName       = 'History++';
+  hppShortHame  = 'History++ (2in1)';
   hppDBName     = 'HistoryPlusPlus';
   hppVerMajor   = {MAJOR_VER}1{/MAJOR_VER};
   hppVerMinor   = {MINOR_VER}5{/MINOR_VER};
   hppVerRelease = {SUB_VER}0{/SUB_VER};
-  hppVerBuild   = {BUILD}104{/BUILD};
+  hppVerBuild   = {BUILD}103{/BUILD};
   hppVersion    = hppVerMajor shl 24 + hppVerMinor shl 16 + hppVerRelease shl 8 + hppVerBuild;
 
-  hppUpdateURL  = 'http://slav.pp.ru/miranda/historypp';
-  hppVersionURL = 'http://slav.pp.ru/miranda/version';
-  hppHomePageURL = 'http://slav.pp.ru/miranda/';
+  hppFLUpdateURL    = 'http://addons.miranda-im.org/feed.php?dlfile=2995';
+  hppFLVersionURL   = 'http://addons.miranda-im.org/details.php?action=viewfile&id=2995';
+  hppFLVersionPrefix= '<span class="fileNameHeader">'+hppShortHame+' ';
+  hppUpdateURL      = 'http://slav.pp.ru/miranda/historypp';
+  hppVersionURL     = 'http://slav.pp.ru/miranda/version';
+  hppVersionPrefix  = hppName+' version ';
+
+  hppHomePageURL  = 'http://slav.pp.ru/miranda/';
+  hppChangelogURL = 'http://slav.pp.ru/miranda/changelog';
 
   hppIPName     = 'historypp_icons.dll';
 
@@ -93,7 +100,8 @@ const
 
 var
   hppVersionStr: String;
-  hppVersionPrefix: String;
+  //hppVersionPrefix: String;
+  //hppFLVersionPrefix: String;
   hppOSUnicode: Boolean;
   hppCoreUnicode: Boolean;
   hppCodepage: Cardinal;
@@ -257,7 +265,8 @@ end;
 begin
 
   hppVersionStr := Format('%d.%d.%d.%d',[hppVerMajor,hppVerMinor,hppVerRelease,hppVerBuild]);
-  hppVersionPrefix := 'History++ version ';
+  //hppFLVersionPrefix := '<span class="fileNameHeader">History++ ';
+  //hppVersionPrefix := 'History++ version ';
   hppOSUnicode := Win32PlatformIsUnicode;
   hppCoreUnicode := False;
 
