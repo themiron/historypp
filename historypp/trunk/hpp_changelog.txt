@@ -9,6 +9,37 @@ Changelog
 
 Timeline: https://opensvn.csie.org/traccgi/historypp/trac.cgi/timeline
 
+1.5.0.104
++ Added ability for windows to save normal/maximized state
++ Added saving/restoring position of event details form
++ added toggling item processing in pseudo-edit mode from context menu
++ Added possibility to use own reply quoted template from database
++ Added filter clearing on filter/search toggle
++ Added Profile & Contact IDs in header of export formats
++ Added proto string to export headers
++ Added dimming history menu contact item if there is no events in history
++ Added bookmarks renaming
++ Added saving bookmark panel open status and width
++ Added event filter and customization for "nick name change" event
++ Completely rewritten event reading routines to avoid possible crashes on broken profile
++ Optimized iconpack loading, all icons in one pass
++ Improved vertical header alignment in events headers (nicks, icons, timestamps)
++ Fixed regression - session headers showing in system history
++ Hide sessions, bookmarks and event filters buttons from system history
++ Disabled bookmarks in grid for system history
++ Showing side panel in system history is blocked
++ Fixed bottom align of the last message on history open
++ Fixed richedit flickering in pseudo-edit mode
++ Fixed possible range check error
++ Fixed updating customize toolbar form icons when icons were changed
++ Fixed doublesized smileys in history
++ Fixed repainting on bookmarking long messages
++ Fixed double click on bookmark icon processing visual glitch
++ Fixed unicode translation of event filters names
++ Fixed memory and GDI leaks
++ Code cleanup, minor fixes, optimizations and plug-in loading speeding up
++ Translation changes
+
 1.5.0.103
 Major changes:
 + Added toolbar with customization
