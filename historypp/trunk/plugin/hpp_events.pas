@@ -62,6 +62,7 @@ function GetEventTextForContacts(EventInfo: TDBEventInfo; UseCP: Cardinal; var M
 function GetEventTextForWebPager(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 function GetEventTextForEmailExpress(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 function GetEventTextForStatusChange(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForAvatarChange(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 // service routines
 function TextHasUrls(var Text: WideString): Boolean;
@@ -84,7 +85,7 @@ const
 
 var
 
-  EventTable : array[0..12] of TEventTableItem = (
+  EventTable : array[0..13] of TEventTableItem = (
     // must be the first item in array for unknown events
     (EventType: MaxWord; MessageType: mtOther; TextFunction: GetEventTextForOther),
     // events definitions
@@ -99,7 +100,8 @@ var
     (EventType: ICQEVENTTYPE_SMS; MessageType: mtOther; TextFunction: GetEventTextForSMS),
     (EventType: ICQEVENTTYPE_WEBPAGER; MessageType: mtOther; TextFunction: GetEventTextForWebPager),
     (EventType: ICQEVENTTYPE_EMAILEXPRESS; MessageType: mtOther; TextFunction: GetEventTextForEmailExpress),
-    (EventType: EVENTTYPE_NICKNAMECHANGE; MessageType: mtNickChange; TextFunction: GetEventTextForMessage)
+    (EventType: EVENTTYPE_NICKNAMECHANGE; MessageType: mtNickChange; TextFunction: GetEventTextForMessage),
+    (EventType: EVENTTYPE_AVATARCHANGE; MessageType: mtAvatarChange; TextFunction: GetEventTextForAvatarChange)
   );
 
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;
@@ -453,6 +455,38 @@ var
   mt: TMessageType;
 begin
   Result := WideFormat(TranslateWideW('Status change: %s'),[GetEventTextForMessage(EventInfo,hppCodepage,mt)]);
+end;
+
+function GetEventTextForAvatarChange(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+var
+  lenW,lenA : Cardinal;
+  PBlobEnd: Pointer;
+  PUnicode: PWideChar;
+  Source,Dest: PWideChar;
+  Link: WideString;
+begin
+  PBlobEnd := PChar(EventInfo.pBlob) + EventInfo.cbBlob;
+  AllocateTextBuffer(EventInfo.cbBlob+3);
+  lenA :=  StrLen(StrLCopy(buffer,PChar(EventInfo.pBlob),EventInfo.cbBlob));
+  PUnicode := Pointer(buffer+lenA+1);
+  Dest := PUnicode;
+  Source := Pointer(PChar(EventInfo.pBlob)+lenA+1);
+  lenW := 0;
+  While (Source < PBlobEnd) and (Source^ <> #0) do begin
+    Dest^ := Source^;
+    Inc(Source);
+    Inc(Dest);
+    Inc(lenW);
+  end;
+  Dest^ := #0;
+  if lenA = lenW then
+    SetString(Result,PUnicode,lenW)
+  else
+    Result := AnsiToWideString(buffer,UseCP);
+  if Source^ = #0 then Inc(Source);
+  StrLCopy(buffer,PChar(Source),EventInfo.cbBlob-(lenA+1)-(lenW+1)*2);
+  Link := Tnt_WideStringReplace(AnsiToWideString(buffer,UseCP),'\','/',[rfReplaceAll]);
+  Result := Result + #13#10 + 'file://localhost/F:/Miranda/'+Link;
 end;
 
 function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;

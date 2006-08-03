@@ -44,7 +44,8 @@ type
                   mtIncoming, mtOutgoing,
                   mtMessage, mtUrl, mtFile, mtSystem,
                   mtContacts, mtSMS, mtWebPager, mtEmailExpress, mtStatus, mtSMTPSimple,
-                  mtOther, mtNickChange);
+                  mtOther,
+                  mtNickChange,mtAvatarChange);
   TMessageTypes = set of TMessageType;
   PMessageTypes = ^TMessageTypes;
 
@@ -96,7 +97,8 @@ const
 
   EVENTTYPE_STATUSCHANGE    = 25368;	// from srmm's
   EVENTTYPE_SMTPSIMPLE      = 2350;		// from SMTP Simple
-  EVENTTYPE_NICKNAMECHANGE  = 9001;		// from SMTP Simple
+  EVENTTYPE_NICKNAMECHANGE  = 9001;		// from presuma
+  EVENTTYPE_AVATARCHANGE    = 9003;		// from presuma
 
 var
   hppVersionStr: String;
