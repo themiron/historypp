@@ -139,7 +139,7 @@ const
     (name:'z_password_protect'; handle: 0)
   );
 
-  hppFontItems: array[0..18] of ThppFontsRec = (
+  hppFontItems: array[0..19] of ThppFontsRec = (
     (name: 'Incoming nick'; nameColor: 'Divider'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $6B3FC8; back: clGray),
     (name: 'Outgoing nick'; nameColor: 'Selected text'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $BD6008; back: clHighlightText),
     (name: 'Timestamp'; nameColor: 'Selected background'; Mes: []; style:0; size: -11; color: $000000; back: clHighlight),
@@ -154,11 +154,12 @@ const
     (name: 'Incoming contacts'; Mes: [mtContacts,mtIncoming]; style:0; size: -11; color: $000000; back: $FEF4CF),
     (name: 'Outgoing contacts'; Mes: [mtContacts,mtOutgoing]; style:0; size: -11; color: $000000; back: $FEF4CF),
     (name: 'System message'; Mes: [mtSystem,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $CFFEDC),
-    (name: 'Status change'; Mes: [mtStatus,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $F0F0F0),
+    (name: 'Status changes'; Mes: [mtStatus,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $F0F0F0),
     (name: 'SMTP Simple'; Mes: [mtSMTPSimple,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF),
     (name: 'Other events'; Mes: [mtOther,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF),
     (name: 'Conversation header'; Mes: []; style:0; size: -11; color: $000000; back: $00D7FDFF),
-    (name: 'Nickname change'; Mes: [mtNickChange,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $00D7FDFF)
+    (name: 'Nickname changes'; Mes: [mtNickChange,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $00D7FDFF),
+    (name: 'Avatar changes'; Mes: [mtAvatarChange,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $00D7FDFF)
     );
 
   cpTable: array[0..14] of TCodePage = (

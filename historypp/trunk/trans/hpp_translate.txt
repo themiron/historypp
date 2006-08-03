@@ -105,10 +105,6 @@ URL
 File Transfer
 [Contacts]
 Contacts
-[You Were Added Message]
-You Were Added Message
-[Authorisation Request]
-Authorisation Request
 [System message]
 System message
 [SMS Message]
@@ -117,6 +113,14 @@ SMS Message
 WebPager
 [EMail Express]
 EMail Express
+[Status changes]
+Status changes
+[SMTP Simple Email]
+SMTP Simple Email
+[Nick changes]
+Nick changes
+[Avatar changes]
+Avatar changes
 [Other event]
 Other event
 

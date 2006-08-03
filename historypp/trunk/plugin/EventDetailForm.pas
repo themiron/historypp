@@ -298,10 +298,6 @@ var
       Result := TranslateWideW('File Transfer')
     else if mtContacts in MesType then
       Result := TranslateWideW('Contacts')
-    //else if mtAdded in MesType then
-    //  Result := Translate('You Were Added Message')
-    //else if mtAuthRequest in MesType then
-    //  Result := Translate('Authorisation Request')
     else if mtSystem in MesType then
       Result := TranslateWideW('System message')
     else if mtSMS in MesType then
@@ -310,6 +306,14 @@ var
       Result := TranslateWideW('WebPager')
     else if mtEmailExpress in MesType then
       Result := TranslateWideW('EMail Express')
+    else if mtStatus in MesType then
+      Result := TranslateWideW('Status changes')
+    else if mtSMTPSimple in MesType then
+      Result := TranslateWideW('SMTP Simple Email')
+    else if mtNickChange in MesType then
+      Result := TranslateWideW('Nick changes')
+    else if mtAvatarChange in MesType then
+      Result := TranslateWideW('Avatar changes')
     else if mtOther in MesType then
       Result := TranslateWideW('Other event')+' '+IntToStr(EventInfo);
   end;

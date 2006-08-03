@@ -23,10 +23,12 @@ Message
 URL
 File Transfer
 Contacts
-You Were Added Message
-Authorisation Request
 System message
 SMS Message
 WebPager
 EMail Express
+Status changes
+SMTP Simple Email
+Nick changes
+Avatar changes
 Other event
