@@ -69,6 +69,7 @@ uses
     {$include m_smileyadd.inc}
     {$include m_mathmodule.inc}
     {$include m_toptoolbar.inc}
+    {$include m_MagneticWindows.inc}
     {$define M_API_UNIT}
     {$include m_helpers.inc}
 
