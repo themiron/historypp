@@ -21,6 +21,8 @@ IF NOT "%VA%"=="" (
  echo %VA% > relno.txt
  set CURVER=%VA% )
 
+call applyrelno.bat
+
 echo:
 echo Release set to %CURVER%
 echo:
