@@ -205,7 +205,7 @@ type
     procedure tbFilterClick(Sender: TObject);
     procedure pbSearchPaint(Sender: TObject);
     procedure paPassHolderResize(Sender: TObject);
-    procedure TntFormShow(Sender: TObject);
+    procedure FormShow(Sender: TObject);
     procedure tvSessMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     //procedure tvSessClick(Sender: TObject);
@@ -686,7 +686,6 @@ procedure THistoryFrm.LoadPosition;
 begin
   // removed Utils_RestoreWindowPosition because it shows window sooner than we expect
   Utils_RestoreFormPosition(Self,0,hppDBName,'HistoryWindow.');
-
   SearchMode := TSearchMode(GetDBByte(hppDBName,'SearchMode',0));
 end;
 
@@ -1501,6 +1500,8 @@ begin
   hHookEventAdded:=PluginLink.HookEventMessage(ME_DB_EVENT_ADDED,Self.Handle,HM_HIST_EVENTADDED);
   hHookEventDeleted := PluginLink.HookEventMessage(ME_DB_EVENT_DELETED,Self.Handle,HM_HIST_EVENTDELETED);
   hHookEventPreShutdown := PluginLink.HookEventMessage(ME_SYSTEM_PRESHUTDOWN,Self.Handle,HM_HIST_PRESHUTDOWN);
+  // use MagneticWindows.dll
+  PluginLink.CallService(MS_MW_ADDWINDOW,WindowHandle,0);
 end;
 
 procedure THistoryFrm.UnhookEvents;
@@ -1508,6 +1509,8 @@ begin
   PluginLink.UnhookEvent(hHookEventAdded);
   PluginLink.UnhookEvent(hHookEventDeleted);
   PluginLink.UnhookEvent(hHookEventPreShutdown);
+  // use MagneticWindows.dll
+  PluginLink.CallService(MS_MW_REMWINDOW,WindowHandle,0);
 end;
 
 procedure THistoryFrm.hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
@@ -2672,7 +2675,7 @@ begin
   RunPassForm;
 end;
 
-procedure THistoryFrm.TntFormShow(Sender: TObject);
+procedure THistoryFrm.FormShow(Sender: TObject);
 //var
   //book: Boolean;
   //i,n: Integer;
@@ -2685,6 +2688,7 @@ begin
 
   LoadToolbar;
   FillBookmarks;
+
 end;
 
 procedure THistoryFrm.ToolbarDblClick(Sender: TObject);

@@ -1099,6 +1099,8 @@ begin
   hHookContactDeleted := PluginLink.HookEventMessage(ME_DB_CONTACT_DELETED,Self.Handle,HM_SRCH_CONTACTDELETED);
   hHookContactIconChanged :=PluginLink.HookEventMessage(ME_CLIST_CONTACTICONCHANGED,Self.Handle,HM_SRCH_CONTACTICONCHANGED);
   hHookEventPreShutdown :=PluginLink.HookEventMessage(ME_SYSTEM_PRESHUTDOWN,Self.Handle,HM_SRCH_PRESHUTDOWN);
+  // use MagneticWindows.dll
+  PluginLink.CallService(MS_MW_ADDWINDOW,WindowHandle,0);
 end;
 
 procedure TfmGlobalSearch.UnhookEvents;
@@ -1107,6 +1109,8 @@ begin
   PluginLink.UnhookEvent(hHookContactDeleted);
   PluginLink.UnhookEvent(hHookContactIconChanged);
   PluginLink.UnhookEvent(hHookEventPreShutdown);
+  // use MagneticWindows.dll
+  PluginLink.CallService(MS_MW_REMWINDOW,WindowHandle,0);
 end;
 
 procedure TfmGlobalSearch.WndProc(var Message: TMessage);
