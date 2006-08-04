@@ -132,6 +132,10 @@ begin
   // Getting langpack codepage for ansi translation
   hppCodepage := PluginLink.CallService(MS_LANGPACK_GETCODEPAGE,0,0);
   if hppCodepage = CALLSERVICE_NOTFOUND then hppCodepage := CP_ACP;
+  // Get profile dir
+  SetLength(hppProfileDir,MAX_PATH);
+  PluginLink.CallService(MS_DB_GETPROFILEPATH,MAX_PATH,integer(@hppProfileDir[1]));
+  SetLength(hppProfileDir,StrLen(@hppProfileDir[1]));
   //init history functions later
   HookModulesLoad := PluginLink.HookEvent(ME_SYSTEM_MODULESLOADED,OnModulesLoad);
   hookOptInit := PluginLink.HookEvent(ME_OPT_INITIALISE,OnOptInit);
