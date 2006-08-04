@@ -293,10 +293,10 @@ begin
     Inc(Dest);
     Inc(lenW);
   end;
-  Dest^ := #0;
-  if lenA = lenW then
-    SetString(Result,PUnicode,lenW)
-  else
+  if lenA = lenW then begin
+    Dest^ := #0;
+    SetString(Result,PUnicode,lenW);
+  end else
     Result := AnsiToWideString(buffer,UseCP);
   if TextHasUrls(Result) then MessType := mtUrl;
 end;
@@ -463,7 +463,7 @@ var
   PBlobEnd: Pointer;
   PUnicode: PWideChar;
   Source,Dest: PWideChar;
-  Link: WideString;
+  Link: String;
 begin
   PBlobEnd := PChar(EventInfo.pBlob) + EventInfo.cbBlob;
   AllocateTextBuffer(EventInfo.cbBlob+3);
@@ -478,15 +478,21 @@ begin
     Inc(Dest);
     Inc(lenW);
   end;
-  Dest^ := #0;
-  if lenA = lenW then
+  if lenA = lenW then begin
+    Dest^ := #0;
     SetString(Result,PUnicode,lenW)
-  else
+  end else begin
     Result := AnsiToWideString(buffer,UseCP);
-  if Source^ = #0 then Inc(Source);
-  StrLCopy(buffer,PChar(Source),EventInfo.cbBlob-(lenA+1)-(lenW+1)*2);
-  Link := Tnt_WideStringReplace(AnsiToWideString(buffer,UseCP),'\','/',[rfReplaceAll]);
-  Result := Result + #13#10 + 'file://localhost/F:/Miranda/'+Link;
+    lenW := 0;
+  end;
+  lenA := (lenA+1)+(lenW+1)*2;
+  if lenA < EventInfo.cbBlob then begin
+    StrLCopy(buffer,PChar(EventInfo.pBlob)+lenA,EventInfo.cbBlob-lenA);
+    if StrLen(buffer) > 0 then begin
+      Link := hppProfileDir+'/'+AnsiToWideString(buffer,UseCP);
+      Result := Result + #13#10 + 'file://localhost/'+Tnt_WideStringReplace(Link,'\','/',[rfReplaceAll]);
+    end;
+  end;
 end;
 
 function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;

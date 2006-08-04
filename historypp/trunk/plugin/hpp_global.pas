@@ -108,6 +108,7 @@ var
   hppCoreUnicode: Boolean;
   hppCodepage: Cardinal;
   hppIconPack: String;
+  hppProfileDir: String;
 
 {$I m_historypp.inc}
 
