@@ -9,6 +9,14 @@ Changelog
 
 Timeline: https://opensvn.csie.org/traccgi/historypp/trac.cgi/timeline
 
+1.5.0.106
++ Added option to set opening event details by doubleclick & enter
++ Added Avatar changes event parsing with showing avatar path as clickable link
++ Added Avatar changes event customizing and filtering
++ Slightly changed event types names
++ Fixed showing event info in Event details form for new events
++ Translation changes
+
 1.5.0.105
 + Added support for updating from File Listing
 
