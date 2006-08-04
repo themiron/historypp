@@ -323,6 +323,8 @@ Save...
 ;; Text found in ..\plugin\HistoryForm.pas:
 [Error]
 Error
+[&Edit]
+&Edit
 [%.0n items in history]
 %.0n items in history
 [Full History [%s] - [%s]]

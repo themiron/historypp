@@ -369,6 +369,8 @@ begin
   GridOptions.BBCodesEnabled := GetDBBool(hppDBName,'BBCodes',True);
   GridOptions.MathModuleEnabled := GetDBBool(hppDBName,'MathModule',MathModuleEnabled);
 
+  GridOptions.OpenDetailsMode := GetDBBool(hppDBName,'OpenDetailsMode',False);
+
   //GridOptions.ClipCopyFormat := DEFFORMAT_CLIPCOPY;
   //GridOptions.ClipCopyTextFormat := DEFFORMAT_CLIPCOPYTEXT;
   GridOptions.ClipCopyFormat := GetDBWideStr(hppDBName,'FormatCopy',DEFFORMAT_CLIPCOPY);
@@ -390,6 +392,7 @@ begin
   WriteDBBool(hppDBName,'Smileys',GridOptions.SmileysEnabled);
   WriteDBBool(hppDBName,'BBCodes',GridOptions.BBCodesEnabled);
   WriteDBBool(hppDBName,'MathModule',GridOptions.MathModuleEnabled);
+  WriteDBBool(hppDBName,'OpenDetailsMode',GridOptions.OpenDetailsMode);
   //WriteDBWideStr(hppDBName,'FormatCopy',GridOptions.ClipCopyFormat);
   //WriteDBWideStr(hppDBName,'FormatCopyText',GridOptions.ClipCopyTextFormat);
   finally

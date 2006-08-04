@@ -16,6 +16,7 @@ const
   IDC_SHOWEVENTICONS  = 101; // "Show event icons" checkbox
   IDC_RECENTONTOP     = 102; // "Recent events on top" checkbox
   IDC_RTLDEFAULT      = 103; // "RTL by default" checkbox
+  IDC_OPENDETAILS     = 104; // "Open event details by default" checkbox
   ID_PROCESSING_GROUP = 200;
   IDC_BBCODE          = 201; // "Disable BBCode" checkbox
   IDC_SMILEY          = 202; // "Disable SmileyAdd support" checkbox
@@ -76,10 +77,11 @@ end;
 function AreOptionsChanged: Boolean;
 begin
   Result := True;
-  
+
   if GetChecked(IDC_SHOWEVENTICONS) <> GridOptions.ShowIcons then exit;
   if GetChecked(IDC_RECENTONTOP) <> (GetDBInt(hppDBName,'SortOrder',0) <> 0) then exit;
   if GetChecked(IDC_RTLDEFAULT) <> GridOptions.RTLEnabled then exit;
+  if GetChecked(IDC_OPENDETAILS) <> GridOptions.OpenDetailsMode then exit;
 
   if GetChecked(IDC_BBCODE) <> GridOptions.BBCodesEnabled then exit;
   if SmileyAddEnabled then
@@ -100,6 +102,7 @@ begin
     GridOptions.ShowIcons := GetChecked(IDC_SHOWEVENTICONS);
     //GridOptions.RecentOnTop := GetChecked(IDC_RECENTONTOP);
     GridOptions.RTLEnabled := GetChecked(IDC_RTLDEFAULT);
+    GridOptions.OpenDetailsMode := GetChecked(IDC_OPENDETAILS);
 
     GridOptions.BBCodesEnabled := GetChecked(IDC_BBCODE);
     if SmileyAddEnabled then
@@ -144,6 +147,7 @@ begin
   SetChecked(IDC_SHOWEVENTICONS,GridOptions.ShowIcons);
   SetChecked(IDC_RECENTONTOP,GetDBInt(hppDBName,'SortOrder',0) <> 0);
   SetChecked(IDC_RTLDEFAULT,GridOptions.RTLEnabled);
+  SetChecked(IDC_OPENDETAILS,GridOptions.OpenDetailsMode);
 
   SetChecked(IDC_BBCODE,GridOptions.BBCodesEnabled);
   EnableWindow(GetDlgItem(hDlg,IDC_SMILEY),SmileyAddEnabled);

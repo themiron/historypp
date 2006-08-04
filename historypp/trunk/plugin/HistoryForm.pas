@@ -1105,7 +1105,7 @@ begin
       key:=0;
       end;
     if (key=Ord('B')) and (not PasswordMode) then begin
-      Self.Bookmark1.Click;
+      Bookmark1.Click;
       key:=0;
       end;
     if ((key=Ord('C')) or (key = VK_INSERT)) and (not PasswordMode) then begin
@@ -1551,6 +1551,10 @@ begin
   if hg.Selected <> -1 then begin
     //Details1.Default := True;
     Delete1.Visible := True;
+    if hg.Options.OpenDetailsMode then
+      Details1.Caption := TranslateWideW('&Edit')
+    else
+      Details1.Caption := TranslateWideW('&Open');
     //if hContact <> 0 then
       //ReplyQuoted1.Visible := True;
     if hg.SelCount > 1 then
@@ -1657,7 +1661,10 @@ end;
 procedure THistoryFrm.hgDblClick(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  hg.EditInline(hg.Selected);
+  if hg.Options.OpenDetailsMode then
+    OpenDetails(hg.Selected)
+  else
+    hg.EditInline(hg.Selected);
 end;
 
 procedure THistoryFrm.SaveSelected1Click(Sender: TObject);
@@ -1793,7 +1800,10 @@ end;
 procedure THistoryFrm.Details1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  OpenDetails(hg.Selected);
+  if hg.Options.OpenDetailsMode then
+    hg.EditInline(hg.Selected)
+  else
+    OpenDetails(hg.Selected);
 end;
 
 procedure THistoryFrm.OpenDetails(Item: Integer);
@@ -2993,7 +3003,6 @@ begin
 
   if (Key = VK_RETURN) and (Shift = []) then begin
     hgDblClick(hg);
-    //Details1.Click;
     end;
   if (Key = VK_RETURN) and (Shift = [ssCtrl]) then begin
     Details1.Click;
