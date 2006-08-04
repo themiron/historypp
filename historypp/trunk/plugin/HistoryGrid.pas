@@ -161,6 +161,8 @@ type
     FClipCopyFormat: WideString;
     FReplyQuotedFormat: WideString;
 
+    FOpenDetailsMode: Boolean;
+
     procedure SetColorDivider(const Value: TColor);
     procedure SetColorSelectedText(const Value: TColor);
     procedure SetColorSelected(const Value: TColor);
@@ -200,7 +202,7 @@ type
   published
     property ClipCopyFormat: WideString read FClipCopyFormat write FClipCopyFormat;
     property ClipCopyTextFormat: WideString read FClipCopyTextFormat write FClipCopyTextFormat;
-    property ReplyQuotedFormat: WideString read FReplyQuotedFormat write FReplyQuotedFormat; 
+    property ReplyQuotedFormat: WideString read FReplyQuotedFormat write FReplyQuotedFormat;
 
     property Locked: Boolean read GetLocked;
 
@@ -229,6 +231,8 @@ type
     property SmileysEnabled: Boolean read FSmileysEnabled write SetSmileysEnabled;
     property BBCodesEnabled: Boolean read FBBCodesEnabled write SetBBCodesEnabled;
     property MathModuleEnabled: Boolean read FMathModuleEnabled write SetMathModuleEnabled;
+
+    property OpenDetailsMode: Boolean read FOpenDetailsMode write FOpenDetailsMode;
   end;
 
 
@@ -4567,6 +4571,8 @@ begin
   SmileysEnabled := False;
   BBCodesEnabled := False;
   MathModuleEnabled := False;
+
+  OpenDetailsMode := False;
 
   FLocks := 0;
   Changed := 0;

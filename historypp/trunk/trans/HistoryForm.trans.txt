@@ -68,6 +68,8 @@ Remove &Bookmark
 ;; Text found in ..\plugin\HistoryForm.pas:
 System History
 Error
+&Edit
+&Open
 HotSearch: %s (F3 to find next)
 Partial History [%s] - [%s]
 Do you really want to delete selected items (%.0f)?
