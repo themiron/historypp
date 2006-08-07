@@ -9,6 +9,17 @@ Changelog
 
 Timeline: https://opensvn.csie.org/traccgi/historypp/trac.cgi/timeline
 
+1.5.0.107
++ Added snapping support with MagneticWindows plug-in
++ Added status changes event support from presuma
++ Made new session starting only with messages, files, urls, contacts and email
++ Made headers showing only of session-starting events
++ Unified events naming
++ Fixed events info handling in event detail form
++ Changed default filter list due support of new events
++ Code cleaning and small optimizations
++ Translation changes
+
 1.5.0.106
 + Added option to set opening event details by doubleclick & enter
 + Added Avatar changes event parsing with showing avatar path as clickable link

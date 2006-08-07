@@ -18,17 +18,3 @@ Copy All
 &Select All
 Send &Message
 &Reply Quoted
-;; Text found in ..\plugin\EventDetailForm.pas:
-Message
-URL
-File Transfer
-Contacts
-System message
-SMS Message
-WebPager
-EMail Express
-Status changes
-SMTP Simple Email
-Nick changes
-Avatar changes
-Other event
