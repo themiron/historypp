@@ -1526,7 +1526,7 @@ begin
     if History[GridIndexToHistory(Index)-1] = 0 then
       LoadPendingHeaders(GridIndexToHistory(Index)-1,HistoryLength);
     PrevTimestamp := GetEventTimestamp(History[GridIndexToHistory(Index)-1]);
-    Item.HasHeader := ((DWord(Item.Time) - PrevTimestamp) > SESSION_TIMEDIFF);
+    Item.HasHeader := IsEventInSession(Item.EventType) and ((DWord(Item.Time) - PrevTimestamp) > SESSION_TIMEDIFF);
   end;
   Item.Bookmarked := BookmarkServer[hContact].Bookmarked[History[GridIndexToHistory(Index)]];
 end;
@@ -1587,30 +1587,6 @@ begin
     pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
   end;
 end;
-
-{procedure THistoryFrm.cbFilterChange(Sender: TObject);
-var
-  fil,filOthers: TMessageTypes;
-begin
-  LastSearch := lsNone;
-  LastHotIdx := -1;
-  HotString := '';
-  filOthers := filAll;
-  exclude(filOthers,mtMessage);
-  exclude(filOthers,mtFile);
-  exclude(filOthers,mtUrl);
-  case cbFilter.ItemIndex of
-    0: fil := filAll;
-    1: fil := [mtMessage, mtIncoming];
-    2: fil := [mtMessage, mtOutgoing];
-    3: fil := [mtFile, mtIncoming, mtOutgoing];
-    4: fil := [mtUrl, mtIncoming, mtOutgoing];
-    5: fil := [mtStatus, mtIncoming, mtOutgoing];
-    else
-       fil := filOthers;
-  end;
-  hg.Filter := fil;
-end;}
 
 procedure THistoryFrm.hgSearchFinished(Sender: TObject; Text: WideString; Found: Boolean);
 var

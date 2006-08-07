@@ -289,33 +289,18 @@ var
   FromContact,ToContact : boolean;
 
   function GetMsgType(MesType: TMessageTypes; EventInfo: Word): WideString;
+  var
+    mt: TMessageType;
   begin
-    if mtMessage in MesType then
-      Result := TranslateWideW('Message')
-    else if mtURL in MesType then
-      Result := TranslateWideW('URL')
-    else if mtFile in MesType then
-      Result := TranslateWideW('File Transfer')
-    else if mtContacts in MesType then
-      Result := TranslateWideW('Contacts')
-    else if mtSystem in MesType then
-      Result := TranslateWideW('System message')
-    else if mtSMS in MesType then
-      Result := TranslateWideW('SMS Message')
-    else if mtWebPager in MesType then
-      Result := TranslateWideW('WebPager')
-    else if mtEmailExpress in MesType then
-      Result := TranslateWideW('EMail Express')
-    else if mtStatus in MesType then
-      Result := TranslateWideW('Status changes')
-    else if mtSMTPSimple in MesType then
-      Result := TranslateWideW('SMTP Simple Email')
-    else if mtNickChange in MesType then
-      Result := TranslateWideW('Nick changes')
-    else if mtAvatarChange in MesType then
-      Result := TranslateWideW('Avatar changes')
-    else if mtOther in MesType then
-      Result := TranslateWideW('Other event')+' '+IntToStr(EventInfo);
+    exclude(MesType,mtIncoming);
+    exclude(MesType,mtOutgoing);
+    for mt := Low(EventNames) to High(EventNames) do begin
+      if mt in MesType then begin
+        Result := TranslateWideW(EventNames[mt]{TRANSLATE-IGNORE});
+        exit;
+      end;
+    end;
+    Result := TranslateWideW(EventNames[mtOther])+' '+IntToStr(EventInfo{TRANSLATE-IGNORE});
   end;
 
 begin

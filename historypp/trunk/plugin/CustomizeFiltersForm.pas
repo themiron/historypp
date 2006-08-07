@@ -70,11 +70,6 @@ type
     { Public declarations }
   end;
 
-  TMessageTypeNameRec = record
-    mt: TMessageType;
-    Name: WideString;
-  end;
-
 var
   fmCustomizeFilters: TfmCustomizeFilters = nil;
 
@@ -83,26 +78,8 @@ implementation
 uses hpp_forms, HistoryForm, hpp_options, TypInfo, Math;
 
 const
-  FilterNames: array[0..13] of TMessageTypeNameRec = (
-  // !!! mtUnknown is used internally for not loaded events, should not be shown to users, should not be selectable
-  (mt: mtIncoming; Name: 'Incoming events'),
-  (mt: mtOutgoing; Name: 'Outgoing events'),
-  (mt: mtMessage; Name: 'Message'),
-  (mt: mtUrl; Name: 'Link URLs'),
-  (mt: mtFile; Name: 'File'),
-  (mt: mtContacts; Name: 'Contact'),
-  (mt: mtSMS; Name: 'SMS'),
-  (mt: mtWebPager; Name: 'Web pager'),
-  (mt: mtEmailExpress; Name: 'Email Express'),
-  (mt: mtSMTPSimple; Name: 'SMTP Simple Email'),
-  (mt: mtStatus; Name: 'Status changes'),
-  (mt: mtOther; Name: 'Other (unknown)'),
-  (mt: mtNickChange; Name: 'Nick changes'),
-  (mt: mtAvatarChange; Name: 'Avatar changes')
-  );
-
   IgnoreEvents: TMessageTypes = [mtSystem, mtWebPager, mtEmailExpress];
-  
+
 {$R *.dfm}
 
 procedure TfmCustomizeFilters.bnAddClick(Sender: TObject);
@@ -291,14 +268,15 @@ begin
       clEvents.Header[i] := True;
     end;
 
-    pretty_name := GetEnumName(TypeInfo(TMessageType),Ord(mt));
-    Delete(pretty_name,1,2);
+    //pretty_name := GetEnumName(TypeInfo(TMessageType),Ord(mt));
+    //Delete(pretty_name,1,2);
     // find filter names if we have substitute
-    for i := 0 to Length(FilterNames) - 1 do
-      if FilterNames[i].mt = mt then begin
-        pretty_name := FilterNames[i].Name;
-        break;
-      end;
+    //for i := 0 to Length(FilterNames) - 1 do
+    //  if FilterNames[i].mt = mt then begin
+    //    pretty_name := FilterNames[i].Name;
+    //    break;
+    //  end;
+    pretty_name := EventNames[mt];
 
     pretty_name := TranslateWideW(pretty_name{TRANSLATE-IGNORE});
     clEvents.Items.AddObject(pretty_name,Pointer(Ord(mt)));
@@ -306,14 +284,15 @@ begin
 
   // add mtOther at the end
   mt := mtOther;
-  pretty_name := GetEnumName(TypeInfo(TMessageType),Ord(mt));
-  Delete(pretty_name,1,2);
+  //pretty_name := GetEnumName(TypeInfo(TMessageType),Ord(mt));
+  //Delete(pretty_name,1,2);
   // find filter names if we have substitute
-  for i := 0 to Length(FilterNames) - 1 do
-    if FilterNames[i].mt = mt then begin
-      pretty_name := FilterNames[i].Name;
-      break;
-    end;
+  //for i := 0 to Length(FilterNames) - 1 do
+  //  if FilterNames[i].mt = mt then begin
+  //    pretty_name := FilterNames[i].Name;
+  //    break;
+  //  end;
+  pretty_name := EventNames[mt];
 
   pretty_name := TranslateWideW(pretty_name{TRANSLATE-IGNORE});
   clEvents.Items.AddObject(pretty_name,Pointer(Ord(mt)));
