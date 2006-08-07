@@ -98,6 +98,7 @@ const
   EVENTTYPE_STATUSCHANGE    = 25368;	// from srmm's
   EVENTTYPE_SMTPSIMPLE      = 2350;		// from SMTP Simple
   EVENTTYPE_NICKNAMECHANGE  = 9001;		// from presuma
+  EVENTTYPE_STATUSCHANGE2   = 9002;		// from presuma
   EVENTTYPE_AVATARCHANGE    = 9003;		// from presuma
 
 var
@@ -109,6 +110,24 @@ var
   hppCodepage: Cardinal;
   hppIconPack: String;
   hppProfileDir: String;
+
+  EventNames: array[TMessageType] of WideString = (
+    'Unknown',
+    'Incoming events',
+    'Outgoing events',
+    'Message',
+    'Link',
+    'File Transfer',
+    'System message',
+    'Contacts',
+    'SMS message',
+    'Webpager message',
+    'EMail Express message',
+    'Status changes',
+    'SMTP Simple Email',
+    'Other events (unknown)',
+    'Nick changes',
+    'Avatar changes');
 
 {$I m_historypp.inc}
 

@@ -598,11 +598,6 @@ type
     {$ENDIF}
   end;
 
-//const
-  //filNone = [];
-  //filAll = [mtIncoming, mtOutgoing, mtMessage, mtUrl, mtFile, mtSystem, mtContacts, mtSMS, mtWebPager, mtEmailExpress, mtStatus, mtSMTPSimple, mtOther];
-  //filMessages = [mtMessage, mtIncoming, mtOutgoing];
-
 procedure Register;
 
 implementation

@@ -89,10 +89,30 @@ const
 const
   // 2 hours
   SESSION_TIMEDIFF = 2*(60*60);
+  SessionEvents: array[0..4] of Word = (
+    EVENTTYPE_MESSAGE,
+    EVENTTYPE_FILE,
+    EVENTTYPE_URL,
+    EVENTTYPE_CONTACTS,
+    EVENTTYPE_SMTPSIMPLE);
+
+function IsEventInSession(EventType: Word): boolean;
 
 implementation
 
 uses PassForm;
+
+function IsEventInSession(EventType: Word): boolean;
+var
+  i: integer;
+begin
+  Result := false;
+  for i := 0 to High(SessionEvents) do
+    if SessionEvents[i] = EventType then begin
+      Result := True;
+      exit;
+    end;
+end;
 
 { TSessionsThread }
 
@@ -148,12 +168,13 @@ begin
         //SendItem(hDBEvent,PrevTime);
       end
       else begin
-        if (CurTime - PrevTime) > SESSION_TIMEDIFF then begin
-          SendItem(FirstEvent,FirstTimestamp,LastEvent,LastTimestamp,Count);
-          FirstEvent := hDBEvent;
-          FirstTimestamp := CurTime;
-          Count := 0;
-        end;
+        if IsEventInSession(Event.eventType) then
+          if (CurTime - PrevTime) > SESSION_TIMEDIFF then begin
+            SendItem(FirstEvent,FirstTimestamp,LastEvent,LastTimestamp,Count);
+            FirstEvent := hDBEvent;
+            FirstTimestamp := CurTime;
+            Count := 0;
+          end;
         LastEvent := hDBEvent;
         LastTimestamp := CurTime;
         Inc(Count);
@@ -170,7 +191,6 @@ begin
     PostMessage(ParentHandle,HM_SESS_FINISHED,0,0);
   end;
  end;
-
 
 procedure TSessionsThread.SendItem(hDBEvent,Timestamp, LastEvent, LastTimestamp, Count: DWord);
 //var
