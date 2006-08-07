@@ -1,6 +1,6 @@
 ;;
 ;; History++ plugin translation
-;; Part of 1.5.0.106 distribution
+;; Part of 1.5.0.107 distribution
 ;; 
 ;; Project: http://slav.pp.ru/miranda
 ;; SVN: http://opensvn.csie.org/historypp/
@@ -96,33 +96,6 @@ Copy All
 Send &Message
 [&Reply Quoted]
 &Reply Quoted
-;; Text found in ..\plugin\EventDetailForm.pas:
-[Message]
-Message
-[URL]
-URL
-[File Transfer]
-File Transfer
-[Contacts]
-Contacts
-[System message]
-System message
-[SMS Message]
-SMS Message
-[WebPager]
-WebPager
-[EMail Express]
-EMail Express
-[Status changes]
-Status changes
-[SMTP Simple Email]
-SMTP Simple Email
-[Nick changes]
-Nick changes
-[Avatar changes]
-Avatar changes
-[Other event]
-Other event
 
 ;; GlobalSearch.trans.txt file
 
