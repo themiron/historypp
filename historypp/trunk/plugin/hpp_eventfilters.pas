@@ -69,7 +69,7 @@ const
     (Name: 'Contacts'; Events: []; filMode: FM_INCLUDE; filEvents: [mtContacts,mtIncoming,mtOutgoing]),
     (Name: 'Status changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtStatus,mtIncoming,mtOutgoing]),
     (Name: 'Nick changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtNickChange,mtIncoming,mtOutgoing]),
-    (Name: 'Status changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtAvatarChange,mtIncoming,mtOutgoing]),
+    (Name: 'Avatar changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtAvatarChange,mtIncoming,mtOutgoing]),
     (Name: 'All except changes'; Events: []; filMode: FM_EXCLUDE; filEvents: [mtStatus,mtNickChange,mtAvatarChange])
     );
 
