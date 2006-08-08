@@ -1977,9 +1977,9 @@ begin
   end;
 
   NewHint := '';
+  OverURL := False;
   NewCursor := crDefault;
   if ghtText in ht then begin
-    OverURL := False;
     HandleRichEditMouse(WM_MOUSEMOVE,X,Y);
     if OverURL then NewCursor := crHandPoint
   end

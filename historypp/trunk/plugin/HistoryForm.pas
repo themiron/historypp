@@ -2327,6 +2327,7 @@ begin
   if SavedLinkUrl = '' then exit;
   bNewWindow := 0; // no, use existing window
   PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(@SavedLinkUrl[1])));
+  SavedLinkUrl := '';
 end;
 
 procedure THistoryFrm.OpenLinkInNewWindow1Click(Sender: TObject);
@@ -2337,6 +2338,7 @@ begin
   if SavedLinkUrl = '' then exit;
   bNewWindow := 1; // use new window
   PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(@SavedLinkUrl[1])));
+  SavedLinkUrl := '';
 end;
 
 procedure THistoryFrm.CopyLink1Click(Sender: TObject);
@@ -2344,6 +2346,7 @@ begin
   //if LinkUrl1.Caption = '' then exit;
   if SavedLinkUrl = '' then exit;
   CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Handle,CP_ACP);
+  SavedLinkUrl := '';
 end;
 
 // no file operations
@@ -2927,8 +2930,9 @@ var
   bNewWindow: Integer;
 begin
   // if LinkUrl1.Caption = '' then exit;
+  if Url= '' then exit;
   bNewWindow := 0; // no, use existing window
-  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(Url)));
+  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(@Url[1])));
 end;
 
 procedure THistoryFrm.hgUrlPopup(Sender: TObject; Item: Integer; Url: String);

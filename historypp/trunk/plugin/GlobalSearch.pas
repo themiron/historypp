@@ -1305,8 +1305,9 @@ procedure TfmGlobalSearch.hgUrlClick(Sender: TObject; Item: Integer; Url: String
 var
   bNewWindow: Integer;
 begin
+  if Url = '' then exit;
   bNewWindow := 1; // yes, use existing
-  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(Url)));
+  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(@Url[1])));
 end;
 
 procedure TfmGlobalSearch.edPassKeyPress(Sender: TObject; var Key: Char);
