@@ -317,6 +317,7 @@ function DBGetContactSettingString(hContact: THandle; const szModule: PChar; con
 var
   dbv: TDBVARIANT;
   cgs: TDBCONTACTGETSETTING;
+  tmp: WideString;
 begin
   cgs.szModule := szModule;
   cgs.szSetting := szSetting;
@@ -324,8 +325,16 @@ begin
   if PluginLink^.CallService(MS_DB_CONTACT_GETSETTING, hContact, lParam(@cgs)) <> 0 then
     Result := ErrorValue
   else begin
-    // copy string to result
-    Result := AnsiString(dbv.pszVal);
+    case dbv.type_ of
+      DBVT_ASCIIZ:
+        Result := AnsiString(dbv.pszVal);
+      DBVT_UTF8: begin
+        tmp := AnsiToWideString(dbv.pszVal,CP_UTF8);
+	      Result := WideToAnsiString(tmp,hppCodepage);
+        end;
+      DBVT_WCHAR:
+        Result := WideToAnsiString(dbv.pwszVal,hppCodepage);
+    end;
     // free variant
     DBFreeVariant(@dbv);
   end;

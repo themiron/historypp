@@ -99,30 +99,47 @@ end;
 
 function GetContactID(hContact: THandle; Proto: String = ''; Contact: boolean = false): String;
 var
-  ci: TContactInfo;
+  uid: PChar;
+  dbv: TDBVARIANT;
+  cgs: TDBCONTACTGETSETTING;
+  tmp: WideString;
 begin
-  if (hContact = 0) and Contact then
-    Result := ''
-  else begin
+  Result := '';
+  if not ((hContact = 0) and Contact) then begin
     if Proto = '' then Proto := GetContactProto(hContact);
-    ci.cbSize := SizeOf(ci);
-    ci.hContact := hContact;
-    ci.szProto := PChar(Proto);
-    ci.dwFlag := CNF_UNIQUEID;
-    if PluginLink.CallService(MS_CONTACT_GETCONTACTINFO,0,Integer(@ci)) = 0 then begin
-      case ci.type_ of
-        CNFT_BYTE:
-          Result := intToStr(ci.retval.bVal);
-        CNFT_WORD:
-          Result := intToStr(ci.retval.wVal);
-        CNFT_DWORD:
-          Result := intToStr(ci.retval.dVal);
-        CNFT_ASCIIZ:
-          Result := ci.retval.pszVal;
+    uid := PChar(CallProtoService(PChar(Proto),PS_GETCAPS,PFLAG_UNIQUEIDSETTING,0));
+    if (cardinal(uid) <> CALLSERVICE_NOTFOUND) and (uid <> nil) then begin
+      cgs.szModule := PChar(Proto);
+      cgs.szSetting := uid;
+      cgs.pValue := @dbv;
+      if PluginLink^.CallService(MS_DB_CONTACT_GETSETTING, hContact, lParam(@cgs)) = 0 then begin
+        case dbv.type_ of
+          DBVT_BYTE:
+            Result := intToStr(dbv.bVal);
+          DBVT_WORD:
+            Result := intToStr(dbv.wVal);
+          DBVT_DWORD:
+            Result := intToStr(dbv.dVal);
+          DBVT_ASCIIZ:
+            Result := AnsiString(dbv.pszVal);
+          DBVT_UTF8: begin
+            tmp := AnsiToWideString(dbv.pszVal,CP_UTF8);
+	          Result := WideToAnsiString(tmp,hppCodepage);
+            end;
+          DBVT_WCHAR:
+            Result := WideToAnsiString(dbv.pwszVal,hppCodepage);
+        end;
+        // free variant
+        DBFreeVariant(@dbv);
+      end else begin
+        if not Contact and (uid = 'jid') then begin
+          Result := GetDBStr(Proto,'LoginName','');
+          if Result <> '' then
+            Result := Result+'@'+GetDBStr(Proto,'LoginServer','')
+        end;
       end;
-    end else
-      //Result := PCharToWideString(PChar(Translate('Unknown id')),CP_ACP);
-      Result := '';
+    end;
+    //Result := PCharToWideString(PChar(Translate('Unknown id')),CP_ACP);
   end;
 end;
 

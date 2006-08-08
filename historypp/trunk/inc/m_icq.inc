@@ -78,6 +78,24 @@ const
     //lParam=0
     ICQACKTYPE_XSTATUS_RESPONSE = 1006;
 
+    //auth
+    //db event added to NULL contact
+    //blob format is:
+    //ASCIIZ    text
+    //DWORD     uin
+    //HANDLE    hContact
+    ICQEVENTTYPE_AUTH_GRANTED   = 2004;    //database event type
+    ICQEVENTTYPE_AUTH_DENIED    = 2005;    //database event type
+    ICQEVENTTYPE_SELF_REMOVE    = 2007;    //database event type
+    ICQEVENTTYPE_FUTURE_AUTH    = 2008;    //database event type
+
+    //broadcast from server
+    //ASCIIZ    text
+    //ASCIIZ    from name
+    //ASCIIZ    from e-mail
+    ICQEVENTTYPE_BROADCAST      = 2006;    //database event type
+
+
 {$ifndef m_protosvc}
     {$include m_protosvc.inc}
 {$endif}

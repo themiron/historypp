@@ -261,6 +261,7 @@ end;
 
 procedure TEventDetailsFrm.CloseBtnClick(Sender: TObject);
 begin
+  SavePosition;
   Self.Release;
 end;
 
