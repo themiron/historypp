@@ -500,7 +500,9 @@ end;
 
 function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 begin
-  Result := AnsiToWideString(PChar(EventInfo.pBlob),UseCP);
+  AllocateTextBuffer(EventInfo.cbBlob+1);
+  StrLCopy(buffer,PChar(EventInfo.pBlob),EventInfo.cbBlob);
+  Result := AnsiToWideString(buffer,UseCP);
 end;
 
 initialization
