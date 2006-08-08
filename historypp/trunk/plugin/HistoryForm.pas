@@ -686,6 +686,8 @@ procedure THistoryFrm.LoadPosition;
 begin
   // removed Utils_RestoreWindowPosition because it shows window sooner than we expect
   Utils_RestoreFormPosition(Self,0,hppDBName,'HistoryWindow.');
+  // use MagneticWindows.dll
+  PluginLink.CallService(MS_MW_ADDWINDOW,WindowHandle,0);
   SearchMode := TSearchMode(GetDBByte(hppDBName,'SearchMode',0));
 end;
 
@@ -922,6 +924,8 @@ var
   SearchModeForSave: TSearchMode;
 begin
   Utils_SaveFormPosition(Self,0,hppDBName,'HistoryWindow.');
+  // use MagneticWindows.dll
+  PluginLink.CallService(MS_MW_REMWINDOW,WindowHandle,0);
   if (hContact <> 0) and (not PasswordMode) and not ((HistoryLength = 0) and (not paSess.Visible)) then begin
     WriteDBBool(hppDBName,'ShowSessions',paSess.Visible);
     if paSess.Visible then
@@ -1500,8 +1504,6 @@ begin
   hHookEventAdded:=PluginLink.HookEventMessage(ME_DB_EVENT_ADDED,Self.Handle,HM_HIST_EVENTADDED);
   hHookEventDeleted := PluginLink.HookEventMessage(ME_DB_EVENT_DELETED,Self.Handle,HM_HIST_EVENTDELETED);
   hHookEventPreShutdown := PluginLink.HookEventMessage(ME_SYSTEM_PRESHUTDOWN,Self.Handle,HM_HIST_PRESHUTDOWN);
-  // use MagneticWindows.dll
-  PluginLink.CallService(MS_MW_ADDWINDOW,WindowHandle,0);
 end;
 
 procedure THistoryFrm.UnhookEvents;
@@ -1509,8 +1511,6 @@ begin
   PluginLink.UnhookEvent(hHookEventAdded);
   PluginLink.UnhookEvent(hHookEventDeleted);
   PluginLink.UnhookEvent(hHookEventPreShutdown);
-  // use MagneticWindows.dll
-  PluginLink.CallService(MS_MW_REMWINDOW,WindowHandle,0);
 end;
 
 procedure THistoryFrm.hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);

@@ -244,11 +244,15 @@ end;
 procedure TEventDetailsFrm.LoadPosition;
 begin
   Utils_RestoreFormPosition(Self,0,hppDBName,'EventDetail.');
+  // use MagneticWindows.dll
+  PluginLink.CallService(MS_MW_ADDWINDOW,WindowHandle,0);
 end;
 
 procedure TEventDetailsFrm.SavePosition;
 begin
-  Utils_SaveFormPosition(Self,0,hppDBName,'EventDetail.')
+  Utils_SaveFormPosition(Self,0,hppDBName,'EventDetail.');
+  // use MagneticWindows.dll
+  PluginLink.CallService(MS_MW_REMWINDOW,WindowHandle,0);
 end;
 
 
