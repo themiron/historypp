@@ -83,11 +83,13 @@ if errorlevel 1 goto builderr
 if errorlevel 1 goto upxerr
 
 md ..\bin
+md ..\bin\icons
+md ..\bin\docs
 move historypp.dll ..\bin
-move historypp_icons.dll ..\bin
-copy hpp_translate.txt ..\bin
-copy ..\..\hpp_changelog.txt ..\bin
-copy ..\..\plugin\m_historypp.inc ..\bin
+move historypp_icons.dll ..\bin\icons
+copy hpp_translate.txt ..\bin\docs
+copy ..\..\hpp_changelog.txt ..\bin\docs
+copy ..\..\plugin\m_historypp.inc ..\bin\docs
 
 cd ..\bin
 
@@ -102,11 +104,13 @@ if errorlevel 1 goto builderr
 if errorlevel 1 goto upxerr
 
 md ..\dbg
+md ..\dbg\icons
+md ..\dbg\docs
 move historypp.dll ..\dbg
-move historypp_icons.dll ..\dbg
-copy hpp_translate.txt ..\dbg
-copy ..\..\hpp_changelog.txt ..\dbg
-copy ..\..\plugin\m_historypp.inc ..\dbg
+move historypp_icons.dll ..\dbg\icons
+copy hpp_translate.txt ..\dbg\docs
+copy ..\..\hpp_changelog.txt ..\dbg\docs
+copy ..\..\plugin\m_historypp.inc ..\dbg\docs
 
 cd ..\dbg
 
@@ -135,6 +139,7 @@ del /S /Q /F *.drc
 del /S /Q /F *.identcache
 del /S /Q /F *.map
 del /S /Q /F *.todo
+del /S /Q /F *.rsm
 
 %ZPATH% a -y -tzip -r -mx ..\historypp-%VER_%-src.zip *
 if errorlevel 1 goto ziperr
