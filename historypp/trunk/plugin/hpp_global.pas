@@ -101,6 +101,10 @@ const
   EVENTTYPE_STATUSCHANGE2   = 9002;		// from presuma
   EVENTTYPE_AVATARCHANGE    = 9003;		// from presuma
 
+  ICQEVENTTYPE_AUTHGRANTED  = 2004;   // from BiO
+  ICQEVENTTYPE_AUTHDENIED   = 2005;   // from BiO
+  ICQEVENTTYPE_SELFREMOVED  = 2007;   // from BiO
+
 var
   hppVersionStr: String;
   //hppVersionPrefix: String;

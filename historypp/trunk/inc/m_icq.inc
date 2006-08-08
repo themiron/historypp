@@ -27,9 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 const
 
-    // extra database event type
-    ICQEVENTTYPE_WEBPAGER       = 1003;
-
     // extra flags for PSS_MESSAGE
     PIMF_ROUTE_DEFAULT          = 0;
     PIMF_ROUTE_DIRECT           = $10000;
@@ -39,24 +36,47 @@ const
 
     // for SMS
 
+    //SMSes received from phones come through this same ack, again to avoid having
+    //an XML parser in the protocol module. Here's one I got:
+    //"<sms_message><source>MTN</source><destination_UIN>[UIN of recipient, ie this account]</destination_UIN><sender>[sending phone number, without +]</sender><senders_network>[contains one space, because I sent from ICQ]</senders_network><text>[body of the message]</text><time>Fri, 16 Nov 2001 03:12:33 GMT</time></sms_message>"
     ICQACKTYPE_SMS              = 1001;
-    ICQEVENTTYPE_SMS            = 2001;	  // database event type
+    ICQEVENTTYPE_SMS            = 2001;    //database event type
 
-    // for e-mail express
+    //e-mail express
+    //db event added to NULL contact
+    //blob format is:
+    //ASCIIZ    text, usually of the form "Subject: %s\r\n%s"
+    //ASCIIZ    from name
+    //ASCIIZ    from e-mail
+    ICQEVENTTYPE_EMAILEXPRESS   = 2002;  //database event type
 
-    {
-        BLOB:
-        text: ASCIIZ        usually in the form "Subject: %s\r\n%s"
-        from-name: ASCIIZ
-        from-e-mail: ASCIIZ
-    }
+    //www pager
+    //db event added to NULL contact
+    //blob format is:
+    //ASCIIZ    text, usually "Sender IP: xxx.xxx.xxx.xxx\r\n%s"
+    //ASCIIZ    from name
+    //ASCIIZ    from e-mail
+    ICQEVENTTYPE_WEBPAGER       = 2003;    //database event type
 
-    ICQEVENTTYPE_EMAILEXPRESS   = 2002;
-
-    // for server side lists, used internally only
-
-    // hProcess=dwSequence, lParam=server's error code, 0 for success
+    //for server-side lists, used internally only
+    //hProcess=dwSequence
+    //lParam=server's error code, 0 for success
     ICQACKTYPE_SERVERCLIST      = 1003;
+
+    //for rate warning distribution (mainly upload dlg)
+    //hProcess=Rate class ID
+    //lParam=server's status code
+    ICQACKTYPE_RATEWARNING      = 1004;
+
+    //received Xtraz Notify response
+    //hProcess=dwSequence
+    //lParam=contents of RES node
+    ICQACKTYPE_XTRAZNOTIFY_RESPONSE = 1005;
+
+    //received Custom Status details response
+    //hProcess=dwSequence
+    //lParam=0
+    ICQACKTYPE_XSTATUS_RESPONSE = 1006;
 
 {$ifndef m_protosvc}
     {$include m_protosvc.inc}
