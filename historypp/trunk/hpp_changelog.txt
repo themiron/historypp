@@ -7,7 +7,7 @@ Trac: https://opensvn.csie.org/traccgi/historypp/trac.cgi/
 
 Changelog
 
-Timeline: https://opensvn.csie.org/traccgi/historypp/trac.cgi/timeline
+SVN Changelog: https://opensvn.csie.org/traccgi/historypp/log/?verbose=on
 
 1.5.0.107
 + Added snapping support with MagneticWindows plug-in
