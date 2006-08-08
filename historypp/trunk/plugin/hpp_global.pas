@@ -138,10 +138,30 @@ function TranslateWideW(const WS: WideString{TRANSLATE-IGNORE}): WideString;
 function MakeFileName(FileName: AnsiString): AnsiString;
 procedure CopyToClip(s: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
+function URLEncode(const ASrc: string): string;
 
 implementation
 
 uses TntSysUtils;
+
+function URLEncode(const ASrc: string): string;
+const
+  UnsafeChars = ['*', '#', '%', '<', '>', '+', ' '];  {do not localize}
+var
+  i: Integer;
+begin
+  Result := '';    {Do not Localize}
+  for i := 1 to Length(ASrc) do begin
+    //if (ASrc[i] in UnsafeChars) or (ASrc[i] >= #$80) or (ASrc[1] < #32) then begin
+    if (ASrc[i] in UnsafeChars) or (ASrc[1] < #32) then begin
+      Result := Result + '%' + IntToHex(Ord(ASrc[i]), 2);  {do not localize}
+    end else if ASrc[i] = '\' then begin
+      Result := Result + '/';
+    end else begin
+      Result := Result + ASrc[i];
+    end;
+  end;
+end;
 
 function AnsiToWideString(const S: AnsiString; CodePage: Cardinal): WideString;
 var

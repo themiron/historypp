@@ -214,6 +214,8 @@ begin
     if Result then exit;
     Result := WStrPos(PWideChar(buffer), 'news://') <> nil;
     if Result then exit;
+    Result := WStrPos(PWideChar(buffer), 'file://') <> nil;
+    if Result then exit;
     //Result := WStrPos(find_buf, 'opera:') <> nil;
     //if Result then exit;
   end;
@@ -464,7 +466,7 @@ var
   PBlobEnd: Pointer;
   PUnicode: PWideChar;
   Source,Dest: PWideChar;
-  Link: String;
+  Link: WideString;
 begin
   PBlobEnd := PChar(EventInfo.pBlob) + EventInfo.cbBlob;
   AllocateTextBuffer(EventInfo.cbBlob+3);
@@ -490,8 +492,8 @@ begin
   if lenA < EventInfo.cbBlob then begin
     StrLCopy(buffer,PChar(EventInfo.pBlob)+lenA,EventInfo.cbBlob-lenA);
     if StrLen(buffer) > 0 then begin
-      Link := hppProfileDir+'/'+AnsiToWideString(buffer,UseCP);
-      Result := Result + #13#10 + 'file://localhost/'+Tnt_WideStringReplace(Link,'\','/',[rfReplaceAll]);
+      Link := URLEncode(hppProfileDir+'/'+buffer);
+      Result := Result + #13#10 + 'file://localhost/'+AnsiToWideString(Link,CP_ACP);
     end;
   end;
 end;
