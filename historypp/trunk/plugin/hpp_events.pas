@@ -85,7 +85,7 @@ const
 
 var
 
-  EventTable: array[0..14] of TEventTableItem = (
+  EventTable: array[0..17] of TEventTableItem = (
     // must be the first item in array for unknown events
     (EventType: MaxWord; MessageType: mtOther; TextFunction: GetEventTextForOther),
     // events definitions
@@ -102,7 +102,10 @@ var
     (EventType: ICQEVENTTYPE_EMAILEXPRESS; MessageType: mtOther; TextFunction: GetEventTextForEmailExpress),
     (EventType: EVENTTYPE_NICKNAMECHANGE; MessageType: mtNickChange; TextFunction: GetEventTextForMessage),
     (EventType: EVENTTYPE_STATUSCHANGE2; MessageType: mtStatus; TextFunction: GetEventTextForMessage),
-    (EventType: EVENTTYPE_AVATARCHANGE; MessageType: mtAvatarChange; TextFunction: GetEventTextForAvatarChange)
+    (EventType: EVENTTYPE_AVATARCHANGE; MessageType: mtAvatarChange; TextFunction: GetEventTextForAvatarChange),
+    (EventType: ICQEVENTTYPE_AUTHGRANTED; MessageType: mtSystem; TextFunction: GetEventTextForMessage),
+    (EventType: ICQEVENTTYPE_AUTHDENIED; MessageType: mtSystem; TextFunction: GetEventTextForMessage),
+    (EventType: ICQEVENTTYPE_SELFREMOVED; MessageType: mtSystem; TextFunction: GetEventTextForMessage)
   );
 
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;
@@ -430,10 +433,11 @@ var
   BytePos: LongWord;
   Body,Name,Email: String;
 begin
+  BytePos := 0;
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
-  Result := TranslateWideW('Webpager message from %s (%s): %s');
+  Result := TranslateWideW('Webpager message from %s (%s):'+#13#10+'%s');
   Result := WideFormat(Result ,[AnsiToWideString(Name,hppCodepage),
                                 AnsiToWideString(Email,hppCodepage),
                                 AnsiToWideString(Body,hppCodepage)]);
@@ -444,10 +448,11 @@ var
   BytePos: LongWord;
   Body,Name,Email: String;
 begin
+  BytePos := 0;
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
-  Result := TranslateWideW('Email express from %s (%s): %s');
+  Result := TranslateWideW('Email express from %s (%s):'+#13#10+'%s');
   Result := WideFormat(Result ,[AnsiToWideString(Name,hppCodepage),
                                 AnsiToWideString(Email,hppCodepage),
                                 AnsiToWideString(Body,hppCodepage)]);

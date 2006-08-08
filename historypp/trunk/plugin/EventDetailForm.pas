@@ -294,6 +294,7 @@ var
   begin
     exclude(MesType,mtIncoming);
     exclude(MesType,mtOutgoing);
+    exclude(MesType,mtOther);
     for mt := Low(EventNames) to High(EventNames) do begin
       if mt in MesType then begin
         Result := TranslateWideW(EventNames[mt]{TRANSLATE-IGNORE});
