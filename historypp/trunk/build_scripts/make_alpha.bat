@@ -83,11 +83,13 @@ if errorlevel 1 goto builderr
 if errorlevel 1 goto upxerr
 
 md ..\bin
+md ..\bin\icons
+md ..\bin\docs
 move historypp.dll ..\bin
-move historypp_icons.dll ..\bin
-copy hpp_translate.txt ..\bin
-copy ..\..\hpp_changelog.txt ..\bin
-copy ..\..\plugin\m_historypp.inc ..\bin
+move historypp_icons.dll ..\bin\icons
+copy hpp_translate.txt ..\bin\docs
+copy ..\..\hpp_changelog.txt ..\bin\docs
+copy ..\..\plugin\m_historypp.inc ..\bin\docs
 
 cd ..\bin
 
