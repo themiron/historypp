@@ -63,6 +63,12 @@ function GetEventTextForWebPager(EventInfo: TDBEventInfo; UseCP: Cardinal; var M
 function GetEventTextForEmailExpress(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 function GetEventTextForStatusChange(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 function GetEventTextForAvatarChange(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+//function GetEventTextForICQAuth(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForICQAuthGranted(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForICQAuthDenied(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForICQSelfRemove(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForICQFutureAuth(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+function GetEventTextForICQBroadcast(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 // service routines
 function TextHasUrls(var Text: WideString): Boolean;
@@ -85,7 +91,7 @@ const
 
 var
 
-  EventTable: array[0..17] of TEventTableItem = (
+  EventTable: array[0..19] of TEventTableItem = (
     // must be the first item in array for unknown events
     (EventType: MaxWord; MessageType: mtOther; TextFunction: GetEventTextForOther),
     // events definitions
@@ -103,9 +109,11 @@ var
     (EventType: EVENTTYPE_NICKNAMECHANGE; MessageType: mtNickChange; TextFunction: GetEventTextForMessage),
     (EventType: EVENTTYPE_STATUSCHANGE2; MessageType: mtStatus; TextFunction: GetEventTextForMessage),
     (EventType: EVENTTYPE_AVATARCHANGE; MessageType: mtAvatarChange; TextFunction: GetEventTextForAvatarChange),
-    (EventType: ICQEVENTTYPE_AUTHGRANTED; MessageType: mtSystem; TextFunction: GetEventTextForMessage),
-    (EventType: ICQEVENTTYPE_AUTHDENIED; MessageType: mtSystem; TextFunction: GetEventTextForMessage),
-    (EventType: ICQEVENTTYPE_SELFREMOVED; MessageType: mtSystem; TextFunction: GetEventTextForMessage)
+    (EventType: ICQEVENTTYPE_AUTH_GRANTED; MessageType: mtSystem; TextFunction: GetEventTextForICQAuthGranted),
+    (EventType: ICQEVENTTYPE_AUTH_DENIED; MessageType: mtSystem; TextFunction: GetEventTextForICQAuthDenied),
+    (EventType: ICQEVENTTYPE_SELF_REMOVE; MessageType: mtSystem; TextFunction: GetEventTextForICQSelfRemove),
+    (EventType: ICQEVENTTYPE_FUTURE_AUTH; MessageType: mtSystem; TextFunction: GetEventTextForICQFutureAuth),
+    (EventType: ICQEVENTTYPE_BROADCAST; MessageType: mtSystem; TextFunction: GetEventTextForICQBroadcast)
   );
 
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;
@@ -348,7 +356,7 @@ begin
   // read nick
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Nick,BytePos);
   if Nick='' then
-    NickW := GetContactDisplayName(hContact)
+    NickW := GetContactDisplayName(hContact,'',true)
   else
     NickW := AnsiToWideString(Nick,CP_ACP);
   // read first name
@@ -386,7 +394,7 @@ begin
     // read nick
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Nick,BytePos);
   if Nick='' then
-    NickW := GetContactDisplayName(hContact)
+    NickW := GetContactDisplayName(hContact,'',true)
   else
     NickW := AnsiToWideString(Nick,CP_ACP);
   // read first name
@@ -437,10 +445,10 @@ begin
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
-  Result := TranslateWideW('Webpager message from %s (%s):'+#13#10+'%s');
+  Result := TranslateWideW('Webpager message from %s (%s): %s');
   Result := WideFormat(Result ,[AnsiToWideString(Name,hppCodepage),
                                 AnsiToWideString(Email,hppCodepage),
-                                AnsiToWideString(Body,hppCodepage)]);
+                                AnsiToWideString(#13#10+Body,hppCodepage)]);
 end;
 
 function GetEventTextForEmailExpress(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
@@ -452,10 +460,10 @@ begin
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
-  Result := TranslateWideW('Email express from %s (%s):'+#13#10+'%s');
+  Result := TranslateWideW('Email express from %s (%s): %s');
   Result := WideFormat(Result ,[AnsiToWideString(Name,hppCodepage),
                                 AnsiToWideString(Email,hppCodepage),
-                                AnsiToWideString(Body,hppCodepage)]);
+                                AnsiToWideString(#13#10+Body,hppCodepage)]);
 end;
 
 function GetEventTextForStatusChange(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
@@ -501,6 +509,61 @@ begin
       Result := Result + #13#10 + 'file://localhost/'+AnsiToWideString(Link,CP_ACP);
     end;
   end;
+end;
+
+function GetEventTextForICQAuth(EventInfo: TDBEventInfo; Template: WideString): WideString;
+var
+  BytePos: LongWord;
+  Body: String;
+  uin: integer;
+  Name: WideString;
+begin
+  BytePos := 0;
+  ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
+  if EventInfo.cbBlob < (BytePos+4) then uin := 0
+  else uin := PDWord(PChar(EventInfo.pBlob)+BytePos)^;
+  if EventInfo.cbBlob < (BytePos+8) then Name := TranslateW('''(Unknown Contact)'''{TRANSLATE-IGNORE})
+  else Name := GetContactDisplayName(PDWord(PChar(EventInfo.pBlob)+BytePos+4)^,'',true);
+  Result := WideFormat(Template ,[Name,uin,AnsiToWideString(#13#10+Body,hppCodepage)]);
+end;
+
+function GetEventTextForICQAuthGranted(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+begin
+  Result := GetEventTextForICQAuth(EventInfo,
+    TranslateWideW('Authorization request granted by %s (%d): %s'));
+end;
+
+function GetEventTextForICQAuthDenied(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+begin
+  Result := GetEventTextForICQAuth(EventInfo,
+    TranslateWideW('Authorization request denied by %s (%d): %s'));
+end;
+
+function GetEventTextForICQSelfRemove(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+begin
+  Result := GetEventTextForICQAuth(EventInfo,
+    TranslateWideW('User %s (%d) removed himself from your contact list: %s'));
+end;
+
+function GetEventTextForICQFutureAuth(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+begin
+  Result := GetEventTextForICQAuth(EventInfo,
+    TranslateWideW('Authorization future request by %s (%d): %s'));
+end;
+
+function GetEventTextForICQBroadcast(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+var
+  BytePos: LongWord;
+  Body,Name,Email: String;
+begin
+  BytePos := 0;
+  ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
+  ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
+  ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
+  Result := TranslateWideW('Broadcast message from %s (%s): %s');
+  Result := WideFormat(Result ,[AnsiToWideString(Name,hppCodepage),
+                                AnsiToWideString(Email,hppCodepage),
+                                AnsiToWideString(#13#10+Body,hppCodepage)]);
 end;
 
 function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
