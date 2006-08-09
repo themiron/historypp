@@ -39,26 +39,27 @@ uses hpp_global, hpp_services, HistoryForm, GlobalSearch, hpp_opt_dialog,
 
 function Utils_RestoreFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
 var
-  w,h,l,t: Integer;
+  w,h,l,t,mon: Integer;
   max: Boolean;
 begin
   Result := True;
+  max := GetDBBool(Module,Prefix+'maximized',False);
   w := GetDBInt(Module,Prefix+'width',Form.Width);
   h := GetDBInt(Module,Prefix+'height',Form.Height);
-  l := GetDBInt(Module,Prefix+'x',(Screen.Width - w) div 2);
-  t := GetDBInt(Module,Prefix+'y',(Screen.Height - h) div 2);
-  max := GetDBBool(Module,Prefix+'maximized',False);
-
+  mon := GetDBInt(Module,Prefix+'monitor',Form.Monitor.MonitorNum);
+  if mon >= Screen.MonitorCount then mon := Form.Monitor.MonitorNum;
+  l := Screen.Monitors[mon].Left+((Screen.Monitors[mon].Width-w) div 2);
+  t := Screen.Monitors[mon].Top+((Screen.Monitors[mon].Height-h) div 2);
+  l := GetDBInt(Module,Prefix+'x',l);
+  t := GetDBInt(Module,Prefix+'y',t);
   // just to be safe, don't let window jump out of the screen
-  // at least 40 px from each side should be visible
-  if t+h < 40 then t := 40-h;
-  if l+w < 40 then l := 40-w;
-  if Screen.Width - l < 40 then l := Screen.Width - 40;
-  if Screen.Height - t < 40 then t := Screen.Height - 40;
-
+  // at least 50 px from each side should be visible
+  if l+50 > Screen.DesktopWidth then l := Screen.DesktopWidth-50;
+  if t+50 > Screen.DesktopHeight then t := Screen.DesktopHeight-50;
+  if l+w < 50 then l := 50-w;
+  if t+h < 50 then t := 50-h;
   Form.SetBounds(l,t,w,h);
-  if max then
-    Form.WindowState := wsMaximized;
+  if max then Form.WindowState := wsMaximized;
 end;
 
 function Utils_SaveFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
@@ -69,7 +70,7 @@ var
 begin
   Result := True;
   if Form.WindowState = wsMaximized then begin
-    wp.length := SizeOf(wp);
+    wp.length := SizeOf(TWindowPlacement);
     GetWindowPlacement(Form.Handle,@wp);
     l := wp.rcNormalPosition.Left;
     t := wp.rcNormalPosition.Top;
@@ -84,17 +85,20 @@ begin
     t := Form.Top;
     max := False;
   end;
-
   WriteDBInt(Module,Prefix+'width',w);
   WriteDBInt(Module,Prefix+'height',h);
   WriteDBInt(Module,Prefix+'x',l);
   WriteDBInt(Module,Prefix+'y',t);
   WriteDBBool(Module,Prefix+'maximized',max);
+  WriteDBInt(Module,Prefix+'monitor',Form.Monitor.MonitorNum);
 end;
 
 procedure BringFormToFront(Form: TForm);
 begin
-  ShowWindow(Form.Handle,SW_SHOWNORMAL);
+  if Form.WindowState = wsMaximized then
+    ShowWindow(Form.Handle,SW_SHOWMAXIMIZED)
+  else
+    ShowWindow(Form.Handle,SW_SHOWNORMAL);
   Form.BringToFront;
 end;
 
