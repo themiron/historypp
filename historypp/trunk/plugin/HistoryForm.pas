@@ -388,6 +388,7 @@ type
     procedure Search(Next: Boolean; FromNext: Boolean = False);
 
     procedure ShowAllEvents;
+    procedure ShowFilteredEvents;
     procedure SetEventFilter(FilterIndex: Integer = -1);
     procedure CreateEventsFilterMenu;
     procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED;
@@ -1135,7 +1136,7 @@ begin
       if (Mask <> 0)
         and (Perform(CM_WANTSPECIALKEY, Key, 0) = 0)
         and (Perform(WM_GETDLGCODE, 0, 0) and Mask = 0)
-        and (Self.Perform(CM_DIALOGKEY, Key, 0) <> 0)
+        and (Perform(CM_DIALOGKEY, Key, 0) <> 0)
         then Exit;
     end;
 end;
@@ -2510,6 +2511,14 @@ begin
   EndHotFilterTimer;
 end;
 
+procedure THistoryFrm.ShowFilteredEvents;
+begin
+  if hContact <> 0 then
+    SetEventFilter(0)
+  else
+    SetEventFilter(GetShowAllEventsIndex);
+end;
+
 procedure THistoryFrm.ShowPanel(Panel: THistoryPanel);
 begin
 
@@ -2597,6 +2606,7 @@ end;
 
 procedure THistoryFrm.PostLoadHistory;
 begin
+  LoadPosition;
   ProcessPassword;
   //if hContact = 0 then paTop.Visible := False;
   // set reversed here, after Allocate, because of some scrollbar
@@ -2612,15 +2622,19 @@ begin
   end;
   HookEvents;
   CreateEventsFilterMenu;
-  if hContact <> 0 then
-    SetEventFilter(0)
-  else
+  //if hContact <> 0 then
+  //  SetEventFilter(0)
+  //else
+  //  SetEventFilter(GetShowAllEventsIndex);
+  if hContact = 0 then
     SetEventFilter(GetShowAllEventsIndex);
+  LoadToolbar;
+  FillBookmarks;
 end;
 
 procedure THistoryFrm.PreLoadHistory;
 begin
-  LoadPosition;
+  //LoadPosition;
   hg.ShowHeaders := (hContact <> 0);
   hg.ExpandHeaders := GetDBBool(hppDBName,'ExpandHeaders',False);
   if hContact = 0 then begin
@@ -2664,10 +2678,8 @@ begin
   // Other form-modifying routines are better be kept at PostHistoryLoad for
   // speed too.
   hg.EndUpdate;
-
-  LoadToolbar;
-  FillBookmarks;
-
+  //LoadToolbar;
+  //FillBookmarks;
 end;
 
 procedure THistoryFrm.ToolbarDblClick(Sender: TObject);
