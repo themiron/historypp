@@ -41,7 +41,7 @@ uses
   HistoryGrid,
   m_globaldefs, m_api,
   hpp_global, hpp_events, hpp_services, hpp_contacts,  hpp_database,  hpp_searchthread,
-  hpp_bookmarks, 
+  hpp_eventfilters, hpp_bookmarks,
   ImgList, PasswordEditControl, Buttons, TntButtons, Math, CommCtrl,
   Contnrs, TntMenus, hpp_forms;
 
@@ -422,6 +422,8 @@ begin
   AllItems := 0;
   AllContacts := 0;
   FFiltered := False;
+
+  hg.Filter := GenerateEvents(FM_EXCLUDE,[]);
   hg.Selected := -1;
   hg.Allocate(0);
 
@@ -843,10 +845,11 @@ procedure TfmGlobalSearch.LoadPosition;
 var
   n: Integer;
 begin
-  if Utils_RestoreWindowPosition(Self.Handle,0,0,hppDBName,'GlobalSearchWindow.') <> 0 then begin
-    Self.Left := (Screen.Width-Self.Width) div 2;
-    Self.Top := (Screen.Height - Self.Height) div 2;
-  end;
+  //if Utils_RestoreWindowPosition(Self.Handle,0,0,hppDBName,'GlobalSearchWindow.') <> 0 then begin
+  //  Self.Left := (Screen.Width-Self.Width) div 2;
+  //  Self.Top := (Screen.Height - Self.Height) div 2;
+  //end;
+  Utils_RestoreFormPosition(Self,0,hppDBName,'GlobalSearchWindow.');
   // use MagneticWindows.dll
   PluginLink.CallService(MS_MW_ADDWINDOW,WindowHandle,0);
   // if we are password-protected (cbPass.Enabled) and
@@ -1003,7 +1006,8 @@ procedure TfmGlobalSearch.SavePosition;
 var
   LastSearch: WideString;
 begin
-  Utils_SaveWindowPosition(Self.Handle,0,'HistoryPlusPlus','GlobalSearchWindow.');
+  //Utils_SaveWindowPosition(Self.Handle,0,'HistoryPlusPlus','GlobalSearchWindow.');
+  Utils_SaveFormPosition(Self,0,hppDBName,'GlobalSearchWindow.');
   // use MagneticWindows.dll
   PluginLink.CallService(MS_MW_REMWINDOW,WindowHandle,0);
   // if we are password-protected (cbPass.Enabled) and
