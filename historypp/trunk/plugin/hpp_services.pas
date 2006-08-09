@@ -108,42 +108,39 @@ end;
 function OpenContactHistory(hContact: THandle; index: integer = -1): THistoryFrm;
 var
   wHistory: THistoryFrm;
-  Lock: Boolean;
+  //Lock: Boolean;
+  NewWindow: Boolean;
   //r: TRect;
 begin
   //check if window exists, otherwise create one
   wHistory := FindContactWindow(hContact);
-  if not Assigned(wHistory) then begin
+  NewWindow := not Assigned(wHistory);
+  if NewWindow then begin
     wHistory := THistoryFrm.Create(nil);
     HstWindowList.Add(wHistory);
     wHistory.WindowList := HstWindowList;
     wHistory.hg.Options := GridOptions;
     wHistory.hContact := hContact;
     wHistory.Load;
-
-    Lock := LockWindowUpdate(wHistory.Handle);
-    try
-      if index <> -1 then
-        wHistory.hg.Selected := index
-      else
-        if wHistory.hg.Count > 0 then
-          wHistory.hg.MakeSelected(0,true);
-      //wHistory.hg.EndUpdate;
-      //if not wHistory.PasswordMode then
-      //  wHistory.hg.PrePaintWindow;
-      wHistory.Show;
-    finally
-      if Lock then LockWindowUpdate(0);
-    end;
-  end else begin
-    if index <> -1 then begin
-      wHistory.ShowAllEvents;
-      wHistory.hg.Selected := index;
-    end;
-    // restore even if minimized
-    // and we ain't have no double hooks
-    BringFormToFront(wHistory);
   end;
+  if index <> -1 then begin
+    wHistory.ShowAllEvents;
+    wHistory.hg.Selected := index;
+  end;
+  // else if NewWindow and (wHistory.hg.Count > 0) then begin
+  //  wHistory.ShowFilteredEvents;
+  //  wHistory.hg.MakeSelected(0,true);
+  //end;
+  if NewWindow then begin
+    wHistory.Show;
+    if index = -1 then begin
+      wHistory.hg.ShowBottomAligned := True;
+      wHistory.ShowFilteredEvents;
+      //don't need to cose ShowFilteredEvents sets it to 0 already
+      //wHistory.hg.ShowBottomAligned := True;
+      //wHistory.hg.Selected := 0;
+    end;
+  end else BringFormToFront(wHistory); // restore even if minimized
   Result := wHistory;
 end;
 
