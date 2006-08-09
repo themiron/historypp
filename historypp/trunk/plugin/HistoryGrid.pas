@@ -371,6 +371,8 @@ type
     FOnBookmarkClick: TOnBookmarkClick;
     FShowBookmarks: Boolean;
 
+    FShowBottomAligned: Boolean;
+
     procedure SetCodepage(const Value: Cardinal);
     procedure SetShowHeaders(const Value: Boolean);
     function GetIdx(Index: Integer): Integer;
@@ -479,7 +481,7 @@ type
     destructor Destroy; override;
     property Count: Integer read GetCount;
     property Contact: THandle read FContact write SetContact;
-    property Protocol: String read FProtocol write FProtocol; 
+    property Protocol: String read FProtocol write FProtocol;
     property LoadedCount: Integer read FLoadedCount;
     procedure Allocate(ItemsCount: Integer);
     property Selected: Integer read FSelected write SetSelected;
@@ -490,8 +492,8 @@ type
     function FindItemAt(x,y: Integer): Integer; overload;
     function GetItemRect(Item: Integer): TRect;
     function IsSelected(Item: Integer): Boolean;
-    procedure MakeVisible(Item: Integer; BottomAlign: boolean = false);
-    procedure MakeSelected(Value: Integer; BottomAlign: boolean = false);
+    procedure MakeVisible(Item: Integer);
+    procedure MakeSelected(Value: Integer);
     procedure BeginUpdate;
     procedure EndUpdate;
     function IsVisible(Item: Integer): Boolean;
@@ -545,6 +547,7 @@ type
     function FormatSelected(const Format: WideString): WideString;
     procedure MakeRangeSelected(FromItem,ToItem: Integer);
   published
+    property ShowBottomAligned: Boolean read FShowBottomAligned write FShowBottomAligned;
     property ShowBookmarks: Boolean read FShowBookmarks write FShowBookmarks;
     property MultiSelect: Boolean read FMultiSelect write SetMultiSelect;
     property ShowHeaders: Boolean read FShowHeaders write SetShowHeaders;
@@ -777,6 +780,8 @@ begin
 
   BarAdjusted := False;
   Allocated := False;
+
+  ShowBottomAligned := False;
 
   ProgressPercent := 255;
   ShowProgress := False;
@@ -1463,7 +1468,7 @@ begin
   WindowPrePainted := True;
 end;
 
-procedure THistoryGrid.MakeSelected(Value: Integer; BottomAlign: boolean = false);
+procedure THistoryGrid.MakeSelected(Value: Integer);
 var
   OldSelected: Integer;
 begin
@@ -1480,8 +1485,9 @@ begin
     FRichCache.ResetItems(FSelItems);
     SetLength(FSelItems,0);
   end;
-  if FSelected <> -1 then
-    MakeVisible(Selected,BottomAlign and Reversed);
+  if FSelected <> -1 then begin
+    MakeVisible(Selected);
+  end;
   if Assigned(FOnSelect) then
     FOnSelect(Self,Selected,OldSelected);
   Invalidate;
@@ -1490,7 +1496,7 @@ end;
 
 procedure THistoryGrid.SetSelected(const Value: Integer);
 begin
-  MakeSelected(Value, false);
+  MakeSelected(Value);
 end;
 
 procedure THistoryGrid.SetShowHeaders(const Value: Boolean);
@@ -2376,11 +2382,14 @@ begin
   SetSBPos(GetIdx(Item));
 end;
 
-procedure THistoryGrid.MakeVisible(Item: Integer; BottomAlign: boolean = false);
+procedure THistoryGrid.MakeVisible(Item: Integer);
 var
   First: Integer;
   SumHeight: Integer;
+  BottomAlign: Boolean;
 begin
+  BottomAlign := ShowBottomAligned and Reversed;
+  ShowBottomAligned := False;
   if Item = -1 then exit;
   // load it to make positioning correct
   LoadItem(Item,True);
@@ -4432,13 +4441,13 @@ begin
   //State := gsInline;
   State := gsInline;
   ApplyItemToRich(Item, FRichInline);
-  State := gsIdle;
-  //FRichInline.SelStart := -1;
-  //FRichInline.SelLength := 0;
+  FRichInline.SelStart := 0;
+  FRichInline.SelLength := 0;
   FRichInline.Show;
+  State := gsIdle;
   FRichInline.SetFocus;
   State := gsInline;
-  FRichInline.SelectAll;
+  //FRichInline.SelectAll;
 end;
 
 procedure THistoryGrid.CancelInline;
