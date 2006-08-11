@@ -61,7 +61,7 @@ var
   filterAll: TMessageTypes;
 
 const
-  hppIntDefEventFilters: array[0..8] of ThppEventFilter = (
+  hppIntDefEventFilters: array[0..9] of ThppEventFilter = (
     (Name: 'Show all events'; Events: []; filMode: FM_EXCLUDE; filEvents: []),
     (Name: 'Messages'; Events: []; filMode: FM_INCLUDE; filEvents: [mtMessage,mtIncoming,mtOutgoing]),
     (Name: 'Link URLs'; Events: []; filMode: FM_INCLUDE; filEvents: [mtUrl,mtIncoming,mtOutgoing]),
@@ -70,7 +70,8 @@ const
     (Name: 'Status changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtStatus,mtIncoming,mtOutgoing]),
     (Name: 'Nick changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtNickChange,mtIncoming,mtOutgoing]),
     (Name: 'Avatar changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtAvatarChange,mtIncoming,mtOutgoing]),
-    (Name: 'All except changes'; Events: []; filMode: FM_EXCLUDE; filEvents: [mtStatus,mtNickChange,mtAvatarChange])
+    (Name: 'All except changes'; Events: []; filMode: FM_EXCLUDE; filEvents: [mtStatus,mtNickChange,mtAvatarChange]),
+    (Name: 'All except system'; Events: []; filMode: FM_EXCLUDE; filEvents: [mtSystem])
     );
 
 
