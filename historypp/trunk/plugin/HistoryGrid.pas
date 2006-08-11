@@ -535,6 +535,7 @@ type
     procedure PrePaintWindow;
 
     property Codepage: Cardinal read FCodepage write SetCodepage;
+    property Filter: TMessageTypes read FFilter write SetFilter;
   published
     procedure SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit; ProcessTag: Boolean = true);
     function GetItemRTL(Item: Integer): Boolean;
@@ -561,8 +562,7 @@ type
     property TxtHistExport: WideString read FTxtHistExport write FTxtHistExport;
     property TxtGenHist1: WideString read FTxtGenHist1 write FTxtGenHist1;
     property TxtGenHist2: WideString read FTxtGenHist2 write FTxtGenHist2;
-
-    property Filter: TMessageTypes read FFilter write SetFilter;
+    //property Filter: TMessageTypes read FFilter write SetFilter;
     property ProfileName: WideString read FProfileName write FProfileName;
     property ContactName: WideString read FContactName write FContactName;
     property OnDblClick: TNotifyEvent read FDblClick write FDblClick;
@@ -791,7 +791,10 @@ begin
   ControlStyle := ControlStyle + [csFramed];
 
   LockCount := 0;
-  FFilter := GenerateEvents(FM_EXCLUDE,[]);
+
+  // fill all events including AlwaysExclude
+  FFilter := GenerateEvents(FM_EXCLUDE,[])+AlwaysExclude;
+
   FSelected := -1;
   FContact := 0;
   FProtocol := '';
