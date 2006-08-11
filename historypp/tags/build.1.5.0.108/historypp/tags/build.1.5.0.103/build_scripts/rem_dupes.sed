@@ -1,0 +1,10 @@
+#http://www.rtfiber.com.tw/~changyj/sed/html/p.20021022a.html
+/^$/!{
+/^;;/!{
+1!G
+/^\([^\n]*\)\(\n[^\n]*\)*\n\1\(\n[^\n]*\)*$/d
+P
+h
+d
+}
+}
