@@ -57,6 +57,8 @@ if errorlevel 0 move hpp_res_ver.rc.sed hpp_res_ver.rc
 %SED% --text %SED_NOREPL% %SED_REPL% historypp.dpr > historypp.dpr.sed
 if errorlevel 0 move historypp.dpr.sed historypp.dpr
 
+cd ..\build_scripts
+
 goto end
 
 :nover
