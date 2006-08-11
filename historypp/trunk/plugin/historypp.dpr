@@ -364,7 +364,7 @@ begin
   odp.hInstance := hInstance;
   odp.pszTemplate := MakeIntResource(IDD_OPT_HISTORYPP);
   odp.pszTitle := Translate(PChar(hppName));
-  odp.pszGroup := Translate(PChar('Plugins'));
+  odp.pszGroup := Translate(PChar('History'));
   odp.pfnDlgProc := @OptDialogProc;
   odp.flags := ODPF_BOLDGROUPS;
   PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp));
