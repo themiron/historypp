@@ -77,7 +77,7 @@ const
   hppVerMajor   = {MAJOR_VER}1{/MAJOR_VER};
   hppVerMinor   = {MINOR_VER}5{/MINOR_VER};
   hppVerRelease = {SUB_VER}0{/SUB_VER};
-  hppVerBuild   = {BUILD}107{/BUILD};
+  hppVerBuild   = {BUILD}108{/BUILD};
   hppVersion    = hppVerMajor shl 24 + hppVerMinor shl 16 + hppVerRelease shl 8 + hppVerBuild;
 
   hppFLUpdateURL    = 'http://addons.miranda-im.org/feed.php?dlfile=2995';
@@ -97,9 +97,9 @@ const
 
   EVENTTYPE_STATUSCHANGE    = 25368;	// from srmm's
   EVENTTYPE_SMTPSIMPLE      = 2350;		// from SMTP Simple
-  EVENTTYPE_NICKNAMECHANGE  = 9001;		// from presuma
-  EVENTTYPE_STATUSCHANGE2   = 9002;		// from presuma
-  EVENTTYPE_AVATARCHANGE    = 9003;		// from presuma
+  EVENTTYPE_NICKNAMECHANGE  = 9001;		// from prescuma
+  EVENTTYPE_STATUSCHANGE2   = 9002;		// from prescuma
+  EVENTTYPE_AVATARCHANGE    = 9003;		// from prescuma
 
 var
   hppVersionStr: String;
