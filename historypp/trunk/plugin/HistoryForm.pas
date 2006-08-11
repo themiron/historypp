@@ -299,6 +299,7 @@ type
     procedure lvBookEdited(Sender: TObject; Item: TTntListItem;
       var S: WideString);
   private
+    DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
     EndTimestamp: DWord;
     FhContact: THandle;
@@ -313,6 +314,7 @@ type
     FPanel: THistoryPanel;
 
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo); message WM_GetMinMaxInfo;
+    procedure CMShowingChanged(var Message: TMessage); message CM_SHOWINGCHANGED;
     //procedure WMSize(var Message: TWMSize); message WM_SIZE;
     procedure LoadPosition;
     procedure SavePosition;
@@ -388,8 +390,7 @@ type
     procedure Search(Next: Boolean; FromNext: Boolean = False);
 
     procedure ShowAllEvents;
-    procedure ShowFilteredEvents;
-    procedure SetEventFilter(FilterIndex: Integer = -1);
+    procedure SetEventFilter(FilterIndex: Integer = -1; DelayApply: Boolean = false);
     procedure CreateEventsFilterMenu;
     procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED;
 
@@ -648,6 +649,7 @@ begin
 
   FormState := gsIdle;
 
+  DelayedFilter := [];
   hg.Filter := GenerateEvents(FM_EXCLUDE,[]);
 
   for i := 0 to High(cpTable) do begin
@@ -738,8 +740,8 @@ begin
   tb_str := GetDBStr(hppDBName,'HistoryToolbar',DEF_HISTORY_TOOLBAR);
   if hContact = 0 then begin
     tb_str := StringReplace(tb_str,'[SESS]','',[rfReplaceAll]);
-    tb_str := StringReplace(tb_str,'[BOOK]','',[rfReplaceAll]);
-    tb_str := StringReplace(tb_str,'[EVENTS]','',[rfReplaceAll]);
+    //tb_str := StringReplace(tb_str,'[BOOK]','',[rfReplaceAll]);
+    //tb_str := StringReplace(tb_str,'[EVENTS]','',[rfReplaceAll]);
   end;
   str := tb_str;
 
@@ -927,15 +929,23 @@ begin
   Utils_SaveFormPosition(Self,0,hppDBName,'HistoryWindow.');
   // use MagneticWindows.dll
   PluginLink.CallService(MS_MW_REMWINDOW,WindowHandle,0);
-  if (hContact <> 0) and (not PasswordMode) and not ((HistoryLength = 0) and (not paSess.Visible)) then begin
-    WriteDBBool(hppDBName,'ShowSessions',paSess.Visible);
-    if paSess.Visible then
-      WriteDBInt(hppDBName,'SessionsWidth',paSess.Width);
-    WriteDBBool(hppDBName,'ShowBookmarks',paBook.Visible);
-    if paSess.Visible then
-      WriteDBInt(hppDBName,'BookmarksWidth',paBook.Width);
+
+  if (not PasswordMode) and (HistoryLength > 0) then begin
+    if hContact = 0 then begin
+      WriteDBBool(hppDBName,'ShowBookmarksSystem',paBook.Visible);
+      if paBook.Visible then
+        WriteDBInt(hppDBName,'PanelWidth',paBook.Width);
+    end else begin
+      WriteDBBool(hppDBName,'ShowSessions',paSess.Visible);
+      WriteDBBool(hppDBName,'ShowBookmarks',paBook.Visible);
+      if paSess.Visible then
+        WriteDBInt(hppDBName,'PanelWidth',paSess.Width);
+      if paBook.Visible then
+        WriteDBInt(hppDBName,'PanelWidth',paBook.Width);
+    end;
   end;
-  if (hContact <> 0) then
+
+  if hContact <> 0 then
     WriteDBBool(hppDBName,'ExpandHeaders',hg.ExpandHeaders);
   if SearchMode = smHotSearch then
     SearchModeForSave := PreHotSearchMode
@@ -2389,18 +2399,20 @@ end;}
 procedure THistoryFrm.SetPanel(const Value: THistoryPanel);
 var
   Lock: Boolean;
+  width: integer;
 begin
   FPanel := Value;
-
-  if (hContact = 0) or (HistoryLength = 0) then
+  if (HistoryLength = 0) or ((hContact = 0) and (FPanel = hpSessions)) then
     FPanel := hpNone;
-
   tbSessions.Down := (Panel = hpSessions);
   tbBookmarks.Down := (Panel = hpBookmarks);
-
   hg.BeginUpdate;
   if Visible then Lock := LockWindowUpdate(Handle);
   try
+    if (FPanel = hpBookmarks) and paSess.Visible then
+      paBook.Width := paSess.Width;
+    if (FPanel = hpSessions) and paBook.Visible then
+      paSess.Width := paBook.Width;
     paBook.Visible := (FPanel = hpBookmarks);
     paSess.Visible := (FPanel = hpSessions);
     spSess.Visible := paBook.Visible or paSess.Visible;
@@ -2511,14 +2523,6 @@ begin
   EndHotFilterTimer;
 end;
 
-procedure THistoryFrm.ShowFilteredEvents;
-begin
-  if hContact <> 0 then
-    SetEventFilter(0)
-  else
-    SetEventFilter(GetShowAllEventsIndex);
-end;
-
 procedure THistoryFrm.ShowPanel(Panel: THistoryPanel);
 begin
 
@@ -2613,23 +2617,26 @@ begin
   // "features", we'll load end of the list if put before Allocate
   SetRecentEventsPosition(GetDBInt(hppDBName,'SortOrder',0) <> 0);
   // set ShowSessions here because we check for empty history
-  if GetDBBool(hppDBName,'ShowSessions',False) then begin
-    Panel := hpSessions;
-    paSess.Width := GetDBInt(hppDBName,'SessionsWidth',150);
-  end else if GetDBBool(hppDBName,'ShowBookmarks',False) then begin
-    Panel := hpBookmarks;
-    paSess.Width := GetDBInt(hppDBName,'BookmarksWidth',150);
+  if hContact = 0 then begin
+    if GetDBBool(hppDBName,'ShowBookmarksSystem',False) then
+      Panel := hpBookmarks;
+  end else begin
+    if GetDBBool(hppDBName,'ShowSessions',False) then
+      Panel := hpSessions
+    else if GetDBBool(hppDBName,'ShowBookmarks',False) then
+      Panel := hpBookmarks;
   end;
+  paSess.Width := GetDBInt(hppDBName,'PanelWidth',150);
+  paBook.Width := paSess.Width;
+
   HookEvents;
   CreateEventsFilterMenu;
-  //if hContact <> 0 then
-  //  SetEventFilter(0)
-  //else
-  //  SetEventFilter(GetShowAllEventsIndex);
-  if hContact = 0 then
-    SetEventFilter(GetShowAllEventsIndex);
-  LoadToolbar;
-  FillBookmarks;
+  if hContact <> 0 then
+    SetEventFilter(0,true)                  // delay event filter applying till showing form
+  else
+    SetEventFilter(GetShowAllEventsIndex);  // applying immediately
+  //LoadToolbar;
+  //FillBookmarks;
 end;
 
 procedure THistoryFrm.PreLoadHistory;
@@ -2640,9 +2647,9 @@ begin
   if hContact = 0 then begin
     tbUserDetails.Enabled := False;
     tbUserMenu.Enabled := False;
-    tbEventsFilter.Enabled := False;
+    //tbEventsFilter.Enabled := False;
     tbSessions.Enabled := False;
-    hg.ShowBookmarks := False;
+    //hg.ShowBookmarks := False;
     Customize2.Enabled := False; // disable toolbar customization
   end;
 
@@ -2654,6 +2661,7 @@ begin
     SessThread.Priority := tpLower;
     SessThread.Resume;
   end;
+
 end;
 
 procedure THistoryFrm.ProcessPassword;
@@ -2678,8 +2686,8 @@ begin
   // Other form-modifying routines are better be kept at PostHistoryLoad for
   // speed too.
   hg.EndUpdate;
-  //LoadToolbar;
-  //FillBookmarks;
+  LoadToolbar;
+  FillBookmarks;
 end;
 
 procedure THistoryFrm.ToolbarDblClick(Sender: TObject);
@@ -3029,7 +3037,18 @@ begin
   end;
 end;
 
-procedure THistoryFrm.SetEventFilter(FilterIndex: Integer = -1);
+// use that to delay events filtering until window will be visible
+procedure THistoryFrm.CMShowingChanged(var Message: TMessage);
+begin
+  inherited;
+  if Visible and (DelayedFilter <> []) then begin
+      hg.ShowBottomAligned := True;
+      hg.Filter := DelayedFilter;
+      DelayedFilter := [];
+  end;
+end;
+
+procedure THistoryFrm.SetEventFilter(FilterIndex: Integer = -1; DelayApply: Boolean = false);
 var
   i,fi: Integer;
 begin
@@ -3046,7 +3065,13 @@ begin
     if pmEventsFilter.Items[i].RadioItem then
       pmEventsFilter.Items[i].Checked := (pmEventsFilter.Items[i].Tag = fi);
   hg.ShowHeaders := (tbSessions.Enabled) and (mtMessage in hppEventFilters[fi].Events);
-  hg.Filter := hppEventFilters[fi].Events;
+
+  if DelayApply then
+    DelayedFilter := hppEventFilters[fi].Events
+  else begin
+    DelayedFilter := [];
+    hg.Filter := hppEventFilters[fi].Events;
+  end;
 end;
 
 procedure THistoryFrm.SethContact(const Value: THandle);
@@ -3636,7 +3661,10 @@ begin
   if Index = -1 then exit;
   if hg.State = gsInline then hg.CancelInline;
   Index := HistoryIndexToGrid(Index);
+  hg.BeginUpdate;
+  ShowAllEvents;
   hg.Selected := Index;
+  hg.EndUpdate;
 end;
 
 procedure THistoryFrm.lvBookContextPopup(Sender: TObject; MousePos: TPoint;

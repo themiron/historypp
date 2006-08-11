@@ -127,20 +127,8 @@ begin
     wHistory.ShowAllEvents;
     wHistory.hg.Selected := index;
   end;
-  // else if NewWindow and (wHistory.hg.Count > 0) then begin
-  //  wHistory.ShowFilteredEvents;
-  //  wHistory.hg.MakeSelected(0,true);
-  //end;
-  if NewWindow then begin
-    wHistory.Show;
-    if index = -1 then begin
-      wHistory.hg.ShowBottomAligned := True;
-      wHistory.ShowFilteredEvents;
-      //don't need to cose ShowFilteredEvents sets it to 0 already
-      //wHistory.hg.ShowBottomAligned := True;
-      //wHistory.hg.Selected := 0;
-    end;
-  end else BringFormToFront(wHistory); // restore even if minimized
+  if NewWindow then wHistory.Show
+  else BringFormToFront(wHistory); // restore even if minimized
   Result := wHistory;
 end;
 
