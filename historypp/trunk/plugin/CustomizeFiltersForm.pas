@@ -78,7 +78,9 @@ implementation
 uses hpp_forms, HistoryForm, hpp_options, TypInfo, Math;
 
 const
-  IgnoreEvents: TMessageTypes = [mtSystem, mtWebPager, mtEmailExpress];
+  // commented to use all events in system history
+  //IgnoreEvents: TMessageTypes = [mtSystem, mtWebPager, mtEmailExpress];
+  IgnoreEvents: TMessageTypes = [];
 
 {$R *.dfm}
 
