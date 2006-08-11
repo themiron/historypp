@@ -131,12 +131,13 @@ begin
         end;
         // free variant
         DBFreeVariant(@dbv);
-      end else begin
-        if not Contact and (uid = 'jid') then begin
-          Result := GetDBStr(Proto,'LoginName','');
-          if Result <> '' then
-            Result := Result+'@'+GetDBStr(Proto,'LoginServer','')
-        end;
+      // since 08.08.2006 ghazan fixed it in jabber proto, hack should be removed
+      //end else begin
+      //  if not Contact and (uid = 'jid') then begin
+      //    Result := GetDBStr(Proto,'LoginName','');
+      //    if Result <> '' then
+      //      Result := Result+'@'+GetDBStr(Proto,'LoginServer','')
+      //  end;
       end;
     end;
     //Result := PCharToWideString(PChar(Translate('Unknown id')),CP_ACP);
