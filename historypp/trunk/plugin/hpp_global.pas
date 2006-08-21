@@ -78,6 +78,7 @@ const
   hppVerMinor   = {MINOR_VER}5{/MINOR_VER};
   hppVerRelease = {SUB_VER}0{/SUB_VER};
   hppVerBuild   = {BUILD}108{/BUILD};
+  hppVerAlpha    = {$IFDEF ALPHA}True{$ELSE}False{$ENDIF};
   hppVersion    = hppVerMajor shl 24 + hppVerMinor shl 16 + hppVerRelease shl 8 + hppVerBuild;
 
   hppFLUpdateURL    = 'http://addons.miranda-im.org/feed.php?dlfile=2995';
