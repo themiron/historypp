@@ -38,30 +38,19 @@ implementation
 
 {$I m_message.inc}
 
-(* quotes text from this
-text here 1
-text here 2
-to
-> text here 1
-> text here 2 *)
-{function QuoteText(Text: WideString): WideString;
-begin
-  Text := TrimRight(Text);
-  Result := Tnt_WideStringReplace('> '+Text,#13#10,#13#10'> ',[rfReplaceAll]);
-  Result := Result + #13#10; // to move caret to next line
-end;}
-
 function SendMessageTo(hContact: Integer; Text: WideString): Boolean;
 var
-  i: integer;
-  t: string;
+  buff: string;
+  res_new, res_old: boolean;
 begin
-  if Text = '' then i := 0
+  if boolean(PluginLink.ServiceExists(MS_MSG_SENDMESSAGE+'W')) then
+    Result := (PluginLink.CallService(MS_MSG_SENDMESSAGE+'W',hContact,integer(PWideChar(Text))) = 0)
   else begin
-    t := WideToAnsiString(Text,CP_ACP);
-    i := integer(@t[1]);
+    buff := WideToAnsiString(Text,CP_ACP);
+    res_new := (PluginLink.CallService(MS_MSG_SENDMESSAGE,hContact,integer(PAnsiChar(buff))) = 0);
+    res_old := (PluginLink.CallService(MS_MSG_SENDMESSAGE_OLD,hContact,integer(PAnsiChar(buff))) = 0);
+    Result := res_new or res_old;
   end;
-  Result := (PluginLink.CallService(MS_MSG_SENDMESSAGE,hContact,i) = 0);
 end;
 
 {function ForwardMessage(Text: String): Boolean;
