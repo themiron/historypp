@@ -1852,6 +1852,22 @@ begin
 
   RichEdit.Text := FItems[Item].Text;
 
+  // fix for font changing...
+  ZeroMemory(@cf,SizeOf(cf));
+  cf.cbSize := SizeOf(cf);
+  cf.dwMask := CFM_FACE or CFM_CHARSET;
+  StrPLCopy(cf.szFaceName,textFont.Name,SizeOf(cf.szFaceName));
+  cf.bCharSet := textFont.Charset;
+  //cf.bPitchAndFamily := DEFAULT_PITCH;
+  RichEdit.Perform(EM_SETCHARFORMAT, SCF_ALL, integer(@cf));
+
+  // fix for font changing...
+  //RichEdit.Lines.BeginUpdate;
+  //RichEdit.SelectAll;
+  //RichEdit.SelAttributes := RichEdit.DefAttributes;
+  //RichEdit.SelLength := 0;
+  //RichEdit.Lines.EndUpdate;
+
   if not ((State = gsInline) and not ProcessInline) and Assigned(FOnProcessRichText) then begin
     try
       FOnProcessRichText(Self,RichEdit.Handle,Item);

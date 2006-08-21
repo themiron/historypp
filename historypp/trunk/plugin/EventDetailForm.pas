@@ -292,6 +292,7 @@ end;
 procedure TEventDetailsFrm.SetItem(const Value: Integer);
 var
   FromContact,ToContact : boolean;
+  cf: TCharFormat;
 
   function GetMsgType(MesType: TMessageTypes; EventInfo: Word): WideString;
   var
@@ -343,6 +344,16 @@ begin
   //ParentForm.hg.SetRichRTL(ParentForm.hg.GetItemRTL(FItem),EText,false);
 
   EText.Text:=FParentForm.hg.Items[FItem].Text;
+
+  // fix for font changing...
+  ZeroMemory(@cf,SizeOf(cf));
+  cf.cbSize := SizeOf(cf);
+  cf.dwMask := CFM_FACE or CFM_CHARSET;
+  StrPLCopy(cf.szFaceName,FParentForm.hg.RichEdit.Font.Name,SizeOf(cf.szFaceName));
+  cf.bCharSet := FParentForm.hg.RichEdit.Font.Charset;
+  //cf.bPitchAndFamily := DEFAULT_PITCH;
+  EText.Perform(EM_SETCHARFORMAT, SCF_ALL, integer(@cf));
+
   ProcessRichEdit(FItem);
   // 'cose smileys are selected sometimes
   EText.SelLength := 0;
