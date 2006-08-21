@@ -110,7 +110,7 @@ begin
   PluginInfo.cbSize := sizeof(TPLUGININFO);
   PluginInfo.shortName := hppShortHame;
   PluginInfo.version := hppVersion;
-  PluginInfo.description := 'Easy, fast and feature complete history viewer. '+{TEXT}''{/TEXT};
+  PluginInfo.description := 'Easy, fast and feature complete history viewer.'{$IFDEF ALPHA}+' Alpha build.'{$ENDIF};
   PluginInfo.author := 'theMIROn, Art Fedorov';
   PluginInfo.authorEmail := 'themiron@mail.ru, artemf@mail.ru';
   PluginInfo.copyright := '© 2006 theMIROn, 2003-2006 Art Fedorov. History+ parts © 2001 Christian Kastner';
