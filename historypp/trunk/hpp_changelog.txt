@@ -12,17 +12,17 @@ SVN Changelog: https://opensvn.csie.org/traccgi/historypp/log/?verbose=on
 1.5.0.109
 
 + Added possibility to rename bookmarks from context menu
-+ Added possibility to delete events in the global search with DEL-key
-+ Added quotation support with nConvers plug-in
-+ Made Close button default in Event details form
-+ Fixed again first event wasn't selected when history was opened with empty filter
-+ Fixed blink sound on enter, tab and escape keys pressing
-+ Fixed abnormal hot-search stopping on enter key press
-+ Fixed Disable processing key shortcut wasn't working in pseudo-edit mode
-+ Fixed wrong text selection after Disable processing toogling
-+ Fixed unicode quotation with various *srmms
-+ Changed options dialog entry to be root entry History for all of history related sub-branches
-+ Translation changes
++ Added possibility to delete events in the global search with DEL key
++ Added quotation support with nConvers(++) plugin
+! Close button default is default now in Event details form
+- first event wasn't selected when history was opened with empty filter
+- Fixed blink sound on Enter, Tab and Esc keys pressing
+- Fixed abnormal hot search stopping on Enter key press
+- Disable processing key shortcut wasn't working in pseudo-edit mode
+- Fixed wrong text selection after Disable processing toggling
+- Fixed unicode quotation with various *SRMMs
+! Changed options dialog entry to be root entry (Options: Plugins/History++ =>  Options: History)
+! Translation changes
 
 1.5.0.108
 
