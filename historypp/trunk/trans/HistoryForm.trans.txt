@@ -64,6 +64,7 @@ Select
 Delete
 Save...
 &Customize...
+Rename &Bookmark
 Remove &Bookmark
 ;; Text found in ..\plugin\HistoryForm.pas:
 System History
