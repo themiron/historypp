@@ -293,6 +293,8 @@ Password protection...
 Select
 [Save...]
 Save...
+[Rename &Bookmark]
+Rename &Bookmark
 ;; Text found in ..\plugin\HistoryForm.pas:
 [Error]
 Error
