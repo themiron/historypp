@@ -346,13 +346,14 @@ begin
   EText.Text:=FParentForm.hg.Items[FItem].Text;
 
   // fix for font changing...
-  ZeroMemory(@cf,SizeOf(cf));
-  cf.cbSize := SizeOf(cf);
-  cf.dwMask := CFM_FACE or CFM_CHARSET;
-  StrPLCopy(cf.szFaceName,FParentForm.hg.RichEdit.Font.Name,SizeOf(cf.szFaceName));
-  cf.bCharSet := FParentForm.hg.RichEdit.Font.Charset;
+  // seems to be solved by using core unicode fonts
+  //ZeroMemory(@cf,SizeOf(cf));
+  //cf.cbSize := SizeOf(cf);
+  //cf.dwMask := CFM_FACE or CFM_CHARSET;
+  //StrPLCopy(cf.szFaceName,FParentForm.hg.RichEdit.Font.Name,SizeOf(cf.szFaceName));
+  //cf.bCharSet := FParentForm.hg.RichEdit.Font.Charset;
   //cf.bPitchAndFamily := DEFAULT_PITCH;
-  EText.Perform(EM_SETCHARFORMAT, SCF_ALL, integer(@cf));
+  //EText.Perform(EM_SETCHARFORMAT, SCF_ALL, integer(@cf));
 
   ProcessRichEdit(FItem);
   // 'cose smileys are selected sometimes

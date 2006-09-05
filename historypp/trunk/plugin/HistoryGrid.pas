@@ -373,6 +373,9 @@ type
 
     FShowBottomAligned: Boolean;
 
+    FOnInlineKeyDown: TKeyEvent;
+    FOnInlineKeyUp: TKeyEvent;
+
     procedure SetCodepage(const Value: Cardinal);
     procedure SetShowHeaders(const Value: Boolean);
     function GetIdx(Index: Integer): Integer;
@@ -574,6 +577,8 @@ type
     property OnItemDelete: TOnItemDelete read FItemDelete write FItemDelete;
     property OnKeyDown;
     property OnKeyUp;
+    property OnInlineKeyDown: TKeyEvent read FOnInlineKeyDown write FOnInlineKeyDown;
+    property OnInlineKeyUp: TKeyEvent read FOnInlineKeyUp write FOnInlineKeyUp;
     property OnChar: TOnChar read FOnChar write FOnChar;
     property OnState: TOnState read FOnState write FOnState;
     property OnSelect: TOnSelect read FOnSelect write FOnSelect;
@@ -1089,13 +1094,17 @@ end;
 
 procedure THistoryGrid.SetProcessInline(const Value: Boolean);
 var
-  i: Integer;
+  i,ss,sl: Integer;
 begin
   if FProcessInline = Value then exit;
   FProcessInline := Value;
   if State = gsInline then begin
     FRichInline.Lines.BeginUpdate;
+    ss := FRichInline.SelStart;
+    sl := FRichInline.SelLength;
     ApplyItemToRich(Selected, FRichInline);
+    FRichInline.SelStart := ss;
+    FRichInline.SelLength := sl;
     FRichInline.Lines.EndUpdate;
   end;
 end;
@@ -1853,13 +1862,14 @@ begin
   RichEdit.Text := FItems[Item].Text;
 
   // fix for font changing...
-  ZeroMemory(@cf,SizeOf(cf));
-  cf.cbSize := SizeOf(cf);
-  cf.dwMask := CFM_FACE or CFM_CHARSET;
-  StrPLCopy(cf.szFaceName,textFont.Name,SizeOf(cf.szFaceName));
-  cf.bCharSet := textFont.Charset;
+  // seems to be solved by using core unicode fonts
+  //ZeroMemory(@cf,SizeOf(cf));
+  //cf.cbSize := SizeOf(cf);
+  //cf.dwMask := CFM_FACE or CFM_CHARSET;
+  //StrPLCopy(cf.szFaceName,textFont.Name,SizeOf(cf.szFaceName));
+  //cf.bCharSet := textFont.Charset;
   //cf.bPitchAndFamily := DEFAULT_PITCH;
-  RichEdit.Perform(EM_SETCHARFORMAT, SCF_ALL, integer(@cf));
+  //RichEdit.Perform(EM_SETCHARFORMAT, SCF_ALL, integer(@cf));
 
   // fix for font changing...
   //RichEdit.Lines.BeginUpdate;
@@ -4506,6 +4516,8 @@ begin
     //FRichInline.Hide;
     Key := 0;
   end;
+  if Assigned(FOnInlineKeyDown) then
+    OnInlineKeyDown(Self,Key,Shift);
 end;
 
 procedure THistoryGrid.RichInlineOnKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -4514,6 +4526,8 @@ begin
     CancelInline;
     Key := 0;
   end;
+  if Assigned(FOnInlineKeyUp) then
+    OnInlineKeyUp(Self,Key,Shift);
 end;
 
 function THistoryGrid.GetRichEditRect(Item: Integer): TRect;

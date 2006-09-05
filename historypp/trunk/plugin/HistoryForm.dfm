@@ -78,6 +78,7 @@ object HistoryFrm: THistoryFrm
         OnItemDelete = hgItemDelete
         OnKeyDown = hgKeyDown
         OnKeyUp = hgKeyUp
+        OnInlineKeyUp = hgInlineKeyUp
         OnChar = hgChar
         OnState = hgState
         OnSelect = hgSelect
@@ -169,6 +170,7 @@ object HistoryFrm: THistoryFrm
         ToolTips = False
         OnChange = tvSessChange
         OnGetSelectedIndex = tvSessGetSelectedIndex
+        OnKeyPress = edPassKeyPress
         OnMouseMove = tvSessMouseMove
       end
     end
@@ -226,6 +228,7 @@ object HistoryFrm: THistoryFrm
           TabOrder = 0
           OnChange = edSearchChange
           OnKeyDown = edSearchKeyDown
+          OnKeyPress = edPassKeyPress
           OnKeyUp = edSearchKeyUp
         end
       end
@@ -740,6 +743,7 @@ object HistoryFrm: THistoryFrm
     end
     object CancelInline1: TTntMenuItem
       Caption = 'Cancel'
+      ShortCut = 27
       OnClick = CancelInline1Click
     end
   end
@@ -890,8 +894,16 @@ object HistoryFrm: THistoryFrm
   object pmBook: TTntPopupMenu
     Left = 42
     Top = 61
+    object RenameBookmark1: TTntMenuItem
+      Caption = 'Rename &Bookmark'
+      OnClick = RenameBookmark1Click
+    end
+    object N11: TTntMenuItem
+      Caption = '-'
+    end
     object DeleteBookmark1: TTntMenuItem
       Caption = 'Remove &Bookmark'
+      ShortCut = 16450
       OnClick = Bookmark1Click
     end
   end

@@ -187,6 +187,8 @@ type
     SaveSelected2: TTntMenuItem;
     N9: TTntMenuItem;
     ToogleItemProcessing: TTntMenuItem;
+    N11: TTntMenuItem;
+    RenameBookmark1: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -298,6 +300,9 @@ type
     procedure ToogleItemProcessingClick(Sender: TObject);
     procedure lvBookEdited(Sender: TObject; Item: TTntListItem;
       var S: WideString);
+    procedure RenameBookmark1Click(Sender: TObject);
+    procedure hgInlineKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
@@ -650,7 +655,8 @@ begin
   FormState := gsIdle;
 
   DelayedFilter := [];
-  hg.Filter := GenerateEvents(FM_EXCLUDE,[]);
+  // if we do so, we'll never get selected if filters match
+  //hg.Filter := GenerateEvents(FM_EXCLUDE,[]);
 
   for i := 0 to High(cpTable) do begin
     mi := WideNewItem(cpTable[i].name,0,false,true,nil,0,'cp'+intToStr(i));
@@ -2552,7 +2558,7 @@ end;
 procedure THistoryFrm.edSearchChange(Sender: TObject);
 begin
   if SearchMode = smFilter then
-    StartHotFilterTimer    
+    StartHotFilterTimer
   else
     Search(True,False);
 end;
@@ -2592,20 +2598,21 @@ end;
 procedure THistoryFrm.edSearchKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if Key = VK_RETURN then begin
-    hg.SetFocus;
+  // to prevent ** BLING ** when press Enter
+  if (Key = VK_RETURN) then begin
+    if hg.State in [gsIdle,gsInline] then hg.SetFocus;
     key := 0;
   end;
 end;
 
 procedure THistoryFrm.edPassKeyPress(Sender: TObject; var Key: Char);
 begin
-// to prevent ** BLING ** when press Enter
-if Key = Chr(VK_RETURN) then key := #0;
-// to prevent ** BLING ** when press Tab
-if Key = Chr(VK_TAB) then key := #0;
-// to prevent ** BLING ** when press Esc
-if Key = Chr(VK_ESCAPE) then key := #0;
+  // to prevent ** BLING ** when press Enter
+  if Key = Chr(VK_RETURN) then key := #0;
+  // to prevent ** BLING ** when press Tab
+  if Key = Chr(VK_TAB) then key := #0;
+  // to prevent ** BLING ** when press Esc
+  if Key = Chr(VK_ESCAPE) then key := #0;
 end;
 
 procedure THistoryFrm.PostLoadHistory;
@@ -2634,7 +2641,7 @@ begin
   if hContact <> 0 then
     SetEventFilter(0,true)                  // delay event filter applying till showing form
   else
-    SetEventFilter(GetShowAllEventsIndex);  // applying immediately
+    SetEventFilter(GetShowAllEventsIndex,true);  // applying immediately
   //LoadToolbar;
   //FillBookmarks;
 end;
@@ -3004,6 +3011,7 @@ begin
   // we will have problems with inline richedit not appearing
   // on enter
   if not WasReturnPressed then exit;
+  WasReturnPressed := False;
 
   if (Key = VK_RETURN) and (Shift = []) then begin
     hgDblClick(hg);
@@ -3674,6 +3682,7 @@ var
 begin
   Handled := True;
   Item := TTntListItem(lvBook.GetItemAt(MousePos.X,MousePos.Y));
+  lvBook.Selected := Item;
   if  Item = nil then exit;
   if BookmarkServer[hContact].Bookmarked[THandle(Item.Data)] then begin
     MousePos := lvBook.ClientToScreen(MousePos);
@@ -3689,6 +3698,19 @@ end;
 procedure THistoryFrm.lvBookEdited(Sender: TObject; Item: TTntListItem;  var S: WideString);
 begin
   BookmarkServer[hContact].BookmarkName[THandle(Item.Data)] := S;
+end;
+
+procedure THistoryFrm.RenameBookmark1Click(Sender: TObject);
+begin
+  lvBook.Selected.EditCaption;
+end;
+
+procedure THistoryFrm.hgInlineKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Key = Ord('P') then begin
+    ToogleItemProcessing.Click;
+    key:=0;
+  end;
 end;
 
 end.
