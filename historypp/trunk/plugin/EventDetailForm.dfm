@@ -56,6 +56,7 @@ object EventDetailsFrm: TEventDetailsFrm
         Height = 25
         Cancel = True
         Caption = '&Close'
+        Default = True
         TabOrder = 1
         OnClick = CloseBtnClick
       end
