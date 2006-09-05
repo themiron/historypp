@@ -1269,6 +1269,9 @@ end;
 procedure TfmGlobalSearch.hgKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
+  if (Key = VK_DELETE) and (Shift=[]) then begin
+    Delete1.Click;
+    end;
   WasReturnPressed := (Key = VK_RETURN);
 end;
 
