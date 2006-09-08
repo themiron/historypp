@@ -303,6 +303,7 @@ type
     procedure RenameBookmark1Click(Sender: TObject);
     procedure hgInlineKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure hgProcessInlineChange(Sender: TObject; Enabled: Boolean);
   private
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
@@ -1000,8 +1001,6 @@ begin
   LoadSessionIcons;
   LoadBookIcons;
   pbFilter.Repaint;
-  if Assigned(EventDetailFrom) then
-    EventDetailFrom.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
   hg.Repaint;
 end;
 
@@ -3707,10 +3706,16 @@ end;
 
 procedure THistoryFrm.hgInlineKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if Key = Ord('P') then begin
+  if (Key = Ord('P')) and (ssCtrl in Shift) then begin
     ToogleItemProcessing.Click;
     key:=0;
   end;
+end;
+
+procedure THistoryFrm.hgProcessInlineChange(Sender: TObject; Enabled: Boolean);
+begin
+  if Assigned(EventDetailFrom) then
+    TEventDetailsFrm(EventDetailFrom).Item := TEventDetailsFrm(EventDetailFrom).Item;
 end;
 
 end.
