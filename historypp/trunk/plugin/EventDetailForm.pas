@@ -38,38 +38,24 @@ uses
   TntForms,
   m_globaldefs, m_api, hpp_messages,
   hpp_global, hpp_contacts, hpp_events, hpp_forms, TntExtCtrls, ComCtrls,
-  TntComCtrls, Menus, TntMenus, RichEdit;
+  TntComCtrls, Menus, TntMenus, RichEdit, Buttons, TntButtons;
 
 type
 
   TEventDetailsFrm = class(TTntForm)
     paBottom: TTntPanel;
     Panel3: TTntPanel;
-    paUser: TTntPanel;
     paInfo: TTntPanel;
-    GroupBox1: TTntGroupBox;
-    Label1: TTntLabel;
-    Label2: TTntLabel;
+    GroupBox: TTntGroupBox;
+    laType: TTntLabel;
+    laDateTime: TTntLabel;
     EMsgType: TTntEdit;
-    EDateTime: TTntEdit;
-    PrevBtn: TTntButton;
-    NextBtn: TTntButton;
     bnReply: TTntButton;
     CloseBtn: TTntButton;
-    Panel7: TTntPanel;
-    Panel8: TTntPanel;
-    GroupBox2: TTntGroupBox;
-    Label3: TTntLabel;
-    Label4: TTntLabel;
-    EFromNick: TTntEdit;
-    EFromUIN: TTntEdit;
-    EFromMore: TTntButton;
-    GroupBox3: TTntGroupBox;
-    Label5: TTntLabel;
-    Label6: TTntLabel;
-    EToNick: TTntEdit;
-    EToUIN: TTntEdit;
-    EToMore: TTntButton;
+    laFrom: TTntLabel;
+    laTo: TTntLabel;
+    EFrom: TTntEdit;
+    ETo: TTntEdit;
     EText: TTntRichEdit;
     pmEText: TTntPopupMenu;
     CopyText: TTntMenuItem;
@@ -79,6 +65,13 @@ type
     ReplyQuoted1: TTntMenuItem;
     SendMessage1: TTntMenuItem;
     paText: TTntPanel;
+    N2: TTntMenuItem;
+    ToogleItemProcessing: TTntMenuItem;
+    EFromMore: TTntSpeedButton;
+    EDateTime: TTntEdit;
+    EToMore: TTntSpeedButton;
+    PrevBtn: TTntSpeedButton;
+    NextBtn: TTntSpeedButton;
     procedure PrevBtnClick(Sender: TObject);
     procedure NextBtnClick(Sender: TObject);
     procedure EFromMoreClick(Sender: TObject);
@@ -90,13 +83,13 @@ type
     procedure CloseBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure bnReplyClick(Sender: TObject);
-    procedure FormResize(Sender: TObject);
     procedure pmETextPopup(Sender: TObject);
     procedure SelectAllClick(Sender: TObject);
     procedure CopyTextClick(Sender: TObject);
     procedure CopyAllClick(Sender: TObject);
     procedure SendMessage1Click(Sender: TObject);
     procedure ReplyQuoted1Click(Sender: TObject);
+    procedure ToogleItemProcessingClick(Sender: TObject);
   private
     //FRowIdx: integer;
     FParentForm: THistoryFrm;
@@ -111,8 +104,11 @@ type
     procedure SavePosition;
     procedure SetItem(const Value: Integer);
     procedure ProcessRichEdit(const FItem: Integer);
+    procedure PrepareRichEdit(const FItem: Integer);
     procedure TranslateForm;
+    procedure LoadButtonIcons;
     { Private declarations }
+    procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
   public
     TOhContact:THandle;
     FROMhContact:THandle;
@@ -144,7 +140,7 @@ end;
 
 procedure TEventDetailsFrm.PrevBtnClick(Sender: TObject);
 begin
-Item := Prev;
+  Item := Prev;
 end;
 
 procedure TEventDetailsFrm.ProcessRichEdit(const FItem: Integer);
@@ -170,9 +166,28 @@ begin
   PluginLink.NotifyEventHooks(hHppRichEditItemProcess,EText.Handle,Integer(@ItemRenderDetails));
 end;
 
+procedure TEventDetailsFrm.PrepareRichEdit(const FItem: Integer);
+var
+  ss,sl: integer;
+begin
+  EText.Lines.BeginUpdate;
+  ss := EText.SelStart;
+  sl := EText.SelLength;
+  EText.Clear;
+  if ParentForm.hg.GetItemRTL(FItem) then EText.BiDiMode := bdRightToLeft
+                                     else EText.BiDiMode := bdLeftToRight;
+  //ParentForm.hg.SetRichRTL(ParentForm.hg.GetItemRTL(FItem),EText,false);
+  EText.Text:=FParentForm.hg.Items[FItem].Text;
+  if ParentForm.hg.ProcessInline then ProcessRichEdit(FItem);
+  //EText.SelLength := 0; // 'cose smileys are selected sometimes
+  EText.SelStart := ss;
+  EText.SelLength := sl;
+  EText.Lines.EndUpdate;
+end;
+
 procedure TEventDetailsFrm.NextBtnClick(Sender: TObject);
 begin
-Item := Next;
+  Item := Next;
 end;
 
 procedure TEventDetailsFrm.EFromMoreClick(Sender: TObject);
@@ -204,6 +219,10 @@ begin
     end;
     if key=Ord('M') then begin
       SendMessage1.Click;
+      key:=0;
+    end;
+    if key=Ord('P') then begin
+      Self.ToogleItemProcessing.Click;
       key:=0;
     end;
   end;
@@ -277,6 +296,7 @@ begin
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
   DesktopFont := True;
   MakeFontsParent(Self);
+  LoadButtonIcons;
   TranslateForm;
   Prev := -1;
   Next := -1;
@@ -292,7 +312,7 @@ end;
 procedure TEventDetailsFrm.SetItem(const Value: Integer);
 var
   FromContact,ToContact : boolean;
-  cf: TCharFormat;
+  //cf: TCharFormat;
 
   function GetMsgType(MesType: TMessageTypes; EventInfo: Word): WideString;
   var
@@ -330,35 +350,16 @@ begin
 
   EFromMore.Enabled := not FromContact;
   EToMore.Enabled := not ToContact;
-  EFromNick.Text := GetContactDisplayName(FROMhContact,FParentForm.Protocol,FromContact);
-  EFromUIN.Text := AnsiToWideString(GetContactID(FROMhContact,FParentForm.Protocol,FromContact),ParentForm.UserCodepage);
-  EToNick.Text := GetContactDisplayName(TOhContact,FParentForm.Protocol,ToContact);
-  EToUIN.Text := AnsiToWideString(GetContactID(TOhContact,FParentForm.Protocol,ToContact),ParentForm.UserCodepage);
+  EFrom.Text := GetContactDisplayName(FROMhContact,FParentForm.Protocol,FromContact)+
+                ' ('+
+                AnsiToWideString(FParentForm.Protocol+': '+GetContactID(FROMhContact,FParentForm.Protocol,FromContact),ParentForm.UserCodepage)+
+                ')';
+  ETo.Text   := GetContactDisplayName(TOhContact,FParentForm.Protocol,ToContact)+
+                ' ('+
+                AnsiToWideString(FParentForm.Protocol+': '+GetContactID(TOhContact,FParentForm.Protocol,ToContact),ParentForm.UserCodepage)+
+                ')';
 
-  // BeginUpdate and EndUpdate needed 'cose we have visual artefacts on screen
-  // but it's better to lock and unlock rich in DoSupport... services
-  EText.Lines.BeginUpdate;
-  EText.Clear;
-  if ParentForm.hg.GetItemRTL(FItem) then EText.BiDiMode := bdRightToLeft
-                                     else EText.BiDiMode := bdLeftToRight;
-  //ParentForm.hg.SetRichRTL(ParentForm.hg.GetItemRTL(FItem),EText,false);
-
-  EText.Text:=FParentForm.hg.Items[FItem].Text;
-
-  // fix for font changing...
-  // seems to be solved by using core unicode fonts
-  //ZeroMemory(@cf,SizeOf(cf));
-  //cf.cbSize := SizeOf(cf);
-  //cf.dwMask := CFM_FACE or CFM_CHARSET;
-  //StrPLCopy(cf.szFaceName,FParentForm.hg.RichEdit.Font.Name,SizeOf(cf.szFaceName));
-  //cf.bCharSet := FParentForm.hg.RichEdit.Font.Charset;
-  //cf.bPitchAndFamily := DEFAULT_PITCH;
-  //EText.Perform(EM_SETCHARFORMAT, SCF_ALL, integer(@cf));
-
-  ProcessRichEdit(FItem);
-  // 'cose smileys are selected sometimes
-  EText.SelLength := 0;
-  EText.Lines.EndUpdate;
+  PrepareRichEdit(FItem);
 
   if FromContact or ToContact then
     bnReply.Enabled := False
@@ -380,11 +381,6 @@ begin
   FParentForm.ReplyQuoted(FItem);
 end;
 
-procedure TEventDetailsFrm.FormResize(Sender: TObject);
-begin
-  Panel8.Width := ClientWidth div 2;
-end;
-
 procedure TEventDetailsFrm.TranslateForm;
 
   procedure TranslateMenu(mi: TMenuItem);
@@ -400,17 +396,13 @@ procedure TEventDetailsFrm.TranslateForm;
 
 begin
   Caption := TranslateWideW(Caption);
-  GroupBox1.Caption:=TranslateWideW(GroupBox1.Caption);
-  GroupBox2.Caption:=TranslateWideW(GroupBox2.Caption);
-  GroupBox3.Caption:=TranslateWideW(GroupBox3.Caption);
-  Label1.Caption:=TranslateWideW(Label1.Caption);
-  Label2.Caption:=TranslateWideW(Label2.Caption);
-  Label3.Caption:=TranslateWideW(Label3.Caption);
-  Label4.Caption:=TranslateWideW(Label4.Caption);
-  Label5.Caption:=TranslateWideW(Label5.Caption);
-  Label6.Caption:=TranslateWideW(Label6.Caption);
-  EFromMore.Caption:=TranslateWideW(EFromMore.Caption);
-  EToMore.Caption:=TranslateWideW(EToMore.Caption);
+  GroupBox.Caption:=TranslateWideW(GroupBox.Caption);
+  laType.Caption:=TranslateWideW(laType.Caption);
+  laDateTime.Caption:=TranslateWideW(laDateTime.Caption);
+  laFrom.Caption:=TranslateWideW(laFrom.Caption);
+  laTo.Caption:=TranslateWideW(laTo.Caption);
+  EFromMore.Hint:=TranslateWideW(EFromMore.Hint);
+  EToMore.Hint:=TranslateWideW(EToMore.Hint);
   PrevBtn.Caption:=TranslateWideW(PrevBtn.Caption);
   NextBtn.Caption:=TranslateWideW(NextBtn.Caption);
   CloseBtn.Caption:=TranslateWideW(CloseBtn.Caption);
@@ -420,6 +412,10 @@ end;
 
 procedure TEventDetailsFrm.pmETextPopup(Sender: TObject);
 begin
+  if ParentForm.hg.ProcessInline then
+    ToogleItemProcessing.Caption := TranslateWideW('Disable &Processing')
+  else
+    ToogleItemProcessing.Caption := TranslateWideW('Enable &Processing');
   CopyText.Enabled := (EText.SelLength > 0);
   SendMessage1.Enabled := (ParentForm.hContact <> 0);
   ReplyQuoted1.Enabled := (ParentForm.hContact <> 0);
@@ -486,6 +482,49 @@ begin
     end;
   end;
   inherited;
+end;
+
+procedure TEventDetailsFrm.ToogleItemProcessingClick(Sender: TObject);
+begin
+  ParentForm.hg.ProcessInline := not ParentForm.hg.ProcessInline;
+end;
+
+procedure TEventDetailsFrm.LoadButtonIcons;
+begin
+  with EFromMore.Glyph do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := paInfo.Color;
+    Canvas.FillRect(Canvas.ClipRect);
+    DrawiconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_CONTACDETAILS].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
+  with EToMore.Glyph do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := paInfo.Color;
+    Canvas.FillRect(Canvas.ClipRect);
+    DrawiconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_CONTACDETAILS].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
+  with PrevBtn.Glyph do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := paInfo.Color;
+    Canvas.FillRect(Canvas.ClipRect);
+    DrawiconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_SEARCHUP].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
+  with NextBtn.Glyph do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := paInfo.Color;
+    Canvas.FillRect(Canvas.ClipRect);
+    DrawiconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_SEARCHDOWN].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
+end;
+
+procedure TEventDetailsFrm.HMIcons2Changed(var M: TMessage);
+begin
+  Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
+  LoadButtonIcons;
 end;
 
 end.

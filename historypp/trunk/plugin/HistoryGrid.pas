@@ -100,6 +100,7 @@ type
   TOnItemFilter = procedure(Sender: TObject; Index: Integer; var Show: Boolean) of object;
   TOnChar = procedure(Sender: TObject; Char: WideChar; Shift: TShiftState) of object;
   TOnRTLChange = procedure(Sender: TObject; Enabled: boolean) of object;
+  TOnProcessInlineChange = procedure(Sender: TObject; Enabled: boolean) of object;
 
   THistoryGrid = class;
 
@@ -367,6 +368,7 @@ type
     WindowPrePainted: Boolean;
     FExpandHeaders: Boolean;
     FProcessInline: Boolean;
+    FOnProcessInlineChange: TOnProcessInlineChange;
 
     FOnBookmarkClick: TOnBookmarkClick;
     FShowBookmarks: Boolean;
@@ -579,6 +581,7 @@ type
     property OnKeyUp;
     property OnInlineKeyDown: TKeyEvent read FOnInlineKeyDown write FOnInlineKeyDown;
     property OnInlineKeyUp: TKeyEvent read FOnInlineKeyUp write FOnInlineKeyUp;
+    property OnProcessInlineChange: TOnProcessInlineChange read FOnProcessInlineChange write FOnProcessInlineChange;
     property OnChar: TOnChar read FOnChar write FOnChar;
     property OnState: TOnState read FOnState write FOnState;
     property OnSelect: TOnSelect read FOnSelect write FOnSelect;
@@ -1107,6 +1110,8 @@ begin
     FRichInline.SelLength := sl;
     FRichInline.Lines.EndUpdate;
   end;
+  if Assigned(FOnProcessInlineChange) then
+    FOnProcessInlineChange(Self,Value);
 end;
 
 procedure THistoryGrid.WMEraseBkgnd(var Message: TWMEraseBkgnd);
