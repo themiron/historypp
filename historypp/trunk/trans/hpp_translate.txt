@@ -66,36 +66,43 @@ Event Filters
 ;; Text found in ..\plugin\EventDetailForm.dfm:
 [Event Details]
 Event Details
+[Prev]
+Prev
+[Next]
+Next
 [Reply &Quoted]
 Reply &Quoted
 [&Close]
 &Close
-[From]
-From
-[Nick:]
-Nick:
-[ID:]
-ID:
-[More...]
-More...
-[To]
-To
 [Event Info]
 Event Info
 [Type:]
 Type:
 [Date/Time:]
 Date/Time:
+[From:]
+From:
+[To:]
+To:
+[Show sender information]
+Show sender information
+[Show receiver information]
+Show receiver information
 [&Copy]
 &Copy
 [Copy All]
 Copy All
 [&Select All]
 &Select All
+[Disable &Processing]
+Disable &Processing
 [Send &Message]
 Send &Message
 [&Reply Quoted]
 &Reply Quoted
+;; Text found in ..\plugin\EventDetailForm.pas:
+[Enable &Processing]
+Enable &Processing
 
 ;; GlobalSearch.trans.txt file
 
@@ -259,8 +266,6 @@ Open &File
 Open File Fo&lder
 [Select &All]
 Select &All
-[Disable &Processing]
-Disable &Processing
 [Cancel]
 Cancel
 [Export as &HTML...]
@@ -320,8 +325,6 @@ You have entered the wrong password
 %d event
 [%0.n events (%s)]
 %0.n events (%s)
-[Enable &Processing]
-Enable &Processing
 [Do you really want to delete ALL items (%.0f) for this contact?]
 Do you really want to delete ALL items (%.0f) for this contact?
 [Note: It can take several minutes for large history.]

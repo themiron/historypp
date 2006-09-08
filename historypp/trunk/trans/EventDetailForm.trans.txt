@@ -1,20 +1,22 @@
 ;; Text found in ..\plugin\EventDetailForm.dfm:
 Event Details
+Prev
+Next
 Reply &Quoted
 &Close
-From
-Nick:
-ID:
-More...
-To
-Nick:
-ID:
-More...
 Event Info
 Type:
 Date/Time:
+From:
+To:
+Show sender information
+Show receiver information
 &Copy
 Copy All
 &Select All
+Disable &Processing
 Send &Message
 &Reply Quoted
+;; Text found in ..\plugin\EventDetailForm.pas:
+Disable &Processing
+Enable &Processing
