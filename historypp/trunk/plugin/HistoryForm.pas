@@ -76,7 +76,6 @@ type
     pmLink: TTntPopupMenu;
     pmFile: TTntPopupMenu;
     paSess: TPanel;
-    pmGridInline: TTntPopupMenu;
     spSess: TTntSplitter;
     ilSessions: TImageList;
     paSessInt: TPanel;
@@ -97,11 +96,6 @@ type
     SendMessage1: TTntMenuItem;
     N8: TTntMenuItem;
     Details1: TTntMenuItem;
-    CancelInline1: TTntMenuItem;
-    N10: TTntMenuItem;
-    SelectAllInline: TTntMenuItem;
-    CopyAllInline: TTntMenuItem;
-    CopyInline: TTntMenuItem;
     Copy2: TTntMenuItem;
     N1: TTntMenuItem;
     OpeninNewWindow1: TTntMenuItem;
@@ -185,8 +179,6 @@ type
     DeleteBookmark1: TTntMenuItem;
     N3: TTntMenuItem;
     SaveSelected2: TTntMenuItem;
-    N9: TTntMenuItem;
-    ToogleItemProcessing: TTntMenuItem;
     N11: TTntMenuItem;
     RenameBookmark1: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
@@ -261,11 +253,6 @@ type
     //procedure AddMenu(M: TMenuItem; FromM,ToM: TPopupMenu; Index: integer);
     procedure AddMenuArray(Menu: TTntPopupMenu; List: Array of TTntMenuItem; Index: integer);
     procedure ContactRTLmode1Click(Sender: TObject);
-    procedure SelectAllInlineClick(Sender: TObject);
-    procedure CopyInlineClick(Sender: TObject);
-    procedure pmGridInlinePopup(Sender: TObject);
-    procedure CopyAllInlineClick(Sender: TObject);
-    procedure CancelInline1Click(Sender: TObject);
     procedure SendMessage1Click(Sender: TObject);
     procedure ReplyQuoted1Click(Sender: TObject);
     procedure CodepageChangeClick(Sender: TObject);
@@ -297,12 +284,9 @@ type
     procedure lvBookSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure lvBookContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
-    procedure ToogleItemProcessingClick(Sender: TObject);
     procedure lvBookEdited(Sender: TObject; Item: TTntListItem;
       var S: WideString);
     procedure RenameBookmark1Click(Sender: TObject);
-    procedure hgInlineKeyUp(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
     procedure hgProcessInlineChange(Sender: TObject; Enabled: Boolean);
   private
     DelayedFilter: TMessageTypes;
@@ -672,7 +656,7 @@ begin
 
   //cbFilter.ItemIndex := 0;
   RecentFormat := sfHtml;
-  hg.InlineRichEdit.PopupMenu := pmGridInline;
+  //hg.InlineRichEdit.PopupMenu := pmGridInline;
   //for i := 0 to pmOptions.Items.Count-1 do
   //  pmOptions.Items.Remove(pmOptions.Items[0]);
 end;
@@ -2766,7 +2750,8 @@ begin
   TranslateToolbar(Toolbar);
 
   TranslateMenu(pmGrid.Items);
-  TranslateMenu(pmGridInline.Items);
+  //TranslateMenu(pmGridInline.Items);
+  TranslateMenu(hg.InlineRichEdit.PopupMenu.Items);
   TranslateMenu(pmLink.Items);
   TranslateMenu(pmFile.Items);
   TranslateMenu(pmHistory.Items);
@@ -3200,47 +3185,6 @@ begin
     tvSess.Items.EndUpdate;
   end;
 {$RANGECHECKS ON}
-end;
-
-procedure THistoryFrm.pmGridInlinePopup(Sender: TObject);
-begin
-  if hg.ProcessInline then
-    ToogleItemProcessing.Caption := TranslateWideW('Disable &Processing')
-  else
-    ToogleItemProcessing.Caption := TranslateWideW('Enable &Processing');
-  CopyInline.Enabled := (hg.InlineRichEdit.SelLength > 0);
-end;
-
-procedure THistoryFrm.CopyInlineClick(Sender: TObject);
-begin
-  //CopyToClip(hg.InlineRichEdit.SelText,Handle,UserCodepage);
-  hg.InlineRichEdit.CopyToClipboard;
-end;
-
-
-procedure THistoryFrm.CopyAllInlineClick(Sender: TObject);
-var
-  ss,sl: integer;
-begin
-  //CopyToClip(hg.InlineRichEdit.Text,Handle,UserCodepage);
-  hg.InlineRichEdit.Lines.BeginUpdate;
-  ss := hg.InlineRichEdit.SelStart;
-  sl := hg.InlineRichEdit.SelLength;
-  hg.InlineRichEdit.SelectAll;
-  hg.InlineRichEdit.CopyToClipboard;
-  hg.InlineRichEdit.SelStart := ss;
-  hg.InlineRichEdit.SelLength := sl;
-  hg.InlineRichEdit.Lines.EndUpdate;
-end;
-
-procedure THistoryFrm.SelectAllInlineClick(Sender: TObject);
-begin
-  hg.InlineRichEdit.SelectAll;
-end;
-
-procedure THistoryFrm.CancelInline1Click(Sender: TObject);
-begin
-  hg.CancelInline;
 end;
 
 procedure THistoryFrm.SendMessage1Click(Sender: TObject);
@@ -3689,11 +3633,6 @@ begin
   end;
 end;
 
-procedure THistoryFrm.ToogleItemProcessingClick(Sender: TObject);
-begin
-  hg.ProcessInline := not hg.ProcessInline;
-end;
-
 procedure THistoryFrm.lvBookEdited(Sender: TObject; Item: TTntListItem;  var S: WideString);
 begin
   BookmarkServer[hContact].BookmarkName[THandle(Item.Data)] := S;
@@ -3702,14 +3641,6 @@ end;
 procedure THistoryFrm.RenameBookmark1Click(Sender: TObject);
 begin
   lvBook.Selected.EditCaption;
-end;
-
-procedure THistoryFrm.hgInlineKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-begin
-  if (Key = Ord('P')) and (ssCtrl in Shift) then begin
-    ToogleItemProcessing.Click;
-    key:=0;
-  end;
 end;
 
 procedure THistoryFrm.hgProcessInlineChange(Sender: TObject; Enabled: Boolean);
