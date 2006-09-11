@@ -92,17 +92,14 @@ Show receiver information
 &Copy
 [Copy All]
 Copy All
-[&Select All]
-&Select All
-[Disable &Processing]
-Disable &Processing
+[Select &All]
+Select &All
+[Toggle &Processing]
+Toggle &Processing
 [Send &Message]
 Send &Message
 [&Reply Quoted]
 &Reply Quoted
-;; Text found in ..\plugin\EventDetailForm.pas:
-[Enable &Processing]
-Enable &Processing
 
 ;; GlobalSearch.trans.txt file
 
@@ -155,10 +152,6 @@ Copy &Text
 &Save Selected...
 [Save History]
 Save History
-[Select &All]
-Select &All
-[Cancel]
-Cancel
 ;; Text found in ..\plugin\GlobalSearch.pas:
 [%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.]
 %.0n items in %d contacts found. Searched for %.1f sec in %.0n items.
@@ -372,6 +365,8 @@ Password Check
 Enter password
 [To access Password Protection options you need to enter password]
 To access Password Protection options you need to enter password
+[Cancel]
+Cancel
 ;; Text found in ..\plugin\PassCheckForm.pas:
 
 ;; PassForm.trans.txt file
