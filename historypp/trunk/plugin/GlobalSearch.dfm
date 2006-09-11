@@ -263,7 +263,6 @@ object fmGlobalSearch: TfmGlobalSearch
         OnItemDelete = hgItemDelete
         OnKeyDown = hgKeyDown
         OnKeyUp = hgKeyUp
-        OnInlineKeyUp = hgInlineKeyUp
         OnState = hgState
         OnSelect = hgSelect
         OnRTLChange = hgRTLEnabled
@@ -404,42 +403,5 @@ object fmGlobalSearch: TfmGlobalSearch
     OnTimer = tiFilterTimer
     Left = 352
     Top = 376
-  end
-  object pmGridInline: TTntPopupMenu
-    BiDiMode = bdLeftToRight
-    ParentBiDiMode = False
-    OnPopup = pmGridInlinePopup
-    Left = 208
-    Top = 299
-    object CopyInline: TTntMenuItem
-      Caption = '&Copy'
-      ShortCut = 16451
-      OnClick = CopyInlineClick
-    end
-    object CopyAllInline: TTntMenuItem
-      Caption = 'Copy All'
-      OnClick = CopyAllInlineClick
-    end
-    object SelectAllInline: TTntMenuItem
-      Caption = 'Select &All'
-      ShortCut = 16449
-      OnClick = SelectAllInlineClick
-    end
-    object N10: TTntMenuItem
-      Caption = '-'
-    end
-    object ToogleItemProcessing: TTntMenuItem
-      Caption = 'Disable &Processing'
-      ShortCut = 16464
-      OnClick = ToogleItemProcessingClick
-    end
-    object N9: TTntMenuItem
-      Caption = '-'
-    end
-    object CancelInline1: TTntMenuItem
-      Caption = 'Cancel'
-      ShortCut = 27
-      OnClick = CancelInline1Click
-    end
   end
 end

@@ -78,7 +78,6 @@ object HistoryFrm: THistoryFrm
         OnItemDelete = hgItemDelete
         OnKeyDown = hgKeyDown
         OnKeyUp = hgKeyUp
-        OnInlineKeyUp = hgInlineKeyUp
         OnProcessInlineChange = hgProcessInlineChange
         OnChar = hgChar
         OnState = hgState
@@ -709,43 +708,6 @@ object HistoryFrm: THistoryFrm
     end
     object CopyFile1: TTntMenuItem
       Caption = '&Copy'
-    end
-  end
-  object pmGridInline: TTntPopupMenu
-    BiDiMode = bdLeftToRight
-    ParentBiDiMode = False
-    OnPopup = pmGridInlinePopup
-    Left = 324
-    Top = 287
-    object CopyInline: TTntMenuItem
-      Caption = '&Copy'
-      ShortCut = 16451
-      OnClick = CopyInlineClick
-    end
-    object CopyAllInline: TTntMenuItem
-      Caption = 'Copy All'
-      OnClick = CopyAllInlineClick
-    end
-    object SelectAllInline: TTntMenuItem
-      Caption = 'Select &All'
-      ShortCut = 16449
-      OnClick = SelectAllInlineClick
-    end
-    object N10: TTntMenuItem
-      Caption = '-'
-    end
-    object ToogleItemProcessing: TTntMenuItem
-      Caption = 'Disable &Processing'
-      ShortCut = 16464
-      OnClick = ToogleItemProcessingClick
-    end
-    object N9: TTntMenuItem
-      Caption = '-'
-    end
-    object CancelInline1: TTntMenuItem
-      Caption = 'Cancel'
-      ShortCut = 27
-      OnClick = CancelInline1Click
     end
   end
   object ilSessions: TImageList

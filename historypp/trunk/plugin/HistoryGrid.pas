@@ -58,7 +58,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  TntSysUtils,TntWindows, TntControls,TntGraphics, TntComCtrls, Menus, StdCtrls,
+  TntSysUtils,TntWindows, TntControls,TntGraphics, TntComCtrls, Menus, TntMenus, StdCtrls,
   Math, mmsystem,
   hpp_global, hpp_contacts, hpp_itemprocess, hpp_events, m_api, hpp_eventfilters,
   Contnrs,
@@ -348,6 +348,7 @@ type
     //FRichItem: integer;
     //FRichSelected: TTntRichEdit;
     FRichInline: TTntRichEdit;
+    FpmRichInline: TTntPopupMenu;
     FRichHeight: Integer;
     FRichParamsSet: Boolean;
     OverURL: Boolean;
@@ -374,9 +375,6 @@ type
     FShowBookmarks: Boolean;
 
     FShowBottomAligned: Boolean;
-
-    FOnInlineKeyDown: TKeyEvent;
-    FOnInlineKeyUp: TKeyEvent;
 
     procedure SetCodepage(const Value: Cardinal);
     procedure SetShowHeaders(const Value: Boolean);
@@ -451,6 +449,14 @@ type
     procedure SetProcessInline(const Value: Boolean);
     function GetBookmarked(Index: Integer): Boolean;
     procedure SetBookmarked(Index: Integer; const Value: Boolean);
+
+    procedure OnInlinePopup(Sender: TObject);
+    procedure OnInlineCopyClick(Sender: TObject);
+    procedure OnInlineCopyAllClick(Sender: TObject);
+    procedure OnInlineSelectAllClick(Sender: TObject);
+    procedure OnInlineToggleProcessingClick(Sender: TObject);
+    procedure OnInlineCancelClick(Sender: TObject);
+
   protected
     DownHitTests: TGridHitTests;
     procedure CreateWindowHandle(const Params: TCreateParams); override;
@@ -579,8 +585,6 @@ type
     property OnItemDelete: TOnItemDelete read FItemDelete write FItemDelete;
     property OnKeyDown;
     property OnKeyUp;
-    property OnInlineKeyDown: TKeyEvent read FOnInlineKeyDown write FOnInlineKeyDown;
-    property OnInlineKeyUp: TKeyEvent read FOnInlineKeyUp write FOnInlineKeyUp;
     property OnProcessInlineChange: TOnProcessInlineChange read FOnProcessInlineChange write FOnProcessInlineChange;
     property OnChar: TOnChar read FOnChar write FOnChar;
     property OnState: TOnState read FOnState write FOnState;
@@ -712,6 +716,17 @@ begin
   ShowHint := True;
   {$IFDEF RENDER_RICH}
   FRichCache := TRichCache.Create(Self);
+
+  FpmRichInline := TTntPopupMenu.Create(Self);
+  FpmRichInline.Items.Add(WideNewItem('&Copy',TextToShortCut('Ctrl+C'),false,true,OnInlineCopyClick,0,'pmCopy'));
+  FpmRichInline.Items.Add(WideNewItem('Copy All',0,false,true,OnInlineCopyAllClick,0,'pmCopyAll'));
+  FpmRichInline.Items.Add(WideNewItem('Select &All',TextToShortCut('Ctrl+A'),false,true,OnInlineSelectAllClick,0,'pmSelectAll'));
+  FpmRichInline.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN1'));
+  FpmRichInline.Items.Add(WideNewItem('Toggle &Processing',TextToShortCut('Ctrl+P'),false,true,OnInlineToggleProcessingClick,0,'pmToggleProcessing'));
+  FpmRichInline.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN2'));
+  FpmRichInline.Items.Add(WideNewItem('Cancel',TextToShortCut('ESC'),false,true,OnInlineCancelClick,0,'pmCancel'));
+  FpmRichInline.OnPopup := OnInlinePopup;
+
   {tmp
   FRich := TTntRichEdit.Create(Self);
   FRich.Name := 'OrgFRich';
@@ -758,6 +773,8 @@ begin
   FRichInline.OnExit := RichInlineOnExit;
   FRichInline.OnKeyDown := RichInlineOnKeyDown;
   FRichInline.OnKeyUp := RichInlineOnKeyUp;
+  FRichInline.PopupMenu := FpmRichInline;
+
   {$ENDIF}
   FCodepage := CP_ACP;
   //FRTLMode := hppRTLDefault;
@@ -836,6 +853,7 @@ begin
   {$IFDEF RENDER_RICH}
   // it gets deleted autmagically because FRich.Owner = Self
   // FRich.Free;
+  FpmRichInline.Free;
   FRichCache.Free;
   {$ENDIF}
   if Assigned(Options) then
@@ -4521,8 +4539,6 @@ begin
     //FRichInline.Hide;
     Key := 0;
   end;
-  if Assigned(FOnInlineKeyDown) then
-    OnInlineKeyDown(Self,Key,Shift);
 end;
 
 procedure THistoryGrid.RichInlineOnKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -4531,8 +4547,10 @@ begin
     CancelInline;
     Key := 0;
   end;
-  if Assigned(FOnInlineKeyUp) then
-    OnInlineKeyUp(Self,Key,Shift);
+  if (Key = Ord('P')) and (ssCtrl in Shift) then begin
+    OnInlineToggleProcessingClick(Self);
+    key:=0;
+  end;
 end;
 
 function THistoryGrid.GetRichEditRect(Item: Integer): TRect;
@@ -4586,12 +4604,44 @@ begin
   State := gsIdle;
 end;
 
-{procedure THistoryGrid.CopyToClipSelected(const Format: WideString; ACodepage: Cardinal = CP_ACP);
+procedure THistoryGrid.OnInlinePopup(Sender: TObject);
 begin
-  if Selected = -1 then exit;
-  //CopyToClip(FormatItems(FSelItems,Format),Handle,ACodepage);
-  CopyToClip(FormatSelected(Format),Handle,ACodepage);
-end;}
+  FpmRichInline.Items[0].Enabled := (FRichInline.SelLength > 0);
+end;
+
+procedure THistoryGrid.OnInlineCopyClick(Sender: TObject);
+begin
+  FRichInline.CopyToClipboard;
+end;
+
+procedure THistoryGrid.OnInlineCopyAllClick(Sender: TObject);
+var
+  ss,sl: integer;
+begin
+  FRichInline.Lines.BeginUpdate;
+  ss := FRichInline.SelStart;
+  sl := FRichInline.SelLength;
+  FRichInline.SelectAll;
+  FRichInline.CopyToClipboard;
+  FRichInline.SelStart := ss;
+  FRichInline.SelLength := sl;
+  FRichInline.Lines.EndUpdate;
+end;
+
+procedure THistoryGrid.OnInlineSelectAllClick(Sender: TObject);
+begin
+  FRichInline.SelectAll;
+end;
+
+procedure THistoryGrid.OnInlineToggleProcessingClick(Sender: TObject);
+begin
+  ProcessInline := not ProcessInline;
+end;
+
+procedure THistoryGrid.OnInlineCancelClick(Sender: TObject);
+begin
+  CancelInline;
+end;
 
 { TGridOptions }
 
@@ -5194,7 +5244,6 @@ end;
 procedure THistoryGrid.CMBiDiModeChanged(var Message: TMessage);
 var
   ExStyle: DWORD;
-  Loop: Integer;
 begin
   //inherited;
   if HandleAllocated then begin
