@@ -412,10 +412,6 @@ end;
 
 procedure TEventDetailsFrm.pmETextPopup(Sender: TObject);
 begin
-  if ParentForm.hg.ProcessInline then
-    ToogleItemProcessing.Caption := TranslateWideW('Disable &Processing')
-  else
-    ToogleItemProcessing.Caption := TranslateWideW('Enable &Processing');
   CopyText.Enabled := (EText.SelLength > 0);
   SendMessage1.Enabled := (ParentForm.hContact <> 0);
   ReplyQuoted1.Enabled := (ParentForm.hContact <> 0);
