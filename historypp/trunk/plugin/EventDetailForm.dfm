@@ -233,7 +233,7 @@ object EventDetailsFrm: TEventDetailsFrm
       OnClick = CopyAllClick
     end
     object SelectAll: TTntMenuItem
-      Caption = '&Select All'
+      Caption = 'Select &All'
       ShortCut = 16449
       OnClick = SelectAllClick
     end
@@ -241,7 +241,7 @@ object EventDetailsFrm: TEventDetailsFrm
       Caption = '-'
     end
     object ToogleItemProcessing: TTntMenuItem
-      Caption = 'Disable &Processing'
+      Caption = 'Toggle &Processing'
       ShortCut = 16464
       OnClick = ToogleItemProcessingClick
     end
