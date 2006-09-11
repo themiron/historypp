@@ -27,11 +27,6 @@ Copy &Text
 &Delete
 &Save Selected...
 Save History
-&Copy
-Copy All
-Select &All
-Disable &Processing
-Cancel
 ;; Text found in ..\plugin\GlobalSearch.pas:
 %.0n items in %d contacts found. Searched for %.1f sec in %.0n items.
 Search
@@ -72,5 +67,3 @@ Do you really want to delete selected items (%.0f)?
 Delete Selected
 Do you really want to delete selected item?
 Delete
-Disable &Processing
-Enable &Processing

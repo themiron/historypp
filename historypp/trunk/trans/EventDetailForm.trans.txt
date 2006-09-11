@@ -13,10 +13,7 @@ Show sender information
 Show receiver information
 &Copy
 Copy All
-&Select All
-Disable &Processing
+Select &All
+Toggle &Processing
 Send &Message
 &Reply Quoted
-;; Text found in ..\plugin\EventDetailForm.pas:
-Disable &Processing
-Enable &Processing
