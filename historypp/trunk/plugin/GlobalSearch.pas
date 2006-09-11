@@ -110,6 +110,14 @@ type
     Delete1: TTntMenuItem;
     N3: TTntMenuItem;
     Bookmark1: TTntMenuItem;
+    pmGridInline: TTntPopupMenu;
+    CopyInline: TTntMenuItem;
+    CopyAllInline: TTntMenuItem;
+    SelectAllInline: TTntMenuItem;
+    N10: TTntMenuItem;
+    ToogleItemProcessing: TTntMenuItem;
+    N9: TTntMenuItem;
+    CancelInline1: TTntMenuItem;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -164,6 +172,14 @@ type
     procedure hgBookmarkClick(Sender: TObject; Item: Integer);
     procedure lvContactsContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
+    procedure pmGridInlinePopup(Sender: TObject);
+    procedure CopyInlineClick(Sender: TObject);
+    procedure CopyAllInlineClick(Sender: TObject);
+    procedure SelectAllInlineClick(Sender: TObject);
+    procedure ToogleItemProcessingClick(Sender: TObject);
+    procedure CancelInline1Click(Sender: TObject);
+    procedure hgInlineKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     UserMenu: hMenu;
     UserMenuContact: THandle;
@@ -298,6 +314,8 @@ begin
 //  end;
   DesktopFont := True;
   MakeFontsParent(Self);
+
+  hg.InlineRichEdit.PopupMenu := pmGridInline;
 
   FormState := gsIdle;
 
@@ -568,6 +586,7 @@ begin
   SaveDialog.Title := Translate(PAnsiChar(SaveDialog.Title));
 
   TranslateMenu(pmGrid.Items);
+  TranslateMenu(pmGridInline.Items);
 
   hg.TxtFullLog := TranslateWideW(hg.txtFullLog);
   hg.TxtGenHist1 := TranslateWideW(hg.txtGenHist1);
@@ -1417,18 +1436,19 @@ procedure TfmGlobalSearch.FormKeyDown(Sender: TObject; var Key: Word;
 var
   Mask: Integer;
 begin
+  if (Key = VK_ESCAPE) or ((Key = VK_F4) and (ssAlt in Shift)) then begin
+    if IsSearching then
+      StopSearching
+    else
+      close;
+    Key := 0;
+    exit;
+  end;
+
   if (key = VK_F3) and ((Shift=[]) or (Shift=[ssShift])) and (Length(History) > 0) then begin
     SearchNext(ssShift in Shift,True);
     key := 0;
     end;
-
-  if (Key = VK_ESCAPE) then begin
-    if IsSearching then begin
-      StopSearching;
-      exit;
-    end else
-      close;
-  end;
 
   if hg.State = gsInline then begin
     exit;
@@ -1441,6 +1461,18 @@ begin
     end;
     if (key=Ord('M')) then begin
       if hg.Selected <> -1 then SendMessage1.Click;
+      key:=0;
+    end;
+    if (key=Ord('B')) then begin
+      Bookmark1.Click;
+      key:=0;
+    end;
+    if (key=Ord('C')) or (key = VK_INSERT) then begin
+      Copy1.Click;
+      key:=0;
+    end;
+    if (key=Ord('T')) then begin
+      CopyText1.Click;
       key:=0;
     end;
     if key=VK_RETURN then begin
@@ -1591,7 +1623,57 @@ begin
   hDBEvent := GetSearchItem(hg.Selected).hDBEvent;
   val := not BookmarkServer[GetSearchItem(hg.Selected).Contact.Handle].Bookmarked[hDBEvent];
   BookmarkServer[GetSearchItem(hg.Selected).Contact.Handle].Bookmarked[hDBEvent] := val;
-  //NotifyAllForms(HM_NOTF_BOOKMARKCHANGED,GetSearchItem(hg.Selected).Contact.Handle,hDBEvent);
+end;
+
+procedure TfmGlobalSearch.pmGridInlinePopup(Sender: TObject);
+begin
+  if hg.ProcessInline then
+    ToogleItemProcessing.Caption := TranslateWideW('Disable &Processing')
+  else
+    ToogleItemProcessing.Caption := TranslateWideW('Enable &Processing');
+  CopyInline.Enabled := (hg.InlineRichEdit.SelLength > 0);
+end;
+
+procedure TfmGlobalSearch.CopyInlineClick(Sender: TObject);
+begin
+  hg.InlineRichEdit.CopyToClipboard;
+end;
+
+procedure TfmGlobalSearch.CopyAllInlineClick(Sender: TObject);
+var
+  ss,sl: integer;
+begin
+  hg.InlineRichEdit.Lines.BeginUpdate;
+  ss := hg.InlineRichEdit.SelStart;
+  sl := hg.InlineRichEdit.SelLength;
+  hg.InlineRichEdit.SelectAll;
+  hg.InlineRichEdit.CopyToClipboard;
+  hg.InlineRichEdit.SelStart := ss;
+  hg.InlineRichEdit.SelLength := sl;
+  hg.InlineRichEdit.Lines.EndUpdate;
+end;
+
+procedure TfmGlobalSearch.SelectAllInlineClick(Sender: TObject);
+begin
+  hg.InlineRichEdit.SelectAll;
+end;
+
+procedure TfmGlobalSearch.ToogleItemProcessingClick(Sender: TObject);
+begin
+  hg.ProcessInline := not hg.ProcessInline;
+end;
+
+procedure TfmGlobalSearch.CancelInline1Click(Sender: TObject);
+begin
+  hg.CancelInline;
+end;
+
+procedure TfmGlobalSearch.hgInlineKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if (Key = Ord('P')) and (ssCtrl in Shift) then begin
+    ToogleItemProcessing.Click;
+    key:=0;
+  end;
 end;
 
 initialization
