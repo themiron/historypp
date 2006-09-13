@@ -33,7 +33,7 @@ interface
 
 uses
 
-    m_globaldefs, windows;
+    m_globaldefs, windows, RichEdit;
 
     {$include m_plugins.inc}
     {$include m_system.inc}

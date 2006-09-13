@@ -8,42 +8,17 @@ const
   SAFLRE_INSERTEMF = 2;
 
 type
-  _charrange = record
-    cpMin: Longint;
-    cpMax: LongInt;
-  end;
-  {$EXTERNALSYM _charrange}
-  TCharRange = _charrange;
-  CHARRANGE = _charrange;
-  {$EXTERNALSYM CHARRANGE}
-
-  TEXTRANGEA = record
-    chrg: TCharRange;
-    lpstrText: PAnsiChar;
-  end;
-  {$EXTERNALSYM TEXTRANGEA}
-  TTextRangeA = TEXTRANGEA;
-  TEXTRANGEW = record
-    chrg: TCharRange;
-    lpstrText: PWideChar;
-  end;
-  {$EXTERNALSYM TEXTRANGEW}
-  TTextRangeW = TEXTRANGEW;
-  TEXTRANGE = TEXTRANGEA;
-
-  PCharRange = ^TCharRange;
-
   TSmAddRichEdit = record
     cbSize: Integer;
     hwndRichEditControl: HWND;
-    rangeToReplace: PCharRange;
+    rangeToReplace: ^CharRange;
     ProtocolName: PChar;
     end;
 
   TSmAddRichEdit2 = record
     cbSize: Integer;
     hwndRichEditControl: HWND;
-    rangeToReplace: PCharRange;
+    rangeToReplace: ^CharRange;
     ProtocolName: PChar;
     useSounds: Boolean;
     disableRedraw: Boolean;
@@ -52,7 +27,7 @@ type
   TSmAddRichEdit3 = record
     cbSize: Integer;
     hwndRichEditControl: HWND;
-    rangeToReplace: PCharRange;
+    rangeToReplace: ^CharRange;
     ProtocolName: PChar;
     flags: integer;
     disableRedraw: Boolean;
