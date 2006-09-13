@@ -3724,7 +3724,7 @@ var
     style: string;
   begin
     if fsBold in F.Style then style := style+'\b';
-    if fsItalic in F.Style then style := style+'\c';
+    if fsItalic in F.Style then style := style+'\i';
     if fsUnderline in F.Style then style := style+'\ul';
     if fsStrikeOut in F.Style then style := style+'\strike';
     Result := '{\s'+intToStr(i)+
