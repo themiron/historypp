@@ -31,7 +31,7 @@ unit hpp_events;
 interface
 
 uses
-  Windows, TntSystem, SysUtils, TntSysUtils, TntWideStrUtils,
+  Windows, TntSystem, SysUtils, TntSysUtils, WideStrUtils, TntWideStrUtils,
   m_globaldefs, m_api, TntWindows,
   hpp_global, hpp_contacts;
 
