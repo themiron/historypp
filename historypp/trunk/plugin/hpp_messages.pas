@@ -28,7 +28,7 @@ interface
 
 uses
   Windows, SysUtils, TntSysUtils,
-  m_globaldefs, hpp_global;
+  m_globaldefs, m_api, hpp_global;
 
 //function QuoteText(Text: WideString): WideString;
 function SendMessageTo(hContact: Integer; Text: WideString = ''): Boolean;
@@ -36,20 +36,18 @@ function SendMessageTo(hContact: Integer; Text: WideString = ''): Boolean;
 
 implementation
 
-{$I m_message.inc}
-
 function SendMessageTo(hContact: Integer; Text: WideString): Boolean;
 var
   buff: string;
   res_new, res_old: boolean;
 begin
   if boolean(PluginLink.ServiceExists(MS_MSG_SENDMESSAGE+'W')) then
-    Result := (PluginLink.CallService(MS_MSG_SENDMESSAGE+'W',hContact,integer(PWideChar(Text))) = 0)
+    Result := (PluginLink.CallService(MS_MSG_SENDMESSAGE+'W',WPARAM(hContact),LPARAM(PWideChar(Text))) = 0)
   else begin
     buff := WideToAnsiString(Text,CP_ACP);
-    res_new := (PluginLink.CallService(MS_MSG_SENDMESSAGE,hContact,integer(PAnsiChar(buff))) = 0);
-    res_old := (PluginLink.CallService(MS_MSG_SENDMESSAGE_OLD,hContact,integer(PAnsiChar(buff))) = 0);
-    Result := res_new or res_old;
+    Result := (PluginLink.CallService(MS_MSG_SENDMESSAGE,WPARAM(hContact),LPARAM(PAnsiChar(buff))) = 0);
+    if not Result then
+      Result := (PluginLink.CallService(MS_MSG_SENDMESSAGE_OLD,WPARAM(hContact),LPARAM(PAnsiChar(buff))) = 0);
   end;
 end;
 
