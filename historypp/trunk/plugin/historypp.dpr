@@ -69,14 +69,23 @@ uses
   hpp_forms in 'hpp_forms.pas',
   hpp_opt_dialog in 'hpp_opt_dialog.pas',
   hpp_eventfilters in 'hpp_eventfilters.pas',
+  hpp_richedit in 'hpp_richedit.pas',
+  hpp_richedit_ole in 'hpp_richedit_ole.pas',
   CustomizeFiltersForm in 'CustomizeFiltersForm.pas' {fmCustomizeFilters},
   CustomizeToolbar in 'CustomizeToolbar.pas' {fmCustomizeToolbar};
 
 type
   TMenuHandles = record
     Handle: THandle;
-    Status: Boolean;
+    Count: integer;
+    Name: String;
   end;
+
+const
+  MenuHandles: array[0..2] of TMenuHandles = (
+    (Handle:0; Count:-1; Name:'View &History'),
+    (Handle:0; Count:-1; Name:'&System History'),
+    (Handle:0; Count:-1; Name:'His&tory Search'));
 
 var
   HookModulesLoad,
@@ -90,7 +99,6 @@ var
   HookFSChanged,
   HookTTBLoaded,
   HookBuildMenu: THandle;
-  MenuHandles: array[0..2] of TMenuHandles;
 
 function OnModulesLoad(wParam,lParam:DWord):integer;cdecl; forward;
 function OnSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
@@ -169,6 +177,7 @@ begin
 
     // unregister bookmarks
     hppDeinitBookmarkServer;
+
   except
     on E: Exception do
       HppMessageBox(0,'Error while closing '+hppName+':'+#10#13+E.Message,hppName+' Error',MB_OK or MB_ICONERROR);
@@ -178,6 +187,7 @@ end;
 //init plugin
 function OnModulesLoad(wParam{0},lParam{0}:DWord):integer;cdecl;
 var
+  i: integer;
   menuitem:TCLISTMENUITEM;
   upd: TUpdate;
 begin
@@ -197,32 +207,35 @@ begin
   InitEventFilters;
   ReadEventFilters;
 
+  for i := 0 to High(MenuHandles) do
+    MenuHandles[i].Name := TranslateString(MenuHandles[i].Name);
+
   ZeroMemory(@menuitem,SizeOf(menuItem));
 
   //create menu item in contact menu
   menuitem.cbSize := SizeOf(menuItem);
   menuitem.Position := 1000090000;
   menuitem.flags := 0;
-  menuitem.pszName := PChar(translate('View &History'));
+  menuitem.pszName := PChar(MenuHandles[0].Name);
   menuitem.pszService := MS_HISTORY_SHOWCONTACTHISTORY;
   //menuitem.hIcon := HistoryIcon;
   menuitem.hIcon := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
   menuitem.pszContactOwner := nil;    //all contacts
   MenuHandles[0].Handle := PluginLink.CallService(MS_CLIST_ADDCONTACTMENUITEM,0,DWord(@menuItem));
-  MenuHandles[0].Status := True;
+  MenuHandles[0].Count := -1;
   //create menu item in main menu for system history
   menuitem.Position:=500060000;
-  menuitem.pszName:=PChar(translate('&System History'));
+  menuitem.pszName:=PChar(MenuHandles[1].Name);
   MenuHandles[1].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWord(@menuitem));
-  MenuHandles[1].Status := True;
+  MenuHandles[1].Count := -1;
   //create menu item in main menu for history search
   menuitem.Position:=500060001;
   menuitem.pszService := MS_HPP_SHOWGLOBALSEARCH;
   //menuitem.hIcon := GlobalSearchIcon;
   menuitem.hIcon := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
-  menuitem.pszName:=PChar(translate('His&tory Search'));
+  menuitem.pszName:=PChar(MenuHandles[2].Name);
   MenuHandles[2].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWord(@menuItem));
-  MenuHandles[2].Status := True;
+  MenuHandles[2].Count := -1;
 
   //Register in updater
   ZeroMemory(@upd,SizeOf(upd));
@@ -410,30 +423,22 @@ end;
 function OnBuildContactMenu(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
 var
   menuitem: TCLISTMENUITEM;
-  //tmp: string;
-  tmp: boolean;
+  count: integer;
 begin
   Result := 0;
-  {tmp := GetContactProto(THandle(wParam));
-  if tmp <> '' then begin
-    tmp := GetDBStr(wParam,tmp,'ChatRoomID','');
+  count := PluginLink.CallService(MS_DB_EVENT_GETCOUNT,THandle(wParam),0);
+  if count <> MenuHandles[0].Count then begin
     ZeroMemory(@menuitem,SizeOf(menuItem));
     menuitem.cbSize := SizeOf(menuItem);
-    menuitem.flags := CMIM_FLAGS;
-    if tmp = '' then menuitem.flags := CMIM_FLAGS
-                else menuitem.flags := CMIM_FLAGS or CMIF_GRAYED;
+    menuitem.flags := CMIM_NAME or CMIM_FLAGS;
+    if count = 0 then begin
+      menuitem.flags := menuitem.flags or CMIF_GRAYED;
+      menuitem.pszName := PChar(MenuHandles[0].Name);
+    end else begin
+      menuitem.pszName := PChar(MenuHandles[0].Name + ' [' + intToStr(count) + ']');
+    end;
     if PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0].Handle, DWord(@menuItem)) = 0 then
-      MenuHandles[0].Status := (tmp = '');
-  end;}
-  tmp := (PluginLink.CallService(MS_DB_EVENT_GETCOUNT,THandle(wParam),0) > 0);
-  if tmp <> MenuHandles[0].Status then begin
-    ZeroMemory(@menuitem,SizeOf(menuItem));
-    menuitem.cbSize := SizeOf(menuItem);
-    menuitem.flags := CMIM_FLAGS;
-    if tmp then menuitem.flags := CMIM_FLAGS
-           else menuitem.flags := CMIM_FLAGS or CMIF_GRAYED;
-    if PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0].Handle, DWord(@menuItem)) = 0 then
-      MenuHandles[0].Status := tmp;
+      MenuHandles[0].Count := count;
   end;
 end;
 
@@ -458,4 +463,5 @@ begin
   RegisterExpectedMemoryLeak(ThemeServices);
   ReportMemoryLeaksOnShutdown := True;
   {$ENDIF}
+
 end.
