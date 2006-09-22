@@ -10,8 +10,8 @@ const
 
 type
   TMathRicheditInfo = record
-    hwndRichEditControl: THandle;
-    sel: ^TCharRange; // NULL: replace all.
+    hwndRichEditControl: HWND;
+    sel: ^CharRange; // NULL: replace all.
     disableredraw: Integer;
   end;
 
@@ -22,6 +22,37 @@ type
 // if you try to MATH_REPLACE_FORMULAE the second time, startDelimiters and endDelimiters are mixed up.
 // The same problem occours if we have empty formulae, because two succeding delimiters are
 // replaced with a single delimiter.
+
+// **********parameter functions:
+const
+                       
+    MATH_SET_PARAMS = 'Math/SetParams';
+//--------------------------------------
+// sets a parameter (only integer values) specified in  wparam
+// wparam=paramcode
+// lparam=parametervalue
+// paramcodes:
+    MATH_PARAM_BKGCOLOR		= 0;	// (COLORREF) std-rgb-color or TRANSPARENT_Color
+// you can make the BKGCOLOR Transparent (default) by using this color:
+    TRANSPARENT_Color 		= -1;  // this is default
+    MATH_PARAM_FONTCOLOR	= 1;   // (COLORREF) std-rgb-color
+    MATH_PARAM_RESIZE_HWND 	= 2;            // (HWND) preview window resizes RESIZE_HWND when it is being resized.
+    MATH_PARAM_ToolboxEdit_HWND = 3;       // (HWND) If this hwnd (of an edit-box) is set, MathModule can insert Formula-elements from the Math-Toolbox.
+
+    MATH_GET_PARAMS = 'Math/GetParams';
+//---------------------------------------
+// get a parameter (only integer values) specified in wparam
+// wparam=paramcode
+// lparam=lparamOfPARAM // see below
+// paramcodes and returnvalues:
+    MATH_PARAM_STARTDELIMITER 	= 4; // retval: *char delimiter // the delimiter that marks the beginning of a formula
+                                      // !!! the result-buffer must be deleted with MTH_FREE_MATH_BUFFER
+                                      // lparam=0
+    MATH_PARAM_ENDDELIMITER 	= 5; // retval: *char delimiter // the delimiter that marks the end of a formula
+                                      // !!! the result-buffer must be deleted with MTH_FREE_MATH_BUFFER
+                                      // lparam=0
+// ************end parameter functions.
+
 
 const
   MATH_GET_STARTDELIMITER = 'Math/GetStartDelimiter';
