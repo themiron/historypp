@@ -31,7 +31,8 @@ unit hpp_events;
 interface
 
 uses
-  Windows, TntSystem, SysUtils, TntSysUtils, WideStrUtils, TntWideStrUtils,
+  Windows, TntSystem, SysUtils, TntSysUtils,
+  {$IFDEF COMPILER_10}WideStrUtils,{$ENDIF} TntWideStrUtils,
   m_globaldefs, m_api, TntWindows,
   hpp_global, hpp_contacts;
 
@@ -271,6 +272,7 @@ begin
       break;
     end;
   mt := EventTable[EventIndex].MessageType;
+  Result.Codepage := UseCP;
   Result.Text := EventTable[EventIndex].TextFunction(EventInfo,UseCP,mt);
   Result.Text := TntAdjustLineBreaks(Result.Text);
   Result.Text := TrimRight(Result.Text);
