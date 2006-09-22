@@ -83,7 +83,7 @@ type
 
 const
   MenuHandles: array[0..2] of TMenuHandles = (
-    (Handle:0; Count:-1; Name:'View &History'),
+    (Handle:0; Count:-1; Name:'View &History [%u]'),
     (Handle:0; Count:-1; Name:'&System History'),
     (Handle:0; Count:-1; Name:'His&tory Search'));
 
@@ -431,12 +431,8 @@ begin
     ZeroMemory(@menuitem,SizeOf(menuItem));
     menuitem.cbSize := SizeOf(menuItem);
     menuitem.flags := CMIM_NAME or CMIM_FLAGS;
-    if count = 0 then begin
-      menuitem.flags := menuitem.flags or CMIF_GRAYED;
-      menuitem.pszName := PChar(MenuHandles[0].Name);
-    end else begin
-      menuitem.pszName := PChar(MenuHandles[0].Name + ' [' + intToStr(count) + ']');
-    end;
+    if count = 0 then menuitem.flags := menuitem.flags or CMIF_GRAYED;
+    menuitem.pszName := PChar(Format(MenuHandles[0].Name,[count]));
     if PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0].Handle, DWord(@menuItem)) = 0 then
       MenuHandles[0].Count := count;
   end;
