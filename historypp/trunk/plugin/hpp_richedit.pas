@@ -1,5 +1,5 @@
 {-----------------------------------------------------------------------------
- hpp_rtf (historypp project)
+ hpp_richedit(historypp project)
 
  Version:   1.0
  Created:   12.09.2006
@@ -22,12 +22,12 @@
  Copyright (c) theMIROn, 2006
 -----------------------------------------------------------------------------}
 
-unit hpp_rtf;
+unit hpp_richedit;
 
 interface
 
 uses
-  Windows, RichEdit;
+  Windows, Classes, RichEdit, hpp_global;
 
 type
   PTextStream = ^TTextStream;
@@ -36,10 +36,17 @@ type
     Data: PString;
   end;
 
-function GetRichRTF(RichEditHandle: THandle; var RTFStream: String; SelectionOnly, PlainText, NoObjects, PlainRTF: boolean): Integer;
-function SetRichRTF(RichEditHandle: THandle; RTFStream: String; SelectionOnly, PlainText, PlainRTF: boolean): Integer;
+function GetRichRTF(RichEditHandle: THandle; var RTFStream: String; SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean): Integer;
+function SetRichRTF(RichEditHandle: THandle; RTFStream: String; SelectionOnly, PlainText, PlainRTF: Boolean): Integer;
+function FormatTextUnicodeRTF(Text: WideString): String;
 
 implementation
+
+Uses SysUtils;
+
+const
+  SF_UNICODE = 16;
+  SF_USECODEPAGE = 32;
 
 function RichEditStreamLoad(dwCookie: Longint; pbBuff: PByte; cb: Longint; var pcb: Longint): Longint; stdcall;
 var
@@ -66,12 +73,13 @@ begin
   Result := 0;
 end;
 
-function GetRichRTF(RichEditHandle: THandle; var RTFStream: String; SelectionOnly, PlainText, NoObjects, PlainRTF: boolean): Integer;
+function GetRichRTF(RichEditHandle: THandle; var RTFStream: String; SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean): Integer;
 var
   es: TEditStream;
   ts: TTextStream;
   format: Longint;
 begin
+  //format := SF_USECODEPAGE or (CP_UTF8 shl 16)
   format := 0;
   if SelectionOnly then format := format or SFF_SELECTION;
   if PlainRTF then format := format or SFF_PLAINRTF;
@@ -92,12 +100,13 @@ begin
   Result := es.dwError;
 end;
 
-function SetRichRTF(RichEditHandle: THandle; RTFStream: String; SelectionOnly, PlainText, PlainRTF: boolean): Integer;
+function SetRichRTF(RichEditHandle: THandle; RTFStream: String; SelectionOnly, PlainText, PlainRTF: Boolean): Integer;
 var
   es: TEditStream;
   ts: TTextStream;
   format: Longint;
 begin
+  //format := SF_USECODEPAGE or (CP_UTF8 shl 16)
   format := 0;
   if SelectionOnly then format := format or SFF_SELECTION;
   if PlainRTF then format := format or SFF_PLAINRTF;
@@ -110,6 +119,27 @@ begin
   es.pfnCallback := @RichEditStreamLoad;
   SendMessage(RichEditHandle, EM_STREAMIN, format, integer(@es));
   Result := es.dwError;
+end;
+
+function FormatTextUnicodeRTF(Text: WideString): String;
+var
+  i: integer;
+begin
+  Result := '{\uc1 ';
+  for i := 1 to Length(Text) do begin
+    case Text[i] of
+      #13: ;
+      #10: Result := Result + '\line ';
+      #09: Result := Result + '\tab ';
+      '\': Result := Result + '\\';
+      '{': Result := Result + '\{';
+      '}': Result := Result + '\}';
+    else
+      if integer(Text[i]) < 128 then Result := Result + AnsiChar(integer(Text[i]))
+                                else Result := Result + Format('\u%d ?',[integer(Text[i])]);
+    end;
+  end;
+  Result := Result + '}';
 end;
 
 end.
