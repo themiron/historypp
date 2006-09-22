@@ -159,11 +159,11 @@ foreach($lines as $i => $line) {
   // "...'),Translate('..."
   // from such string:
   // "Translate('...'),Translate('...')"
-  if (preg_match_all('/Translate(W|WideW|AnsiW)?\(\'(.*)\'\)/i',$line,$matches)) {
+  if (preg_match_all('/Translate(W|WideW|AnsiW|String|WideString)?\(\'(.*)\'\)/i',$line,$matches)) {
     foreach($matches[2] as $match) { add_str($match,$i); }
   } else
   // capture Translate(var)
-  if (preg_match_all('/Translate(W|WideW|AnsiW)?\((.*)\)/i',$line,$matches)) {
+  if (preg_match_all('/Translate(W|WideW|AnsiW|String|WideString)?\((.*)\)/i',$line,$matches)) {
     foreach($matches[2] as $match) { add_prop($match,$i); }
   }
   $pattern = "/([\w\d]+)\s*\:\s*[\w\d]+\s*\=\s*\'(.*)\';$/is";
