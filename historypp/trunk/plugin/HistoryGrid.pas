@@ -57,10 +57,11 @@ interface
 {$DEFINE RENDER_RICH}
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  TntSysUtils,TntWindows, TntControls,TntGraphics, TntComCtrls, Menus, TntMenus, StdCtrls,
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, ComCtrls,
+  TntSysUtils,TntWindows, TntControls,TntGraphics, {TntComCtrls,} Menus, TntMenus, StdCtrls,
   Math, mmsystem,
   hpp_global, hpp_contacts, hpp_itemprocess, hpp_events, m_api, hpp_eventfilters,
+  hpp_richedit, hpp_richedit_ole,
   Contnrs,
   VertSB,
   RichEdit, ShellAPI;
@@ -198,7 +199,7 @@ type
     procedure StartChange;
     procedure EndChange;
     function AddItemOptions: integer;
-    procedure GetItemOptions(Mes: TMessageTypes; out textFont: TFont; out textColor: TColor);
+    function GetItemOptions(Mes: TMessageTypes; out textFont: TFont; out textColor: TColor): integer;
     property OnShowIcons: TOnShowIcons read FOnShowIcons write FOnShowIcons;
   published
     property ClipCopyFormat: WideString read FClipCopyFormat write FClipCopyFormat;
@@ -238,7 +239,7 @@ type
 
 
   TRichItem = record
-    Rich: TTntRichEdit;
+    Rich: TRichEdit;
     Bitmap: TBitmap;
     BitmapDrawn: Boolean;
     Height: Integer;
@@ -276,7 +277,7 @@ type
 
     function RequestItem(GridItem: Integer): PRichItem;
     function CalcItemHeight(GridItem: Integer): Integer;
-    function GetItemRich(GridItem: Integer): TTntRichedit;
+    function GetItemRich(GridItem: Integer): TRichEdit;
     function GetItemRichBitmap(GridItem: Integer): TBitmap;
   end;
 
@@ -344,10 +345,10 @@ type
     FRichCache: TRichCache;
     FOnUrlClick: TUrlEvent;
     FOnUrlPopup: TUrlEvent;
-    FRich: TTntRichEdit;
-    //FRichItem: integer;
-    //FRichSelected: TTntRichEdit;
-    FRichInline: TTntRichEdit;
+    FRich: TRichEdit;
+    FRichInline: TRichEdit;
+    FRichSave: TRichEdit;
+    FRichSaveOLECB: TRichEditOleCallback;
     FpmRichInline: TTntPopupMenu;
     FRichHeight: Integer;
     FRichParamsSet: Boolean;
@@ -376,6 +377,8 @@ type
 
     FShowBottomAligned: Boolean;
 
+    FontSizeMult: Double;
+
     procedure SetCodepage(const Value: Cardinal);
     procedure SetShowHeaders(const Value: Boolean);
     function GetIdx(Index: Integer): Integer;
@@ -384,8 +387,8 @@ type
     procedure ScrollGridBy(Offset: Integer; Update: Boolean = True);
     procedure SetSBPos(Position: Integer);
     // FRich events
-    procedure OnRichResize(Sender: TObject; Rect: TRect);
-    procedure OnMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    //procedure OnRichResize(Sender: TObject; Rect: TRect);
+    //procedure OnMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     // FRichInline events
     procedure RichInlineOnExit(Sender: TObject);
     procedure RichInlineOnKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -531,8 +534,8 @@ type
 
     procedure EditInline(Item: Integer);
     procedure CancelInline;
-    property InlineRichEdit: TTntRichEdit read FRichInline write FRichInline;
-    property RichEdit: TTntRichEdit read FRich write FRich;
+    property InlineRichEdit: TRichEdit read FRichInline write FRichInline;
+    property RichEdit: TRichEdit read FRich write FRich;
 
     property Options: TGridOptions read FOptions write SetOptions;
     property HotString: WideString read SearchPattern;
@@ -548,11 +551,11 @@ type
     property Codepage: Cardinal read FCodepage write SetCodepage;
     property Filter: TMessageTypes read FFilter write SetFilter;
   published
-    procedure SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit; ProcessTag: Boolean = true);
+    procedure SetRichRTL(RTL: Boolean; RichEdit: TRichEdit; ProcessTag: Boolean = true);
     function GetItemRTL(Item: Integer): Boolean;
 
     //procedure CopyToClipSelected(const Format: WideString; ACodepage: Cardinal = CP_ACP);
-    procedure ApplyItemToRich(Item: Integer; RichEdit: TTntRichEdit = nil; UseSelection: Boolean = True);
+    procedure ApplyItemToRich(Item: Integer; RichEdit: TRichEdit = nil; UseSelection: Boolean = True; ForceInline: Boolean = False);
 
     function FormatItem(Item: Integer; Format: WideString): WideString;
     function FormatItems(ItemList: array of Integer; Format: WideString): WideString;
@@ -728,7 +731,7 @@ begin
   FpmRichInline.OnPopup := OnInlinePopup;
 
   {tmp
-  FRich := TTntRichEdit.Create(Self);
+  FRich := TRichEdit.Create(Self);
   FRich.Name := 'OrgFRich';
   FRich.Visible := False;
   // just a dirty hack to workaround problem with
@@ -753,12 +756,8 @@ begin
   }
   FRichParamsSet := False;
 
-  // Ok, now selected richedit
-  //FRichSelected := TTntRichEdit.Create(Self);
-  //FRichSelected.Assign(FRich);
-
   // Ok, now inlined richedit
-  FRichInline := TTntRichEdit.Create(Self);
+  FRichInline := TRichEdit.Create(Self);
   FRichInline.Top := -100;
   FRichInline.Name := 'FRichInline';
   FRichInline.Visible := False;
@@ -843,6 +842,7 @@ begin
   LogY := GetDeviceCaps(dc, LOGPIXELSY);
   ReleaseDC(0,dc);
   VLineScrollSize := Round(LogY*((13*5)/96));
+  FontSizeMult := 2*74/LogY;
 end;
 
 destructor THistoryGrid.Destroy;
@@ -1116,16 +1116,19 @@ end;
 procedure THistoryGrid.SetProcessInline(const Value: Boolean);
 var
   i,ss,sl: Integer;
+  time1,time2: Cardinal;
 begin
   if FProcessInline = Value then exit;
   FProcessInline := Value;
   if State = gsInline then begin
     FRichInline.Lines.BeginUpdate;
-    ss := FRichInline.SelStart;
-    sl := FRichInline.SelLength;
+    //ss := FRichInline.SelStart;
+    //sl := FRichInline.SelLength;
     ApplyItemToRich(Selected, FRichInline);
-    FRichInline.SelStart := ss;
-    FRichInline.SelLength := sl;
+    //FRichInline.SelStart := ss;
+    //FRichInline.SelLength := sl;
+    FRichInline.SelStart := 0;
+    FRichInline.SelLength := 0;
     FRichInline.Lines.EndUpdate;
   end;
   if Assigned(FOnProcessInlineChange) then
@@ -1182,6 +1185,7 @@ begin
     re_mask := SendMessage(FRichInline.Handle, EM_GETEVENTMASK, 0, 0);
     SendMessage(FRichInline.Handle, EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
     SendMessage(FRichInline.Handle,EM_AUTOURLDETECT,1,0);
+    //SendMessage(FRichInline.Handle, EM_EXLIMITTEXT, 0, $7fffffff);
     //re_mask := FRichInline.Perform(EM_GETEVENTMASK, 0, 0);
     //FRichInline.Perform(EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
   end;
@@ -1836,86 +1840,80 @@ begin
 end;
 
 {$IFDEF RENDER_RICH}
-procedure THistoryGrid.ApplyItemToRich(Item: Integer; RichEdit: TTntRichEdit = nil; UseSelection: Boolean = True);
+procedure THistoryGrid.ApplyItemToRich(Item: Integer; RichEdit: TRichEdit = nil; UseSelection: Boolean = True; ForceInline: Boolean = False);
 var
   textFont: TFont;
-  FontColor,BackColor: TColor;
-  cf: TCharFormat;
+  textColor,backColor: TColor;
   RichItem: PRichItem;
+  RTF,Text: String;
+  doColorBBCodes: Boolean;
+  cf: CharFormat2;
 begin
   if RichEdit = nil then begin
-     RichItem := FRichCache.RequestItem(Item);
-     FRich := RichItem^.Rich;
-     FRichHeight := RichItem^.Height;
-     exit;
-  end
-  else
-    if not (RichEdit = FRichInline) then
-      FRich := RichEdit;
+    RichItem := FRichCache.RequestItem(Item);
+    FRich := RichItem^.Rich;
+    FRichHeight := RichItem^.Height;
+    exit;
+  end else if not (RichEdit = FRichInline) then
+    FRich := RichEdit;
 
-  Options.GetItemOptions(FItems[Item].MessageType,textFont,BackColor);
+  Options.GetItemOptions(FItems[Item].MessageType,textFont,backColor);
+
   if (IsSelected(Item)) and (not (RichEdit = FRichInline)) and UseSelection then begin
-    FontColor := Options.ColorSelectedText;
-    BackColor := Options.ColorSelected;
+    textColor := ColorToRGB(Options.ColorSelectedText);
+    backColor := ColorToRGB(Options.ColorSelected);
+    doColorBBCodes := false;
   end else begin
-    FontColor := textFont.Color;
+    textColor := ColorToRGB(textFont.Color);
+    backColor := ColorToRGB(backColor);
+    doColorBBCodes := true;
   end;
-  { 04.08.2004 OXY: Workaround fixed
-    we do it this way because third-party plugins can change
-    richedit properties via it's handle and we never
-    know it because delphi properties doesn't change and
-    delphi thinks it hasn't changed and not change it with
-    simple .color := value if previous .color was the same
-    (it may not be true, because plugins can change it with
-    system messages)}
-  //{DONE: Fix workaround (color = 0; color = ...)}
-  //FRich.Color := 0;
-  //FRich.Color := BackColor;
 
   RichEdit.Clear;
-
-  //SendMessage(RichEdit.Handle,EM_SETBKGNDCOLOR,0,ColorToRGB(BackColor));
-  RichEdit.Perform(EM_SETBKGNDCOLOR,0,ColorToRGB(BackColor));
-  RichEdit.Font.Assign(textFont);
-  RichEdit.DefAttributes.Color := FontColor;
-  //RichEdit.Font.Color := FontColor;
-
   SetRichRTL(GetItemRTL(Item),RichEdit);
+  SendMessage(RichEdit.Handle,EM_SETBKGNDCOLOR,0,backColor);
 
-  RichEdit.Text := FItems[Item].Text;
+  RTF := Format('{\rtf1\ansi\ansicpg%u\deff0{\fonttbl ',[FItems[Item].Codepage]);
+  RTF := RTF + Format('{\f0\fnil\fcharset%u %s}',[textFont.CharSet,textFont.Name]);
+  RTF := RTF + '}{\colortbl';
+  RTF := RTF + Format('\red%u\green%u\blue%u;',[textColor and $FF,(textColor shr 8) and $FF,(textColor shr 16) and $FF]);
+  RTF := RTF + Format('\red%u\green%u\blue%u;',[backColor and $FF,(backColor shr 8) and $FF,(backColor shr 16) and $FF]);
+  // add color table for BBCodes
+  if Options.BBCodesEnabled and doColorBBCodes then RTF := RTF + rtf_ctable_text;
+  RTF := RTF + '}';
+  if GetItemRTL(Item) then RTF := RTF + '\rtlpar' else RTF := RTF + '\ltrpar';
+  //RTF := RTF + Format('\f0\highlight1\cf0\b%d\i%d\ul%d\strike%d\fs%u',
+  RTF := RTF + Format('\f0\cf0\b%d\i%d\ul%d\strike%d\fs%u',
+    [integer(fsBold in textFont.Style),
+     integer(fsItalic in textFont.Style),
+     integer(fsUnderline in textFont.Style),
+     integer(fsStrikeOut in textFont.Style),
+     Round(abs(textFont.Height)*FontSizeMult)]);
 
-  // fix for font changing...
-  // seems to be solved by using core unicode fonts
-  //ZeroMemory(@cf,SizeOf(cf));
-  //cf.cbSize := SizeOf(cf);
-  //cf.dwMask := CFM_FACE or CFM_CHARSET;
-  //StrPLCopy(cf.szFaceName,textFont.Name,SizeOf(cf.szFaceName));
-  //cf.bCharSet := textFont.Charset;
-  //cf.bPitchAndFamily := DEFAULT_PITCH;
-  //RichEdit.Perform(EM_SETCHARFORMAT, SCF_ALL, integer(@cf));
+  Text := FormatTextUnicodeRTF(FItems[Item].Text);
 
-  // fix for font changing...
-  //RichEdit.Lines.BeginUpdate;
-  //RichEdit.SelectAll;
-  //RichEdit.SelAttributes := RichEdit.DefAttributes;
-  //RichEdit.SelLength := 0;
-  //RichEdit.Lines.EndUpdate;
+  if Options.BBCodesEnabled and not (((State = gsInline) or ForceInline) and not ProcessInline) then begin
+    Text := DoSupportBBCodesRTF(Text,2,doColorBBCodes);
+  end;
 
-  if not ((State = gsInline) and not ProcessInline) and Assigned(FOnProcessRichText) then begin
+  RTF := RTF + Text + '}'+#0;
+
+  SetRichRTF(RichEdit.Handle,RTF,False,False,True);
+
+  if not (((State = gsInline) or ForceInline) and not ProcessInline) and Assigned(FOnProcessRichText) then begin
     try
       FOnProcessRichText(Self,RichEdit.Handle,Item);
     except
     end;
-  end;
-
-  // do not allow changed back and color of selection
-  if isSelected(item) and (State <> gsInline) and UseSelection then begin
-    ZeroMemory(@cf,SizeOf(cf));
-    cf.cbSize := SizeOf(cf);
-    cf.dwMask := CFM_COLOR;
-    cf.crTextColor := FontColor;
-    RichEdit.Perform(EM_SETBKGNDCOLOR, 0,ColorToRGB(BackColor));
-    RichEdit.Perform(EM_SETCHARFORMAT, SCF_ALL, integer(@cf));
+    // do not allow changed back and color of selection
+    if isSelected(item) and (State <> gsInline) and UseSelection then begin
+      ZeroMemory(@cf,SizeOf(cf));
+      cf.cbSize := SizeOf(cf);
+      cf.dwMask := CFM_COLOR;
+      cf.crTextColor := textColor;
+      RichEdit.Perform(EM_SETBKGNDCOLOR, 0, backColor);
+      RichEdit.Perform(EM_SETCHARFORMAT, SCF_ALL, integer(@cf));
+    end;
   end;
 
   {$IFDEF DEBUG}
@@ -1924,12 +1922,12 @@ begin
 end;
 {$ENDIF}
 
-{$IFDEF RENDER_RICH}
-procedure THistoryGrid.OnRichResize(Sender: TObject; Rect: TRect);
-begin
-  FRichHeight := Rect.Bottom - Rect.Top;
-end;
-{$ENDIF}
+//{$IFDEF RENDER_RICH}
+//procedure THistoryGrid.OnRichResize(Sender: TObject; Rect: TRect);
+//begin
+//  FRichHeight := Rect.Bottom - Rect.Top;
+//end;
+//{$ENDIF}
 
 procedure THistoryGrid.DoRButtonUp(X, Y: Integer; Keys: TMouseMoveKeys);
 var
@@ -2327,7 +2325,7 @@ var
   p: TPoint;
   tr: TextRange;
   OverInline: Boolean;
-  CurRich: TTntRichEdit;
+  CurRich: TRichEdit;
 begin
 {$IFDEF RENDER_RICH}
 // ok, user either clicked or moved mouse over link
@@ -2341,7 +2339,7 @@ if Message.NMHdr^.code = EN_LINK then begin
   // get url. instead of using selections, use GetTextRange
   {FRich.Perform(EM_EXSETSEL, 0, LongInt(@(link.chrg)));
   url := FRich.SelText;}
-  tr.chrg := link.chrg;
+  {tr.chrg := link.chrg;
   if hppOSUnicode then begin
     SetLength(url,link.chrg.cpMax-link.chrg.cpMin);
     tr.lpstrText := @url[1];
@@ -2351,7 +2349,13 @@ if Message.NMHdr^.code = EN_LINK then begin
     tr.lpstrText := @AnsiUrl[1];
   end;
   CurRich.Perform(EM_GETTEXTRANGE,0,LongInt(@tr));
-  if not hppOSUnicode then url := AnsiToWideString(AnsiUrl,Codepage);
+  if not hppOSUnicode then url := AnsiToWideString(AnsiUrl,Codepage);}
+
+  SetLength(AnsiUrl,link.chrg.cpMax-link.chrg.cpMin);
+  tr.chrg := link.chrg;
+  tr.lpstrText := @AnsiUrl[1];
+  CurRich.Perform(EM_GETTEXTRANGE,0,DWord(@tr));
+  url := AnsiToWideString(AnsiUrl,Codepage);
 
   // process messages
   if link.msg = WM_MOUSEMOVE then
@@ -2616,10 +2620,7 @@ begin
         end;
     end
     else begin
-      if Options.BBCodesEnabled then
-        mes := DoStripBBCodes(FItems[Item].Text)
-      else
-        mes := FItems[Item].Text;
+      mes := FItems[Item].Text;
       if mtIncoming in FItems[Item].MessageType then begin
         from_nick := ContactName;
         to_nick := ProfileName;
@@ -2772,7 +2773,10 @@ end;
 
 procedure THistoryGrid.CreateWindowHandle(const Params: TCreateParams);
 begin
-  CreateUnicodeHandle(Self, Params, '');
+  if hppOSUnicode then
+    CreateUnicodeHandle(Self, Params, '')
+  else
+    inherited;
 end;
 
 procedure THistoryGrid.CreateParams(var Params: TCreateParams);
@@ -3705,73 +3709,11 @@ var
     WriteString(Stream,'###'#13#10#13#10);
   end;
 
-  function FontToRTF(i: integer; const F: TFont): String;
-  begin
-    Result := '{\f'+intToStr(i)+'\fnil\fcharset'+intToStr(F.Charset)+'\fprg2 '+F.Name+';}';
-  end;
-  function ColorToRTF(i: integer; const C: TColor): String;
-  var
-    col: longint;
-  begin
-    //col := ColorToRGB(C);
-    col := C;
-    Result := '\red'+intToStr(col and $FF)+
-              '\green'+intToStr((col shr 8) and $FF)+
-              '\blue'+intToStr((col shr 16) and $FF)+';';
-  end;
-  function StyleToRTF(i: integer; const F: TFont; FLink, CLink: integer): String;
-  var
-    style: string;
-  begin
-    if fsBold in F.Style then style := style+'\b';
-    if fsItalic in F.Style then style := style+'\i';
-    if fsUnderline in F.Style then style := style+'\ul';
-    if fsStrikeOut in F.Style then style := style+'\strike';
-    Result := '{\s'+intToStr(i)+
-              '\f'+intToStr(FLink)+
-              style+
-              '\fs'+intToStr(F.Size*2)+
-              '\cf'+intToStr(CLink)+
-              '\basedon'+intToStr(FLink)+
-              '\snext'+intToStr(i)+
-              ' style'+intToStr(i)+'}';
-  end;
-
   procedure SaveRTF;
-  var
-    i: integer;
-    col: longint;
   begin
-    // header
-    WriteString(Stream,'{\rtf1\fbidis\ansi\deff0\deflang1049'+#13#10);
-    // fonts
-    WriteString(Stream,'{\fonttbl'+#13#10);
-    WriteString(Stream,FontToRTF(1,Options.FontContact)+#13#10);
-    WriteString(Stream,FontToRTF(1,Options.FontContact)+#13#10);
-    WriteString(Stream,FontToRTF(2,Options.FontProfile)+#13#10);
-    WriteString(Stream,FontToRTF(3,Options.FontTimeStamp)+#13#10);
-    for i := 0 to High(Options.ItemOptions) do
-      WriteString(Stream,FontToRTF(4+i,Options.ItemOptions[i].textFont)+#13#10);
-    // colors
-    WriteString(Stream,'}{\colortbl ;'+#13#10);
-    WriteString(Stream,ColorToRtf(1,Options.FontContact.Color)+#13#10);
-    WriteString(Stream,ColorToRtf(2,Options.FontProfile.Color)+#13#10);
-    WriteString(Stream,ColorToRtf(3,Options.FontTimeStamp.Color)+#13#10);
-    WriteString(Stream,ColorToRtf(4,Options.ColorDivider)+#13#10);
-    for i := 0 to High(Options.ItemOptions) do begin
-      WriteString(Stream,ColorToRtf(5+i*2,Options.ItemOptions[i].textFont.Color)+#13#10);
-      WriteString(Stream,ColorToRtf(6+i*2,Options.ItemOptions[i].textColor)+#13#10);
-    end;
-    // styles
-    WriteString(Stream,'}{\stylesheet'+#13#10);
-    WriteString(Stream,StyleToRTF(1,Options.FontContact,1,1)+#13#10);
-    WriteString(Stream,StyleToRTF(2,Options.FontProfile,2,2)+#13#10);
-    WriteString(Stream,StyleToRTF(3,Options.FontTimeStamp,3,3)+#13#10);
-    for i := 0 to High(Options.ItemOptions) do begin
-      WriteString(Stream,StyleToRTF(4+i,Options.ItemOptions[i].textFont,i+4,5+i*2)+#13#10);
-    end;
-    WriteString(Stream,'}'+#13#10);
-    // document info
+    FRichSave := TRichEdit.CreateParented(Handle);
+    FRichSaveOLECB := TRichEditOleCallback.Create;
+    SendMessage(FRichSave.Handle, EM_SETOLECALLBACK, 0, DWord(TRichEditOleCallback(FRichSaveOLECB) as IRichEditOleCallback));
   end;
 
 begin
@@ -3813,7 +3755,10 @@ procedure THistoryGrid.SaveEnd(Stream: TFileStream; SaveFormat: TSaveFormat);
 
   procedure SaveRTF;
   begin
-    WriteString(Stream,'}');
+    FRichSave.Lines.SaveToStream(Stream);
+    SendMessage(FRichSave.Handle, EM_SETOLECALLBACK, 0, 0);
+    FRichSave.Destroy;
+    FRichSaveOLECB.Free;
   end;
 
 begin
@@ -3825,20 +3770,6 @@ begin
     sfText: SaveText;
   end;
 end;
-
-  function RichEditStreamSave(dwCookie: Longint; pbBuff: PByte;
-    cb: Longint; var pcb: Longint): Longint; stdcall;
-  var
-    t: PString;
-    prevlen: Integer;
-  begin
-    t := PString(dwCookie);
-    prevlen := Length(t^);
-    SetLength(t^,prevlen+cb);
-    Move(pbBuff^,t^[prevlen+1],cb);
-    pcb := cb;
-    Result := 0;
-  end;
 
 procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: TSaveFormat);
 
@@ -3937,75 +3868,19 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     WriteString(Stream,WideToAnsiString(mes,Codepage)+#13#10+#13#10);
   end;
 
-  procedure MesTypeToRTF(mt: TMessageTypes; out mes_id: integer);
-  var
-    i: integer;
-    found:boolean;
-  begin
-    i := 0;
-    found := false;
-    while (not found) and (i <= High(Options.ItemOptions)) do
-      if (MessageTypesToDWord(Options.ItemOptions[i].MessageType) and MessageTypesToDWord(mt)) >= MessageTypesToDWord(mt) then
-        found := true
-      else Inc(i);
-    mes_id := i;
-  end;
-
-  function TextToRTF(S: WideString): String;
-  var
-    i: integer;
-    ch: Word;
-    res: String;
-  begin
-    res := '';
-    for i := 1 to Length(S) do begin
-      ch := Word(S[i]);
-      if ch > 127 then
-        res := res + '\u'+intToStr(ch)+'?'
-      else
-        res := res + S[i];
-    end;
-    Result := res;
-  end;
-
   procedure SaveRTF;
   var
-    date,name: WideString;
-    mes_id: integer;
-
+    RTFStream: String;
+    Text: WideString;
   begin
-    if mtIncoming in FItems[Item].MessageType then name := ContactName
-                                              else name := ProfileName;
-    date := GetTime(FItems[Item].Time);
-    MesTypeToRTF(FItems[Item].MessageType,mes_id);
-    WriteString(Stream,'\par');
-    WriteString(Stream,'\s3 ['+date+']');
-    if mtIncoming in FItems[Item].MessageType then begin
-      WriteString(Stream,' \s1 '+TextToRTF(ContactName)+':');
-    end else begin
-      WriteString(Stream,' \s2 '+TextToRTF(ProfileName)+':');
-    end;
-    WriteString(Stream,'\par\s'+intToStr(mes_id+4)+' ');
-    WriteString(Stream,TextToRTF(FItems[Item].Text));
-  end;
-
-  procedure SaveRTF2;
-  var
-    es: TEditStream;
-    ss: TStringStream;
-    t: String;
-  begin
-    ApplyItemToRich(Item,FRich);
-    es.dwCookie := Integer(@t);
-    es.dwError := 0;
-    es.pfnCallback := @RichEditStreamSave;
-    SendMessage(FRich.Handle,EM_STREAMOUT,SF_RTF,Longint(@es));
-    if Length(t) > 0 then
-      SetLength(t,Length(t)-1); // remove trailing #0
-    if Pos('\rtf1',t) = 2 then
-      System.Delete(t,2,5);
-    WriteString(Stream,t);
-    //FRich.Lines.Names
+    ApplyItemToRich(Item,FRich,false,false);
+    if mtIncoming in FItems[Item].MessageType then Text := ContactName
+                                              else Text := ProfileName;
+    Text := Text + ' ['+GetTime(FItems[Item].Time)+']:';
+    RTFStream := '{\rtf1 \par \b1 '+FormatTextUnicodeRTF(Text)+'\b0\par}';
+    SetRichRTF(FRichSave.Handle,RTFStream,true,false,true);
+    GetRichRTF(FRich.Handle,RTFStream,false,false,false,true);
+    SetRichRTF(FRichSave.Handle,RTFStream,true,false,true);
   end;
 
 begin
@@ -4013,7 +3888,7 @@ begin
   case SaveFormat of
     sfHTML: SaveHTML;
     sfXML: SaveXML;
-    sfRTF: SaveRTF2;
+    sfRTF: SaveRTF;
     sfUnicode: SaveUnicode;
     sfText: SaveText;
   end;
@@ -4078,7 +3953,7 @@ begin
   Update;
 end;
 
-procedure THistoryGrid.SetRichRTL(RTL: Boolean; RichEdit: TTntRichEdit; ProcessTag: Boolean = true);
+procedure THistoryGrid.SetRichRTL(RTL: Boolean; RichEdit: TRichEdit; ProcessTag: Boolean = true);
 var
   pf: PARAFORMAT2;
 begin
@@ -4095,8 +3970,6 @@ begin
     pf.wReserved := 0;
   end;
   RichEdit.Perform(EM_SETPARAFORMAT,0,integer(@pf));
-  //FRich.Perform(EM_SETPARAFORMAT,0,integer(@pf));
-  //FRichInline.Perform(EM_SETPARAFORMAT,0,integer(@pf));
   if ProcessTag then
     RichEdit.Tag := Integer(RTL);
 end;
@@ -4416,10 +4289,10 @@ begin
     Include(Result,ghtText);
 end;
 
-procedure THistoryGrid.OnMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+{procedure THistoryGrid.OnMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 begin
   //x := 0;
-end;
+end;}
 
 procedure THistoryGrid.DoUrlMouseMove(Url: WideString);
 begin
@@ -4767,22 +4640,22 @@ begin
   Result := i;
 end;
 
-procedure TGridOptions.GetItemOptions(Mes: TMessageTypes; out textFont: TFont; out textColor: TColor);
+function TGridOptions.GetItemOptions(Mes: TMessageTypes; out textFont: TFont; out textColor: TColor): integer;
 var
   i: integer;
-  found: boolean;
 begin
   i := 0;
-  found := false;
-  while (not found) and (i <= High(FItemOptions)) do
+  while i <= High(FItemOptions) do
     if (MessageTypesToDWord(FItemOptions[i].MessageType) and MessageTypesToDWord(Mes)) >= MessageTypesToDWord(Mes) then begin
       textFont := FItemOptions[i].textFont;
       textColor := FItemOptions[i].textColor;
-      found := true;
+      Result := i;
+      break;
     end else begin
       if mtOther in FItemOptions[i].MessageType then begin
         textFont := FItemOptions[i].textFont;
         textColor := FItemOptions[i].textColor;
+        Result := i;
       end;
       Inc(i);
     end;
@@ -4949,19 +4822,18 @@ procedure TRichCache.ApplyItemToRich(Item: PRichItem);
 var
   str: String;
 begin
-  Grid.ApplyItemToRich(Item^.GridItem,Item^.Rich);
-
   //str := 'Apply item ['+IntToStr(Item.GridItem)+'] for "'+Copy(Item.Rich.Text,1,15)+'"';
   //OutputDebugString(PChar(str));
-
   // force to send the size:
+  Grid.ApplyItemToRich(Item^.GridItem,Item^.Rich);
   SendMessage(Item^.Rich.Handle,EM_SETEVENTMASK, 0, ENM_REQUESTRESIZE);
   SendMessage(Item^.Rich.Handle,EM_REQUESTRESIZE,0, 0);
   if FRichHeight = 0 then begin
     // try to "update" richedit here
-    Item^.Rich.Text := Item.Rich.Text + 'sasme/m,ds ad34!a9-1da'; // any junk here
-    Item^.Rich.Text := Item.Rich.Text;
-    Grid.ApplyItemToRich(Item.GridItem,Item.Rich);
+    //Item^.Rich.Text := Item.Rich.Text + 'sasme/m,ds ad34!a9-1da'; // any junk here
+    //Item^.Rich.Clear;
+    //Item^.Rich.Text := Item.Rich.Text;
+    Grid.ApplyItemToRich(Item.GridItem,Item^.Rich);
     SendMessage(Item.Rich.Handle,EM_REQUESTRESIZE,0, 0);
   end;
   SendMessage(Item.Rich.Handle,EM_SETEVENTMASK, 0, RichEventMasks);
@@ -5002,7 +4874,7 @@ begin
     RichItem^.Bitmap := TBitmap.Create;
     RichItem^.Height := -1;
     RichItem^.GridItem := -1;
-    RichItem^.Rich := TTntRichEdit.Create(nil);
+    RichItem^.Rich := TRichEdit.Create(nil);
     RichItem^.Rich.Name := 'CachedRichEdit'+IntToStr(i);
     RichItem^.Rich.Visible := False;
     // just a dirty hack to workaround problem with
@@ -5047,7 +4919,7 @@ begin
     end;
 end;
 
-function TRichCache.GetItemRich(GridItem: Integer): TTntRichEdit;
+function TRichCache.GetItemRich(GridItem: Integer): TRichEdit;
 var
   Item: PRichItem;
 begin
@@ -5204,6 +5076,7 @@ begin
     exstyle := exstyle or WS_EX_TRANSPARENT;
     SetWindowLong(Items[i].Rich.Handle,GWL_EXSTYLE,exstyle);
     Items[i].Rich.Brush.Style := bsClear;
+    //Items[i].Rich.Perform(EM_EXLIMITTEXT, 0, $7fffffff);
   end;
 end;
 
