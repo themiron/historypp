@@ -60,6 +60,7 @@ type
     Module: String;
     Proto: String;
     Text: WideString;
+    Codepage: Cardinal;
     RTLMode: TRTLMode;
     HasHeader: Boolean;    // header for sessions
     LinkedToPrev: Boolean; // for future use to group messages from one contact together
