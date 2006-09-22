@@ -164,7 +164,7 @@ const
 
   cpTable: array[0..14] of TCodePage = (
     (cp:  874; name: 'Thai' ),
-    (cp:	932; name: 'Japanese' ),
+    (cp:  932; name: 'Japanese' ),
     (cp:  936; name: 'Simplified Chinese' ),
     (cp:  949; name: 'Korean' ),
     (cp:  950; name: 'Traditional Chinese' ),
