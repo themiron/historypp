@@ -37,8 +37,9 @@ uses
   HistoryGrid, HistoryForm,
   TntForms,
   m_globaldefs, m_api, hpp_messages,
-  hpp_global, hpp_contacts, hpp_events, hpp_forms, TntExtCtrls, ComCtrls,
-  TntComCtrls, Menus, TntMenus, RichEdit, Buttons, TntButtons;
+  hpp_global, hpp_contacts, hpp_events, hpp_forms, hpp_richedit,
+  TntExtCtrls, ComCtrls,
+  Menus, TntMenus, RichEdit, Buttons, TntButtons;
 
 type
 
@@ -56,7 +57,7 @@ type
     laTo: TTntLabel;
     EFrom: TTntEdit;
     ETo: TTntEdit;
-    EText: TTntRichEdit;
+    EText: TRichEdit;
     pmEText: TTntPopupMenu;
     CopyText: TTntMenuItem;
     CopyAll: TTntMenuItem;
@@ -103,8 +104,6 @@ type
     procedure LoadPosition;
     procedure SavePosition;
     procedure SetItem(const Value: Integer);
-    procedure ProcessRichEdit(const FItem: Integer);
-    procedure PrepareRichEdit(const FItem: Integer);
     procedure TranslateForm;
     procedure LoadButtonIcons;
     { Private declarations }
@@ -115,6 +114,7 @@ type
     property ParentForm:THistoryFrm read FParentForm write fParentForm;
 //   property RowIdx:integer read FRowIdx write SetRowIdx; //line of grid, whoms details should be shown
     property Item: Integer read FItem write SetItem;
+    procedure ProcessRichEdit(const FItem: Integer);
   end;
 
 var
@@ -162,27 +162,7 @@ begin
     ItemRenderDetails.bHistoryWindow := IRDHW_GLOBALHISTORY
   else
     ItemRenderDetails.bHistoryWindow := IRDHW_CONTACTHISTORY;
-
   PluginLink.NotifyEventHooks(hHppRichEditItemProcess,EText.Handle,Integer(@ItemRenderDetails));
-end;
-
-procedure TEventDetailsFrm.PrepareRichEdit(const FItem: Integer);
-var
-  ss,sl: integer;
-begin
-  EText.Lines.BeginUpdate;
-  ss := EText.SelStart;
-  sl := EText.SelLength;
-  EText.Clear;
-  if ParentForm.hg.GetItemRTL(FItem) then EText.BiDiMode := bdRightToLeft
-                                     else EText.BiDiMode := bdLeftToRight;
-  //ParentForm.hg.SetRichRTL(ParentForm.hg.GetItemRTL(FItem),EText,false);
-  EText.Text:=FParentForm.hg.Items[FItem].Text;
-  if ParentForm.hg.ProcessInline then ProcessRichEdit(FItem);
-  //EText.SelLength := 0; // 'cose smileys are selected sometimes
-  EText.SelStart := ss;
-  EText.SelLength := sl;
-  EText.Lines.EndUpdate;
 end;
 
 procedure TEventDetailsFrm.NextBtnClick(Sender: TObject);
@@ -301,6 +281,7 @@ begin
   Prev := -1;
   Next := -1;
   //EText.Parent := Self;
+
   re_mask := SendMessage(EText.Handle,EM_GETEVENTMASK, 0, 0);
   SendMessage(EText.Handle,EM_SETMARGINS,EC_RIGHTMARGIN or EC_LEFTMARGIN,MakeLParam(3,3));
   SendMessage(EText.Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK);
@@ -359,7 +340,11 @@ begin
                 AnsiToWideString(FParentForm.Protocol+': '+GetContactID(TOhContact,FParentForm.Protocol,ToContact),ParentForm.UserCodepage)+
                 ')';
 
-  PrepareRichEdit(FItem);
+  EText.Lines.BeginUpdate;
+  ParentForm.hg.ApplyItemToRich(FItem,EText,false,true);
+  EText.SelStart := 0;
+  EText.SelLength := 0;
+  EText.Lines.EndUpdate;
 
   if FromContact or ToContact then
     bnReply.Enabled := False
