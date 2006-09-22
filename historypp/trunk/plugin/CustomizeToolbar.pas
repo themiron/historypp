@@ -149,7 +149,6 @@ var
   r2: TRect;
   but: TTntToolButton;
   fm: THistoryFrm;
-  BrushColor: TColor;
   src,dst: Integer;
   lb: TTntListBox;
   can: TCanvas;
