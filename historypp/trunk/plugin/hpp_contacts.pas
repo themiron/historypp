@@ -165,7 +165,7 @@ begin
     Result := GetDBWord(hContact,Proto,'AnsiCodePage',MaxWord);
     UsedDefault := (Result = MaxWord);
     If UsedDefault then
-      Result := GetDBWord(0,Proto,'AnsiCodePage',CP_ACP);
+      Result := GetDBWord(0,Proto,'AnsiCodePage',GetACP());
   end;
 end;
 
