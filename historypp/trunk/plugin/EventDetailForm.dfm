@@ -206,7 +206,7 @@ object EventDetailsFrm: TEventDetailsFrm
     BevelOuter = bvNone
     TabOrder = 3
   end
-  object EText: TTntRichEdit
+  object EText: TRichEdit
     Left = 0
     Top = 107
     Width = 450
