@@ -1119,6 +1119,11 @@ begin
       CopyText1.Click;
       key:=0;
       end;
+    if (key=Ord('A')) and (not PasswordMode) then begin
+      hg.MakeRangeSelected(0,hg.Count-1);
+      hg.Invalidate;
+      key:=0;
+      end;
     end;
 
   with Sender as TWinControl do
@@ -2018,7 +2023,6 @@ var
   item: Integer;
   ShowEndOfPage: Boolean;
   ShowNotFound: Boolean;
-  w: Integer;
 begin
   if edSearch.Text = '' then begin
     paSearchStatus.Visible := False;
@@ -2388,7 +2392,6 @@ end;}
 procedure THistoryFrm.SetPanel(const Value: THistoryPanel);
 var
   Lock: Boolean;
-  width: integer;
 begin
   FPanel := Value;
   if (HistoryLength = 0) or ((hContact = 0) and (FPanel = hpSessions)) then
@@ -2454,7 +2457,6 @@ procedure THistoryFrm.SetSearchMode(const Value: TSearchMode);
 var
   SaveStr: WideString;
   NotFound,Lock: Boolean;
-  DoUpdateFilter: Boolean;
 begin
   if FSearchMode = Value then exit;
 
@@ -2699,8 +2701,6 @@ begin
 end;
 
 procedure THistoryFrm.TranslateForm;
-var
-  i: integer;
 
   procedure TranslateMenu(mi: TMenuItem);
   var
@@ -2750,7 +2750,6 @@ begin
   TranslateToolbar(Toolbar);
 
   TranslateMenu(pmGrid.Items);
-  //TranslateMenu(pmGridInline.Items);
   TranslateMenu(hg.InlineRichEdit.PopupMenu.Items);
   TranslateMenu(pmLink.Items);
   TranslateMenu(pmFile.Items);
@@ -2957,27 +2956,28 @@ procedure THistoryFrm.hgProcessRichText(Sender: TObject; Handle: Cardinal; Item:
 var
   ItemRenderDetails: TItemRenderDetails;
 begin
+  if Assigned(EventDetailFrom) then
+    if Handle = TEventDetailsFrm(EventDetailFrom).EText.Handle then begin
+      TEventDetailsFrm(EventDetailFrom).ProcessRichEdit(Item);
+      exit;
+    end;
   ZeroMemory(@ItemRenderDetails,SizeOf(ItemRenderDetails));
   ItemRenderDetails.cbSize := SizeOf(ItemRenderDetails);
   ItemRenderDetails.hContact := hContact;
   ItemRenderDetails.hDBEvent := History[GridIndexToHistory(Item)];
-  //ItemRenderDetails.pProto := @hg.Items[Item].Proto[1];
   ItemRenderDetails.pProto := PChar(hg.Items[Item].Proto);
-  //ItemRenderDetails.pModule := @hg.Items[Item].Module[1];
   ItemRenderDetails.pModule := PChar(hg.Items[Item].Module);
   ItemRenderDetails.dwEventTime := hg.Items[Item].Time;
-  //ItemRenderDetails.wEventType := MessageTypeToEventType(hg.Items[Item].MessageType);
   ItemRenderDetails.wEventType := hg.Items[Item].EventType;
   ItemRenderDetails.IsEventSent := (mtOutgoing in hg.Items[Item].MessageType);
   if Handle = hg.InlineRichEdit.Handle then
-    ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_INLINE;
-  if hg.IsSelected(Item) then
+    ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_INLINE
+  else if hg.IsSelected(Item) then
     ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_SELECTED;
   if hContact = 0 then
     ItemRenderDetails.bHistoryWindow := IRDHW_GLOBALHISTORY
   else
     ItemRenderDetails.bHistoryWindow := IRDHW_CONTACTHISTORY;
-
   PluginLink.NotifyEventHooks(hHppRichEditItemProcess,WPARAM(Handle),LPARAM(@ItemRenderDetails));
 end;
 
@@ -3462,12 +3462,8 @@ end;
 begin
   if SessThread <> nil then exit;
   BuildIndexesFromSession(tvSess.Selected);
-  //hg.MakeRangeSelected();
   hg.Selected := Items[0];
-  for i := 1 to High(Items) do begin
-    hg.SelItems[0] := Items[i];
-    //Application.ProcessMessages;
-  end;
+  hg.MakeRangeSelected(Items[0],Items[High(Items)]);
   hg.Invalidate;
   //w := w + hg.Items[i].Text+#13#10+'--------------'+#13#10;
   //CopyToClip(w,Handle,UserCodepage);
