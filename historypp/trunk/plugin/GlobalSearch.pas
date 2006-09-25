@@ -649,6 +649,7 @@ begin
   try
     tbRange.Down := Show;
     paRange.Visible := Show;
+    edSearchChange(Self);
     OrganizePanels;
   finally
     if Visible and Lock then LockWindowUpdate(0);
@@ -816,8 +817,8 @@ begin
     StopSearching;
     exit;
   end;
-  if edSearch.Text = '' then
-    raise Exception.Create('Enter text to search');
+  //if edSearch.Text = '' then
+  //  raise Exception.Create('Enter text to search');
 
   SearchProtected := False;
   if paPassword.Visible then begin
@@ -845,7 +846,10 @@ begin
   end;
 
   st := TSearchThread.Create(True);
-  if rbAny.Checked then
+
+  if edSearch.text = '' then
+    st.SearchMethod := smNoText
+  else if rbAny.Checked then
     st.SearchMethod := smAnyWord
   else if rbAll.Checked then
     st.SearchMethod := smAllWords
@@ -977,7 +981,7 @@ end;
 
 procedure TfmGlobalSearch.edSearchChange(Sender: TObject);
 begin
-  bnSearch.Enabled := (edSearch.Text <> '');
+  bnSearch.Enabled := (edSearch.Text <> '') or paRange.Visible;
 end;
 
 procedure TfmGlobalSearch.edSearchEnter(Sender: TObject);
