@@ -73,7 +73,12 @@ type
     FSearchText: WideString;
     FSearchMethod: TSearchMethod;
     FSearchProtected: Boolean;
+    FSearchRange: Boolean;
+    FSearchRangeTo: TDateTime;
+    FSearchRangeFrom: TDateTime;
     procedure GenerateSearchWords;
+    procedure SetSearchRangeFrom(const Value: TDateTime);
+    procedure SetSearchRangeTo(const Value: TDateTime);
   protected
     function GetContactsCount: Integer;
     function GetItemsCount(hContact: THandle): Integer;
@@ -98,6 +103,9 @@ type
     property SearchProtectedContacts: Boolean read FSearchProtected write FSearchProtected;
     property SearchText: WideString read FSearchText write FSearchText;
     property SearchMethod: TSearchMethod read FSearchMethod write FSearchMethod;
+    property SearchRange: Boolean read FSearchRange write FSearchRange;
+    property SearchRangeFrom: TDateTime read FSearchRangeFrom write SetSearchRangeFrom;
+    property SearchRangeTo: TDateTime read FSearchRangeTo write SetSearchRangeTo;
     property SearchTime: Cardinal read FSearchTime;
     property ParentHandle: Hwnd read FParentHandle write FParentHandle;
 
@@ -358,27 +366,36 @@ begin
   while hDBEvent <> 0 do begin
     if SearchEvent(hDBEvent) then begin
       SendItem(hDBEvent);
-      end;
-    hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDPREV,hDBEvent,0);
     end;
+    hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDPREV,hDBEvent,0);
+  end;
   SendBatch;
 end;
 
 function TSearchThread.SearchEvent(DBEvent: THandle): Boolean;
 var
   hi: THistoryItem;
+  InRange: Boolean;
+  EventDate: TDateTime;
 begin
   //Sleep(50);
   Inc(AllEvents);
   if Terminated then
     raise EAbort.Create('Thread terminated');
-  hi := ReadEvent(DBEvent, CurContactCP);
-  case SearchMethod of
-    smAnyWord: Result := SearchTextAnyWord(Tnt_WideUpperCase(hi.Text),SearchWords);
-    smAllWords: Result := SearchTextAllWords(Tnt_WideUpperCase(hi.Text),SearchWords)
-  else // smExact
-    Result := SearchTextExact(Tnt_WideUpperCase(hi.Text),SearchText);
-    end;
+  if SearchRange then begin
+    EventDate := Trunc(GetEventDateTime(DBEvent));
+    InRange := ((SearchRangeFrom <= EventDate) and (SearchRangeTo >= EventDate));
+  end;
+  if not (SearchRange and (not InRange)) then begin
+    hi := ReadEvent(DBEvent, CurContactCP);
+    case SearchMethod of
+      smAnyWord: Result := SearchTextAnyWord(Tnt_WideUpperCase(hi.Text),SearchWords);
+      smAllWords: Result := SearchTextAllWords(Tnt_WideUpperCase(hi.Text),SearchWords)
+    else // smExact
+      Result := SearchTextExact(Tnt_WideUpperCase(hi.Text),SearchText);
+      end;
+  end
+  else Result := False;
   IncProgress;
 end;
 
@@ -419,5 +436,15 @@ begin
     DoMessage(HM_STRD_PROGRESS,CurProgress,MaxProgress);
 end;
 
+
+procedure TSearchThread.SetSearchRangeFrom(const Value: TDateTime);
+begin
+  FSearchRangeFrom := Trunc(Value);
+end;
+
+procedure TSearchThread.SetSearchRangeTo(const Value: TDateTime);
+begin
+  FSearchRangeTo := Trunc(Value);
+end;
 
 end.

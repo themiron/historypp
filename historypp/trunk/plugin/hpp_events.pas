@@ -30,6 +30,8 @@ unit hpp_events;
 
 interface
 
+{$I compilers.inc}
+
 uses
   Windows, TntSystem, SysUtils, TntSysUtils,
   {$IFDEF COMPILER_10}WideStrUtils,{$ENDIF} TntWideStrUtils,
@@ -52,6 +54,7 @@ function TimestampToString(Timestamp: DWord): WideString;
 // general routine
 function ReadEvent(hDBEvent: THandle; UseCP: Cardinal = CP_ACP): THistoryItem;
 function GetEventTimestamp(hDBEvent: THandle): DWord;
+function GetEventDateTime(hDBEvent: THandle): TDateTime;
 // specific routines
 function GetEventTextForMessage(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 function GetEventTextForFile(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
@@ -127,6 +130,11 @@ function TimestampToDateTime(Timestamp: DWord): TDateTime;
 begin
   Timestamp := PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOLOCAL,Timestamp,0);
   Result := UnixTimeToDateTime(Timestamp);
+end;
+
+function GetEventDateTime(hDBEvent: THandle): TDateTime;
+begin
+  Result := TimestampToDateTime(GetEventTimestamp(hDBEvent));
 end;
 
 function GetEventTimestamp(hDBEvent: THandle): DWord;

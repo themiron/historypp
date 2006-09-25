@@ -54,6 +54,8 @@ function GetDBByte(const Module,Param: String; Default: Byte): Byte; overload;
 function GetDBByte(const hContact: THandle; const Module,Param: String; Default: Byte): Byte; overload;
 function GetDBBool(const Module,Param: String; Default: Boolean): Boolean; overload;
 function GetDBBool(const hContact: THandle; const Module,Param: String; Default: Boolean): Boolean; overload;
+function GetDBDateTime(const hContact: THandle; const Module,Param: String; Default: TDateTime): TDateTime; overload;
+function GetDBDateTime(const Module,Param: String; Default: TDateTime): TDateTime; overload;
 
 function WriteDBBlob(const Module,Param: String; Value: Pointer; Size: Integer): Integer; overload;
 function WriteDBBlob(const hContact: THandle; const Module,Param: String; Value: Pointer; Size: Integer): Integer; overload;
@@ -71,6 +73,8 @@ function WriteDBWideStr(const Module,Param: String; Value: WideString): Integer;
 function WriteDBWideStr(const hContact: THandle; const Module,Param: String; Value: WideString): Integer; overload;
 function WriteDBBool(const Module,Param: String; Value: Boolean): Integer; overload;
 function WriteDBBool(const hContact: THandle; const Module,Param: String; Value: Boolean): Integer; overload;
+function WriteDBDateTime(const hContact: THandle; const Module,Param: String; Value: TDateTime): Integer; overload;
+function WriteDBDateTime(const Module,Param: String; Value: TDateTime): Integer; overload;
 
 implementation
 
@@ -215,6 +219,21 @@ begin
   cws.value.pbVal := Value;
   cws.value.cpbVal := Word(Size);
   Result := PluginLink^.CallService(MS_DB_CONTACT_WRITESETTING,hContact,lParam(@cws));
+end;
+
+function WriteDBDateTime(const hContact: THandle; const Module,Param: String; Value: TDateTime): Integer; overload;
+var
+  p: PDateTime;
+begin
+  GetMem(p,SizeOf(TDateTime));
+  p^ := Value;
+  Result := WriteDBBlob(hContact,Module,Param,p,SizeOf(TDateTime));
+  FreeMem(p,SizeOf(TDateTime));
+end;
+
+function WriteDBDateTime(const Module,Param: String; Value: TDateTime): Integer; overload;
+begin
+  Result := WriteDBDateTime(0,Module,Param,Value);
 end;
 
 function GetDBBlob(const Module,Param: String; var Value: Pointer; var Size: Integer): Boolean;
@@ -372,6 +391,26 @@ begin
     // free variant
     DBFreeVariant(@dbv);
   end;
+end;
+
+function GetDBDateTime(const hContact: THandle; const Module,Param: String; Default: TDateTime): TDateTime; overload;
+var
+  p: Pointer;
+  s: Integer;
+begin
+  Result := Default;
+  if not GetDBBlob(hContact,Module,Param,p,s) then exit;
+  if s <> SizeOf(TDateTime) then begin
+    FreeMem(p,s);
+    exit;
+  end;
+  Result := PDateTime(p)^;
+  FreeMem(p,s);
+end;
+
+function GetDBDateTime(const Module,Param: String; Default: TDateTime): TDateTime; overload;
+begin
+  Result := GetDBDateTime(0,Module,Param,Default);
 end;
 
 end.

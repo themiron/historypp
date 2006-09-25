@@ -75,7 +75,7 @@ var
 
 implementation
 
-uses hpp_forms, HistoryForm, hpp_options, TypInfo, Math;
+uses hpp_forms, HistoryForm, hpp_options, TypInfo, Math, GlobalSearch;
 
 const
   // commented to use all events in system history
@@ -476,7 +476,10 @@ procedure TfmCustomizeFilters.TntFormDestroy(Sender: TObject);
 begin
   fmCustomizeFilters := nil;
   try
-    THistoryFrm(Owner).CustomizeFiltersForm := nil;
+    if Owner is THistoryFrm then
+      THistoryFrm(Owner).CustomizeFiltersForm := nil
+    else if Owner is TfmGlobalSearch then
+      TfmGlobalSearch(Owner).CustomizeFiltersForm := nil;
   except
     // "eat" exceptions if any
   end;
