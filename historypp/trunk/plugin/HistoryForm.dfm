@@ -101,29 +101,31 @@ object HistoryFrm: THistoryFrm
         Padding = 4
       end
     end
-    object paSess: TPanel
+    object paSess: TTntPanel
       Left = 158
       Top = 33
       Width = 156
       Height = 312
       Align = alLeft
-      BevelOuter = bvLowered
+      BevelOuter = bvNone
       TabOrder = 1
       Visible = False
-      object paSessInt: TPanel
-        Left = 1
-        Top = 1
-        Width = 154
+      object paSessInt: TTntPanel
+        Left = 0
+        Top = 0
+        Width = 156
         Height = 21
         Align = alTop
+        BevelInner = bvRaised
+        BevelOuter = bvLowered
         TabOrder = 0
         DesignSize = (
-          154
+          156
           21)
         object laSess: TTntLabel
           Left = 6
           Top = 2
-          Width = 126
+          Width = 128
           Height = 17
           Anchors = [akLeft, akTop, akRight]
           AutoSize = False
@@ -131,7 +133,7 @@ object HistoryFrm: THistoryFrm
           Layout = tlCenter
         end
         object sbCloseSess: TTntSpeedButton
-          Left = 133
+          Left = 135
           Top = 2
           Width = 18
           Height = 17
@@ -150,13 +152,13 @@ object HistoryFrm: THistoryFrm
         end
       end
       object tvSess: TTntTreeView
-        Left = 1
-        Top = 22
-        Width = 154
-        Height = 289
+        Left = 0
+        Top = 21
+        Width = 156
+        Height = 291
         Align = alClient
         BevelInner = bvNone
-        BorderStyle = bsNone
+        BevelOuter = bvNone
         Images = ilSessions
         Indent = 19
         MultiSelect = True
@@ -453,29 +455,31 @@ object HistoryFrm: THistoryFrm
         end
       end
     end
-    object paBook: TPanel
+    object paBook: TTntPanel
       Left = 2
       Top = 33
       Width = 156
       Height = 312
       Align = alLeft
-      BevelOuter = bvLowered
+      BevelOuter = bvNone
       TabOrder = 4
       Visible = False
-      object paBookInt: TPanel
-        Left = 1
-        Top = 1
-        Width = 154
+      object paBookInt: TTntPanel
+        Left = 0
+        Top = 0
+        Width = 156
         Height = 21
         Align = alTop
+        BevelInner = bvRaised
+        BevelOuter = bvLowered
         TabOrder = 0
         DesignSize = (
-          154
+          156
           21)
         object laBook: TTntLabel
           Left = 6
           Top = 2
-          Width = 126
+          Width = 128
           Height = 17
           Anchors = [akLeft, akTop, akRight]
           AutoSize = False
@@ -483,7 +487,7 @@ object HistoryFrm: THistoryFrm
           Layout = tlCenter
         end
         object sbCloseBook: TTntSpeedButton
-          Left = 133
+          Left = 135
           Top = 2
           Width = 18
           Height = 17
@@ -502,13 +506,13 @@ object HistoryFrm: THistoryFrm
         end
       end
       object lvBook: TTntListView
-        Left = 1
-        Top = 22
-        Width = 154
-        Height = 289
+        Left = 0
+        Top = 21
+        Width = 156
+        Height = 291
         Align = alClient
+        BevelInner = bvNone
         BevelOuter = bvNone
-        BorderStyle = bsNone
         Columns = <
           item
             AutoSize = True

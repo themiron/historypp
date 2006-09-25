@@ -75,10 +75,10 @@ type
     sb: TTntStatusBar;
     pmLink: TTntPopupMenu;
     pmFile: TTntPopupMenu;
-    paSess: TPanel;
+    paSess: TTntPanel;
     spSess: TTntSplitter;
     ilSessions: TImageList;
-    paSessInt: TPanel;
+    paSessInt: TTntPanel;
     laSess: TTntLabel;
     sbCloseSess: TTntSpeedButton;
     CopyFile1: TTntMenuItem;
@@ -168,8 +168,8 @@ type
     pmToolbar: TTntPopupMenu;
     Customize2: TTntMenuItem;
     Bookmark1: TTntMenuItem;
-    paBook: TPanel;
-    paBookInt: TPanel;
+    paBook: TTntPanel;
+    paBookInt: TTntPanel;
     laBook: TTntLabel;
     sbCloseBook: TTntSpeedButton;
     lvBook: TTntListView;
