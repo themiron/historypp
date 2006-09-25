@@ -1439,7 +1439,7 @@ begin
   edSearch.SetFocus;
   edSearch.SelectAll;
 
-  bnSearch.Enabled := (edSearch.Text <> '');
+  edSearchChange(Self);
   CreateEventsFilterMenu;
   SetEventFilter(0);
 end;
