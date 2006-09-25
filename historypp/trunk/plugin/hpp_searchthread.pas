@@ -49,7 +49,7 @@ type
   PDBArray = ^TDBArray;
   TDBArray = array[0..ST_BATCH-1] of Integer;
 
-  TSearchMethod = (smExact, smAnyWord, smAllWords);
+  TSearchMethod = (smNoText, smExact, smAnyWord, smAllWords);
 
   TContactRec = record
     hContact: THandle;
@@ -387,15 +387,18 @@ begin
     InRange := ((SearchRangeFrom <= EventDate) and (SearchRangeTo >= EventDate));
   end;
   if not (SearchRange and (not InRange)) then begin
-    hi := ReadEvent(DBEvent, CurContactCP);
-    case SearchMethod of
-      smAnyWord: Result := SearchTextAnyWord(Tnt_WideUpperCase(hi.Text),SearchWords);
-      smAllWords: Result := SearchTextAllWords(Tnt_WideUpperCase(hi.Text),SearchWords)
-    else // smExact
-      Result := SearchTextExact(Tnt_WideUpperCase(hi.Text),SearchText);
+    if SearchMethod = smNoText then
+      Result := True
+    else begin
+      hi := ReadEvent(DBEvent, CurContactCP);
+      case SearchMethod of
+        smAnyWord:  Result := SearchTextAnyWord(Tnt_WideUpperCase(hi.Text),SearchWords);
+        smAllWords: Result := SearchTextAllWords(Tnt_WideUpperCase(hi.Text),SearchWords);
+      else // smExact
+        Result := SearchTextExact(Tnt_WideUpperCase(hi.Text),SearchText);
       end;
-  end
-  else Result := False;
+    end;
+  end else Result := False;
   IncProgress;
 end;
 
