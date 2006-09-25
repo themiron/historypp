@@ -34,7 +34,7 @@ requires
   {$ELSEIF DELPHI_6}
   TntUnicodeVcl_R60;
   {$ELSE}
-  TntUnicodeVcl_R90;
+  TntUnicodeVcl;
   {$IFEND}
 
 contains

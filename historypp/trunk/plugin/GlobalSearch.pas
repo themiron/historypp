@@ -37,13 +37,13 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, ComCtrls, Menus,
-  TntForms, TntComCtrls, TntExtCtrls, TntStdCtrls, TntSysUtils,
+  TntForms, TntComCtrls, TntExtCtrls, TntStdCtrls, TntSysUtils, TntGraphics, TntWindows,
   HistoryGrid,
   m_globaldefs, m_api,
   hpp_global, hpp_events, hpp_services, hpp_contacts,  hpp_database,  hpp_searchthread,
   hpp_eventfilters, hpp_bookmarks,
   ImgList, PasswordEditControl, Buttons, TntButtons, Math, CommCtrl,
-  Contnrs, TntMenus, hpp_forms;
+  Contnrs, TntMenus, hpp_forms, ToolWin;
 
 const
   HM_SRCH_EVENTDELETED       = HM_SRCH_BASE + 1;
@@ -83,15 +83,9 @@ type
     CopyText1: TtntMenuItem;
     N1: TtntMenuItem;
     N2: TtntMenuItem;
-    bnAdvanced: TtntButton;
-    gbAdvanced: TtntGroupBox;
-    rbAny: TtntRadioButton;
-    rbAll: TtntRadioButton;
-    rbExact: TtntRadioButton;
     spContacts: TTntSplitter;
     paPassword: TtntPanel;
     edPass: TPasswordEdit;
-    cbPass: TTntCheckBox;
     laPass: TTntLabel;
     ilContacts: TImageList;
     paContacts: TTntPanel;
@@ -110,6 +104,38 @@ type
     Delete1: TTntMenuItem;
     N3: TTntMenuItem;
     Bookmark1: TTntMenuItem;
+    ToolBar: TTntToolBar;
+    tbPassword: TTntToolButton;
+    paAdvanced: TTntPanel;
+    paRange: TTntPanel;
+    rbAny: TTntRadioButton;
+    rbAll: TTntRadioButton;
+    rbExact: TTntRadioButton;
+    laAdvancedHead: TTntLabel;
+    sbAdvancedClose: TTntSpeedButton;
+    sbRangeClose: TTntSpeedButton;
+    sbPasswordClose: TTntSpeedButton;
+    dtRange1: TTntDateTimePicker;
+    laRange1: TTntLabel;
+    laRange2: TTntLabel;
+    dtRange2: TTntDateTimePicker;
+    laPasswordHead: TTntLabel;
+    laRangeHead: TTntLabel;
+    tbEventsFilter: TTntSpeedButton;
+    tbAdvanced: TTntToolButton;
+    tbRange: TTntToolButton;
+    TntToolButton3: TTntToolButton;
+    ilToolbar: TImageList;
+    bePassword: TTntBevel;
+    beRange: TTntBevel;
+    beAdvanced: TTntBevel;
+    TntToolButton4: TTntToolButton;
+    tbSearch: TTntToolButton;
+    tbFilter: TTntToolButton;
+    laPassNote: TTntLabel;
+    pmEventsFilter: TTntPopupMenu;
+    N4: TTntMenuItem;
+    Customize1: TTntMenuItem;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -136,7 +162,6 @@ type
       var Found: Boolean);
     //procedure TntFormHide(Sender: TObject);
     procedure TntFormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
-    procedure cbPassClick(Sender: TObject);
     procedure lvContactsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure hgNameData(Sender: TObject; Index: Integer; var Name: WideString);
     procedure hgTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
@@ -153,7 +178,6 @@ type
     procedure hgKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure hgUrlClick(Sender: TObject; Item: Integer; Url: String);
     procedure edPassKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure bnAdvancedClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure hgSelect(Sender: TObject; Item, OldItem: Integer);
     procedure Copy1Click(Sender: TObject);
@@ -164,6 +188,15 @@ type
     procedure hgBookmarkClick(Sender: TObject; Item: Integer);
     procedure lvContactsContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
+    procedure tbAdvancedClick(Sender: TObject);
+    procedure tbRangeClick(Sender: TObject);
+    procedure tbPasswordClick(Sender: TObject);
+    procedure sbAdvancedCloseClick(Sender: TObject);
+    procedure sbRangeCloseClick(Sender: TObject);
+    procedure sbPasswordCloseClick(Sender: TObject);
+    procedure tbEventsFilterClick(Sender: TObject);
+    procedure EventsFilterItemClick(Sender: TObject);
+    procedure Customize1Click(Sender: TObject);
   private
     UserMenu: hMenu;
     UserMenuContact: THandle;
@@ -201,13 +234,13 @@ type
 
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
     procedure HMBookmarksChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
+    procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED;
 
     procedure TranslateForm;
 
     procedure HookEvents;
     procedure UnhookEvents;
 
-    procedure ShowAdvancedPanel(Show: Boolean);
     procedure ShowContacts(Show: Boolean);
 
     procedure SearchNext(Rev: Boolean; Warp: Boolean = True);
@@ -225,7 +258,16 @@ type
     procedure LoadPosition;
     procedure SavePosition;
     procedure WndProc(var Message: TMessage); override;
+
+    procedure ToggleAdvancedPanel(Show: Boolean);
+    procedure ToggleRangePanel(Show: Boolean);
+    procedure TogglePasswordPanel(Show: Boolean);
+    procedure OrganizePanels;
+
+    procedure SetEventFilter(FilterIndex: Integer = -1);
+    procedure CreateEventsFilterMenu;
   public
+    CustomizeFiltersForm: TForm;
     procedure SetRecentEventsPosition(OnTop: Boolean);
   published
     // fix for splitter baug:
@@ -237,6 +279,9 @@ type
 
     procedure LoadButtonIcons;
     procedure LoadContactsIcons;
+    procedure LoadToolbarIcons;
+
+    procedure LoadEventFilterButton;
   public
     { Public declarations }
   end;
@@ -253,7 +298,7 @@ var
 implementation
 
 uses hpp_options, PassForm, hpp_itemprocess, hpp_messages,
-  HistoryForm;
+  HistoryForm, CustomizeFiltersForm;
 
 {$R *.DFM}
 
@@ -306,6 +351,9 @@ begin
   ContactList := TObjectList.Create;
 
   ilContacts.Handle := PluginLink.CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
+  // delphi 2006 doesn't save toolbar's flat property in dfm if it is True
+  Toolbar.Flat := True;
+  LoadToolbarIcons;
   LoadButtonIcons;
   LoadContactsIcons;
 end;
@@ -400,6 +448,7 @@ begin
      hg.SetFocus;
   end;
 
+  tbEventsFilter.Enabled := True;
   // dirty hack: readjust scrollbars
   hg.Perform(WM_SIZE,SIZE_RESTORED,MakeLParam(hg.ClientWidth,hg.ClientHeight));
   //hg.Repaint;
@@ -425,7 +474,7 @@ begin
   AllContacts := 0;
   FFiltered := False;
 
-  hg.Filter := GenerateEvents(FM_EXCLUDE,[]);
+  //hg.Filter := GenerateEvents(FM_EXCLUDE,[]);
   hg.Selected := -1;
   hg.Allocate(0);
 
@@ -435,6 +484,7 @@ begin
   IsSearching := True;
   bnSearch.Caption := TranslateWideW('Stop');
 
+  tbEventsFilter.Enabled := False;
   sb.SimpleText := TranslateWideW('Searching... Please wait.');
   laProgress.Caption := TranslateWideW('Preparing search...');
   pb.Position := 0;
@@ -475,6 +525,33 @@ begin
   end;
 end;
 
+procedure TfmGlobalSearch.tbAdvancedClick(Sender: TObject);
+begin
+  ToggleAdvancedPanel(tbAdvanced.Down);
+end;
+
+procedure TfmGlobalSearch.tbEventsFilterClick(Sender: TObject);
+var
+  p: TPoint;
+begin
+  p := tbEventsFilter.ClientOrigin;
+  tbEventsFilter.ClientToScreen(p);
+  Application.CancelHint;
+  tbEventsFilter.ShowHint := false;
+  pmEventsFilter.Popup(p.X,p.Y+tbEventsFilter.Height);
+  tbEventsFilter.ShowHint := true;
+end;
+
+procedure TfmGlobalSearch.tbPasswordClick(Sender: TObject);
+begin
+  TogglePasswordPanel(tbPassword.Down);
+end;
+
+procedure TfmGlobalSearch.tbRangeClick(Sender: TObject);
+begin
+  ToggleRangePanel(tbRange.Down);
+end;
+
 procedure TfmGlobalSearch.tiFilterTimer(Sender: TObject);
 begin
   EndHotFilterTimer;
@@ -506,6 +583,8 @@ end;
 procedure TfmGlobalSearch.FormDestroy(Sender: TObject);
 begin
   fmGlobalSearch := nil;
+  if Assigned(CustomizeFiltersForm) then
+    CustomizeFiltersForm.Release;
   ContactList.Free;
 end;
 
@@ -532,11 +611,70 @@ begin
   {$RANGECHECKS ON}
 end;
 
+procedure TfmGlobalSearch.ToggleAdvancedPanel(Show: Boolean);
+var
+  Lock: Boolean;
+begin
+  if Visible then Lock := LockWindowUpdate(Handle);
+  try
+    tbAdvanced.Down := Show;
+    paAdvanced.Visible := Show;
+    OrganizePanels;
+  finally
+    if Visible and Lock then LockWindowUpdate(0);
+  end;
+end;
+
+procedure TfmGlobalSearch.TogglePasswordPanel(Show: Boolean);
+var
+  Lock: Boolean;
+begin
+  if Visible then Lock := LockWindowUpdate(Handle);
+  try
+    if GetPassMode = PASSMODE_PROTALL then Show := True;
+    tbPassword.Down := Show;
+    paPassword.Visible := Show;
+    laPassNote.Caption := '';
+    OrganizePanels;
+  finally
+    if Visible and Lock then LockWindowUpdate(0);
+  end;
+end;
+
+procedure TfmGlobalSearch.ToggleRangePanel(Show: Boolean);
+var
+  Lock: Boolean;
+begin
+  if Visible then Lock := LockWindowUpdate(Handle);
+  try
+    tbRange.Down := Show;
+    paRange.Visible := Show;
+    OrganizePanels;
+  finally
+    if Visible and Lock then LockWindowUpdate(0);
+  end;
+end;
+
+procedure TfmGlobalSearch.sbAdvancedCloseClick(Sender: TObject);
+begin
+  ToggleAdvancedPanel(False);
+end;
+
 procedure TfmGlobalSearch.sbClearFilterClick(Sender: TObject);
 begin
   edFilter.Text := '';
   EndHotFilterTimer;
   hg.SetFocus;
+end;
+
+procedure TfmGlobalSearch.sbPasswordCloseClick(Sender: TObject);
+begin
+  TogglePasswordPanel(False);
+end;
+
+procedure TfmGlobalSearch.sbRangeCloseClick(Sender: TObject);
+begin
+  ToggleRangePanel(False);
 end;
 
 procedure TfmGlobalSearch.TranslateForm;
@@ -552,24 +690,39 @@ procedure TranslateMenu(mi: TMenuItem);
       end;
   end;
 
+  procedure TranslateToolbar(const tb: TTntToolBar);
+  var
+    i: integer;
+  begin
+    for i := 0 to tb.ButtonCount-1 do
+      if tb.Buttons[i].Style <> tbsSeparator then
+        TTntToolBar(tb.Buttons[i]).Hint := TranslateWideW(tb.Buttons[i].Hint{TRANSLATE-IGNORE});
+  end;
+
 begin
   Caption := TranslateWideW(Caption);
 
   laSearch.Caption := TranslateWideW(laSearch.Caption);
   bnSearch.Caption := TranslateWideW(bnSearch.Caption);
-  bnAdvanced.Caption := TranslateWideW(bnAdvanced.Caption);
-  gbAdvanced.Caption := TranslateWideW(gbAdvanced.Caption);
+  laAdvancedHead.Caption := TranslateWideW(laAdvancedHead.Caption);
   rbAny.Caption := TranslateWideW(rbAny.Caption);
   rbAll.Caption := TranslateWideW(rbAll.Caption);
   rbExact.Caption := TranslateWideW(rbExact.Caption);
 
-  cbPass.Caption := TranslateWideW(cbPass.Caption);
+  laRangeHead.Caption := TranslateWideW(laRangeHead.Caption);
+  laRange1.Caption := TranslateWideW(laRange1.Caption);
+  laRange2.Caption := TranslateWideW(laRange2.Caption);
+
+  laPasswordHead.Caption := TranslateWideW(laPasswordHead.Caption);
   laPass.Caption := TranslateWideW(laPass.Caption);
   sbClearFilter.Hint := TranslateWideW(sbClearFilter.Hint);
 
   SaveDialog.Title := Translate(PAnsiChar(SaveDialog.Title));
 
+  TranslateToolbar(Toolbar);
+
   TranslateMenu(pmGrid.Items);
+  TranslateMenu(pmEventsFilter.Items);
   //TranslateMenu(pmGridInline.Items);
   TranslateMenu(hg.InlineRichEdit.PopupMenu.Items);
 
@@ -655,6 +808,9 @@ begin
 end;
 
 procedure TfmGlobalSearch.bnSearchClick(Sender: TObject);
+var
+  SearchProtected: Boolean;
+  PassMode: Byte;
 begin
   if IsSearching then begin
     StopSearching;
@@ -662,20 +818,29 @@ begin
   end;
   if edSearch.Text = '' then
     raise Exception.Create('Enter text to search');
-  if edPass.Enabled then begin
-    if edPass.Text = '' then begin
-      HppMessageBox(Handle,TranslateWideW('Enter the history password to search.'),
-        TranslateWideW('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
-      edPass.SetFocus;
-      edPass.SelectAll;
-      exit;
-    end;
-    if not CheckPassword(edPass.Text) then begin
-      HppMessageBox(Handle,TranslateWideW('You have entered the wrong password.'),
-        TranslateWideW('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
-      edPass.SetFocus;
-      edPass.SelectAll;
-      exit;
+
+  SearchProtected := False;
+  if paPassword.Visible then begin
+    PassMode := GetPassMode;
+    if PassMode = PASSMODE_PROTNONE then
+      laPassNote.Caption := TranslateWideW('History is not protected, searching all contacts')
+    else begin
+      if (PassMode <> PASSMODE_PROTALL) and (edPass.Text = '') then
+        laPassNote.Caption := TranslateWideW('Searching unprotected contacts only')
+      else begin
+        if CheckPassword(edPass.Text) then begin
+          SearchProtected := True;
+          laPassNote.Caption := 'Searching all contacts';
+        end
+        else begin
+          HppMessageBox(Handle,TranslateWideW('You have entered the wrong password.'),
+            TranslateWideW('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
+          edPass.SetFocus;
+          edPass.SelectAll;
+          laPassNote.Caption := 'Wrong password';
+          exit;
+        end;
+      end;
     end;
   end;
 
@@ -687,19 +852,18 @@ begin
   else
     st.SearchMethod := smExact;
 
+  st.SearchRange := paRange.Visible;
+  if st.SearchRange then begin
+    st.SearchRangeFrom := dtRange1.Date;
+    st.SearchRangeTo := dtRange2.Date;
+  end;
   st.Priority := tpLower;
   st.ParentHandle := Self.Handle;
   st.SearchText := edSearch.text;
-  st.SearchProtectedContacts := edPass.Enabled;
+  st.SearchProtectedContacts := SearchProtected;
   st.Resume;
 end;
 
-
-procedure TfmGlobalSearch.cbPassClick(Sender: TObject);
-begin
-  laPass.Enabled := cbPass.Enabled and cbPass.Checked;
-  edPass.Enabled := cbPass.Enabled and cbPass.Checked;
-end;
 
 // takes index from *History* array as parameter
 procedure TfmGlobalSearch.DeleteEventFromLists(Item: Integer);
@@ -845,6 +1009,48 @@ begin
   lvContacts.Items.EndUpdate;
 end;
 
+procedure TfmGlobalSearch.LoadEventFilterButton;
+var
+  pad: DWord;
+  PadH, PadV, GlyphHeight: Integer;
+  sz: TSize;
+  FirstName, Name: WideString;
+  PaintRect: TRect;
+  DrawTextFlags: Cardinal;
+  GlyphWidth: Integer;
+begin
+  FirstName := hppEventFilters[0].Name;
+  Name := hppEventFilters[tbEventsFilter.Tag].Name;
+  tbEventsFilter.Hint := Name; // show hint because the whole name may not fit in button
+
+  pad := SendMessage(Toolbar.Handle,TB_GETPADDING,0,0);
+  PadV := HiWord(pad);
+  PadH := LoWord(pad);
+
+  tbEventsFilter.Glyph.Canvas.Font := tbEventsFilter.Font;
+  sz := WideCanvasTextExtent(tbEventsFilter.Glyph.Canvas,FirstName);
+  GlyphHeight := Max(sz.cy,16);
+  GlyphWidth := 16+sz.cx+tbEventsFilter.Spacing;
+
+  tbEventsFilter.Glyph.Height := GlyphHeight;
+  tbEventsFilter.Glyph.Width := GlyphWidth*2;
+  tbEventsFilter.Glyph.Canvas.Brush.Color := Toolbar.Color;
+  tbEventsFilter.Glyph.Canvas.FillRect(tbEventsFilter.Glyph.Canvas.ClipRect);
+  DrawIconEx(tbEventsFilter.Glyph.Canvas.Handle,sz.cx+tbEventsFilter.Spacing,((GlyphHeight-16) div 2),
+             hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,16,16,0,tbEventsFilter.Glyph.Canvas.Brush.Handle,DI_NORMAL);
+  DrawState(tbEventsFilter.Glyph.Canvas.Handle,0,nil,Integer(hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle),
+            0,sz.cx+tbEventsFilter.Spacing+GlyphWidth,((GlyphHeight-16) div 2),0,0,DST_ICON or DSS_DISABLED);
+  PaintRect := Rect(0,((GlyphHeight-sz.cy) div 2),GlyphWidth-16-tbEventsFilter.Spacing,tbEventsFilter.Glyph.Height);
+  DrawTextFlags := DT_END_ELLIPSIS or DT_NOPREFIX or DT_CENTER;
+  tbEventsFilter.Glyph.Canvas.Font.Color := clWindowText;
+  Tnt_DrawTextW(tbEventsFilter.Glyph.Canvas.Handle,@Name[1],Length(Name),PaintRect,DrawTextFlags);
+  OffsetRect(PaintRect,GlyphWidth,0);
+  tbEventsFilter.Glyph.Canvas.Font.Color := clGrayText;
+  Tnt_DrawTextW(tbEventsFilter.Glyph.Canvas.Handle,@Name[1],Length(Name),PaintRect,DrawTextFlags);
+  tbEventsFilter.Width := GlyphWidth+2*PadH;
+  tbEventsFilter.NumGlyphs := 2;
+end;
+
 procedure TfmGlobalSearch.LoadPosition;
 var
   n: Integer;
@@ -859,10 +1065,8 @@ begin
   // if we are password-protected (cbPass.Enabled) and
   // have PROTSEL (not (cbPass.Checked)) then load
   // checkbox from DB
-  if (cbPass.Enabled) and not (cbPass.Checked) then begin
-    cbPass.Checked := GetDBBool(hppDBName,'GlobalSearchWindow.PassChecked',False);
-    cbPassClick(cbPass);
-  end;
+  if not paPassword.Visible then
+    TogglePasswordPanel(GetDBBool(hppDBName,'GlobalSearchWindow.PassChecked',False));
 
   n := GetDBInt(hppDBName,'GlobalSearchWindow.ContactListWidth',-1);
   if n <> -1 then begin
@@ -871,10 +1075,9 @@ begin
   spContacts.Left := paContacts.Left + paContacts.Width + 1;
   edFilter.Width := paFilter.Width - edFilter.Left - 2;
 
-
   SetRecentEventsPosition(GetDBInt(hppDBName,'SortOrder',0) <> 0);
 
-  ShowAdvancedPanel(GetDBBool(hppDBName,'GlobalSearchWindow.ShowAdvanced',False));
+  ToggleAdvancedPanel(GetDBBool(hppDBName,'GlobalSearchWindow.ShowAdvanced',False));
   case GetDBInt(hppDBName,'GlobalSearchWindow.AdvancedOptions',0) of
     0: rbAny.Checked := True;
     1: rbAll.Checked := True;
@@ -883,7 +1086,38 @@ begin
     rbAny.Checked := True;
   end;
 
+  ToggleRangePanel(GetDBBool(hppDBName,'GlobalSearchWindow.ShowRange',False));
+  dtRange1.Date := Trunc(GetDBDateTime(hppDBName,'GlobalSearchWindow.RangeFrom',Now));
+  dtRange2.Date := Trunc(GetDBDateTime(hppDBName,'GlobalSearchWindow.RangeTo',Now));
   edSearch.Text := AnsiToWideString(GetDBStr(hppDBName,'GlobalSearchWindow.LastSearch',DEFAULT_SEARCH_TEXT),hppCodepage);
+end;
+
+procedure TfmGlobalSearch.LoadToolbarIcons;
+var
+  il: HIMAGELIST;
+  ii: Integer;
+begin
+  ImageList_Remove(ilToolbar.Handle,-1); // clears image list
+  il := ImageList_Create(16,16,ILC_COLOR32 or ILC_MASK,10,2);
+  if il <> 0 then
+    ilToolbar.Handle := il
+  else
+    il := ilToolbar.Handle;
+  Toolbar.Images := ilToolbar;
+
+  ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_SEARCHADVANCED].Handle);
+  tbAdvanced.ImageIndex := ii;
+  ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_SEARCHRANGE].Handle);
+  tbRange.ImageIndex := ii;
+  ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_SEARCHPROTECTED].Handle);
+  tbPassword.ImageIndex := ii;
+
+  ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_HOTFILTER].Handle);
+  tbFilter.ImageIndex := ii;
+  ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_HOTSEARCH].Handle);
+  tbSearch.ImageIndex := ii;
+
+  LoadEventFilterButton;
 end;
 
 procedure TfmGlobalSearch.lvContactsContextPopup(Sender: TObject;
@@ -954,6 +1188,25 @@ begin
     end;
 end;
 
+procedure TfmGlobalSearch.OrganizePanels;
+var
+  PrevPanel: TTntPanel;
+begin
+  PrevPanel := paSearch;
+  if paAdvanced.Visible then begin
+    paAdvanced.Top := PrevPanel.Top+PrevPanel.Width;
+    PrevPanel := paAdvanced;
+  end;
+  if paRange.Visible then begin
+    paRange.Top := PrevPanel.Top+PrevPanel.Width;
+    PrevPanel := paRange;
+  end;
+  if paPassword.Visible then begin
+    paPassword.Top := PrevPanel.Top+PrevPanel.Width;
+    PrevPanel := paPassword;
+  end;
+end;
+
 procedure TfmGlobalSearch.pbFilterPaint(Sender: TObject);
 var
   ic: hIcon;
@@ -1017,18 +1270,23 @@ begin
   // if we are password-protected (cbPass.Enabled) and
   // have PROTSEL (GetPassMode = PASSMODE_PROTSEL) then save
   // checkbox to DB
-  if (cbPass.Enabled) and (GetPassMode = PASSMODE_PROTSEL) then
-    WriteDBBool(hppDBName,'GlobalSearchWindow.PassChecked',cbPass.Checked);
+  WriteDBBool(hppDBName,'GlobalSearchWindow.PassChecked',paPassword.Visible);
 
   WriteDBInt(hppDBName,'GlobalSearchWindow.ContactListWidth',paContacts.Width);
 
-  WriteDBBool(hppDBName,'GlobalSearchWindow.ShowAdvanced',gbAdvanced.Visible);
+  WriteDBBool(hppDBName,'GlobalSearchWindow.ShowAdvanced',paAdvanced.Visible);
   if rbAny.Checked then
     WriteDBInt(hppDBName,'GlobalSearchWindow.AdvancedOptions',0)
   else if rbAll.Checked then
     WriteDBInt(hppDBName,'GlobalSearchWindow.AdvancedOptions',1)
   else
     WriteDBInt(hppDBName,'GlobalSearchWindow.AdvancedOptions',2);
+
+  WriteDBBool(hppDBName,'GlobalSearchWindow.ShowRange',paRange.Visible);
+  if Trunc(dtRange1.Date) <> Trunc(Now) then
+    WriteDBDateTime(hppDBName,'GlobalSearchWindow.RangeFrom',Trunc(dtRange1.Date));
+  if Trunc(dtRange2.Date) <> Trunc(Now) then
+    WriteDBDateTime(hppDBName,'GlobalSearchWindow.RangeTo',Trunc(dtRange2.Date));
 
   LastSearch := WideToAnsiString(edSearch.Text,hppCodepage);
   WriteDBWideStr(hppDBName,'GlobalSearchWindow.LastSearch',LastSearch);
@@ -1056,6 +1314,11 @@ begin
     pbFilter.Tag := 0;
     pbFilter.Repaint;
   end;
+end;
+
+procedure TfmGlobalSearch.EventsFilterItemClick(Sender: TObject);
+begin
+  SetEventFilter(TTntMenuItem(Sender).Tag);
 end;
 
 procedure TfmGlobalSearch.hgPopup(Sender: TObject);
@@ -1147,7 +1410,7 @@ var
   PassMode: Byte;
 begin
   paFilter.Visible := False;
-  ShowAdvancedPanel(False);
+  ToggleAdvancedPanel(False);
   ShowContacts(False);
 
   IsSearching := False;
@@ -1161,10 +1424,8 @@ begin
     #10#13#10#13+TranslateWideW('Click Search button to start');
 
   PassMode := GetPassMode;
-  cbPass.Enabled := (PassMode <> PASSMODE_PROTNONE);
-  cbPass.Checked := (PassMode = PASSMODE_PROTALL) and (cbPass.Enabled);
-  laPass.Enabled := cbPass.Checked and cbPass.Enabled;
-  edPass.Enabled := cbPass.Checked and cbPass.Enabled;
+  if (PassMode = PASSMODE_PROTALL) then
+    TogglePasswordPanel(True);
 
   TranslateForm;
   LoadPosition;
@@ -1175,18 +1436,8 @@ begin
   edSearch.SelectAll;
 
   bnSearch.Enabled := (edSearch.Text <> '');
-
-  //ilFilterHandle := ImageList_Create(16,16,ILC_COLOR32 or ILC_MASK,4,1);
-  //ImageList_AddIcon(ilFilterHandle,LoadIcon(hInstance,'historypp_hotfilter'));
-
-  //FilterIcon := TIcon.Create;
-  //FilterIcon.Handle := CopyIcon(hppicons[1].Handle);
-  //ilFilter.AddIcon(FilterIcon);
-  //ilFilter.ResInstLoad(hInstance,rtIcon,'historypp_search',0);
-  //RaiseLastWin32Error;
-  //ilFilter.GetIcon(0,imFilter.Picture.Icon);
-
-  //imFilter.Picture.Icon.Handle := ImageList_GetIcon(ilFilterHandle,0,ILD_NORMAL);
+  CreateEventsFilterMenu;
+  SetEventFilter(0);
 end;
 
 function TfmGlobalSearch.GetSearchItem(GridIndex: Integer): TSearchItem;
@@ -1241,9 +1492,16 @@ begin
   if i <> -1 then DeleteEventFromLists(i);
 end;
 
+procedure TfmGlobalSearch.HMFiltersChanged(var M: TMessage);
+begin
+  CreateEventsFilterMenu;
+  SetEventFilter(0);
+end;
+
 procedure TfmGlobalSearch.HMIcons2Changed(var M: TMessage);
 begin
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_GLOBALSEARCH].handle);
+  LoadToolbarIcons;
   LoadButtonIcons;
   pbFilter.Repaint;
   LoadContactsIcons;
@@ -1335,36 +1593,12 @@ begin
   end;
 end;
 
-procedure TfmGlobalSearch.ShowAdvancedPanel(Show: Boolean);
-begin
-  if Show then begin
-    if not gbAdvanced.Visible then
-      paSearch.Height := paSearch.Height + gbAdvanced.Height + 8;
-    gbAdvanced.Show;
-    end
-  else begin
-    if gbAdvanced.Visible then
-      paSearch.Height := paSearch.Height - gbAdvanced.Height - 8;
-    gbAdvanced.Hide;
-    end;
-  if gbAdvanced.Visible then
-    bnAdvanced.Caption := TranslateWideW('Advanced <<')
-  else
-    bnAdvanced.Caption := TranslateWideW('Advanced >>');
-end;
-
-
 procedure TfmGlobalSearch.ShowContacts(Show: Boolean);
 begin
   paContacts.Visible := Show;
   spContacts.Visible := Show;
   if (Show) and (paContacts.Width > 0) then
     spContacts.LEft := paContacts.Width + paContacts.Left + 1;
-end;
-
-procedure TfmGlobalSearch.bnAdvancedClick(Sender: TObject);
-begin
-  ShowAdvancedPanel(not gbAdvanced.Visible);
 end;
 
 procedure TfmGlobalSearch.SearchNext(Rev: Boolean; Warp: Boolean = True);
@@ -1409,6 +1643,25 @@ begin
     if GetSearchItem(hg.Selected).Contact.Handle = 0 then exit;
     SendMessageTo(GetSearchItem(hg.Selected).Contact.Handle);
   end;
+end;
+
+procedure TfmGlobalSearch.SetEventFilter(FilterIndex: Integer);
+var
+  i,fi: Integer;
+begin
+  if FilterIndex = -1 then begin
+    fi := tbEventsFilter.Tag+1;
+    if fi > High(hppEventFilters) then fi := 0;
+  end else
+    fi := FilterIndex;
+
+  tbEventsFilter.Tag := fi;
+  LoadEventFilterButton;
+  for i := 0 to pmEventsFilter.Items.Count-1 do
+    if pmEventsFilter.Items[i].RadioItem then
+      pmEventsFilter.Items[i].Checked := (pmEventsFilter.Items[i].Tag = fi);
+
+  hg.Filter := hppEventFilters[fi].Events;
 end;
 
 procedure TfmGlobalSearch.SetRecentEventsPosition(OnTop: Boolean);
@@ -1563,6 +1816,40 @@ procedure TfmGlobalSearch.CopyText1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
   CopyToClip(hg.FormatSelected(hg.Options.ClipCopyTextFormat),Handle,GetSearchItem(hg.Selected).Contact.Codepage);
+end;
+
+procedure TfmGlobalSearch.CreateEventsFilterMenu;
+var
+  i: Integer;
+  mi: TTntMenuItem;
+  ShowAllEventsIndex: Integer;
+begin
+  for i := pmEventsFilter.Items.Count - 1 downto 0 do
+    if pmEventsFilter.Items[i].RadioItem then
+      pmEventsFilter.Items.Delete(i);
+
+  ShowAllEventsIndex := GetShowAllEventsIndex;
+  for i := 0 to Length(hppEventFilters) - 1 do begin
+    mi := TTntMenuItem.Create(pmEventsFilter);
+    mi.Caption := Tnt_WideStringReplace(hppEventFilters[i].Name,'&','&&',[rfReplaceAll]);
+    mi.GroupIndex := 1;
+    mi.RadioItem := True;
+    mi.Tag := i;
+    mi.OnClick := EventsFilterItemClick;
+    if i = ShowAllEventsIndex then mi.Default := True;
+    pmEventsFilter.Items.Insert(i,mi);
+  end;
+end;
+
+procedure TfmGlobalSearch.Customize1Click(Sender: TObject);
+begin
+  if not Assigned(fmCustomizeFilters)  then begin
+    CustomizeFiltersForm := TfmCustomizeFilters.Create(Self);
+    CustomizeFiltersForm.Show;
+  end
+  else begin
+    BringFormToFront(fmCustomizeFilters);
+  end;
 end;
 
 procedure TfmGlobalSearch.Delete1Click(Sender: TObject);

@@ -100,8 +100,11 @@ const
   HPP_ICON_BOOKMARK          = 28;
   HPP_ICON_BOOKMARK_ON       = 29;
   HPP_ICON_BOOKMARK_OFF      = 30;
+  HPP_ICON_SEARCHADVANCED    = 31;
+  HPP_ICON_SEARCHRANGE       = 32;
+  HPP_ICON_SEARCHPROTECTED   = 33;
 
-  hppIcons : array[0..30] of ThppIconsRec = (
+  hppIcons : array[0..33] of ThppIconsRec = (
     (name:'historypp_01'; desc:'Contact history'; group: 'Main'; i:HPP_ICON_CONTACTHISTORY; handle:0),
     (name:'historypp_02'; desc:'History search'; group: 'Main'; i:HPP_ICON_GLOBALSEARCH; handle:0),
     (name:'historypp_03'; desc:'Conversation divider'; group: 'Conversations'; i:HPP_ICON_SESS_DIVIDER; handle:0),
@@ -132,7 +135,10 @@ const
     (name:'historypp_28'; desc:'User Menu'; group: 'Toolbar'; i:HPP_ICON_CONTACTMENU; handle:0),
     (name:'historypp_29'; desc:'Bookmarks'; group: 'Toolbar'; i:HPP_ICON_BOOKMARK; handle:0),
     (name:'historypp_30'; desc:'Bookmark enabled'; group: 'Main'; i:HPP_ICON_BOOKMARK_ON; handle:0),
-    (name:'historypp_31'; desc:'Bookmark disabled'; group: 'Main'; i:HPP_ICON_BOOKMARK_OFF; handle:0)
+    (name:'historypp_31'; desc:'Bookmark disabled'; group: 'Main'; i:HPP_ICON_BOOKMARK_OFF; handle:0),
+    (name:'historypp_32'; desc:'Advanced Search Options'; group: 'Toolbar'; i:HPP_ICON_SEARCHADVANCED; handle:0),
+    (name:'historypp_33'; desc:'Limit Search Range'; group: 'Toolbar'; i:HPP_ICON_SEARCHRANGE; handle:0),
+    (name:'historypp_34'; desc:'Search Protected Contacts'; group: 'Toolbar'; i:HPP_ICON_SEARCHPROTECTED; handle:0)
   );
 
   hppIntIcons: array[0..0] of ThppIntIconsRec = (

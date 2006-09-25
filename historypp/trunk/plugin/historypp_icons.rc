@@ -29,3 +29,6 @@
 29 Icon res\historypp_bookmark.ico
 30 Icon res\historypp_bookmark_on.ico
 31 Icon res\historypp_bookmark_off.ico
+32 Icon res\gsearch_advanced.ico
+33 Icon res\gsearch_limitrange.ico
+34 Icon res\gsearch_searchprotected.ico
