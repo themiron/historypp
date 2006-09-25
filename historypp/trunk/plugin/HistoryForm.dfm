@@ -1,6 +1,6 @@
 object HistoryFrm: THistoryFrm
-  Left = 305
-  Top = 154
+  Left = 319
+  Top = 173
   Width = 586
   Height = 418
   VertScrollBar.Tracking = True

@@ -1,9 +1,9 @@
 object fmGlobalSearch: TfmGlobalSearch
-  Left = 289
-  Top = 114
+  Left = 374
+  Top = 112
+  Width = 559
+  Height = 545
   Caption = 'Global History Search'
-  ClientHeight = 518
-  ClientWidth = 551
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -35,8 +35,6 @@ object fmGlobalSearch: TfmGlobalSearch
       Top = 202
       Height = 241
       Visible = False
-      ExplicitTop = 113
-      ExplicitHeight = 337
     end
     object paSearch: TTntPanel
       Left = 2
@@ -123,7 +121,6 @@ object fmGlobalSearch: TfmGlobalSearch
       BevelOuter = bvNone
       TabOrder = 1
       Visible = False
-      ExplicitTop = 154
       DesignSize = (
         547
         46)
@@ -325,6 +322,7 @@ object fmGlobalSearch: TfmGlobalSearch
       BorderWidth = 2
       EdgeInner = esNone
       EdgeOuter = esNone
+      Flat = True
       Images = ilToolbar
       ParentShowHint = False
       ShowHint = True
@@ -356,7 +354,6 @@ object fmGlobalSearch: TfmGlobalSearch
         Left = 69
         Top = 0
         Width = 8
-        Caption = 'TntToolButton3'
         Enabled = False
         Style = tbsSeparator
       end
@@ -380,7 +377,6 @@ object fmGlobalSearch: TfmGlobalSearch
         Left = 123
         Top = 0
         Width = 8
-        Caption = 'TntToolButton4'
         Style = tbsSeparator
         Visible = False
       end
@@ -562,8 +558,8 @@ object fmGlobalSearch: TfmGlobalSearch
         Top = 22
         Width = 87
         Height = 21
-        Date = 38982.003255208340000000
-        Time = 38982.003255208340000000
+        Date = 38982.003255208350000000
+        Time = 38982.003255208350000000
         TabOrder = 1
       end
     end
