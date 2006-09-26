@@ -362,7 +362,7 @@ procedure TfmGlobalSearch.SMFinished(var M: TMessage);
 var
   sbt: WideString;
 begin
-  stime := st.SearchTime;
+  stime := GetTickCount - st.SearchStart;
   AllContacts := st.AllContacts;
   AllItems := st.AllEvents;
   // if change, change also in hg.State:
