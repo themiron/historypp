@@ -85,9 +85,8 @@ end;
 
 procedure TExternalGrid.ScrollToBottom;
 begin
-  Grid.MakeVisible(Length(Items)-1);
-  Grid.Invalidate;
-  Grid.Update;
+  Grid.ScrollToBottom;
+  Grid.Repaint;
 end;
 
 procedure TExternalGrid.SetPosition(x, y, cx, cy: Integer);
