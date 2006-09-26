@@ -31,14 +31,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 {$R 'hpp_opt_dialog.res' 'hpp_opt_dialog.rc'}
 
 uses
-  {$IFDEF EUREKALOG}
-  ExceptionLog,
-  {$ENDIF}
   Windows,
   SysUtils,
   Graphics,
   Classes,
-  {$IFDEF REPORT_LEAKS} Themes, {$ENDIF}
+  Themes,
   m_globaldefs,
   m_api,
   tntSystem,
@@ -72,7 +69,9 @@ uses
   hpp_richedit in 'hpp_richedit.pas',
   hpp_richedit_ole in 'hpp_richedit_ole.pas',
   CustomizeFiltersForm in 'CustomizeFiltersForm.pas' {fmCustomizeFilters},
-  CustomizeToolbar in 'CustomizeToolbar.pas' {fmCustomizeToolbar};
+  CustomizeToolbar in 'CustomizeToolbar.pas' {fmCustomizeToolbar},
+  hpp_external in 'hpp_external.pas',
+  hpp_externalgrid in 'hpp_externalgrid.pas';
 
 type
   TMenuHandles = record
@@ -149,6 +148,7 @@ begin
   hookOptInit := PluginLink.HookEvent(ME_OPT_INITIALISE,OnOptInit);
   InitMMI;
   hppRegisterServices;
+  RegisterExtGridServices;
   Result := 0;
 end;
 
@@ -174,7 +174,7 @@ begin
 
     // unregistering events
     hppUnregisterServices;
-
+    UnregisterExtGridServices;
     // unregister bookmarks
     hppDeinitBookmarkServer;
 
