@@ -31,11 +31,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 {$R 'hpp_opt_dialog.res' 'hpp_opt_dialog.rc'}
 
 uses
+  {$IFDEF EUREKALOG}
+  ExceptionLog,
+  {$ENDIF}
   Windows,
   SysUtils,
   Graphics,
   Classes,
-  Themes,
+  {$IFDEF REPORT_LEAKS} Themes, {$ENDIF}
   m_globaldefs,
   m_api,
   tntSystem,
