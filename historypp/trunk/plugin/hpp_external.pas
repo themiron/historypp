@@ -121,19 +121,27 @@ function ExtEvent(wParam, lParam: DWord): Integer; cdecl;
 var
   event: PIEVIEWEVENT;
   hDBNext: THandle;
-  n: Integer;
+  i,n: Integer;
 begin
   try
     OutputDebugString('MS_IEVIEW_EVENT');
     event := PIEVIEWEVENT(lParam);
     if event.iType = IEE_LOG_DB_EVENTS then begin
       n := event.Hwnd;
-      ExternalGrids[n].AddEvent(event.hContact, event.hDBEventFirst, event.Codepage);
       if event.Count = -1 then begin
-        hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,event.hDBEventFirst,0);
+        hDBNext := event.hDBEventFirst;
         while hDBNext <> 0 do begin
           ExternalGrids[n].AddEvent(event.hContact, hDBNext, event.Codepage);
           hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBNext,0);
+        end
+      end
+      else begin
+        hDBNext := event.hDBEventFirst;
+        for i := 0 to event.count - 1 do begin
+          if hDBNext = 0 then break;
+          ExternalGrids[n].AddEvent(event.hContact, hDBNext, event.Codepage);
+          if i < event.count -1 then
+            hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBNext,0);
         end;
       end;
     end
