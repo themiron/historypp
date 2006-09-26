@@ -67,8 +67,7 @@ type
     CurProgress: Integer;
     MaxProgress: Integer;
     FParentHandle: Hwnd;
-    FSearchTime: Cardinal;
-    SearchStart: Cardinal;
+    FSearchStart: Cardinal;
     SearchWords: array of WideString;
     FSearchText: WideString;
     FSearchMethod: TSearchMethod;
@@ -106,7 +105,7 @@ type
     property SearchRange: Boolean read FSearchRange write FSearchRange;
     property SearchRangeFrom: TDateTime read FSearchRangeFrom write SetSearchRangeFrom;
     property SearchRangeTo: TDateTime read FSearchRangeTo write SetSearchRangeTo;
-    property SearchTime: Cardinal read FSearchTime;
+    property SearchStart: Cardinal read FSearchStart;
     property ParentHandle: Hwnd read FParentHandle write FParentHandle;
 
     property Terminated;
@@ -282,7 +281,7 @@ begin
   BufCount := 0;
   FirstBatch := True;
   try
-    SearchStart := GetTickCount;
+    FSearchStart := GetTickCount;
     DoMessage(HM_STRD_PREPARE,0,0);
     CalcMaxProgress;
     SetProgress(0);
@@ -310,7 +309,6 @@ begin
     end;
     {$ENDIF}
   finally
-    FSearchTime := GetTickCount - SearchStart;
     // only Post..., not Send... because we wait for this thread
     // to die in this message
     PostMessage(ParentHandle,HM_STRD_FINISHED,0,0);
