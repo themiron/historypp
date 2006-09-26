@@ -543,6 +543,7 @@ type
 
     procedure CalcAllHeight;
     procedure MakeTopmost(Item: Integer);
+    procedure ScrollToBottom;
     procedure ResetItem(Item: Integer);
 
     procedure IntFormatItem(Item: Integer; var Tokens: TWideStrArray; var SpecialTokens: TIntArray);
@@ -3109,6 +3110,11 @@ begin
   LoadItem(idx,True);
   Dec(SumHeight,FItems[idx].Height);
   end;
+end;
+
+procedure THistoryGrid.ScrollToBottom;
+begin
+  SetSBPos(Count);
 end;
 
 procedure THistoryGrid.Delete(Item: Integer);
