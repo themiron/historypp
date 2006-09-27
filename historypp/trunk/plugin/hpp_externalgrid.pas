@@ -3,7 +3,9 @@ unit hpp_externalgrid;
 interface
 
 uses
-  Windows, hpp_global, m_globaldefs, m_api, hpp_events, HistoryGrid;
+  Windows, m_api,
+  hpp_global, m_globaldefs, hpp_events, hpp_contacts, hpp_services,
+  HistoryGrid;
 
 type
   TExtItem = record
@@ -21,6 +23,8 @@ type
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
     procedure GridTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
+    procedure GridNameData(Sender: TObject; Index: Integer; var Name: WideString);
+    procedure GridProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
   public
     constructor Create(AParentWindow: HWND);
     destructor Destroy; override;
@@ -56,6 +60,8 @@ begin
   Grid := THistoryGrid.CreateParented(ParentWindow);
   Grid.OnItemData := GridItemData;
   Grid.OnTranslateTime := GridTranslateTime;
+  Grid.OnNameData := GridNameData;
+  Grid.OnProcessRichText := GridProcessRichText;
   Grid.Options := GridOptions;
 end;
 
@@ -81,6 +87,42 @@ procedure TExternalGrid.GridTranslateTime(Sender: TObject; Time: Cardinal;
   var Text: WideString);
 begin
   Text := TimestampToString(Time);
+end;
+
+procedure TExternalGrid.GridNameData(Sender: TObject; Index: Integer; var Name: WideString);
+begin
+  if Name = '' then begin
+    if Grid.Protocol = '' then begin
+      if Items[Index].hContact = 0 then Grid.Protocol := 'ICQ'
+      else Grid.Protocol := GetContactProto(Items[Index].hContact);
+    end;
+    if mtIncoming in Grid.Items[Index].MessageType then begin
+      Grid.ContactName := GetContactDisplayName(Items[Index].hContact, Grid.Protocol, true);
+      Name := Grid.ContactName;
+    end else begin
+      Grid.ProfileName := GetContactDisplayName(0, Grid.Protocol);
+      Name := Grid.ProfileName;
+    end;
+  end;
+end;
+
+procedure TExternalGrid.GridProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
+var
+  ItemRenderDetails: TItemRenderDetails;
+begin
+  ZeroMemory(@ItemRenderDetails,SizeOf(ItemRenderDetails));
+  ItemRenderDetails.cbSize := SizeOf(ItemRenderDetails);
+  ItemRenderDetails.hContact := Items[Item].hContact;
+  ItemRenderDetails.hDBEvent := Items[Item].hDBEvent;
+  ItemRenderDetails.pProto := PChar(Grid.Items[Item].Proto);
+  ItemRenderDetails.pModule := PChar(Grid.Items[Item].Module);
+  ItemRenderDetails.dwEventTime := Grid.Items[Item].Time;
+  ItemRenderDetails.wEventType := Grid.Items[Item].EventType;
+  ItemRenderDetails.IsEventSent := (mtOutgoing in Grid.Items[Item].MessageType);
+  if Grid.IsSelected(Item) then
+    ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_SELECTED;
+  ItemRenderDetails.bHistoryWindow := IRDHW_EXTERNAL;
+  PluginLink.NotifyEventHooks(hHppRichEditItemProcess,WPARAM(Handle),LPARAM(@ItemRenderDetails));
 end;
 
 procedure TExternalGrid.ScrollToBottom;

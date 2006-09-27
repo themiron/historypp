@@ -45,6 +45,8 @@ const
     // window and the processed item is the
     // result of the global search.
     IRDHW_GLOBALSEARCH   = 3;
+    // IRDHW_EXTERNAL. The window is external window
+    IRDHW_EXTERNAL       = 4;
 
     //** VALUES FOR TItemRenderDetails.dwFlags
     //** Used in ME_HPP_RICHEDIT_ITEMPROCESS event
