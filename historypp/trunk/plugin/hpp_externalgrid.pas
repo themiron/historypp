@@ -26,6 +26,7 @@ type
     procedure GridTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
     procedure GridNameData(Sender: TObject; Index: Integer; var Name: WideString);
     procedure GridProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
+    procedure GridUrlClick(Sender: TObject; Item: Integer; Url: String);
   public
     constructor Create(AParentWindow: HWND);
     destructor Destroy; override;
@@ -68,6 +69,7 @@ begin
   Grid.OnTranslateTime := GridTranslateTime;
   Grid.OnNameData := GridNameData;
   Grid.OnProcessRichText := GridProcessRichText;
+  Grid.OnUrlClick := GridUrlClick;
   Grid.Options := GridOptions;
 end;
 
@@ -164,6 +166,15 @@ begin
   Grid.Allocate(0);
   Finalize(Items);
   //Grid.Repaint;
+end;
+
+procedure TExternalGrid.GridUrlClick(Sender: TObject; Item: Integer; Url: String);
+var
+  bNewWindow: Integer;
+begin
+  if Url= '' then exit;
+  bNewWindow := 0; // no, use existing window
+  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(@Url[1])));
 end;
 
 initialization

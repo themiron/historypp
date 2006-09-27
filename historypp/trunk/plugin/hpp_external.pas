@@ -2,6 +2,8 @@ unit hpp_external;
 
 interface
 
+{$DEFINE IMITATE_IEVIEW}
+
 uses
   Windows, HistoryGrid, m_globaldefs, m_api;
 
