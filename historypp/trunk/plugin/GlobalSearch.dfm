@@ -227,13 +227,12 @@ object fmGlobalSearch: TfmGlobalSearch
       Height = 241
       Align = alClient
       BevelOuter = bvNone
-      BorderStyle = bsSingle
       TabOrder = 4
       object hg: THistoryGrid
         Left = 0
         Top = 0
-        Width = 385
-        Height = 209
+        Width = 389
+        Height = 213
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         ShowBottomAligned = False
@@ -269,18 +268,20 @@ object fmGlobalSearch: TfmGlobalSearch
         Reversed = False
         Align = alClient
         TabStop = True
+        BevelInner = bvNone
+        BevelOuter = bvNone
         Padding = 4
       end
       object paFilter: TTntPanel
         Left = 0
-        Top = 209
-        Width = 385
+        Top = 213
+        Width = 389
         Height = 28
         Align = alBottom
         BevelOuter = bvNone
         TabOrder = 1
         DesignSize = (
-          385
+          389
           28)
         object sbClearFilter: TTntSpeedButton
           Left = 27
@@ -303,7 +304,7 @@ object fmGlobalSearch: TfmGlobalSearch
         object edFilter: TTntEdit
           Left = 52
           Top = 4
-          Width = 319
+          Width = 323
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 0

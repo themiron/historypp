@@ -48,13 +48,12 @@ object HistoryFrm: THistoryFrm
       Height = 312
       Align = alClient
       BevelOuter = bvNone
-      BorderStyle = bsSingle
       TabOrder = 0
       object hg: THistoryGrid
         Left = 0
         Top = 0
-        Width = 255
-        Height = 308
+        Width = 259
+        Height = 312
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         ShowBottomAligned = False
@@ -98,6 +97,8 @@ object HistoryFrm: THistoryFrm
         Font.Height = -11
         Font.Name = 'MS Shell Dlg'
         Font.Style = []
+        BevelInner = bvNone
+        BevelOuter = bvNone
         Padding = 4
       end
     end
