@@ -98,6 +98,10 @@ procedure TExternalGrid.GridItemData(Sender: TObject; Index: Integer;
 begin
   Item := ReadEvent(Items[Index].hDBEvent,Items[Index].Codepage);
   Item.RTLMode := Items[Index].RTLMode;
+  if not Item.IsRead then begin
+    PluginLink.CallService(MS_DB_EVENT_MARKREAD,Items[Index].hContact,Items[Index].hDBEvent);
+    PluginLink.CallService(MS_CLIST_REMOVEEVENT,Items[Index].hContact,Items[Index].hDBEvent);
+  end;
 end;
 
 procedure TExternalGrid.GridTranslateTime(Sender: TObject; Time: Cardinal;
