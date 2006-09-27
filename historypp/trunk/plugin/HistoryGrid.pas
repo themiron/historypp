@@ -1890,6 +1890,7 @@ begin
      integer(fsUnderline in textFont.Style),
      integer(fsStrikeOut in textFont.Style),
      Round(abs(textFont.Height)*FontSizeMult)]);
+  if GetItemRTL(Item) then RTF := RTF + '\ltrch\rtlch' else RTF := RTF + '\rtlch\ltrch';
 
   Text := FormatTextUnicodeRTF(FItems[Item].Text);
 
