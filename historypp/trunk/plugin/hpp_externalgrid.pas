@@ -12,6 +12,7 @@ type
     hDBEvent: THandle;
     hContact: THandle;
     Codepage: THandle;
+    RTLMode: TRTLMode;
   end;
 
   TExternalGrid = class(TObject)
@@ -29,9 +30,11 @@ type
     constructor Create(AParentWindow: HWND);
     destructor Destroy; override;
 
-    procedure AddEvent(hContact, hDBEvent: THandle; Codepage: Integer);
+    procedure AddEvent(hContact, hDBEvent: THandle; Codepage: Integer; RTL: boolean);
     procedure SetPosition(x,y,cx,cy: Integer);
     procedure ScrollToBottom;
+    function GetSelection(NoUnicode: Boolean): PChar;
+    procedure Clear;
     property ParentWindow: HWND read FParentWindow;
     property GridHandle: HWND read GetGridHandle;
   end;
@@ -45,12 +48,14 @@ uses hpp_options;
 
 { TExternalGrid }
 
-procedure TExternalGrid.AddEvent(hContact, hDBEvent: THandle; Codepage: Integer);
+procedure TExternalGrid.AddEvent(hContact, hDBEvent: THandle; Codepage: Integer; RTL: boolean);
 begin
   SetLength(Items,Length(Items)+1);
   Items[High(Items)].hDBEvent := hDBEvent;
   Items[High(Items)].hContact := hContact;
   Items[High(Items)].Codepage := Codepage;
+  if RTL then Items[High(Items)].RTLMode := hppRTLEnable
+         else Items[High(Items)].RTLMode := hppRTLDisable;
   Grid.Allocate(Length(Items));
 end;
 
@@ -58,6 +63,7 @@ constructor TExternalGrid.Create(AParentWindow: HWND);
 begin
   FParentWindow := AParentWindow;
   Grid := THistoryGrid.CreateParented(ParentWindow);
+  Grid.BeginUpdate;
   Grid.OnItemData := GridItemData;
   Grid.OnTranslateTime := GridTranslateTime;
   Grid.OnNameData := GridNameData;
@@ -81,6 +87,7 @@ procedure TExternalGrid.GridItemData(Sender: TObject; Index: Integer;
   var Item: THistoryItem);
 begin
   Item := ReadEvent(Items[Index].hDBEvent,Items[Index].Codepage);
+  Item.RTLMode := Items[Index].RTLMode;
 end;
 
 procedure TExternalGrid.GridTranslateTime(Sender: TObject; Time: Cardinal;
@@ -128,7 +135,8 @@ end;
 procedure TExternalGrid.ScrollToBottom;
 begin
   Grid.ScrollToBottom;
-  Grid.Repaint;
+  //Grid.Repaint;
+  Grid.EndUpdate;
 end;
 
 procedure TExternalGrid.SetPosition(x, y, cx, cy: Integer);
@@ -138,6 +146,24 @@ begin
   Grid.Width := cx;
   Grid.Height := cy;
   SetWindowPos(Grid.Handle,0,x,y,cx,cy,SWP_SHOWWINDOW);
+end;
+
+function TExternalGrid.GetSelection(NoUnicode: Boolean): PChar;
+var
+  Text: WideString;
+begin
+  Text := Grid.FormatSelected(Grid.Options.ClipCopyFormat);
+  if NoUnicode then
+    Result := PChar(WideToAnsiString(Text,CP_ACP))
+  else
+    Result := PChar(PWideChar(Text));
+end;
+
+procedure TExternalGrid.Clear;
+begin
+  Grid.Allocate(0);
+  Finalize(Items);
+  //Grid.Repaint;
 end;
 
 initialization
