@@ -131,7 +131,7 @@ begin
       if event.Count = -1 then begin
         hDBNext := event.hDBEventFirst;
         while hDBNext <> 0 do begin
-          ExternalGrids[n].AddEvent(event.hContact, hDBNext, event.Codepage);
+          ExternalGrids[n].AddEvent(event.hContact, hDBNext, event.Codepage, boolean(event.dwFlags and IEEF_RTL));
           hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBNext,0);
         end
       end
@@ -139,19 +139,23 @@ begin
         hDBNext := event.hDBEventFirst;
         for i := 0 to event.count - 1 do begin
           if hDBNext = 0 then break;
-          ExternalGrids[n].AddEvent(event.hContact, hDBNext, event.Codepage);
+          ExternalGrids[n].AddEvent(event.hContact, hDBNext, event.Codepage, boolean(event.dwFlags and IEEF_RTL));
           if i < event.count -1 then
             hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBNext,0);
         end;
       end;
     end
     else if event.iType = IEE_CLEAR_LOG then begin
-
+      n := event.Hwnd;
+      ExternalGrids[n].Clear;
+      Result := 1;
     end
     else if event.iType = IEE_GET_SELECTION then begin
-      
-    end;
-    Result := 0;
+      n := event.Hwnd;
+      Result := integer(ExternalGrids[n].GetSelection(boolean(event.dwFlags and IEEF_NO_UNICODE)));
+    end
+    else
+      Result := 0;
   except
     Result := 1;
   end;
