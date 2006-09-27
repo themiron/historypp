@@ -3,7 +3,7 @@ unit hpp_externalgrid;
 interface
 
 uses
-  Windows, Classes, m_api,
+  Windows, Classes, Controls, Forms, Graphics, m_api,
   hpp_global, m_globaldefs, hpp_events, hpp_contacts, hpp_services,
   HistoryGrid;
 
@@ -75,13 +75,24 @@ constructor TExternalGrid.Create(AParentWindow: HWND);
 begin
   FParentWindow := AParentWindow;
   Grid := THistoryGrid.CreateParented(ParentWindow);
-  Grid.BeginUpdate;
+  Grid.ParentCtl3D := False;
+  Grid.Ctl3D := True;
+  Grid.ParentColor := False;
+  Grid.Color := clBtnFace;
+  Grid.BevelEdges := [beLeft, beTop, beRight, beBottom];
+  Grid.BevelKind := bkNone;
+  Grid.BevelInner := bvNone;
+  Grid.BevelOuter := bvNone;
+  Grid.BevelWidth := 1;
+  Grid.BorderStyle := bsSingle;
+  Grid.BorderWidth := 0;
   Grid.OnItemData := GridItemData;
   Grid.OnTranslateTime := GridTranslateTime;
   Grid.OnNameData := GridNameData;
   Grid.OnProcessRichText := GridProcessRichText;
   Grid.OnUrlClick := GridUrlClick;
   Grid.Options := GridOptions;
+  Grid.BeginUpdate;
 end;
 
 destructor TExternalGrid.Destroy;
