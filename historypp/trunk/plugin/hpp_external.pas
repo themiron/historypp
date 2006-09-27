@@ -73,6 +73,7 @@ const
 var
   hExtWindow, hExtEvent, hExtUtils: THandle;
   hExtOptChanged, hExtNotification: THandle;
+  IEViewEnabled: boolean;
 
 procedure RegisterExtGridServices;
 procedure UnregisterExtGridServices;
@@ -172,22 +173,27 @@ end;
 procedure RegisterExtGridServices;
 begin
   {$IFDEF IMITATE_IEVIEW}
-  hExtWindow := PluginLink.CreateServiceFunction(MS_IEVIEW_WINDOW,ExtWindow);
-  hExtEvent := PluginLink.CreateServiceFunction(MS_IEVIEW_EVENT,ExtEvent);
-  hExtUtils := PluginLink.CreateServiceFunction(MS_IEVIEW_UTILS,ExtUtils);
-  hExtOptChanged := PluginLink.CreateHookableEvent(ME_IEVIEW_OPTIONSCHANGED);
-  hExtNotification := PluginLink.CreateHookableEvent(ME_IEVIEW_NOTIFICATION);
+  IEViewEnabled := boolean(PluginLink.ServiceExists(MS_IEVIEW_WINDOW));
+  if not IEViewEnabled then begin
+    hExtWindow := PluginLink.CreateServiceFunction(MS_IEVIEW_WINDOW,ExtWindow);
+    hExtEvent := PluginLink.CreateServiceFunction(MS_IEVIEW_EVENT,ExtEvent);
+    hExtUtils := PluginLink.CreateServiceFunction(MS_IEVIEW_UTILS,ExtUtils);
+    hExtOptChanged := PluginLink.CreateHookableEvent(ME_IEVIEW_OPTIONSCHANGED);
+    hExtNotification := PluginLink.CreateHookableEvent(ME_IEVIEW_NOTIFICATION);
+  end;
   {$ENDIF}
 end;
 
 procedure UnregisterExtGridServices;
 begin
   {$IFDEF IMITATE_IEVIEW}
-  PluginLink.DestroyServiceFunction(hExtWindow);
-  PluginLink.DestroyServiceFunction(hExtEvent);
-  PluginLink.DestroyServiceFunction(hExtUtils);
-  PluginLink.DestroyHookableEvent(hExtOptChanged);
-  PluginLink.DestroyHookableEvent(hExtNotification);
+  if not IEViewEnabled then begin
+    PluginLink.DestroyServiceFunction(hExtWindow);
+    PluginLink.DestroyServiceFunction(hExtEvent);
+    PluginLink.DestroyServiceFunction(hExtUtils);
+    PluginLink.DestroyHookableEvent(hExtOptChanged);
+    PluginLink.DestroyHookableEvent(hExtNotification);
+  end;
   {$ENDIF}
 end;
 
