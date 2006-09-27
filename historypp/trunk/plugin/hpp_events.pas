@@ -273,6 +273,7 @@ begin
     Result.MessageType := [mtIncoming]
   else
     Result.MessageType := [mtOutgoing];
+  Result.IsRead := boolean(EventInfo.flags and DBEF_READ);
   EventIndex := 0;
   for i := 1 to High(EventTable) do
     if EventTable[i].EventType = EventInfo.EventType then begin
