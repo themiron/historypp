@@ -84,6 +84,7 @@ uses hpp_externalgrid;
 function ExtWindow(wParam, lParam: DWord): Integer; cdecl;
 var
   par: PIEVIEWWINDOW;
+  grid: TExternalGrid;
   i,n: Integer;
 begin
   try
@@ -93,25 +94,21 @@ begin
       n := Length(ExternalGrids);
       SetLength(ExternalGrids,n+1);
       ExternalGrids[n] := TExternalGrid.Create(par.Parent);
-      par.Hwnd := n;
+      par.Hwnd := ExternalGrids[n].GridHandle;
     end
     else if par.iType = IEW_DESTROY then begin
       OutputDebugString('IEW_DESTROY');
-      n := par.Hwnd;
-      ExternalGrids[n].Free;
-      for i := n to Length(ExternalGrids) - 2 do
-        ExternalGrids[i] := ExternalGrids[i+1];
-      SetLength(ExternalGrids,Length(ExternalGrids)-1);
+      DeleteExtGridByHandle(par.Hwnd);
     end
     else if par.iType = IEW_SETPOS then begin
       OutputDebugString('IEW_SETPOS');
-      n := par.Hwnd;
-      ExternalGrids[n].SetPosition(par.x,par.y,par.cx,par.cy);
+      grid := FindExtGridByHandle(par.Hwnd);
+      grid.SetPosition(par.x,par.y,par.cx,par.cy);
     end
     else if par.iType = IEW_SCROLLBOTTOM then begin
       OutputDebugString('IEW_SCROLLBOTTOM');
-      n := par.Hwnd;
-      ExternalGrids[n].ScrollToBottom;
+      grid := FindExtGridByHandle(par.Hwnd);
+      grid.ScrollToBottom;
     end;
     Result := 0;
   except
@@ -124,16 +121,17 @@ var
   event: PIEVIEWEVENT;
   hDBNext: THandle;
   i,n: Integer;
+  grid: TExternalGrid;
 begin
   try
     OutputDebugString('MS_IEVIEW_EVENT');
     event := PIEVIEWEVENT(lParam);
+    grid := FindExtGridByHandle(event.Hwnd);
     if event.iType = IEE_LOG_DB_EVENTS then begin
-      n := event.Hwnd;
       if event.Count = -1 then begin
         hDBNext := event.hDBEventFirst;
         while hDBNext <> 0 do begin
-          ExternalGrids[n].AddEvent(event.hContact, hDBNext, event.Codepage, boolean(event.dwFlags and IEEF_RTL));
+          grid.AddEvent(event.hContact, hDBNext, event.Codepage, boolean(event.dwFlags and IEEF_RTL));
           hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBNext,0);
         end
       end
@@ -141,20 +139,18 @@ begin
         hDBNext := event.hDBEventFirst;
         for i := 0 to event.count - 1 do begin
           if hDBNext = 0 then break;
-          ExternalGrids[n].AddEvent(event.hContact, hDBNext, event.Codepage, boolean(event.dwFlags and IEEF_RTL));
+          grid.AddEvent(event.hContact, hDBNext, event.Codepage, boolean(event.dwFlags and IEEF_RTL));
           if i < event.count -1 then
             hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBNext,0);
         end;
       end;
     end
     else if event.iType = IEE_CLEAR_LOG then begin
-      n := event.Hwnd;
-      ExternalGrids[n].Clear;
+      grid.Clear;
       Result := 1;
     end
     else if event.iType = IEE_GET_SELECTION then begin
-      n := event.Hwnd;
-      Result := integer(ExternalGrids[n].GetSelection(boolean(event.dwFlags and IEEF_NO_UNICODE)));
+      Result := integer(grid.GetSelection(boolean(event.dwFlags and IEEF_NO_UNICODE)));
     end
     else
       Result := 0;
