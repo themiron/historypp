@@ -379,6 +379,9 @@ type
 
     FontSizeMult: Double;
 
+    FBorderStyle: TBorderStyle;
+    procedure SetBorderStyle(Value: TBorderStyle);
+
     procedure SetCodepage(const Value: Cardinal);
     procedure SetShowHeaders(const Value: Boolean);
     function GetIdx(Index: Integer): Integer;
@@ -416,6 +419,7 @@ type
     procedure WMChar(var Message: TWMChar); message WM_CHAR;
     procedure WMMouseWheel(var Message: TWMMouseWheel); message WM_MOUSEWHEEL;
     procedure CMBiDiModeChanged(var Message: TMessage); message CM_BIDIMODECHANGED;
+    procedure CMCtl3DChanged(var Message: TMessage); message CM_CTL3DCHANGED;
     function GetCount: Integer;
     procedure SetContact(const Value: THandle);
     procedure SetPadding(Value: Integer);
@@ -609,8 +613,18 @@ type
     property TabStop;
     property Font;
     property Color;
+    property ParentColor;
     property BiDiMode;
     property ParentBiDiMode;
+    property BevelEdges;
+    property BevelInner;
+    property BevelKind;
+    property BevelOuter;
+    property BevelWidth;
+    property BorderStyle: TBorderStyle read FBorderStyle write SetBorderStyle default bsSingle;
+    property BorderWidth;
+    property Ctl3D;
+    property ParentCtl3D;
     property Padding: Integer read FPadding write SetPadding;
     {$IFDEF CUST_SB}
     property VertScrollBar: TVertScrollBar read FVertScrollBar write SetVertScrollBar;
@@ -814,6 +828,7 @@ begin
   ControlStyle := [csCaptureMouse,csClickEvents,csReflector,csDoubleClicks];
   ControlStyle := ControlStyle + [csOpaque];
   ControlStyle := ControlStyle + [csFramed];
+  //ControlStyle := ControlStyle + [csNeedsBorderPaint];
 
   LockCount := 0;
 
@@ -844,6 +859,8 @@ begin
   ReleaseDC(0,dc);
   VLineScrollSize := Round(LogY*((13*5)/96));
   FontSizeMult := 2*74/LogY;
+
+  FBorderStyle := bsSingle;
 end;
 
 destructor THistoryGrid.Destroy;
@@ -1141,6 +1158,7 @@ begin
   //Canvas.Brush.Color := Color;
   //Canvas.FillRect(Rect(0,0,ClientWidth,ClientHeight));//Canvas.ClipRect);
   Message.Result := 1;
+  //inherited;
 end;
 
 procedure THistoryGrid.WMPaint(var Message: TWMPaint);
@@ -1174,23 +1192,15 @@ procedure THistoryGrid.WMSize(var Message: TWMSize);
 var
   re_mask: Integer;
 begin
-
   if not FRichParamsSet then begin
     FRichCache.SetHandles;
     FRichParamsSet := true;
-    //re_mask := SendMessage(FRich.Handle, EM_GETEVENTMASK, 0, 0);
-    //SendMessage(FRich.Handle, EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
-    //re_mask := FRich.Perform(EM_GETEVENTMASK, 0, 0);
-    //FRich.Perform(EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
     FRichInline.ParentWindow := Handle;
     re_mask := SendMessage(FRichInline.Handle, EM_GETEVENTMASK, 0, 0);
     SendMessage(FRichInline.Handle, EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
     SendMessage(FRichInline.Handle,EM_AUTOURLDETECT,1,0);
-    //SendMessage(FRichInline.Handle, EM_EXLIMITTEXT, 0, $7fffffff);
-    //re_mask := FRichInline.Perform(EM_GETEVENTMASK, 0, 0);
-    //FRichInline.Perform(EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
+    SendMessage(FRichInline.Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
   end;
-
   BeginUpdate;
   GridUpdates := GridUpdates + [guSize];
   EndUpdate;
@@ -1881,7 +1891,7 @@ begin
   RTF := RTF + Format('\red%u\green%u\blue%u;',[backColor and $FF,(backColor shr 8) and $FF,(backColor shr 16) and $FF]);
   // add color table for BBCodes
   if Options.BBCodesEnabled and doColorBBCodes then RTF := RTF + rtf_ctable_text;
-  RTF := RTF + '}';
+  RTF := RTF + '}\li30\ri30\fi0';
   if GetItemRTL(Item) then RTF := RTF + '\rtlpar' else RTF := RTF + '\ltrpar';
   //RTF := RTF + Format('\f0\highlight1\cf0\b%d\i%d\ul%d\strike%d\fs%u',
   RTF := RTF + Format('\f0\cf0\b%d\i%d\ul%d\strike%d\fs%u',
@@ -2782,14 +2792,20 @@ begin
 end;
 
 procedure THistoryGrid.CreateParams(var Params: TCreateParams);
-//var
-//  h: HWND;
+const
+  BorderStyles: array[TBorderStyle] of DWORD = (0, WS_BORDER);
 begin
   inherited CreateParams(Params);
-  //Params.Style := Params.Style or WS_BORDER;
-  with Params.WindowClass do
-    //style := style or CS_HREDRAW or CS_VREDRAW or WS_EX_LEFTSCROLLBAR;
-    style := style or CS_HREDRAW or CS_VREDRAW or CS_BYTEALIGNCLIENT or CS_BYTEALIGNWINDOW{ or CS_PARENTDC};
+  with Params do begin
+    Style := Style or BorderStyles[FBorderStyle];
+    if NewStyleControls and Ctl3D and (FBorderStyle = bsSingle) then begin
+      Style := Style and not WS_BORDER;
+      ExStyle := ExStyle or WS_EX_CLIENTEDGE;
+    end;
+    with WindowClass do
+    //style := style or CS_HREDRAW or CS_VREDRAW or CS_BYTEALIGNCLIENT or CS_BYTEALIGNWINDOW;
+    style := style or CS_HREDRAW or CS_VREDRAW;
+  end;
 end;
 
 function THistoryGrid.GetNext(Item: Integer; Force: Boolean = False): Integer;
@@ -3961,14 +3977,14 @@ begin
 end;
 
 procedure THistoryGrid.SetRichRTL(RTL: Boolean; RichEdit: TRichEdit; ProcessTag: Boolean = true);
-var
-  pf: PARAFORMAT2;
+//var
+//  pf: PARAFORMAT2;
 begin
   // we use RichEdit.Tag here to save previous RTL state to prevent from
   // reapplying same state, because SetRichRTL is called VERY OFTEN
   // (from ApplyItemToRich)
   // tmp
-  if (RichEdit.Tag = Integer(RTL)) and ProcessTag then exit;
+  {if (RichEdit.Tag = Integer(RTL)) and ProcessTag then exit;
   pf.cbSize := SizeOf(pf);
   pf.dwMask := PFM_RTLPARA;
   if RTL then begin
@@ -3976,7 +3992,9 @@ begin
   end else begin
     pf.wReserved := 0;
   end;
-  RichEdit.Perform(EM_SETPARAFORMAT,0,integer(@pf));
+  RichEdit.Perform(EM_SETPARAFORMAT,0,integer(@pf));}
+  if RTL then RichEdit.BiDiMode := bdRightToLeft
+         else RichEdit.BiDiMode := bdLeftToRight;
   if ProcessTag then
     RichEdit.Tag := Integer(RTL);
 end;
@@ -4521,6 +4539,53 @@ end;
 procedure THistoryGrid.OnInlineCancelClick(Sender: TObject);
 begin
   CancelInline;
+end;
+
+procedure THistoryGrid.SetBorderStyle(Value: TBorderStyle);
+var
+  Style, ExStyle: DWord;
+begin
+  if FBorderStyle = Value then exit;
+  FBorderStyle := Value;
+  if HandleAllocated then begin
+    Style := DWORD(GetWindowLong(Handle, GWL_STYLE)) and WS_BORDER;
+    ExStyle := DWORD(GetWindowLong(Handle, GWL_EXSTYLE)) and not WS_EX_CLIENTEDGE;
+    if Ctl3D and NewStyleControls and (FBorderStyle = bsSingle) then begin
+      Style := Style and not WS_BORDER;
+      ExStyle := ExStyle or WS_EX_CLIENTEDGE;
+    end;
+    SetWindowLong(Handle, GWL_STYLE, Style);
+    SetWindowLong(Handle, GWL_EXSTYLE, ExStyle);
+  end;
+end;
+
+procedure THistoryGrid.CMBiDiModeChanged(var Message: TMessage);
+var
+  ExStyle: DWORD;
+begin
+  //inherited;
+  if HandleAllocated then begin
+    ExStyle := DWORD(GetWindowLong(Handle, GWL_EXSTYLE)) and
+      not (WS_EX_RTLREADING or WS_EX_LEFTSCROLLBAR or WS_EX_RIGHT or WS_EX_LEFT);
+    AddBiDiModeExStyle(ExStyle);
+    SetWindowLong(Handle, GWL_EXSTYLE, ExStyle);
+  end;
+end;
+
+procedure THistoryGrid.CMCtl3DChanged(var Message: TMessage);
+var
+  Style, ExStyle: DWord;
+begin
+  if HandleAllocated then begin
+    Style := DWORD(GetWindowLong(Handle, GWL_STYLE)) and WS_BORDER;
+    ExStyle := DWORD(GetWindowLong(Handle, GWL_EXSTYLE)) and not WS_EX_CLIENTEDGE;
+    if Ctl3D and NewStyleControls and (FBorderStyle = bsSingle) then begin
+      Style := Style and not WS_BORDER;
+      ExStyle := ExStyle or WS_EX_CLIENTEDGE;
+    end;
+    SetWindowLong(Handle, GWL_STYLE, Style);
+    SetWindowLong(Handle, GWL_EXSTYLE, ExStyle);
+  end;
 end;
 
 { TGridOptions }
@@ -5119,19 +5184,6 @@ begin
       else if Items[i].GridItem > GridItem then
         Dec(Items[i].GridItem);
     end;
-end;
-
-procedure THistoryGrid.CMBiDiModeChanged(var Message: TMessage);
-var
-  ExStyle: DWORD;
-begin
-  //inherited;
-  if HandleAllocated then begin
-    ExStyle := DWORD(GetWindowLong(Handle, GWL_EXSTYLE))and (not WS_EX_RIGHT) and
-      (not WS_EX_RTLREADING) and (not WS_EX_LEFTSCROLLBAR);
-    AddBiDiModeExStyle(ExStyle);
-    SetWindowLong(Handle, GWL_EXSTYLE, ExStyle);
-  end;
 end;
 
 initialization
