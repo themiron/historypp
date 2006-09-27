@@ -3,7 +3,7 @@ unit hpp_externalgrid;
 interface
 
 uses
-  Windows, m_api,
+  Windows, Classes, m_api,
   hpp_global, m_globaldefs, hpp_events, hpp_contacts, hpp_services,
   HistoryGrid;
 
@@ -50,13 +50,21 @@ uses hpp_options;
 { TExternalGrid }
 
 procedure TExternalGrid.AddEvent(hContact, hDBEvent: THandle; Codepage: Integer; RTL: boolean);
+var
+  Flag: TBiDiMode;
 begin
   SetLength(Items,Length(Items)+1);
   Items[High(Items)].hDBEvent := hDBEvent;
   Items[High(Items)].hContact := hContact;
   Items[High(Items)].Codepage := Codepage;
-  if RTL then Items[High(Items)].RTLMode := hppRTLEnable
-         else Items[High(Items)].RTLMode := hppRTLDisable;
+  if RTL then begin
+    Items[High(Items)].RTLMode := hppRTLEnable;
+    Flag := bdRightToLeft;
+  end else begin
+    Items[High(Items)].RTLMode := hppRTLDisable;
+    Flag := bdLeftToRight;
+  end;
+  if Grid.BiDiMode <> Flag then Grid.BiDiMode := Flag;
   Grid.Allocate(Length(Items));
 end;
 
