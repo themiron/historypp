@@ -102,6 +102,9 @@ type
   TOnChar = procedure(Sender: TObject; Char: WideChar; Shift: TShiftState) of object;
   TOnRTLChange = procedure(Sender: TObject; Enabled: boolean) of object;
   TOnProcessInlineChange = procedure(Sender: TObject; Enabled: boolean) of object;
+  TOnProcessRichText = procedure(Sender: TObject; Handle: THandle; Item: Integer) of object;
+  TOnSearchItem = procedure(Sender: TObject; Item: Integer; ID: Integer; var Found: Boolean) of object;
+  TOnKillFocus = TNotifyEvent;
 
   THistoryGrid = class;
 
@@ -109,14 +112,11 @@ type
   TUrlEvent = procedure(Sender: TObject; Item: Integer; Url: String) of object;
   {ENDIF}
 
-  TOnProcessRichText = procedure(Sender: TObject; Handle: THandle; Item: Integer) of object;
-  TOnSearchItem = procedure(Sender: TObject; Item: Integer; ID: Integer; var Found: Boolean) of object;
+  TOnEvent = procedure;
+  TOnShowIcons = TOnEvent;
 
   TGridHitTest = (ghtItem, ghtHeader, ghtText, ghtLink, ghtSession, ghtSessHideButton, ghtSessShowButton, ghtBookmark);
   TGridHitTests = set of TGridHitTest;
-
-  TOnEvent = procedure;
-  TOnShowIcons = TOnEvent;
 
   TItemOption = record
     MessageType: TMessageTypes;
@@ -379,6 +379,8 @@ type
 
     FontSizeMult: Double;
 
+    FOnKillFocus: TOnKillFocus;
+
     FBorderStyle: TBorderStyle;
     procedure SetBorderStyle(Value: TBorderStyle);
 
@@ -484,7 +486,7 @@ type
     procedure DoMouseMove(X,Y: Integer; Keys: TMouseMoveKeys);
     procedure DoRButtonDown(X,Y: Integer; Keys: TMouseMoveKeys);
     procedure DoRButtonUp(X,Y: Integer; Keys: TMouseMoveKeys);
-    procedure DoUrlMouseMove(Url: WideString);
+    //procedure DoUrlMouseMove(Url: WideString);
     procedure DoProgress(Position,Max: Integer);
     function CalcItemHeight(Item: Integer): Integer;
     procedure ScrollBy(DeltaX, DeltaY: Integer);
@@ -607,6 +609,7 @@ type
     property OnItemFilter: TOnItemFilter read FOnItemFilter write FOnItemFilter;
     property OnProcessRichText: TOnProcessRichText read FOnProcessRichText write FOnProcessRichText;
     property OnSearchItem: TOnSearchItem read FOnSearchItem write FOnSearchItem;
+    property OnKillFocus: TOnKillFocus read FOnKillFocus write FOnKillFocus;
     property Reversed: Boolean read FReversed write SetReversed;
     property Align;
     property Anchors;
@@ -1190,20 +1193,21 @@ end;
 
 procedure THistoryGrid.WMSize(var Message: TWMSize);
 var
-  re_mask: Integer;
+  re_mask: Longint;
 begin
   if not FRichParamsSet then begin
     FRichCache.SetHandles;
     FRichParamsSet := true;
     FRichInline.ParentWindow := Handle;
-    re_mask := SendMessage(FRichInline.Handle, EM_GETEVENTMASK, 0, 0);
-    SendMessage(FRichInline.Handle, EM_SETEVENTMASK, 0, re_mask or ENM_LINK);
+    re_mask := SendMessage(FRichInline.Handle,EM_GETEVENTMASK,0,0);
+    SendMessage(FRichInline.Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK);
     SendMessage(FRichInline.Handle,EM_AUTOURLDETECT,1,0);
     SendMessage(FRichInline.Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
   end;
   BeginUpdate;
   GridUpdates := GridUpdates + [guSize];
   EndUpdate;
+  Update;
 end;
 
 procedure THistoryGrid.SetPadding(Value: Integer);
@@ -1734,20 +1738,21 @@ var
 procedure THistoryGrid.DoLButtonDown(X, Y: Integer; Keys: TMouseMoveKeys);
 var
   Item: Integer;
-  ht: TGridHitTests;
 begin
   WasDownOnGrid := True;
   SearchPattern := '';
   CheckBusy;
   if Count = 0 then exit;
 
-  Item := FindItemAt(x,y);
+  DownHitTests := GetHitTests(x,y);
 
-  ht := GetHitTests(x,y);
-  DownHitTests := ht;
-  if (ghtSessShowButton in ht) or (ghtSessHideButton in ht) or
-  (ghtBookmark in ht) then
-    exit; // we'll hide/show session headers on button up, don't select item
+  // we'll hide/show session headers on button up, don't select item
+  if (ghtSessShowButton in DownHitTests) or
+     (ghtSessHideButton in DownHitTests) or
+     (ghtBookmark in DownHitTests) or
+     (ghtLink in DownHitTests) then exit;
+
+  Item := FindItemAt(x,y);
 
   if Item <> -1 then begin
     if (mmkControl in Keys) then begin
@@ -1880,35 +1885,37 @@ begin
     doColorBBCodes := true;
   end;
 
-  RichEdit.Clear;
+  //RichEdit.Clear;
+  //RichEdit.Perform(WM_SETTEXT,0,0);
+  RichEdit.Perform(EM_SETBKGNDCOLOR,0,backColor);
   SetRichRTL(GetItemRTL(Item),RichEdit);
-  SendMessage(RichEdit.Handle,EM_SETBKGNDCOLOR,0,backColor);
-
-  RTF := Format('{\rtf1\ansi\ansicpg%u\deff0{\fonttbl ',[FItems[Item].Codepage]);
-  RTF := RTF + Format('{\f0\fnil\fcharset%u %s}',[textFont.CharSet,textFont.Name]);
-  RTF := RTF + '}{\colortbl';
-  RTF := RTF + Format('\red%u\green%u\blue%u;',[textColor and $FF,(textColor shr 8) and $FF,(textColor shr 16) and $FF]);
-  RTF := RTF + Format('\red%u\green%u\blue%u;',[backColor and $FF,(backColor shr 8) and $FF,(backColor shr 16) and $FF]);
-  // add color table for BBCodes
-  if Options.BBCodesEnabled and doColorBBCodes then RTF := RTF + rtf_ctable_text;
-  RTF := RTF + '}\li30\ri30\fi0';
-  if GetItemRTL(Item) then RTF := RTF + '\rtlpar' else RTF := RTF + '\ltrpar';
-  //RTF := RTF + Format('\f0\highlight1\cf0\b%d\i%d\ul%d\strike%d\fs%u',
-  RTF := RTF + Format('\f0\cf0\b%d\i%d\ul%d\strike%d\fs%u',
-    [integer(fsBold in textFont.Style),
-     integer(fsItalic in textFont.Style),
-     integer(fsUnderline in textFont.Style),
-     integer(fsStrikeOut in textFont.Style),
-     Round(abs(textFont.Height)*FontSizeMult)]);
-  if GetItemRTL(Item) then RTF := RTF + '\ltrch\rtlch' else RTF := RTF + '\rtlch\ltrch';
-
-  Text := FormatTextUnicodeRTF(FItems[Item].Text);
-
-  if Options.BBCodesEnabled and not (((State = gsInline) or ForceInline) and not ProcessInline) then begin
-    Text := DoSupportBBCodesRTF(Text,2,doColorBBCodes);
+  if not (((State = gsInline) or ForceInline) and not ProcessInline) and isRTF(FItems[Item].Text) then begin
+    // stored text seems to be RTF
+    RTF := WideToAnsiString(FItems[Item].Text,FItems[Item].Codepage)+#0
+  end else begin
+    RTF := Format('{\rtf1\ansi\ansicpg%u\deff0{\fonttbl ',[FItems[Item].Codepage]);
+    RTF := RTF + Format('{\f0\fnil\fcharset%u %s}',[textFont.CharSet,textFont.Name]);
+    RTF := RTF + '}{\colortbl';
+    RTF := RTF + Format('\red%u\green%u\blue%u;',[textColor and $FF,(textColor shr 8) and $FF,(textColor shr 16) and $FF]);
+    RTF := RTF + Format('\red%u\green%u\blue%u;',[backColor and $FF,(backColor shr 8) and $FF,(backColor shr 16) and $FF]);
+    // add color table for BBCodes
+    if Options.BBCodesEnabled and doColorBBCodes then RTF := RTF + rtf_ctable_text;
+    RTF := RTF + '}\li30\ri30\fi0';
+    if GetItemRTL(Item) then RTF := RTF + '\rtlpar' else RTF := RTF + '\ltrpar';
+    //RTF := RTF + Format('\f0\highlight1\cf0\b%d\i%d\ul%d\strike%d\fs%u',
+    RTF := RTF + Format('\f0\cf0\b%d\i%d\ul%d\strike%d\fs%u',
+      [integer(fsBold in textFont.Style),
+       integer(fsItalic in textFont.Style),
+       integer(fsUnderline in textFont.Style),
+       integer(fsStrikeOut in textFont.Style),
+       Round(abs(textFont.Height)*FontSizeMult)]);
+    if GetItemRTL(Item) then RTF := RTF + '\ltrch\rtlch' else RTF := RTF + '\rtlch\ltrch';
+    Text := FormatTextUnicodeRTF(FItems[Item].Text);
+    if Options.BBCodesEnabled and not (((State = gsInline) or ForceInline) and not ProcessInline) then begin
+      Text := DoSupportBBCodesRTF(Text,2,doColorBBCodes);
+    end;
+    RTF := RTF + Text + '}'+#0;
   end;
-
-  RTF := RTF + Text + '}'+#0;
 
   SetRichRTF(RichEdit.Handle,RTF,False,False,True);
 
@@ -1927,7 +1934,6 @@ begin
       RichEdit.Perform(EM_SETCHARFORMAT, SCF_ALL, integer(@cf));
     end;
   end;
-
   {$IFDEF DEBUG}
   OutputDebugString(PChar('Applying item '+intToStr(Item)+' to rich'));
   {$ENDIF}
@@ -1947,15 +1953,13 @@ var
 begin
   SearchPattern := '';
   CheckBusy;
-  
+
   Item := FindItemAt(x,y);
 
   if OverURL then begin
-    if Assigned(FOnUrlPopup) then begin
-      FOnUrlPopup(Self,Item,OverUrlStr);
-      OverURL := False;
-      Cursor := crDefault;
-    end;
+    OverURL := False;
+    Cursor := crDefault;
+    if Assigned(FOnUrlPopup) then FOnUrlPopup(Self,Item,OverUrlStr);
     exit;
   end;
 
@@ -1989,28 +1993,48 @@ begin
   end;
 
   if (ghtBookmark in ht) then begin
-    Item := FindItemAt(x,y);
-    if Assigned(FOnBookmarkClick) then
+    if Assigned(FOnBookmarkClick) then begin
+      Item := FindItemAt(x,y);
       FOnBookmarkClick(Self,Item);
+    end;
     exit;
   end;
 
-  if OverURL then begin
+{  if OverURL then begin
+    OverURL := False;
+    //Cursor := crDefault;
+    if Assigned(FOnUrlClick) and OldWasDownOnGrid then begin
+      Item := FindItemAt(x,y);
+      FOnUrlClick(Self,Item,OverUrlStr);
+    end;
+  end;}
+
+  if (ghtLink in ht) then begin
     if Assigned(FOnUrlClick) then begin
       Item := FindItemAt(x,y);
-      FOnUrlClick(Self,item,OverUrlStr);
-      OverURL := False;
-      Cursor := crDefault;
-      end;
+      FOnUrlClick(Self,Item,OverUrlStr);
     end;
+    exit;
+  end;
+
 end;
 
 procedure THistoryGrid.WMMouseMove(var Message: TWMMouseMove);
 begin
   //if GetCapture <> Handle then exit;
-  if not Focused then exit;
   //if Self.State = gsIdle then
-  DoMouseMove(Message.XPos,Message.YPos,TranslateKeys(Message.Keys));
+  //if Focused then
+  //if Application.Active then
+  inherited;
+  //if not Focused then exit;
+  DoMouseMove(Message.XPos,Message.YPos,TranslateKeys(Message.Keys))
+
+  {else begin
+    if OverURL then begin
+      OverURL := False;
+    end;
+  end;}
+  //else inherited;
 end;
 
 procedure THistoryGrid.DoMouseMove(X, Y: Integer; Keys: TMouseMoveKeys);
@@ -2023,12 +2047,20 @@ var
 begin
   CheckBusy;
   if Count = 0 then exit;
-  ht := GetHitTests(x,y);
+
   // do we need to process control here?
-  SelectMove := ((mmkLButton in Keys) and not (mmkControl in Keys) and
-  not (mmkShift in Keys)) and (MultiSelect) and (WasDownOnGrid);
-  SelectMove := SelectMove and not ((ghtSessHideButton in ht) or (ghtSessShowButton in ht) or
-    (ghtBookmark in ht));
+  SelectMove := ((mmkLButton in Keys) and not ((mmkControl in Keys) or (mmkShift in Keys))) and
+                (MultiSelect) and (WasDownOnGrid);
+  SelectMove := SelectMove and not (
+                (ghtSessHideButton in DownHitTests) or
+                (ghtSessShowButton in DownHitTests) or
+                (ghtBookmark in DownHitTests) or
+                (ghtLink in DownHitTests));
+
+  NewHint := '';
+  OverURL := False;
+  NewCursor := crDefault;
+
   if SelectMove then begin
     if SelCount = 0 then exit;
     Item := FindItemAt(x,y);
@@ -2041,30 +2073,30 @@ begin
       MakeVisible(Item);
       Invalidate;
     end;
-    exit;
+
+  end else begin
+    ht := GetHitTests(x,y);
+    //if ghtText in ht then begin
+    if (ghtText in ht) and Focused then begin
+      HandleRichEditMouse(WM_MOUSEMOVE,X,Y);
+      if OverURL then NewCursor := crHandPoint;
+    end
+    else if (ghtSessHideButton in ht) or (ghtSessShowButton in ht) or (ghtBookmark in ht) then begin
+      Item := FindItemAt(x,y);
+      NewCursor := crHandPoint;
+      if ghtBookmark in ht then begin
+        if FItems[Item].Bookmarked then
+          NewHint := TranslateWideW('Remove Bookmark')
+        else
+          NewHint := TranslateWideW('Set Bookmark')
+      end
+      else if ghtSessHideButton in ht then
+        NewHint := TranslateWideW('Hide headers')
+      else if ghtSessShowButton in ht then
+        NewHint := TranslateWideW('Show headers');
+    end;
   end;
 
-  NewHint := '';
-  OverURL := False;
-  NewCursor := crDefault;
-  if ghtText in ht then begin
-    HandleRichEditMouse(WM_MOUSEMOVE,X,Y);
-    if OverURL then NewCursor := crHandPoint
-  end
-  else if (ghtSessHideButton in ht) or (ghtSessShowButton in ht) or
-  (ghtBookmark in ht) then begin
-    Item := FindItemAt(x,y);
-    NewCursor := crHandPoint;
-    if ghtBookmark in ht then
-      if FItems[Item].Bookmarked then
-        NewHint := TranslateWideW('Remove Bookmark')
-      else
-        NewHint := TranslateWideW('Set Bookmark')
-    else if ghtSessHideButton in ht then
-      NewHint := TranslateWideW('Hide headers')
-    else if ghtSessShowButton in ht then
-      NewHint := TranslateWideW('Show headers');
-    end;
   Cursor := NewCursor;
   Hint := NewHint;
 end;
@@ -2333,59 +2365,35 @@ procedure THistoryGrid.WMNotify(var Message: TWMNotify);
 var
   link: TENLink;
   AnsiUrl: String;
-  url: WideString;
   p: TPoint;
   tr: TextRange;
   OverInline: Boolean;
   CurRich: TRichEdit;
 begin
-{$IFDEF RENDER_RICH}
-// ok, user either clicked or moved mouse over link
-if Message.NMHdr^.code = EN_LINK then begin
-  link := TENLink(Pointer(Message.NMHdr)^);
-  // if we are over inline richedit?
-  OverInline := (Message.NMHdr^.hwndFrom = FRichInline.Handle);
-  if OverInline then CurRich := FRichInline
-  else CurRich := FRich;
+  {$IFDEF RENDER_RICH}
+  // ok, user either clicked or moved mouse over link
+  if Message.NMHdr^.code = EN_LINK then begin
+    link := TENLink(Pointer(Message.NMHdr)^);
+    // if we are over inline richedit?
+    OverInline := (Message.NMHdr^.hwndFrom = FRichInline.Handle);
+    if OverInline then CurRich := FRichInline
+                  else CurRich := FRich;
 
-  // get url. instead of using selections, use GetTextRange
-  {FRich.Perform(EM_EXSETSEL, 0, LongInt(@(link.chrg)));
-  url := FRich.SelText;}
-  {tr.chrg := link.chrg;
-  if hppOSUnicode then begin
-    SetLength(url,link.chrg.cpMax-link.chrg.cpMin);
-    tr.lpstrText := @url[1];
-  end
-  else begin
     SetLength(AnsiUrl,link.chrg.cpMax-link.chrg.cpMin);
+    tr.chrg := link.chrg;
     tr.lpstrText := @AnsiUrl[1];
-  end;
-  CurRich.Perform(EM_GETTEXTRANGE,0,LongInt(@tr));
-  if not hppOSUnicode then url := AnsiToWideString(AnsiUrl,Codepage);}
+    CurRich.Perform(EM_GETTEXTRANGE,0,DWord(@tr));
 
-  SetLength(AnsiUrl,link.chrg.cpMax-link.chrg.cpMin);
-  tr.chrg := link.chrg;
-  tr.lpstrText := @AnsiUrl[1];
-  CurRich.Perform(EM_GETTEXTRANGE,0,DWord(@tr));
-  url := AnsiToWideString(AnsiUrl,Codepage);
+    OverURL := True;
+    OverURLStr := AnsiToWideString(AnsiUrl,Codepage);
 
-  // process messages
-  if link.msg = WM_MOUSEMOVE then
-    if not OverInline then begin
-      // no need for inline rich
-      DoUrlMouseMove(url);
+    if link.msg = WM_LBUTTONUP then begin
+      p := Mouse.CursorPos;
+      p := ScreenToClient(p);
+      DownHitTests := GetHitTests(p.x,p.y);
+      DoLButtonUp(p.x,p.y,[]);
     end;
-
-  // we recieve mouse buttons only for inline rich
-  if link.msg = WM_LBUTTONUP then begin
-    p := Mouse.CursorPos;
-    p := ScreenToClient(p);
-    OverUrlStr := url;
-    OverUrl := True;
-    DoLButtonUp(p.x,p.y,[]);
-    OverUrl := False;
   end;
-end;
 {$ENDIF}
   inherited;
 end;
@@ -2523,7 +2531,6 @@ begin
     Dec(LockCount);
   end;
   if LockCount > 0 then exit;
-
   try
     if guSize in GridUpdates then
       GridUpdateSize;
@@ -2906,9 +2913,14 @@ var
 begin
   SearchPattern := '';
   CheckBusy;
-  Item := FindItemAt(x,y);
   ht := GetHitTests(x,y);
   if (ghtSessShowButton in ht) or (ghtSessHideButton in ht) or (ghtBookmark in ht) then exit;
+  if ghtLink in ht then begin
+    DownHitTests := ht;
+    DoLButtonUp(X,Y,Keys);
+    exit;
+  end;
+  Item := FindItemAt(x,y);
   if Item <> Selected then begin
     Selected := Item;
     exit;
@@ -2992,13 +3004,16 @@ var
   r: TRect;
 begin
   CheckBusy;
-  if (FRich = nil) or (Message.FocusedWnd <> FRich.Handle) then
+  if (FRich = nil) or (Message.FocusedWnd <> FRich.Handle) then begin
     if selected <> -1 then begin
       if IsVisible(Selected) then begin
         r := GetItemRect(Selected);
         InvalidateRect(Handle,@r,False);
       end;
     end;
+    OverURL := False; 
+    if Assigned(FOnKillFocus) then FOnKillFocus(Self);
+  end;
   inherited;
 end;
 
@@ -3736,7 +3751,7 @@ var
   begin
     FRichSave := TRichEdit.CreateParented(Handle);
     FRichSaveOLECB := TRichEditOleCallback.Create;
-    SendMessage(FRichSave.Handle, EM_SETOLECALLBACK, 0, DWord(TRichEditOleCallback(FRichSaveOLECB) as IRichEditOleCallback));
+    FRichSave.Perform(EM_SETOLECALLBACK, 0, DWord(TRichEditOleCallback(FRichSaveOLECB) as IRichEditOleCallback));
   end;
 
 begin
@@ -3779,7 +3794,7 @@ procedure THistoryGrid.SaveEnd(Stream: TFileStream; SaveFormat: TSaveFormat);
   procedure SaveRTF;
   begin
     FRichSave.Lines.SaveToStream(Stream);
-    SendMessage(FRichSave.Handle, EM_SETOLECALLBACK, 0, 0);
+    FRichSave.Perform(EM_SETOLECALLBACK, 0, 0);
     FRichSave.Destroy;
     FRichSaveOLECB.Free;
   end;
@@ -3977,24 +3992,28 @@ begin
 end;
 
 procedure THistoryGrid.SetRichRTL(RTL: Boolean; RichEdit: TRichEdit; ProcessTag: Boolean = true);
-//var
-//  pf: PARAFORMAT2;
+var
+  pf: PARAFORMAT2;
+  ExStyle: DWord;
 begin
   // we use RichEdit.Tag here to save previous RTL state to prevent from
   // reapplying same state, because SetRichRTL is called VERY OFTEN
   // (from ApplyItemToRich)
-  // tmp
-  {if (RichEdit.Tag = Integer(RTL)) and ProcessTag then exit;
+  if (RichEdit.Tag = Integer(RTL)) and ProcessTag then exit;
+  ZeroMemory(@pf,SizeOf(pf));
   pf.cbSize := SizeOf(pf);
   pf.dwMask := PFM_RTLPARA;
+  ExStyle := DWORD(GetWindowLong(Richedit.Handle, GWL_EXSTYLE)) and
+      not (WS_EX_RTLREADING or WS_EX_LEFTSCROLLBAR or WS_EX_RIGHT or WS_EX_LEFT);
   if RTL then begin
+    ExStyle := ExStyle or (WS_EX_RTLREADING or WS_EX_LEFTSCROLLBAR or WS_EX_LEFT);
     pf.wReserved := PFE_RTLPARA;
   end else begin
+    ExStyle := ExStyle or WS_EX_RIGHT;
     pf.wReserved := 0;
   end;
-  RichEdit.Perform(EM_SETPARAFORMAT,0,integer(@pf));}
-  if RTL then RichEdit.BiDiMode := bdRightToLeft
-         else RichEdit.BiDiMode := bdLeftToRight;
+  SetWindowLong(Richedit.Handle, GWL_EXSTYLE, ExStyle);
+  RichEdit.Perform(EM_SETPARAFORMAT,0,integer(@pf));
   if ProcessTag then
     RichEdit.Tag := Integer(RTL);
 end;
@@ -4247,6 +4266,9 @@ begin
     Include(Result,ghtItem)
   else
     exit;
+
+  if OverURL then Include(Result,ghtLink);
+
   ItemRect := GetItemRect(Item);
   RTL := GetItemRTL(Item);
   Sel := IsSelected(Item);
@@ -4319,11 +4341,11 @@ begin
   //x := 0;
 end;}
 
-procedure THistoryGrid.DoUrlMouseMove(Url: WideString);
+{procedure THistoryGrid.DoUrlMouseMove(Url: WideString);
 begin
   OverURL := True;
   OverURLStr := URL;
-end;
+end;}
 
 procedure THistoryGrid.HandleRichEditMouse(Message: DWord; X, Y: Integer);
 var
@@ -4342,8 +4364,10 @@ begin
     ApplyItemToRich(Item);
     // make it that height so we don't loose any clicks
     FRich.Height := FRichHeight;
+
     //res := SendMessage(FRich.Handle,WM_SETFOCUS,0,0);
     //res := SendMessage(FRich.Handle,Message,0,MakeLParam(RichX,RichY));
+
     PrevHwnd := Windows.SetFocus(FRich.Handle);
     //FRich.Perform(WM_SETFOCUS,0,0);
     FRich.Perform(Message,0,MakeLParam(RichX,RichY));
@@ -4362,8 +4386,7 @@ begin
   MakeVisible(Item);
   r := GetRichEditRect(Item);
   if IsRectEmpty(r) then exit;
-  //margins := SendMessage(FRichInline.Handle,EM_GETMARGINS,0,0);
-  margins := FRichInline.Perform(EM_GETMARGINS,0,0);
+  margins := SendMessage(FRichInline.Handle,EM_GETMARGINS,0,0);
   Dec(r.left,LoWord(margins));
   Inc(r.right,HiWord(margins));
   // dunno why, but I have to fix it by 1 pixel
@@ -4898,17 +4921,17 @@ begin
   //OutputDebugString(PChar(str));
   // force to send the size:
   Grid.ApplyItemToRich(Item^.GridItem,Item^.Rich);
-  SendMessage(Item^.Rich.Handle,EM_SETEVENTMASK, 0, ENM_REQUESTRESIZE);
-  SendMessage(Item^.Rich.Handle,EM_REQUESTRESIZE,0, 0);
+  SendMessage(Item^.Rich.Handle,EM_SETEVENTMASK,0,ENM_REQUESTRESIZE);
+  SendMessage(Item^.Rich.Handle,EM_REQUESTRESIZE,0,0);
   if FRichHeight = 0 then begin
     // try to "update" richedit here
     //Item^.Rich.Text := Item.Rich.Text + 'sasme/m,ds ad34!a9-1da'; // any junk here
     //Item^.Rich.Clear;
     //Item^.Rich.Text := Item.Rich.Text;
     Grid.ApplyItemToRich(Item.GridItem,Item^.Rich);
-    SendMessage(Item.Rich.Handle,EM_REQUESTRESIZE,0, 0);
+    SendMessage(Item^.Rich.Handle,EM_REQUESTRESIZE,0,0);
   end;
-  SendMessage(Item.Rich.Handle,EM_SETEVENTMASK, 0, RichEventMasks);
+  SendMessage(Item^.Rich.Handle,EM_SETEVENTMASK,0,RichEventMasks);
   Assert(FRichHeight <> 0, 'RichCache.ApplyItemToRich: rich is still 0 height');
 end;
 
@@ -5051,8 +5074,8 @@ begin
   // because RichEdit sometimes paints smaller image
   // than it said when calculating height, we need
   // to fill the background
-  BkColor := Item^.Rich.Perform(EM_SETBKGNDCOLOR, 0,0);
-  Item^.Rich.Perform(EM_SETBKGNDCOLOR, 0, BkColor);
+  BkColor := SendMessage(Item^.Rich.Handle,EM_SETBKGNDCOLOR,0,0);
+  SendMessage(Item^.Rich.Handle,EM_SETBKGNDCOLOR,0,BkColor);
   Item^.Bitmap.Canvas.Brush.Color := BkColor;
   Item^.Bitmap.Canvas.FillRect(rc);
 
@@ -5140,15 +5163,14 @@ var
 begin
   for i := 0 to Length(Items) - 1 do begin
     Items[i].Rich.ParentWindow := Grid.Handle;
-    SendMessage(Items[i].Rich.Handle,EM_SETEVENTMASK, 0, RichEventMasks);
-    Items[i].Rich.Perform(EM_AUTOURLDETECT, DWord(True), 0);
-    Items[i].Rich.Perform(EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
+    SendMessage(Items[i].Rich.Handle,EM_SETEVENTMASK,0,RichEventMasks);
+    SendMessage(Items[i].Rich.Handle,EM_AUTOURLDETECT,1,0);
+    SendMessage(Items[i].Rich.Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
     // make richedit transparent:
     exstyle := GetWindowLong(Items[i].Rich.Handle,GWL_EXSTYLE);
     exstyle := exstyle or WS_EX_TRANSPARENT;
     SetWindowLong(Items[i].Rich.Handle,GWL_EXSTYLE,exstyle);
     Items[i].Rich.Brush.Style := bsClear;
-    //Items[i].Rich.Perform(EM_EXLIMITTEXT, 0, $7fffffff);
   end;
 end;
 
