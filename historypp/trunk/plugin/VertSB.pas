@@ -47,8 +47,8 @@ type
   TScrollBarInc = 1..32767;
   TScrollBarStyle = (ssRegular, ssFlat, ssHotTrack);
 
-  //TVertScrollBar = class(TControlScrollBar)
-  TVertScrollBar = class(TPersistent)
+  TVertScrollBar = class(TControlScrollBar)
+  //TVertScrollBar = class(TPersistent)
   private
     FControl: TScrollingWinControl;
     FIncrement: TScrollBarInc;
