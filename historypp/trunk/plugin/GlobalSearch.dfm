@@ -550,8 +550,10 @@ object fmGlobalSearch: TfmGlobalSearch
         Top = 21
         Width = 87
         Height = 21
-        Date = 29221.003255208340000000
-        Time = 29221.003255208340000000
+        BiDiMode = bdLeftToRight
+        Date = 29221.000000000000000000
+        Time = 29221.000000000000000000
+        ParentBiDiMode = False
         TabOrder = 0
       end
       object dtRange2: TTntDateTimePicker
@@ -559,8 +561,10 @@ object fmGlobalSearch: TfmGlobalSearch
         Top = 22
         Width = 87
         Height = 21
-        Date = 38982.003255208350000000
-        Time = 38982.003255208350000000
+        BiDiMode = bdLeftToRight
+        Date = 29221.999988425930000000
+        Time = 29221.999988425930000000
+        ParentBiDiMode = False
         TabOrder = 1
       end
     end
