@@ -3,8 +3,9 @@ unit hpp_externalgrid;
 interface
 
 uses
-  Windows, Classes, Controls, Forms, Graphics, m_api,
-  hpp_global, m_globaldefs, hpp_events, hpp_contacts, hpp_services,
+  Windows, Classes, Controls, Forms, Graphics, Messages,
+  m_api, m_globaldefs,
+  hpp_global, hpp_events, hpp_contacts, hpp_services, hpp_forms, hpp_bookmarks,
   HistoryGrid;
 
 type
@@ -16,6 +17,7 @@ type
   end;
 
   TExternalGrid = class(TObject)
+  //TExternalGrid = class(TControl)
   private
     Items: array of TExtItem;
     Grid: THistoryGrid;
@@ -27,6 +29,8 @@ type
     procedure GridNameData(Sender: TObject; Index: Integer; var Name: WideString);
     procedure GridProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
     procedure GridUrlClick(Sender: TObject; Item: Integer; Url: String);
+    procedure GridBookmarkClick(Sender: TObject; Item: Integer);
+    procedure GridKillFocus(Sender: TObject);
   public
     constructor Create(AParentWindow: HWND);
     destructor Destroy; override;
@@ -38,6 +42,9 @@ type
     procedure Clear;
     property ParentWindow: HWND read FParentWindow;
     property GridHandle: HWND read GetGridHandle;
+    function Perform(Msg: Cardinal; WParam, LParam: Longint): Longint;
+    procedure HMBookmarkChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
+    procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
   end;
 
 var
@@ -51,6 +58,17 @@ implementation
 uses hpp_options;
 
 { TExternalGrid }
+
+function TExternalGrid.Perform(Msg: Cardinal; WParam, LParam: Longint): Longint;
+var
+  M: TMessage;
+begin
+  M.Msg := Msg;
+  M.WParam := WParam;
+  M.LParam := LParam;
+  Dispatch(M);
+  Result := M.Result;
+end;
 
 procedure TExternalGrid.AddEvent(hContact, hDBEvent: THandle; Codepage: Integer; RTL: boolean);
 var
@@ -68,6 +86,9 @@ begin
     Flag := bdLeftToRight;
   end;
   if Grid.BiDiMode <> Flag then Grid.BiDiMode := Flag;
+  if Grid.Contact <> hContact then Grid.Contact := hContact;
+  // comment or we'll get rerendering the whole grid
+  //if Grid.Codepage <> Codepage then Grid.Codepage := Codepage;
   Grid.Allocate(Length(Items));
 end;
 
@@ -91,6 +112,8 @@ begin
   Grid.OnNameData := GridNameData;
   Grid.OnProcessRichText := GridProcessRichText;
   Grid.OnUrlClick := GridUrlClick;
+  Grid.OnBookmarkClick := GridBookmarkClick;
+  Grid.OnKillFocus := GridKillFocus;
   Grid.Options := GridOptions;
   Grid.BeginUpdate;
 end;
@@ -112,6 +135,7 @@ procedure TExternalGrid.GridItemData(Sender: TObject; Index: Integer;
 begin
   Item := ReadEvent(Items[Index].hDBEvent,Items[Index].Codepage);
   Item.RTLMode := Items[Index].RTLMode;
+  Item.Bookmarked := BookmarkServer[Items[Index].hContact].Bookmarked[Items[Index].hDBEvent];
   if not Item.IsRead then begin
     PluginLink.CallService(MS_DB_EVENT_MARKREAD,Items[Index].hContact,Items[Index].hDBEvent);
     PluginLink.CallService(MS_CLIST_REMOVEEVENT,Items[Index].hContact,Items[Index].hDBEvent);
@@ -202,6 +226,41 @@ begin
   bNewWindow := 0; // no, use existing window
   PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(@Url[1])));
 end;
+
+procedure TExternalGrid.GridBookmarkClick(Sender: TObject; Item: Integer);
+var
+  val: boolean;
+  hContact,hDBEvent: THandle;
+begin
+  hContact := Items[Item].hContact;
+  hDBEvent := Items[Item].hDBEvent;
+  val := not BookmarkServer[hContact].Bookmarked[hDBEvent];
+  BookmarkServer[hContact].Bookmarked[hDBEvent] := val;
+end;
+
+procedure TExternalGrid.HMBookmarkChanged(var M: TMessage);
+var
+  i: integer;
+begin
+  if M.WParam <> Grid.Contact then exit;
+  for i := 0 to Grid.Count-1 do
+    if Items[i].hDBEvent = M.LParam then begin
+      Grid.Bookmarked[i] := BookmarkServer[M.WParam].Bookmarked[M.LParam];
+      exit;
+    end;
+end;
+
+procedure TExternalGrid.HMIcons2Changed(var M: TMessage);
+begin
+  Grid.Repaint;
+end;
+
+procedure TExternalGrid.GridKillFocus(Sender: TObject);
+begin
+  // deselect grid
+  Grid.Selected := -1;
+end;
+
 
 function FindExtGridByHandle(var Handle: HWND): TExternalGrid;
 var
