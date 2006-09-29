@@ -997,6 +997,7 @@ begin
   for i := 0 to hg.Count-1 do
     if History[GridIndexToHistory(i)] = M.LParam then begin
       hg.Bookmarked[i] := BookmarkServer[hContact].Bookmarked[M.LParam];
+      break;
     end;
   FillBookmarks;
 end;
