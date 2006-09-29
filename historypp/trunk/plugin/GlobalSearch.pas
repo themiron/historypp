@@ -1522,9 +1522,9 @@ begin
     if GetSearchItem(i).hDBEvent = M.lParam then begin
       hg.ResetItem(i);
       found := true;
+      break;
     end;
-  if found then
-    hg.Repaint;
+  if found then hg.Repaint;
 end;
 
 procedure TfmGlobalSearch.HMPreShutdown(var M: TMessage);
@@ -1887,6 +1887,8 @@ begin
   edPass.BiDiMode := Flag;
   edSearch.BiDiMode := Flag;
   edFilter.BiDiMode := Flag;
+  dtRange1.BiDiMode := Flag;
+  dtRange2.BiDiMode := Flag;
   //lvContacts.BiDiMode := Flag;
   hg.BiDiMode := Flag;
 end;
