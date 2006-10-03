@@ -362,9 +362,8 @@ begin
   DoMessage(HM_STRD_NEXTCONTACT, Contact, GetContactsCount);
   hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDLAST,Contact,0);
   while hDBEvent <> 0 do begin
-    if SearchEvent(hDBEvent) then begin
+    if SearchEvent(hDBEvent) then
       SendItem(hDBEvent);
-    end;
     hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDPREV,hDBEvent,0);
   end;
   SendBatch;
@@ -383,11 +382,11 @@ begin
   if SearchRange then begin
     EventDate := Trunc(GetEventDateTime(DBEvent));
     InRange := ((SearchRangeFrom <= EventDate) and (SearchRangeTo >= EventDate));
-  end;
-  if not (SearchRange and (not InRange)) then begin
-    if SearchMethod = smNoText then
-      Result := True
-    else begin
+  end else InRange := true;
+  if InRange then begin
+    if SearchMethod = smNoText then begin
+      Result := True;
+    end else begin
       hi := ReadEvent(DBEvent, CurContactCP);
       case SearchMethod of
         smAnyWord:  Result := SearchTextAnyWord(Tnt_WideUpperCase(hi.Text),SearchWords);
@@ -396,7 +395,8 @@ begin
         Result := SearchTextExact(Tnt_WideUpperCase(hi.Text),SearchText);
       end;
     end;
-  end else Result := False;
+  end
+  else Result := False;
   IncProgress;
 end;
 
