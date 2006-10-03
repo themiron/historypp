@@ -36,17 +36,17 @@ const
 
     // IRDHW_CONTACTHISTORY. The window is ordinary
     // contact history.
-    IRDHW_CONTACTHISTORY = 1;
+    IRDHW_CONTACTHISTORY = $0001;
     // IRDHW_GLOBALHISTORY. The window is global
     // history (system history). Invokes by
     // Menu -> System History
-    IRDHW_GLOBALHISTORY  = 2;
+    IRDHW_GLOBALHISTORY  = $0002;
     // IRDHW_GLOBALSEARCH. The window is search
     // window and the processed item is the
     // result of the global search.
-    IRDHW_GLOBALSEARCH   = 3;
+    IRDHW_GLOBALSEARCH   = $0003;
     // IRDHW_EXTERNAL. The window is external window
-    IRDHW_EXTERNAL       = 4;
+    IRDHW_EXTERNALGRID   = $0004;
 
     //** VALUES FOR TItemRenderDetails.dwFlags
     //** Used in ME_HPP_RICHEDIT_ITEMPROCESS event
@@ -58,15 +58,15 @@ const
     // The background color will always be clHighlight
     // even if you change it (i will change it back).
     // Though, I will not touch font or font color.
-    IRDF_SELECTED = 1;
+    IRDF_SELECTED = $0001;
     // IRDF_INLINE. The RichEdit provided is not one
     // that is used for drawing a cell, but the one
     // used for "inline editing".
-    IRDF_INLINE   = 2;
+    IRDF_INLINE   = $0002;
     // IRDF_EVENT. The RichEdit provided is from "Open Event"
     // window. It's the window which opens when you right-click
     // item in contact's history and select "Open"
-    IRDF_EVENT    = 4;
+    IRDF_EVENT    = $0004;
 
 type
   TItemRenderDetails = packed record

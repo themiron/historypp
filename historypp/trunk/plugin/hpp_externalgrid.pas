@@ -22,6 +22,7 @@ type
     Items: array of TExtItem;
     Grid: THistoryGrid;
     FParentWindow: HWND;
+    GridLocked: boolean;
     function GetGridHandle: HWND;
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
@@ -115,6 +116,7 @@ begin
   Grid.OnBookmarkClick := GridBookmarkClick;
   Grid.OnKillFocus := GridKillFocus;
   Grid.Options := GridOptions;
+  GridLocked := True;
   Grid.BeginUpdate;
 end;
 
@@ -180,15 +182,18 @@ begin
   ItemRenderDetails.IsEventSent := (mtOutgoing in Grid.Items[Item].MessageType);
   if Grid.IsSelected(Item) then
     ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_SELECTED;
-  ItemRenderDetails.bHistoryWindow := IRDHW_EXTERNAL;
+  ItemRenderDetails.bHistoryWindow := IRDHW_EXTERNALGRID;
   PluginLink.NotifyEventHooks(hHppRichEditItemProcess,WPARAM(Handle),LPARAM(@ItemRenderDetails));
 end;
 
 procedure TExternalGrid.ScrollToBottom;
 begin
   Grid.ScrollToBottom;
-  //Grid.Repaint;
-  Grid.EndUpdate;
+  Grid.Repaint;
+  if GridLocked then begin
+    GridLocked := False;
+    Grid.EndUpdate;
+  end;
 end;
 
 procedure TExternalGrid.SetPosition(x, y, cx, cy: Integer);
@@ -204,7 +209,11 @@ function TExternalGrid.GetSelection(NoUnicode: Boolean): PChar;
 var
   Text: WideString;
 begin
-  Text := Grid.FormatSelected(Grid.Options.ClipCopyFormat);
+  if Grid.Count = 0 then exit;
+  if Grid.Selected <> -1 then
+    Text := Grid.FormatSelected(Grid.Options.ClipCopyFormat)
+  else
+    Text := Grid.FormatItem(Grid.BottomItem,Grid.Options.ClipCopyFormat);
   if NoUnicode then
     Result := PChar(WideToAnsiString(Text,CP_ACP))
   else
