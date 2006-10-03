@@ -3030,7 +3030,7 @@ procedure THistoryGrid.WMKillFocus(var Message: TWMKillFocus);
 var
   r: TRect;
 begin
-  CheckBusy;
+  if Message.FocusedWnd <> FRichInline.Handle then CheckBusy;
   if (FRich = nil) or (Message.FocusedWnd <> FRich.Handle) then begin
     if selected <> -1 then begin
       if IsVisible(Selected) then begin
@@ -4431,23 +4431,21 @@ begin
   // event grid state is gsInline, which is how it should be
   // and you can't set it inline before setting focus
   // because of CheckBusy abort exception
+  // themiron 03.10.2006. don't need to, 'cose there's check
+  // if inline richedit got the focus
 
   //FRichInline.Show;
   //FRichInline.SetFocus;
   //State := gsInline;
+
   State := gsInline;
   ApplyItemToRich(Item, FRichInline);
-
   cr.cpMin := 0;
   cr.cpMax := 0;
   FRichInline.Perform(EM_EXSETSEL,0,Longint(@cr));
   FRichInline.Perform(EM_SCROLLCARET, 0, 0);
-
   FRichInline.Show;
-  State := gsIdle;
   FRichInline.SetFocus;
-  State := gsInline;
-  //FRichInline.SelectAll;
 end;
 
 procedure THistoryGrid.CancelInline;
