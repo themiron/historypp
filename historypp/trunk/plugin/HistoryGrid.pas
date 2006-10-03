@@ -2907,7 +2907,8 @@ begin
   LoadItem(idx,True);
   //or we wouldn't get visible status on long events 
   //while (SumHeight+FItems[idx].Height <= ClientHeight) and (Item <> -1) and (Item < Count) do begin
-  while (SumHeight <= ClientHeight) and (Item <> -1) and (Item < Count) do begin
+  //while (SumHeight <= ClientHeight) and (Item <> -1) and (Item < Count) do begin
+  while (SumHeight < ClientHeight) and (Item <> -1) and (Item < Count) do begin
     if Item = idx then begin
       Result := True;
       break;
