@@ -57,7 +57,7 @@ interface
 {$DEFINE RENDER_RICH}
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, ComCtrls,
+  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, ComCtrls, CommCtrl,
   TntSysUtils,TntWindows, TntControls,TntGraphics, {TntComCtrls,} Menus, TntMenus, StdCtrls,
   Math, mmsystem,
   hpp_global, hpp_contacts, hpp_itemprocess, hpp_events, m_api, hpp_eventfilters,
@@ -420,6 +420,7 @@ type
     procedure WMMouseWheel(var Message: TWMMouseWheel); message WM_MOUSEWHEEL;
     procedure CMBiDiModeChanged(var Message: TMessage); message CM_BIDIMODECHANGED;
     procedure CMCtl3DChanged(var Message: TMessage); message CM_CTL3DCHANGED;
+    procedure WMCommand(var Message: TWMCommand); message WM_Command;
     function GetCount: Integer;
     procedure SetContact(const Value: THandle);
     procedure SetPadding(Value: Integer);
@@ -537,7 +538,7 @@ type
     procedure UpdateFilter;
 
     procedure EditInline(Item: Integer);
-    procedure CancelInline;
+    procedure CancelInline(DoSetFocus: boolean = true);
     property InlineRichEdit: TRichEdit read FRichInline write FRichInline;
     property RichEdit: TRichEdit read FRich write FRich;
 
@@ -2318,17 +2319,17 @@ var
 begin
   {$IFDEF RENDER_RICH}
   // ok, user either clicked or moved mouse over link
+  // if we are over inline richedit?
+  OverInline := (Message.NMHdr^.hwndFrom = FRichInline.Handle);
+
   if Message.NMHdr^.code = EN_LINK then begin
     link := TENLink(Pointer(Message.NMHdr)^);
-    // if we are over inline richedit?
-    OverInline := (Message.NMHdr^.hwndFrom = FRichInline.Handle);
     if OverInline then begin
       CurRich := FRichInline;
       SetLength(AnsiUrl,link.chrg.cpMax-link.chrg.cpMin);
       tr.chrg := link.chrg;
       tr.lpstrText := @AnsiUrl[1];
       CurRich.Perform(EM_GETTEXTRANGE,0,DWord(@tr));
-
       if link.msg = WM_LBUTTONUP then begin
         p := Mouse.CursorPos;
         p := ScreenToClient(p);
@@ -2341,6 +2342,18 @@ begin
   end;
 {$ENDIF}
   inherited;
+end;
+
+procedure THistoryGrid.WMCommand(var Message: TWMCommand);
+begin
+  inherited;
+  {$IFDEF RENDER_RICH}
+  if Message.NotifyCode = EN_KILLFOCUS then
+    if Message.Ctl = FRichInline.Handle then begin
+      if State = gsInline then CancelInline(false);
+      Message.Result := 0;
+    end;
+  {$ENDIF}
 end;
 
 procedure THistoryGrid.WMGetDlgCode(var Message: TWMGetDlgCode);
@@ -3031,8 +3044,11 @@ procedure THistoryGrid.WMKillFocus(var Message: TWMKillFocus);
 var
   r: TRect;
 begin
-  if Message.FocusedWnd <> FRichInline.Handle then CheckBusy;
-  if (FRich = nil) or (Message.FocusedWnd <> FRich.Handle) then begin
+  //See WMCommand for details
+  //CheckBusy;
+  inherited;
+  //if (FRich = nil) or (Message.FocusedWnd <> FRich.Handle) then begin
+  if (FRichInline = nil) or (Message.FocusedWnd <> FRichInline.Handle) then begin
     if selected <> -1 then begin
       if IsVisible(Selected) then begin
         r := GetItemRect(Selected);
@@ -3041,7 +3057,6 @@ begin
     end;
     if Assigned(FOnKillFocus) then FOnKillFocus(Self);
   end;
-  inherited;
 end;
 
 procedure THistoryGrid.WMSetCursor(var Message: TWMSetCursor);
@@ -4447,12 +4462,12 @@ begin
   FRichInline.SetFocus;
 end;
 
-procedure THistoryGrid.CancelInline;
+procedure THistoryGrid.CancelInline(DoSetFocus: boolean = true);
 begin
   if State <> gsInline then exit;
   State := gsIdle;
   FRichInline.Hide;
-  Windows.SetFocus(Handle) ;
+  if DoSetFocus then Windows.SetFocus(Handle) ;
 end;
 
 procedure THistoryGrid.RemoveSelected(Item: Integer);
