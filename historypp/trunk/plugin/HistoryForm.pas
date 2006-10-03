@@ -1073,9 +1073,7 @@ begin
     end;
 
   // let only search keys be accepted if inline
-  if hg.State = gsInline then begin
-    exit;
-    end;
+  if hg.State = gsInline then exit;
 
   if (ssCtrl in Shift) then begin
     if (key=Ord('R')) and (not PasswordMode) then begin
@@ -2972,8 +2970,8 @@ begin
   ItemRenderDetails.wEventType := hg.Items[Item].EventType;
   ItemRenderDetails.IsEventSent := (mtOutgoing in hg.Items[Item].MessageType);
   if Handle = hg.InlineRichEdit.Handle then
-    ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_INLINE
-  else if hg.IsSelected(Item) then
+    ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_INLINE;
+  if hg.IsSelected(Item) then
     ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_SELECTED;
   if hContact = 0 then
     ItemRenderDetails.bHistoryWindow := IRDHW_GLOBALHISTORY
