@@ -2008,20 +2008,9 @@ end;
 
 procedure THistoryGrid.WMMouseMove(var Message: TWMMouseMove);
 begin
-  //if GetCapture <> Handle then exit;
-  //if Self.State = gsIdle then
-  //if Focused then
-  //if Application.Active then
   inherited;
-  //if not Focused then exit;
-  DoMouseMove(Message.XPos,Message.YPos,TranslateKeys(Message.Keys))
-
-  {else begin
-    if OverURL then begin
-      OverURL := False;
-    end;
-  end;}
-  //else inherited;
+  if Focused then
+    DoMouseMove(Message.XPos,Message.YPos,TranslateKeys(Message.Keys))
 end;
 
 procedure THistoryGrid.DoMouseMove(X, Y: Integer; Keys: TMouseMoveKeys);
@@ -2033,9 +2022,6 @@ var
   SelectMove: Boolean;
 begin
   CheckBusy;
-  // to make mouse out from the inline richedit without cancelinline  
-  //if FState = gsInline then exit;
-
   if Count = 0 then exit;
 
   // do we need to process control here?
@@ -3068,7 +3054,9 @@ var
   Item: Integer;
 begin
   inherited;
-  CheckBusy;
+  //CheckBusy;
+  if FState <> gsIdle then exit;
+
   if Message.HitTest = HTERROR then exit;
   p := ScreenToClient(Mouse.CursorPos);
   ht := GetHitTests(p.X,p.Y);
