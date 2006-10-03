@@ -450,7 +450,7 @@ type
     {$ENDIF}
     function GetHitTests(X,Y: Integer): TGridHitTests;
     {$IFDEF RENDER_RICH}
-    function GetRichEditRect(Item: Integer): TRect;
+    function GetRichEditRect(Item: Integer; DontClipTop: Boolean = False): TRect;
     procedure HandleRichEditMouse(Message: DWord; X,Y: Integer);
     {$ENDIF}
     procedure SetRTLMode(const Value: TRTLMode);
@@ -611,6 +611,8 @@ type
     property OnSearchItem: TOnSearchItem read FOnSearchItem write FOnSearchItem;
     property OnKillFocus: TOnKillFocus read FOnKillFocus write FOnKillFocus;
     property Reversed: Boolean read FReversed write SetReversed;
+    property TopItem: integer read GetTopItem;
+    property BottomItem: integer read GetBottomItem;
     property Align;
     property Anchors;
     property TabStop;
@@ -925,8 +927,9 @@ begin
   {$ENDIF}
   BarAdjusted := False;
   Allocated := True;
-  if ItemsCount > 0 then
-    SetSBPos(GetIdx(0));
+  if ItemsCount > 0 then SetSBPos(GetIdx(0));
+  //if Reversed then SetSBPos(GetIdx(GetBottomItem))
+  //            else SetSBPos(GetIdx(GetTopItem));
   Invalidate;
 end;
 
@@ -1207,7 +1210,7 @@ begin
   BeginUpdate;
   GridUpdates := GridUpdates + [guSize];
   EndUpdate;
-  Update;
+  //Update;
 end;
 
 procedure THistoryGrid.SetPadding(Value: Integer);
@@ -1774,7 +1777,6 @@ begin
   end;
 
 end;
-
 
 function THistoryGrid.GetItemRect(Item: Integer): TRect;
 var
@@ -2471,9 +2473,19 @@ begin
   LoadItem(Item,True);
   if not IsMatched(Item) then exit;
   if Item = GetFirstVisible then begin
-    if BottomAlign and (FItems[Item].Height > ClientHeight) then begin
+    {if BottomAlign and (FItems[Item].Height > ClientHeight) then begin
       TopItemOffset := 0;
-      ScrollGridBy(FItems[Item].Height - ClientHeight,False);
+      ScrollGridBy(FItems[Item].Height - ClientHeight,False);}
+    if FItems[Item].Height > ClientHeight then begin
+      if BottomAlign then begin
+        TopItemOffset := 0;
+        ScrollGridBy(FItems[Item].Height - ClientHeight,False);
+      end else
+      if TopItemOffset <> 0 then begin
+        ScrollGridBy(0);
+      end else begin
+        ScrollGridBy(-TopItemOffset,False);
+      end;
     end else
       ScrollGridBy(-TopItemOffset,False);
     exit;
@@ -2494,9 +2506,8 @@ begin
       SetSBPos(GetIdx(Item)+1);
       // strange, but if last message is bigger then client,
       // it always scrolls to down, but grid thinks, that it's
-      // aligned to top (whan entering inline mode, for ex.)
-      if Item = First then
-        TopItemOffset := 0;
+      // aligned to top (when entering inline mode, for ex.)
+      if Item = First then TopItemOffset := 0;
     end else begin
       SetSBPos(getIdx(Item));
       if Item <> First then
@@ -2512,11 +2523,13 @@ end;
 
 procedure THistoryGrid.WMRButtonDown(var Message: TWMRButtonDown);
 begin
+  inherited;
   DoRButtonDown(Message.XPos,Message.YPos,TranslateKeys(Message.Keys));
 end;
 
 procedure THistoryGrid.WMRButtonUp(var Message: TWMRButtonDown);
 begin
+  inherited;
   DoRButtonUp(Message.XPos,Message.YPos,TranslateKeys(Message.Keys));
 end;
 
@@ -4352,11 +4365,12 @@ var
   Item: Integer;
   ItemRect: TRect;
   PrevHwnd: THandle;
-  RichX,RichY: word;
+  RichX,RichY: Integer;
 begin
+  {DONE: Respect item top offset in x coords before pass it to richedit}
   Item := FindItemAt(x,y);
   if Item <> -1 then begin
-    ItemRect := GetRichEditRect(Item);
+    ItemRect := GetRichEditRect(Item,true);
     if not PointInRect(Point(x,y),ItemRect) then exit;
     RichX := x - ItemRect.Left;
     RichY := y - ItemRect.Top;
@@ -4474,9 +4488,9 @@ begin
   end;
 end;
 
-function THistoryGrid.GetRichEditRect(Item: Integer): TRect;
+function THistoryGrid.GetRichEditRect(Item: Integer; DontClipTop: Boolean): TRect;
 var
-  r: TRect;
+  res: TRect;
   hh: Integer;
 begin
   Result := Rect(0,0,0,0);
@@ -4494,8 +4508,13 @@ begin
     if Reversed then Inc(Result.Top,SessHeaderHeight)
                 else Dec(Result.Bottom,SessHeaderHeight);
   end;
-  IntersectRect(r,ClientRect,Result);
-  Result := r;
+  res := ClientRect;
+  {$IFDEF DEBUG}
+  OutputDebugString(PChar(Format('GetRichEditRect client: Top:%d Left:%d Bottom:%d Right:%d',[res.Top,res.Left,res.Bottom,res.Right])));
+  OutputDebugString(PChar(Format('GetRichEditRect item_2: Top:%d Left:%d Bottom:%d Right:%d',[Result.Top,Result.Left,Result.Bottom,Result.Right])));
+  {$ENDIF}
+  if DontClipTop and (Result.Top < res.Top) then res.Top := Result.Top;
+  IntersectRect(Result,res,Result);
 end;
 
 function THistoryGrid.SearchItem(ItemID: Integer): Integer;
