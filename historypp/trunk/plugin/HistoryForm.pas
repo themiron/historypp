@@ -2700,27 +2700,6 @@ begin
 end;
 
 procedure THistoryFrm.TranslateForm;
-
-  procedure TranslateMenu(mi: TMenuItem);
-  var
-    i: integer;
-  begin
-    for i := 0 to mi.Count-1 do
-      if mi.Items[i].Caption <> '-' then begin
-        TTntMenuItem(mi.Items[i]).Caption := TranslateWideW(mi.Items[i].Caption{TRANSLATE-IGNORE});
-          if mi.Items[i].Count > 0 then TranslateMenu(mi.Items[i]);
-      end;
-  end;
-
-  procedure TranslateToolbar(const tb: TTntToolBar);
-  var
-    i: integer;
-  begin
-    for i := 0 to tb.ButtonCount-1 do
-      if tb.Buttons[i].Style <> tbsSeparator then
-        TTntToolBar(tb.Buttons[i]).Hint := TranslateWideW(tb.Buttons[i].Hint{TRANSLATE-IGNORE});
-  end;
-
 begin
   Caption := TranslateWideW(Caption);
 

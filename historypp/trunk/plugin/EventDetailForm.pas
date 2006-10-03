@@ -367,18 +367,6 @@ begin
 end;
 
 procedure TEventDetailsFrm.TranslateForm;
-
-  procedure TranslateMenu(mi: TMenuItem);
-  var
-    i: integer;
-  begin
-    for i := 0 to mi.Count-1 do
-      if mi.Items[i].Caption <> '-' then begin
-        TTntMenuItem(mi.Items[i]).Caption := TranslateWideW(mi.Items[i].Caption{TRANSLATE-IGNORE});
-          if mi.Items[i].Count > 0 then TranslateMenu(mi.Items[i]);
-      end;
-  end;
-
 begin
   Caption := TranslateWideW(Caption);
   GroupBox.Caption:=TranslateWideW(GroupBox.Caption);
