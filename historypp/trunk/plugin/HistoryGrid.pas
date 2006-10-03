@@ -2314,6 +2314,7 @@ var
   tr: TextRange;
   OverInline: Boolean;
   CurRich: TRichEdit;
+  Item: Integer;
 begin
   {$IFDEF RENDER_RICH}
   // ok, user either clicked or moved mouse over link
@@ -2328,13 +2329,13 @@ begin
       tr.lpstrText := @AnsiUrl[1];
       CurRich.Perform(EM_GETTEXTRANGE,0,DWord(@tr));
 
-      //OverURLStr := AnsiToWideString(AnsiUrl,Codepage);
-
       if link.msg = WM_LBUTTONUP then begin
         p := Mouse.CursorPos;
         p := ScreenToClient(p);
-        DownHitTests := GetHitTests(p.x,p.y);
-        DoLButtonUp(p.x,p.y,[]);
+        if Assigned(FOnUrlClick) then begin
+          Item := FindItemAt(p.x,p.y);
+          FOnUrlClick(Self,Item, AnsiToWideString(AnsiUrl,Codepage));
+        end;
       end;
     end;
   end;
@@ -3054,9 +3055,7 @@ var
   Item: Integer;
 begin
   inherited;
-  //CheckBusy;
-  if FState <> gsIdle then exit;
-
+  if State <> gsIdle then exit;  
   if Message.HitTest = HTERROR then exit;
   p := ScreenToClient(Mouse.CursorPos);
   ht := GetHitTests(p.X,p.Y);
@@ -5143,6 +5142,7 @@ begin
   if Result.Height = -1 then begin
     ApplyItemToRich(Result);
     Result.Height := FRichHeight;
+    Result.Rich.Height := FRichHeight;
     Result.BitmapDrawn := False;
   end;
   MoveToTop(idx);
