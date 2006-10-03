@@ -115,7 +115,7 @@ type
   TOnEvent = procedure;
   TOnShowIcons = TOnEvent;
 
-  TGridHitTest = (ghtItem, ghtHeader, ghtText, ghtLink, ghtSession, ghtSessHideButton, ghtSessShowButton, ghtBookmark);
+  TGridHitTest = (ghtItem, ghtHeader, ghtText, ghtLink, ghtButton, ghtSession, ghtSessHideButton, ghtSessShowButton, ghtBookmark);
   TGridHitTests = set of TGridHitTest;
 
   TItemOption = record
@@ -352,8 +352,6 @@ type
     FpmRichInline: TTntPopupMenu;
     FRichHeight: Integer;
     FRichParamsSet: Boolean;
-    OverURL: Boolean;
-    OverURLStr: WideString;
     FOnSearchItem: TOnSearchItem;
 
     FOnRTLChange: TOnRTLChange;
@@ -449,9 +447,9 @@ type
     procedure SetVertScrollBar(const Value: TVertScrollBar);
     {$ENDIF}
     function GetHitTests(X,Y: Integer): TGridHitTests;
+    function GetLinkAtPoint(X,Y: Integer): WideString;
     {$IFDEF RENDER_RICH}
     function GetRichEditRect(Item: Integer; DontClipTop: Boolean = False): TRect;
-    procedure HandleRichEditMouse(Message: DWord; X,Y: Integer);
     {$ENDIF}
     procedure SetRTLMode(const Value: TRTLMode);
     procedure SetExpandHeaders(const Value: Boolean);
@@ -1747,9 +1745,7 @@ begin
   DownHitTests := GetHitTests(x,y);
 
   // we'll hide/show session headers on button up, don't select item
-  if (ghtSessShowButton in DownHitTests) or
-     (ghtSessHideButton in DownHitTests) or
-     (ghtBookmark in DownHitTests) or
+  if (ghtButton in DownHitTests) or
      (ghtLink in DownHitTests) then exit;
 
   Item := FindItemAt(x,y);
@@ -1949,16 +1945,17 @@ end;
 procedure THistoryGrid.DoRButtonUp(X, Y: Integer; Keys: TMouseMoveKeys);
 var
   Item: Integer;
+  ht: TGridHitTests;
 begin
   SearchPattern := '';
   CheckBusy;
 
   Item := FindItemAt(x,y);
 
-  if OverURL then begin
-    OverURL := False;
+  ht := GetHitTests(x,y);
+  if (ghtLink in ht) then begin
     Cursor := crDefault;
-    if Assigned(FOnUrlPopup) then FOnUrlPopup(Self,Item,OverUrlStr);
+    if Assigned(FOnUrlPopup) then FOnUrlPopup(Self,Item,GetLinkAtPoint(x,y));
     exit;
   end;
 
@@ -1999,19 +1996,10 @@ begin
     exit;
   end;
 
-{  if OverURL then begin
-    OverURL := False;
-    //Cursor := crDefault;
-    if Assigned(FOnUrlClick) and OldWasDownOnGrid then begin
-      Item := FindItemAt(x,y);
-      FOnUrlClick(Self,Item,OverUrlStr);
-    end;
-  end;}
-
   if (ghtLink in ht) then begin
     if Assigned(FOnUrlClick) then begin
       Item := FindItemAt(x,y);
-      FOnUrlClick(Self,Item,OverUrlStr);
+      FOnUrlClick(Self,Item,GetLinkAtPoint(x,y));
     end;
     exit;
   end;
@@ -2054,14 +2042,8 @@ begin
   SelectMove := ((mmkLButton in Keys) and not ((mmkControl in Keys) or (mmkShift in Keys))) and
                 (MultiSelect) and (WasDownOnGrid);
   SelectMove := SelectMove and not (
-                (ghtSessHideButton in DownHitTests) or
-                (ghtSessShowButton in DownHitTests) or
-                (ghtBookmark in DownHitTests) or
+                (ghtButton in DownHitTests) or
                 (ghtLink in DownHitTests));
-
-  NewHint := '';
-  OverURL := False;
-  NewCursor := crDefault;
 
   if SelectMove then begin
     if SelCount = 0 then exit;
@@ -2075,32 +2057,7 @@ begin
       MakeVisible(Item);
       Invalidate;
     end;
-
-  end else begin
-    ht := GetHitTests(x,y);
-    //if ghtText in ht then begin
-    if (ghtText in ht) and Focused then begin
-      HandleRichEditMouse(WM_MOUSEMOVE,X,Y);
-      if OverURL then NewCursor := crHandPoint;
-    end
-    else if (ghtSessHideButton in ht) or (ghtSessShowButton in ht) or (ghtBookmark in ht) then begin
-      Item := FindItemAt(x,y);
-      NewCursor := crHandPoint;
-      if ghtBookmark in ht then begin
-        if FItems[Item].Bookmarked then
-          NewHint := TranslateWideW('Remove Bookmark')
-        else
-          NewHint := TranslateWideW('Set Bookmark')
-      end
-      else if ghtSessHideButton in ht then
-        NewHint := TranslateWideW('Hide headers')
-      else if ghtSessShowButton in ht then
-        NewHint := TranslateWideW('Show headers');
-    end;
   end;
-
-  Cursor := NewCursor;
-  Hint := NewHint;
 end;
 
 procedure THistoryGrid.WMLButtonDblClick(var Message: TWMLButtonDblClk);
@@ -2378,22 +2335,21 @@ begin
     link := TENLink(Pointer(Message.NMHdr)^);
     // if we are over inline richedit?
     OverInline := (Message.NMHdr^.hwndFrom = FRichInline.Handle);
-    if OverInline then CurRich := FRichInline
-                  else CurRich := FRich;
+    if OverInline then begin
+      CurRich := FRichInline;
+      SetLength(AnsiUrl,link.chrg.cpMax-link.chrg.cpMin);
+      tr.chrg := link.chrg;
+      tr.lpstrText := @AnsiUrl[1];
+      CurRich.Perform(EM_GETTEXTRANGE,0,DWord(@tr));
 
-    SetLength(AnsiUrl,link.chrg.cpMax-link.chrg.cpMin);
-    tr.chrg := link.chrg;
-    tr.lpstrText := @AnsiUrl[1];
-    CurRich.Perform(EM_GETTEXTRANGE,0,DWord(@tr));
+      //OverURLStr := AnsiToWideString(AnsiUrl,Codepage);
 
-    OverURL := True;
-    OverURLStr := AnsiToWideString(AnsiUrl,Codepage);
-
-    if link.msg = WM_LBUTTONUP then begin
-      p := Mouse.CursorPos;
-      p := ScreenToClient(p);
-      DownHitTests := GetHitTests(p.x,p.y);
-      DoLButtonUp(p.x,p.y,[]);
+      if link.msg = WM_LBUTTONUP then begin
+        p := Mouse.CursorPos;
+        p := ScreenToClient(p);
+        DownHitTests := GetHitTests(p.x,p.y);
+        DoLButtonUp(p.x,p.y,[]);
+      end;
     end;
   end;
 {$ENDIF}
@@ -2616,6 +2572,77 @@ begin
   if (Index < 0) or (Index > High(FItems)) then exit;
   if IsUnknown(Index) then LoadItem(Index,False);
   Result := FItems[Index];
+end;
+
+// Call this function to get the link url at given point in grid
+// Call it when you are sure that the point has a link,
+// if no link at a point, the result is ''
+// To know if there's a link, use GetHitTests and look for ghtLink
+function THistoryGrid.GetLinkAtPoint(X, Y: Integer): WideString;
+var
+  p: TPoint;
+  cp: DWord;
+  cr: CHARRANGE;
+  cf: CHARFORMAT2;
+  res: DWord;
+  AnsiUrl: String;
+  RichEditRect: TRect;
+  Item: Integer;
+begin
+  Result := '';
+
+  Item := FindItemAt(x,y);
+  if Item = -1 then exit;  
+  RichEditRect := GetRichEditRect(Item,True);
+  p := Point(x - RichEditRect.Left,y - RichEditRect.Top);
+
+  ApplyItemToRich(Item);
+  cp := FRich.Perform(EM_CHARFROMPOS,0,LPARAM(@p));
+  cr.cpMin := cp;
+  cr.cpMax := cp+1;
+  FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
+
+  ZeroMemory(@cf,SizeOf(cf));
+  cf.cbSize := SizeOf(cf);
+  cf.dwMask := CFM_LINK;
+
+  res := FRich.Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
+  if res <> cf.dwMask then exit;
+
+  // no link under point
+  if (cf.dwEffects and CFE_LINK) = 0 then exit;
+
+  while True do begin
+    Inc(cr.cpMax);
+    FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
+    cf.cbSize := SizeOf(cf);
+    cf.dwMask := CFM_LINK;
+    res := FRich.Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
+    if (res <> cf.dwMask) or ((res and CFM_LINK) = 0) then begin
+      Dec(cr.cpMax);
+      break;
+    end;
+  end;
+
+  while True do begin
+    if cr.cpMin > 0 then
+      Dec(cr.cpMin)
+    else break;
+    FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
+    cf.cbSize := SizeOf(cf);
+    cf.dwMask := CFM_LINK;
+    res := FRich.Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
+    if (res <> cf.dwMask) or ((res and CFM_LINK) = 0) then begin
+      Inc(cr.cpMin);
+      break;
+    end;
+  end;
+
+  SetLength(AnsiUrl,cr.cpMax-cr.cpMin);
+  FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
+  res := FRich.Perform(EM_GETSELTEXT,0,LPARAM(@AnsiUrl[1]));
+  SetLength(AnsiUrl,res);
+  Result := AnsiToWideString(AnsiUrl,Codepage);
 end;
 
 const
@@ -3025,7 +3052,6 @@ begin
         InvalidateRect(Handle,@r,False);
       end;
     end;
-    OverURL := False; 
     if Assigned(FOnKillFocus) then FOnKillFocus(Self);
   end;
   inherited;
@@ -3033,39 +3059,45 @@ end;
 
 procedure THistoryGrid.WMSetCursor(var Message: TWMSetCursor);
 {var
-  p: TPoint;
   FocusWnd: THandle;}
+var
+  p: TPoint;
+  NewCursor: TCursor;
+  ht: TGridHitTests;
+  NewHint: WideString;
+  Item: Integer;
 begin
-  // To *correctly* set cursor when we are not focused, we need RichEdit to
-  // process WM_SETCURSOR and issue EN_LINK. Activating Richedit and then
-  // killing focus in order for it to process WM_MOUSEMOVE causes bugs.
-  // But there's a caveat with WM_SETCURSOR:
-  // it wouldn't issue EN_LINK unless rich is visible, so we either should show
-  // richedit under cursor or not process this at all. One more: when grid is
-  // inactive and user clicks on this richedit under cursor, it would activate
-  // richedit :) So we need to show "special" richedits, who know that when they
-  // are clicked, they should hide themselves and transfer click to the grid
   inherited;
-  {CheckBusy;
-  if GetFocus = Handle then begin
-    inherited;
-    exit;
-  end;
-  if not IsChild(GetParentForm(Self).Handle,GetFocus) then begin
-    inherited;
-    exit;
-  end;
-
-  // button is pressed, exit
+  CheckBusy;
   if Message.HitTest = HTERROR then exit;
   p := ScreenToClient(Mouse.CursorPos);
-  OverURL := False;
-  HandleRichEditMouse(WM_MOUSEMOVE,p.X,p.Y);
-  if OverURL then
-    Windows.SetCursor(Screen.Cursors[crHandPoint])
+  ht := GetHitTests(p.X,p.Y);
+  if (ghtButton in ht) or (ghtLink in ht) then
+    NewCursor := crHandPoint
   else
-    Windows.SetCursor(Screen.Cursors[crDefault]);
-  Message.Result := 1;}
+    NewCursor := crDefault;
+
+  if Windows.GetCursor <> Screen.Cursors[NewCursor] then
+    Windows.SetCursor(Screen.Cursors[NewCursor]);
+
+  NewHint := '';
+  if (ghtButton in ht) then begin
+    if ghtBookmark in ht then begin
+      Item := FindItemAt(p);
+      if FItems[Item].Bookmarked then
+        NewHint := TranslateWideW('Remove Bookmark')
+      else
+        NewHint := TranslateWideW('Set Bookmark')
+    end
+    else if ghtSessHideButton in ht then
+      NewHint := TranslateWideW('Hide headers')
+    else if ghtSessShowButton in ht then
+      NewHint := TranslateWideW('Show headers');
+  end;
+  Hint := NewHint;
+  if Hint = '' then Application.CancelHint;
+
+  Message.Result := 1;
 end;
 
 procedure THistoryGrid.WMSetFocus(var Message: TWMSetFocus);
@@ -4273,6 +4305,33 @@ var
   TimeStamp: WideString;
   //TimestampFont: TFont;
   TimestampOffset: Integer;
+
+  function IsLinkAtPoint(RichEditRect: TRect): Boolean;
+  var
+    p: TPoint;
+    cp: DWord;
+    cr: CHARRANGE;
+    cf: CHARFORMAT2;
+    res: DWord;
+    AnsiUrl: String;
+  begin
+    p := Point(x - RichEditRect.Left,y - RichEditRect.Top);
+
+    ApplyItemToRich(Item);
+    cp := FRich.Perform(EM_CHARFROMPOS,0,LPARAM(@p));
+    cr.cpMin := cp;
+    cr.cpMax := cp+1;
+    FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
+
+    ZeroMemory(@cf,SizeOf(cf));
+    cf.cbSize := SizeOf(cf);
+    cf.dwMask := CFM_LINK;
+
+    res := FRich.Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
+    if res <> cf.dwMask then exit;
+
+    Result := (cf.dwEffects and CFE_LINK) > 0;
+  end;
 begin
   Result := [];
   Item := FindItemAt(X,Y);
@@ -4280,8 +4339,6 @@ begin
     Include(Result,ghtItem)
   else
     exit;
-
-  if OverURL then Include(Result,ghtLink);
 
   ItemRect := GetItemRect(Item);
   RTL := GetItemRTL(Item);
@@ -4304,8 +4361,10 @@ begin
         ButtonRect := Rect(SessRect.Left,SessRect.Top,SessRect.Left+16,SessRect.Bottom)
       else
         ButtonRect := Rect(SessRect.Right-16,SessRect.Top,SessRect.Right,SessRect.Bottom);
-      if PtInRect(ButtonRect,p) then
+      if PtInRect(ButtonRect,p) then begin
         Include(Result,ghtSessHideButton);
+        Include(Result,ghtButton);
+      end;
     end;
   end;
 
@@ -4328,8 +4387,10 @@ begin
         ButtonRect := Rect(HeaderRect.Right-16,HeaderRect.Top,HeaderRect.Right,HeaderRect.Bottom)
       else
         ButtonRect := Rect(HeaderRect.Left,HeaderRect.Top,HeaderRect.Left+16,HeaderRect.Bottom);
-      if PtInRect(ButtonRect,p) then
+      if PtInRect(ButtonRect,p) then begin
         Include(Result,ghtSessShowButton);
+        Include(Result,ghtButton);
+      end;
     end;
     if ShowBookmarks and (Sel or FItems[Item].Bookmarked) then begin
       TimeStamp := GetTime(FItems[Item].Time);
@@ -4341,53 +4402,17 @@ begin
         ButtonRect := Rect(HeaderRect.Left+TimestampOffset,HeaderRect.Top,HeaderRect.Left+TimestampOffset+16,HeaderRect.Bottom)
       else
         ButtonRect := Rect(HeaderRect.Right-16-TimestampOffset,HeaderRect.Top,HeaderRect.Right-TimestampOffset,HeaderRect.Bottom);
-    if PtInRect(ButtonRect,p) then
-      Include(Result,ghtBookmark);
+      if PtInRect(ButtonRect,p) then begin
+        Include(Result,ghtBookmark);
+        Include(Result,ghtButton);
+      end;
     end;
   end;
 
-  if PtInRect(ItemRect,p) then
+  if PtInRect(ItemRect,p) then begin
     Include(Result,ghtText);
-end;
-
-{procedure THistoryGrid.OnMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-begin
-  //x := 0;
-end;}
-
-{procedure THistoryGrid.DoUrlMouseMove(Url: WideString);
-begin
-  OverURL := True;
-  OverURLStr := URL;
-end;}
-
-procedure THistoryGrid.HandleRichEditMouse(Message: DWord; X, Y: Integer);
-var
-  Item: Integer;
-  ItemRect: TRect;
-  PrevHwnd: THandle;
-  RichX,RichY: Integer;
-begin
-  {DONE: Respect item top offset in x coords before pass it to richedit}
-  Item := FindItemAt(x,y);
-  if Item <> -1 then begin
-    ItemRect := GetRichEditRect(Item,true);
-    if not PointInRect(Point(x,y),ItemRect) then exit;
-    RichX := x - ItemRect.Left;
-    RichY := y - ItemRect.Top;
-
-    ApplyItemToRich(Item);
-    // make it that height so we don't loose any clicks
-    FRich.Height := FRichHeight;
-
-    //res := SendMessage(FRich.Handle,WM_SETFOCUS,0,0);
-    //res := SendMessage(FRich.Handle,Message,0,MakeLParam(RichX,RichY));
-
-    PrevHwnd := Windows.SetFocus(FRich.Handle);
-    //FRich.Perform(WM_SETFOCUS,0,0);
-    FRich.Perform(Message,0,MakeLParam(RichX,RichY));
-   // FRich.Perform(WM_KILLFOCUS,PrevHwnd,0);
-    Windows.SetFocus(PrevHwnd);
+    if IsLinkAtPoint(ItemRect) then
+      Include(Result,ghtLink);
   end;
 end;
 
