@@ -1,6 +1,6 @@
 object fmGlobalSearch: TfmGlobalSearch
-  Left = 374
-  Top = 112
+  Left = 271
+  Top = 113
   Width = 559
   Height = 545
   Caption = 'Global History Search'

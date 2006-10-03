@@ -1441,7 +1441,8 @@ begin
 
   edSearchChange(Self);
   CreateEventsFilterMenu;
-  SetEventFilter(0);
+  //SetEventFilter(0);
+  SetEventFilter(GetShowAllEventsIndex);
 end;
 
 function TfmGlobalSearch.GetSearchItem(GridIndex: Integer): TSearchItem;
