@@ -2,7 +2,7 @@ unit hpp_external;
 
 interface
 
-{$DEFINE IMITATE_IEVIEW}
+{$DEFINE _IMITATE_IEVIEW}
 
 uses
   Windows, HistoryGrid, m_globaldefs, m_api;
@@ -61,19 +61,25 @@ const
   IEEF_RTL          = 1; // turn on RTL support
   IEEF_NO_UNICODE   = 2; // disable Unicode support
   IEEF_NO_SCROLLING = 4; // do not scroll logs to bottom
-  
-const
-  MS_IEVIEW_WINDOW = 'IEVIEW/NewWindow';
-  MS_IEVIEW_EVENT	 = 'IEVIEW/Event';
-  MS_IEVIEW_UTILS  = 'IEVIEW/Utils';
 
-  ME_IEVIEW_OPTIONSCHANGED = 'IEVIEW/OptionsChanged';
-  ME_IEVIEW_NOTIFICATION   = 'IEVIEW/Notification';
+const
+{$IFDEF _IMITATE_IEVIEW}
+  MS_HPP_IE_WINDOW = 'IEVIEW/NewWindow';
+  MS_HPP_IE_EVENT	 = 'IEVIEW/Event';
+  MS_HPP_IE_UTILS  = 'IEVIEW/Utils';
+  MS_HPP_IE_OPTIONSCHANGED = 'IEVIEW/OptionsChanged';
+  MS_HPP_IE_NOTIFICATION   = 'IEVIEW/Notification';
+{$ELSE}
+  MS_HPP_IE_WINDOW = 'History++/IEVIEW/NewWindow';
+  MS_HPP_IE_EVENT	 = 'History++/IEVIEW/Event';
+  MS_HPP_IE_UTILS  = 'History++/IEVIEW/Utils';
+  MS_HPP_IE_OPTIONSCHANGED = 'History++/IEVIEW/OptionsChanged';
+  MS_HPP_IE_NOTIFICATION   = 'History++/IEVIEW/Notification';
+{$ENDIF}
 
 var
   hExtWindow, hExtEvent, hExtUtils: THandle;
   hExtOptChanged, hExtNotification: THandle;
-  IEViewEnabled: boolean;
 
 procedure RegisterExtGridServices;
 procedure UnregisterExtGridServices;
@@ -85,31 +91,41 @@ uses hpp_externalgrid;
 function ExtWindow(wParam, lParam: DWord): Integer; cdecl;
 var
   par: PIEVIEWWINDOW;
-  grid: TExternalGrid;
+  ExtGrid: TExternalGrid;
   i,n: Integer;
 begin
   try
     par := PIEVIEWWINDOW(lParam);
-    if par.iType = IEW_CREATE then begin
-      OutputDebugString('IEW_CREATE');
-      n := Length(ExternalGrids);
-      SetLength(ExternalGrids,n+1);
-      ExternalGrids[n] := TExternalGrid.Create(par.Parent);
-      par.Hwnd := ExternalGrids[n].GridHandle;
-    end
-    else if par.iType = IEW_DESTROY then begin
-      OutputDebugString('IEW_DESTROY');
-      DeleteExtGridByHandle(par.Hwnd);
-    end
-    else if par.iType = IEW_SETPOS then begin
-      OutputDebugString('IEW_SETPOS');
-      grid := FindExtGridByHandle(par.Hwnd);
-      grid.SetPosition(par.x,par.y,par.cx,par.cy);
-    end
-    else if par.iType = IEW_SCROLLBOTTOM then begin
-      OutputDebugString('IEW_SCROLLBOTTOM');
-      grid := FindExtGridByHandle(par.Hwnd);
-      grid.ScrollToBottom;
+    case par.iType of
+      IEW_CREATE: begin
+        {$IFDEF DEBUG}
+        OutputDebugString('IEW_CREATE');
+        {$ENDIF}
+        n := Length(ExternalGrids);
+        SetLength(ExternalGrids,n+1);
+        ExternalGrids[n] := TExternalGrid.Create(par.Parent);
+        par.Hwnd := ExternalGrids[n].GridHandle;
+      end;
+      IEW_DESTROY: begin
+        {$IFDEF DEBUG}
+        OutputDebugString('IEW_DESTROY');
+        {$ENDIF}
+        DeleteExtGridByHandle(par.Hwnd);
+      end;
+      IEW_SETPOS: begin
+        {$IFDEF DEBUG}
+        OutputDebugString('IEW_SETPOS');
+        {$ENDIF}
+        ExtGrid := FindExtGridByHandle(par.Hwnd);
+        ExtGrid.SetPosition(par.x,par.y,par.cx,par.cy);
+      end;
+      IEW_SCROLLBOTTOM: begin
+        {$IFDEF DEBUG}
+        OutputDebugString('IEW_SCROLLBOTTOM');
+        {$ENDIF}
+        ExtGrid := FindExtGridByHandle(par.Hwnd);
+        ExtGrid.ScrollToBottom;
+      end;
     end;
     Result := 0;
   except
@@ -122,39 +138,46 @@ var
   event: PIEVIEWEVENT;
   hDBNext: THandle;
   i,n: Integer;
-  grid: TExternalGrid;
+  ExtGrid: TExternalGrid;
 begin
   try
+    {$IFDEF DEBUG}
     OutputDebugString('MS_IEVIEW_EVENT');
+    {$ENDIF}
     event := PIEVIEWEVENT(lParam);
-    grid := FindExtGridByHandle(event.Hwnd);
-    if event.iType = IEE_LOG_DB_EVENTS then begin
-      if event.Count = -1 then begin
-        hDBNext := event.hDBEventFirst;
-        while hDBNext <> 0 do begin
-          grid.AddEvent(event.hContact, hDBNext, event.Codepage, boolean(event.dwFlags and IEEF_RTL));
-          hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBNext,0);
-        end
-      end
-      else begin
-        hDBNext := event.hDBEventFirst;
-        for i := 0 to event.count - 1 do begin
-          if hDBNext = 0 then break;
-          grid.AddEvent(event.hContact, hDBNext, event.Codepage, boolean(event.dwFlags and IEEF_RTL));
-          if i < event.count -1 then
+    ExtGrid := FindExtGridByHandle(event.Hwnd);
+    case event.iType of
+      IEE_LOG_DB_EVENTS: begin
+        ExtGrid.BeginUpdate;
+        if event.Count = -1 then begin
+          hDBNext := event.hDBEventFirst;
+          while hDBNext <> 0 do begin
+            ExtGrid.AddEvent(event.hContact, hDBNext, event.Codepage, boolean(event.dwFlags and IEEF_RTL));
             hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBNext,0);
+          end
+        end else begin
+          hDBNext := event.hDBEventFirst;
+          for i := 0 to event.count - 1 do begin
+            if hDBNext = 0 then break;
+            ExtGrid.AddEvent(event.hContact, hDBNext, event.Codepage, boolean(event.dwFlags and IEEF_RTL));
+            if i < event.count -1 then
+            hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBNext,0);
+          end;
         end;
+        ExtGrid.EndUpdate;
       end;
-    end
-    else if event.iType = IEE_CLEAR_LOG then begin
-      grid.Clear;
-      Result := 1;
-    end
-    else if event.iType = IEE_GET_SELECTION then begin
-      Result := integer(grid.GetSelection(boolean(event.dwFlags and IEEF_NO_UNICODE)));
-    end
+      IEE_CLEAR_LOG: begin
+        ExtGrid.BeginUpdate;
+        ExtGrid.Clear;
+        ExtGrid.EndUpdate;
+        Result := 1;
+      end;
+      IEE_GET_SELECTION: begin
+        Result := integer(ExtGrid.GetSelection(boolean(event.dwFlags and IEEF_NO_UNICODE)));
+      end;
     else
       Result := 0;
+    end;
   except
     Result := 1;
   end;
@@ -163,7 +186,9 @@ end;
 function ExtUtils(wParam, lParam: DWord): Integer; cdecl;
 begin
   try
+    {$IFDEF DEBUG}
     OutputDebugString('MS_IEVIEW_UTILS');
+    {$ENDIF}
     Result := 0;
   except
     Result := 1;
@@ -172,29 +197,20 @@ end;
 
 procedure RegisterExtGridServices;
 begin
-  {$IFDEF IMITATE_IEVIEW}
-  IEViewEnabled := boolean(PluginLink.ServiceExists(MS_IEVIEW_WINDOW));
-  if not IEViewEnabled then begin
-    hExtWindow := PluginLink.CreateServiceFunction(MS_IEVIEW_WINDOW,ExtWindow);
-    hExtEvent := PluginLink.CreateServiceFunction(MS_IEVIEW_EVENT,ExtEvent);
-    hExtUtils := PluginLink.CreateServiceFunction(MS_IEVIEW_UTILS,ExtUtils);
-    hExtOptChanged := PluginLink.CreateHookableEvent(ME_IEVIEW_OPTIONSCHANGED);
-    hExtNotification := PluginLink.CreateHookableEvent(ME_IEVIEW_NOTIFICATION);
-  end;
-  {$ENDIF}
+  hExtWindow := PluginLink.CreateServiceFunction(MS_HPP_IE_WINDOW,ExtWindow);
+  hExtEvent := PluginLink.CreateServiceFunction(MS_HPP_IE_EVENT,ExtEvent);
+  hExtUtils := PluginLink.CreateServiceFunction(MS_HPP_IE_UTILS,ExtUtils);
+  hExtOptChanged := PluginLink.CreateHookableEvent(MS_HPP_IE_OPTIONSCHANGED);
+  hExtNotification := PluginLink.CreateHookableEvent(MS_HPP_IE_NOTIFICATION);
 end;
 
 procedure UnregisterExtGridServices;
 begin
-  {$IFDEF IMITATE_IEVIEW}
-  if not IEViewEnabled then begin
-    PluginLink.DestroyServiceFunction(hExtWindow);
-    PluginLink.DestroyServiceFunction(hExtEvent);
-    PluginLink.DestroyServiceFunction(hExtUtils);
-    PluginLink.DestroyHookableEvent(hExtOptChanged);
-    PluginLink.DestroyHookableEvent(hExtNotification);
-  end;
-  {$ENDIF}
+  PluginLink.DestroyServiceFunction(hExtWindow);
+  PluginLink.DestroyServiceFunction(hExtEvent);
+  PluginLink.DestroyServiceFunction(hExtUtils);
+  PluginLink.DestroyHookableEvent(hExtOptChanged);
+  PluginLink.DestroyHookableEvent(hExtNotification);
 end;
 
 end.

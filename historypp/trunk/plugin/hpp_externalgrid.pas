@@ -6,6 +6,7 @@ uses
   Windows, Classes, Controls, Forms, Graphics, Messages,
   m_api, m_globaldefs,
   hpp_global, hpp_events, hpp_contacts, hpp_services, hpp_forms, hpp_bookmarks,
+  hpp_richedit,
   HistoryGrid;
 
 type
@@ -17,12 +18,10 @@ type
   end;
 
   TExternalGrid = class(TObject)
-  //TExternalGrid = class(TControl)
   private
     Items: array of TExtItem;
     Grid: THistoryGrid;
     FParentWindow: HWND;
-    GridLocked: boolean;
     function GetGridHandle: HWND;
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
@@ -47,6 +46,8 @@ type
     function Perform(Msg: Cardinal; WParam, LParam: Longint): Longint;
     procedure HMBookmarkChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
+    procedure BeginUpdate;
+    procedure EndUpdate;
   end;
 
 var
@@ -119,8 +120,6 @@ begin
   Grid.OnDblClick := GridDblClick;
   Grid.Options := GridOptions;
   TranslateMenu(Grid.InlineRichEdit.PopupMenu.Items);
-  GridLocked := True;
-  Grid.BeginUpdate;
 end;
 
 destructor TExternalGrid.Destroy;
@@ -133,6 +132,16 @@ end;
 function TExternalGrid.GetGridHandle: HWND;
 begin
   Result := Grid.Handle;
+end;
+
+procedure TExternalGrid.BeginUpdate;
+begin
+  Grid.BeginUpdate;
+end;
+
+procedure TExternalGrid.EndUpdate;
+begin
+  Grid.EndUpdate;
 end;
 
 procedure TExternalGrid.GridItemData(Sender: TObject; Index: Integer;
@@ -193,10 +202,6 @@ procedure TExternalGrid.ScrollToBottom;
 begin
   Grid.ScrollToBottom;
   Grid.Repaint;
-  if GridLocked then begin
-    GridLocked := False;
-    Grid.EndUpdate;
-  end;
 end;
 
 procedure TExternalGrid.SetPosition(x, y, cx, cy: Integer);
@@ -210,23 +215,34 @@ end;
 
 function TExternalGrid.GetSelection(NoUnicode: Boolean): PChar;
 var
-  Text: WideString;
+  TextW: WideString;
+  TextA: AnsiString;
 begin
   if Grid.Count = 0 then exit;
-  if Grid.Selected <> -1 then
-    Text := Grid.FormatSelected(Grid.Options.ClipCopyFormat)
-  else
-    Text := Grid.FormatItem(Grid.BottomItem,Grid.Options.ClipCopyFormat);
-  if NoUnicode then
-    Result := PChar(WideToAnsiString(Text,CP_ACP))
-  else
-    Result := PChar(PWideChar(Text));
+  if Grid.State = gsInline then begin
+    if NoUnicode then begin
+      GetRichRTF(Grid.InlineRichEdit.Handle,TextA,True,True,True,False);
+      Result := PChar(TextA);
+    end else begin
+      GetRichRTF(Grid.InlineRichEdit.Handle,TextA,True,True,True,False,CP_UTF8);
+      Result := PChar(PWideChar(AnsiToWideString(TextA,CP_UTF8)));
+    end;
+  end else begin
+    if Grid.Selected <> -1 then
+      TextW := Grid.FormatSelected(Grid.Options.ClipCopyFormat)
+    else
+      TextW := Grid.FormatItem(Grid.BottomItem,Grid.Options.ClipCopyFormat);
+    if NoUnicode then
+      Result := PChar(WideToAnsiString(TextW,CP_ACP))
+    else
+      Result := PChar(PWideChar(TextW));
+  end;
 end;
 
 procedure TExternalGrid.Clear;
 begin
-  Grid.Allocate(0);
   Finalize(Items);
+  Grid.Allocate(0);
   //Grid.Repaint;
 end;
 
