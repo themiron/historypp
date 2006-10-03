@@ -32,6 +32,7 @@ type
     procedure GridUrlClick(Sender: TObject; Item: Integer; Url: String);
     procedure GridBookmarkClick(Sender: TObject; Item: Integer);
     procedure GridKillFocus(Sender: TObject);
+    procedure GridDblClick(Sender: TObject);
   public
     constructor Create(AParentWindow: HWND);
     destructor Destroy; override;
@@ -115,6 +116,7 @@ begin
   Grid.OnUrlClick := GridUrlClick;
   Grid.OnBookmarkClick := GridBookmarkClick;
   Grid.OnKillFocus := GridKillFocus;
+  Grid.OnDblClick := GridDblClick;
   Grid.Options := GridOptions;
   GridLocked := True;
   Grid.BeginUpdate;
@@ -268,6 +270,12 @@ procedure TExternalGrid.GridKillFocus(Sender: TObject);
 begin
   // deselect grid
   Grid.Selected := -1;
+end;
+
+procedure TExternalGrid.GridDblClick(Sender: TObject);
+begin
+  if Grid.Selected = -1 then exit;
+  Grid.EditInline(Grid.Selected);
 end;
 
 
