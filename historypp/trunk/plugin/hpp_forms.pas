@@ -2,7 +2,8 @@ unit hpp_forms;
 
 interface
 
-uses Graphics, Windows, Forms, TntStdCtrls, StdCtrls, Controls, TntControls, Messages;
+uses Graphics, Windows, Messages, Forms, Controls, StdCtrls, Menus, ComCtrls,
+  TntControls, TntMenus, TntComCtrls, TntStdCtrls;
 
 type
   THppHintWindow = class (TTntHintWindow)
@@ -28,6 +29,9 @@ const
 procedure NotifyAllForms(Msg,wParam,lParam: DWord);
 procedure BringFormToFront(Form: TForm);
 procedure MakeFontsParent(Control: TControl);
+
+procedure TranslateMenu(mi: TMenuItem);
+procedure TranslateToolbar(const tb: TTntToolBar);
 
 function Utils_RestoreFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
 function Utils_SaveFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
@@ -170,5 +174,26 @@ begin
   inherited CreateParams(Params);
   Params.WindowClass.Style := Params.WindowClass.style and not CS_DROPSHADOW;
 end;
+
+procedure TranslateMenu(mi: TMenuItem);
+var
+  i: integer;
+begin
+  for i := 0 to mi.Count-1 do
+    if mi.Items[i].Caption <> '-' then begin
+      TTntMenuItem(mi.Items[i]).Caption := TranslateWideW(mi.Items[i].Caption{TRANSLATE-IGNORE});
+        if mi.Items[i].Count > 0 then TranslateMenu(mi.Items[i]);
+    end;
+end;
+
+procedure TranslateToolbar(const tb: TTntToolBar);
+var
+  i: integer;
+begin
+  for i := 0 to tb.ButtonCount-1 do
+    if tb.Buttons[i].Style <> tbsSeparator then
+      TTntToolBar(tb.Buttons[i]).Hint := TranslateWideW(tb.Buttons[i].Hint{TRANSLATE-IGNORE});
+end;
+
 
 end.
