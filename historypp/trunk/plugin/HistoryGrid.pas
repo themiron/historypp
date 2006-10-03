@@ -1139,20 +1139,17 @@ end;
 
 procedure THistoryGrid.SetProcessInline(const Value: Boolean);
 var
-  i,ss,sl: Integer;
-  time1,time2: Cardinal;
+  cr: TCharRange;
 begin
   if FProcessInline = Value then exit;
   FProcessInline := Value;
   if State = gsInline then begin
     FRichInline.Lines.BeginUpdate;
-    //ss := FRichInline.SelStart;
-    //sl := FRichInline.SelLength;
     ApplyItemToRich(Selected, FRichInline);
-    //FRichInline.SelStart := ss;
-    //FRichInline.SelLength := sl;
-    FRichInline.SelStart := 0;
-    FRichInline.SelLength := 0;
+    cr.cpMin := 0;
+    cr.cpMax := 0;
+    FRichInline.Perform(EM_EXSETSEL,0,Longint(@cr));
+    FRichInline.Perform(EM_SCROLLCARET, 0, 0);
     FRichInline.Lines.EndUpdate;
   end;
   if Assigned(FOnProcessInlineChange) then
@@ -2048,6 +2045,9 @@ var
   SelectMove: Boolean;
 begin
   CheckBusy;
+  // to make mouse out from the inline richedit without cancelinline  
+  //if FState = gsInline then exit;
+
   if Count = 0 then exit;
 
   // do we need to process control here?
@@ -4395,20 +4395,22 @@ procedure THistoryGrid.EditInline(Item: Integer);
 var
   margins: DWord;
   r: TRect;
+  cr: TCharRange;
 begin
-  if State = gsInline then
-    CancelInline;
+  if State = gsInline then CancelInline;
   MakeVisible(Item);
   r := GetRichEditRect(Item);
   if IsRectEmpty(r) then exit;
+
   margins := SendMessage(FRichInline.Handle,EM_GETMARGINS,0,0);
-  Dec(r.left,LoWord(margins));
-  Inc(r.right,HiWord(margins));
+  //Dec(r.left,LoWord(margins));
+  //Inc(r.right,HiWord(margins));}
+
   // dunno why, but I have to fix it by 1 pixel
   // or positioning will be not perfectly correct
   // who knows why? i want to know! I already make corrections of margins!
-  Dec(r.left,1);
-  Inc(r.right,1);
+  //Dec(r.left,1);
+  //Inc(r.right,1);
 
   FRichInline.Top := r.top;
   FRichInline.Left := r.left - LoWord(margins);
@@ -4429,8 +4431,12 @@ begin
   //State := gsInline;
   State := gsInline;
   ApplyItemToRich(Item, FRichInline);
-  FRichInline.SelStart := 0;
-  FRichInline.SelLength := 0;
+
+  cr.cpMin := 0;
+  cr.cpMax := 0;
+  FRichInline.Perform(EM_EXSETSEL,0,Longint(@cr));
+  FRichInline.Perform(EM_SCROLLCARET, 0, 0);
+
   FRichInline.Show;
   State := gsIdle;
   FRichInline.SetFocus;
@@ -4557,15 +4563,14 @@ end;
 
 procedure THistoryGrid.OnInlineCopyAllClick(Sender: TObject);
 var
-  ss,sl: integer;
+  cr: TCharRange;
 begin
   FRichInline.Lines.BeginUpdate;
-  ss := FRichInline.SelStart;
-  sl := FRichInline.SelLength;
+  FRichInline.Perform(EM_EXGETSEL,0,Longint(@cr));
   FRichInline.SelectAll;
   FRichInline.CopyToClipboard;
-  FRichInline.SelStart := ss;
-  FRichInline.SelLength := sl;
+  FRichInline.Perform(EM_EXSETSEL,0,Longint(@cr));
+  FRichInline.Perform(EM_SCROLLCARET, 0, 0);
   FRichInline.Lines.EndUpdate;
 end;
 
