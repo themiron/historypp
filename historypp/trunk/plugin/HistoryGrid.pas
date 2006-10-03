@@ -4393,7 +4393,6 @@ end;
 
 procedure THistoryGrid.EditInline(Item: Integer);
 var
-  margins: DWord;
   r: TRect;
   cr: TCharRange;
 begin
@@ -4402,10 +4401,6 @@ begin
   r := GetRichEditRect(Item);
   if IsRectEmpty(r) then exit;
 
-  margins := SendMessage(FRichInline.Handle,EM_GETMARGINS,0,0);
-  //Dec(r.left,LoWord(margins));
-  //Inc(r.right,HiWord(margins));}
-
   // dunno why, but I have to fix it by 1 pixel
   // or positioning will be not perfectly correct
   // who knows why? i want to know! I already make corrections of margins!
@@ -4413,11 +4408,9 @@ begin
   //Inc(r.right,1);
 
   FRichInline.Top := r.top;
-  FRichInline.Left := r.left - LoWord(margins);
+  FRichInline.Left := r.left;
   FRichInline.Width := r.right - r.left;
   FRichInline.Height := r.Bottom - r.top;
-  //FRichInline.Left := FRichInline.Left - LoWord(margins);
-  //FRichInline.Width := FRichInline.Width + LoWord(margins) + HiWord(margins);
 
   // below is not optimal way to show rich edit
   // (ie me better show it after applying item),
