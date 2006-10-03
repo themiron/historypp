@@ -36,8 +36,12 @@ type
     Data: PString;
   end;
 
-function GetRichRTF(RichEditHandle: THandle; var RTFStream: String; SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean): Integer;
-function SetRichRTF(RichEditHandle: THandle; RTFStream: String; SelectionOnly, PlainText, PlainRTF: Boolean): Integer;
+function GetRichRTF(RichEditHandle: THandle; var RTFStream: String;
+                    SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean;
+                    UseCodepage: Cardinal = 0): Integer;
+function SetRichRTF(RichEditHandle: THandle; RTFStream: String;
+                    SelectionOnly, PlainText, PlainRTF: Boolean;
+                    UseCodepage: Cardinal = 0): Integer;
 function FormatTextUnicodeRTF(Text: WideString): String;
 
 implementation
@@ -73,14 +77,16 @@ begin
   Result := 0;
 end;
 
-function GetRichRTF(RichEditHandle: THandle; var RTFStream: String; SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean): Integer;
+function GetRichRTF(RichEditHandle: THandle; var RTFStream: String;
+                    SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean;
+                    UseCodepage: Cardinal = 0): Integer;
 var
   es: TEditStream;
   ts: TTextStream;
   format: Longint;
 begin
-  //format := SF_USECODEPAGE or (CP_UTF8 shl 16)
-  format := 0;
+  if UseCodepage = 0 then format := 0
+                     else format := SF_USECODEPAGE or (UseCodepage shl 16);
   if SelectionOnly then format := format or SFF_SELECTION;
   if PlainRTF then format := format or SFF_PLAINRTF;
   if PlainText then begin
@@ -100,14 +106,16 @@ begin
   Result := es.dwError;
 end;
 
-function SetRichRTF(RichEditHandle: THandle; RTFStream: String; SelectionOnly, PlainText, PlainRTF: Boolean): Integer;
+function SetRichRTF(RichEditHandle: THandle; RTFStream: String;
+                    SelectionOnly, PlainText, PlainRTF: Boolean;
+                    UseCodepage: Cardinal = 0): Integer;
 var
   es: TEditStream;
   ts: TTextStream;
   format: Longint;
 begin
-  //format := SF_USECODEPAGE or (CP_UTF8 shl 16)
-  format := 0;
+  if UseCodepage = 0 then format := 0
+                     else format := SF_USECODEPAGE or (UseCodepage shl 16);
   if SelectionOnly then format := format or SFF_SELECTION;
   if PlainRTF then format := format or SFF_PLAINRTF;
   if PlainText then format := format or SF_TEXT
