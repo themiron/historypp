@@ -118,6 +118,7 @@ begin
   Grid.OnKillFocus := GridKillFocus;
   Grid.OnDblClick := GridDblClick;
   Grid.Options := GridOptions;
+  TranslateMenu(Grid.InlineRichEdit.PopupMenu.Items);
   GridLocked := True;
   Grid.BeginUpdate;
 end;
