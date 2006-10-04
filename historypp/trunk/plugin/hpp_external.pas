@@ -2,10 +2,8 @@ unit hpp_external;
 
 interface
 
-{$DEFINE _IMITATE_IEVIEW}
-
 uses
-  Windows, HistoryGrid, m_globaldefs, m_api;
+  Windows, HistoryGrid, m_globaldefs, m_api, hpp_global, hpp_database;
 
 type
 
@@ -63,23 +61,23 @@ const
   IEEF_NO_SCROLLING = 4; // do not scroll logs to bottom
 
 const
-{$IFDEF _IMITATE_IEVIEW}
+
   MS_HPP_IE_WINDOW = 'IEVIEW/NewWindow';
   MS_HPP_IE_EVENT	 = 'IEVIEW/Event';
   MS_HPP_IE_UTILS  = 'IEVIEW/Utils';
   MS_HPP_IE_OPTIONSCHANGED = 'IEVIEW/OptionsChanged';
   MS_HPP_IE_NOTIFICATION   = 'IEVIEW/Notification';
-{$ELSE}
-  MS_HPP_IE_WINDOW = 'History++/IEVIEW/NewWindow';
-  MS_HPP_IE_EVENT	 = 'History++/IEVIEW/Event';
-  MS_HPP_IE_UTILS  = 'History++/IEVIEW/Utils';
-  MS_HPP_IE_OPTIONSCHANGED = 'History++/IEVIEW/OptionsChanged';
-  MS_HPP_IE_NOTIFICATION   = 'History++/IEVIEW/Notification';
-{$ENDIF}
+
+  MS_HPP_EG_WINDOW = 'History++/ExtGrid/NewWindow';
+  MS_HPP_EG_EVENT	 = 'History++/ExtGrid/Event';
+  MS_HPP_EG_UTILS  = 'History++/ExtGrid/Utils';
+  MS_HPP_EG_OPTIONSCHANGED = 'History++/ExtGrid/OptionsChanged';
+  MS_HPP_EG_NOTIFICATION   = 'History++/ExtGrid/Notification';
 
 var
   hExtWindow, hExtEvent, hExtUtils: THandle;
   hExtOptChanged, hExtNotification: THandle;
+  ImitateIEView: boolean;
 
 procedure RegisterExtGridServices;
 procedure UnregisterExtGridServices;
@@ -197,20 +195,25 @@ end;
 
 procedure RegisterExtGridServices;
 begin
-  hExtWindow := PluginLink.CreateServiceFunction(MS_HPP_IE_WINDOW,ExtWindow);
-  hExtEvent := PluginLink.CreateServiceFunction(MS_HPP_IE_EVENT,ExtEvent);
-  hExtUtils := PluginLink.CreateServiceFunction(MS_HPP_IE_UTILS,ExtUtils);
-  hExtOptChanged := PluginLink.CreateHookableEvent(MS_HPP_IE_OPTIONSCHANGED);
-  hExtNotification := PluginLink.CreateHookableEvent(MS_HPP_IE_NOTIFICATION);
+  ImitateIEView := GetDBBool(hppDBName,'IEViewAPI',false);
+  if ImitateIEView then begin
+    hExtWindow := PluginLink.CreateServiceFunction(MS_HPP_IE_WINDOW,ExtWindow);
+    hExtEvent := PluginLink.CreateServiceFunction(MS_HPP_IE_EVENT,ExtEvent);
+    hExtUtils := PluginLink.CreateServiceFunction(MS_HPP_IE_UTILS,ExtUtils);
+    hExtOptChanged := PluginLink.CreateHookableEvent(MS_HPP_IE_OPTIONSCHANGED);
+    hExtNotification := PluginLink.CreateHookableEvent(MS_HPP_IE_NOTIFICATION);
+  end;
 end;
 
 procedure UnregisterExtGridServices;
 begin
-  PluginLink.DestroyServiceFunction(hExtWindow);
-  PluginLink.DestroyServiceFunction(hExtEvent);
-  PluginLink.DestroyServiceFunction(hExtUtils);
-  PluginLink.DestroyHookableEvent(hExtOptChanged);
-  PluginLink.DestroyHookableEvent(hExtNotification);
+  if ImitateIEView then begin
+    PluginLink.DestroyServiceFunction(hExtWindow);
+    PluginLink.DestroyServiceFunction(hExtEvent);
+    PluginLink.DestroyServiceFunction(hExtUtils);
+    PluginLink.DestroyHookableEvent(hExtOptChanged);
+    PluginLink.DestroyHookableEvent(hExtNotification);
+  end;
 end;
 
 end.
