@@ -365,20 +365,16 @@ begin
   //  LoadFont(i,GridOptions.ItemOptions[i-3].textFont);
   //  GridOptions.ItemOptions[i-3].textColor := LoadColorDB(i);
   //end;
+
   // load others
   GridOptions.ShowIcons := GetDBBool(hppDBName,'ShowIcons',True);
-
-  // we have no per-proto rtl setup ui, use global instead
-  GridOptions.RTLEnabled := GetContactRTLMode(0,'');
-
+  GridOptions.RTLEnabled := GetContactRTLMode(0,'');  // we have no per-proto rtl setup ui, use global instead
+  GridOptions.OpenDetailsMode := GetDBBool(hppDBName,'OpenDetailsMode',False);
   GridOptions.SmileysEnabled := GetDBBool(hppDBName,'Smileys',SmileyAddEnabled);
   GridOptions.BBCodesEnabled := GetDBBool(hppDBName,'BBCodes',True);
   GridOptions.MathModuleEnabled := GetDBBool(hppDBName,'MathModule',MathModuleEnabled);
+  GridOptions.RawRTFEnabled := GetDBBool(hppDBName,'RawRTF',True);
 
-  GridOptions.OpenDetailsMode := GetDBBool(hppDBName,'OpenDetailsMode',False);
-
-  //GridOptions.ClipCopyFormat := DEFFORMAT_CLIPCOPY;
-  //GridOptions.ClipCopyTextFormat := DEFFORMAT_CLIPCOPYTEXT;
   GridOptions.ClipCopyFormat := GetDBWideStr(hppDBName,'FormatCopy',DEFFORMAT_CLIPCOPY);
   GridOptions.ClipCopyTextFormat := GetDBWideStr(hppDBName,'FormatCopyText',DEFFORMAT_CLIPCOPYTEXT);
   GridOptions.ReplyQuotedFormat := GetDBWideStr(hppDBName,'FormatReplyQuoted',DEFFORMAT_REPLYQUOTED);
@@ -393,12 +389,14 @@ begin
   GridOptions.StartChange;
   try
   WriteDBBool(hppDBName,'ShowIcons',GridOptions.ShowIcons);
-  // we have no per-proto rtl setup ui, use global instead
   WriteDBBool(hppDBName,'RTL',GridOptions.RTLEnabled);
-  WriteDBBool(hppDBName,'Smileys',GridOptions.SmileysEnabled);
-  WriteDBBool(hppDBName,'BBCodes',GridOptions.BBCodesEnabled);
-  WriteDBBool(hppDBName,'MathModule',GridOptions.MathModuleEnabled);
   WriteDBBool(hppDBName,'OpenDetailsMode',GridOptions.OpenDetailsMode);
+
+  WriteDBBool(hppDBName,'BBCodes',GridOptions.BBCodesEnabled);
+  WriteDBBool(hppDBName,'Smileys',GridOptions.SmileysEnabled);
+  WriteDBBool(hppDBName,'MathModule',GridOptions.MathModuleEnabled);
+  WriteDBBool(hppDBName,'RawRTF',GridOptions.RawRTFEnabled);
+
   //WriteDBWideStr(hppDBName,'FormatCopy',GridOptions.ClipCopyFormat);
   //WriteDBWideStr(hppDBName,'FormatCopyText',GridOptions.ClipCopyTextFormat);
   finally

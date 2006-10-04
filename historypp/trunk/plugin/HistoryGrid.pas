@@ -156,9 +156,11 @@ type
     FOnShowIcons: TOnShowIcons;
 
     FRTLEnabled: Boolean;
-    FSmileysEnabled: Boolean;
     FBBCodesEnabled: Boolean;
+    FSmileysEnabled: Boolean;
     FMathModuleEnabled: Boolean;
+    FRawRTFEnabled: Boolean;
+
     FClipCopyTextFormat: WideString;
     FClipCopyFormat: WideString;
     FReplyQuotedFormat: WideString;
@@ -183,9 +185,10 @@ type
     procedure SetShowIcons(const Value: Boolean);
 
     procedure SetRTLEnabled(const Value: Boolean);
-    procedure SetSmileysEnabled(const Value: Boolean);
     procedure SetBBCodesEnabled(const Value: Boolean);
+    procedure SetSmileysEnabled(const Value: Boolean);
     procedure SetMathModuleEnabled(const Value: Boolean);
+    procedure SetRawRTFEnabled(const Value: Boolean);
 
     function GetLocked: Boolean;
   protected
@@ -230,9 +233,10 @@ type
 
     property ShowIcons: Boolean read FShowIcons write SetShowIcons;
     property RTLEnabled: Boolean read FRTLEnabled write SetRTLEnabled;
-    property SmileysEnabled: Boolean read FSmileysEnabled write SetSmileysEnabled;
     property BBCodesEnabled: Boolean read FBBCodesEnabled write SetBBCodesEnabled;
+    property SmileysEnabled: Boolean read FSmileysEnabled write SetSmileysEnabled;
     property MathModuleEnabled: Boolean read FMathModuleEnabled write SetMathModuleEnabled;
+    property RawRTFEnabled: Boolean read FRawRTFEnabled write SetRawRTFEnabled;
 
     property OpenDetailsMode: Boolean read FOpenDetailsMode write FOpenDetailsMode;
   end;
@@ -1858,7 +1862,8 @@ var
   textColor,backColor: TColor;
   RichItem: PRichItem;
   RTF,Text: String;
-  doColorBBCodes: Boolean;
+  UseTextFormatting,
+  NoDefaultColors: Boolean;
   cf: CharFormat2;
 begin
   if RichEdit = nil then begin
@@ -1874,18 +1879,20 @@ begin
   if (IsSelected(Item)) and (not (RichEdit = FRichInline)) and UseSelection then begin
     textColor := ColorToRGB(Options.ColorSelectedText);
     backColor := ColorToRGB(Options.ColorSelected);
-    doColorBBCodes := false;
+    NoDefaultColors := false;
   end else begin
     textColor := ColorToRGB(textFont.Color);
     backColor := ColorToRGB(backColor);
-    doColorBBCodes := true;
+    NoDefaultColors := true;
   end;
+
+  UseTextFormatting := not (((State = gsInline) or ForceInline) and not ProcessInline);
 
   //RichEdit.Clear;
   //RichEdit.Perform(WM_SETTEXT,0,0);
   RichEdit.Perform(EM_SETBKGNDCOLOR,0,backColor);
   SetRichRTL(GetItemRTL(Item),RichEdit);
-  if not (((State = gsInline) or ForceInline) and not ProcessInline) and isRTF(FItems[Item].Text) then begin
+  if Options.RawRTFEnabled and UseTextFormatting and isRTF(FItems[Item].Text) then begin
     // stored text seems to be RTF
     RTF := WideToAnsiString(FItems[Item].Text,FItems[Item].Codepage)+#0
   end else begin
@@ -1895,7 +1902,7 @@ begin
     RTF := RTF + Format('\red%u\green%u\blue%u;',[textColor and $FF,(textColor shr 8) and $FF,(textColor shr 16) and $FF]);
     RTF := RTF + Format('\red%u\green%u\blue%u;',[backColor and $FF,(backColor shr 8) and $FF,(backColor shr 16) and $FF]);
     // add color table for BBCodes
-    if Options.BBCodesEnabled and doColorBBCodes then RTF := RTF + rtf_ctable_text;
+    if Options.BBCodesEnabled and NoDefaultColors then RTF := RTF + rtf_ctable_text;
     RTF := RTF + '}\li30\ri30\fi0';
     if GetItemRTL(Item) then RTF := RTF + '\rtlpar' else RTF := RTF + '\ltrpar';
     //RTF := RTF + Format('\f0\highlight1\cf0\b%d\i%d\ul%d\strike%d\fs%u',
@@ -1907,21 +1914,22 @@ begin
        Round(abs(textFont.Height)*FontSizeMult)]);
     if GetItemRTL(Item) then RTF := RTF + '\ltrch\rtlch' else RTF := RTF + '\rtlch\ltrch';
     Text := FormatTextUnicodeRTF(FItems[Item].Text);
-    if Options.BBCodesEnabled and not (((State = gsInline) or ForceInline) and not ProcessInline) then begin
-      Text := DoSupportBBCodesRTF(Text,2,doColorBBCodes);
+    if Options.BBCodesEnabled and UseTextFormatting then begin
+      Text := DoSupportBBCodesRTF(Text,2,NoDefaultColors);
     end;
     RTF := RTF + Text + '}'+#0;
   end;
 
   SetRichRTF(RichEdit.Handle,RTF,False,False,True);
 
-  if not (((State = gsInline) or ForceInline) and not ProcessInline) and Assigned(FOnProcessRichText) then begin
+  if UseTextFormatting and Assigned(FOnProcessRichText) then begin
     try
       FOnProcessRichText(Self,RichEdit.Handle,Item);
     except
     end;
     // do not allow changed back and color of selection
-    if isSelected(item) and (State <> gsInline) and UseSelection then begin
+    //if isSelected(item) and (State <> gsInline) and UseSelection then begin
+    if not NoDefaultColors then begin
       ZeroMemory(@cf,SizeOf(cf));
       cf.cbSize := SizeOf(cf);
       cf.dwMask := CFM_COLOR;
@@ -4885,18 +4893,6 @@ begin
   end;
 end;
 
-procedure TGridOptions.SetSmileysEnabled(const Value: Boolean);
-begin
-  if FSmileysEnabled = Value then exit;
-  FSmileysEnabled := Value;
-  Self.StartChange;
-  try
-    DoChange;
-  finally
-    Self.EndChange;
-  end;
-end;
-
 procedure TGridOptions.SetBBCodesEnabled(const Value: Boolean);
 begin
   if FBBCodesEnabled = Value then exit;
@@ -4909,10 +4905,34 @@ begin
   end;
 end;
 
+procedure TGridOptions.SetSmileysEnabled(const Value: Boolean);
+begin
+  if FSmileysEnabled = Value then exit;
+  FSmileysEnabled := Value;
+  Self.StartChange;
+  try
+    DoChange;
+  finally
+    Self.EndChange;
+  end;
+end;
+
 procedure TGridOptions.SetMathModuleEnabled(const Value: Boolean);
 begin
   if FMathModuleEnabled = Value then exit;
   FMathModuleEnabled := Value;
+  Self.StartChange;
+  try
+    DoChange;
+  finally
+    Self.EndChange;
+  end;
+end;
+
+procedure TGridOptions.SetRawRTFEnabled(const Value: Boolean);
+begin
+  if FRawRTFEnabled = Value then exit;
+  FRawRTFEnabled := Value;
   Self.StartChange;
   try
     DoChange;
