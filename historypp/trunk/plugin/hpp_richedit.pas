@@ -38,10 +38,13 @@ type
 
 function GetRichRTF(RichEditHandle: THandle; var RTFStream: String;
                     SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean;
-                    Unicode: boolean = false): Integer;
+                    Unicode: Boolean = false): Integer;
 function SetRichRTF(RichEditHandle: THandle; RTFStream: String;
-                    SelectionOnly, PlainText, PlainRTF: Boolean): Integer;
+                    SelectionOnly, PlainText, PlainRTF: Boolean;
+                    Unicode: Boolean = false): Integer;
 function FormatTextUnicodeRTF(Text: WideString): String;
+function GetRichWideString(RichEditHandle: THandle; SelectionOnly: Boolean = false): WideString;
+function RtfToWideString(RichEditHandle: THandle; RTFStream: WideString): WideString;
 
 implementation
 
@@ -77,15 +80,14 @@ begin
 end;
 
 function GetRichRTF(RichEditHandle: THandle; var RTFStream: String;
-                    SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean;
-                    Unicode: boolean = false): Integer;
+                    SelectionOnly, PlainText, NoObjects, PlainRTF, Unicode: Boolean): Integer;
 var
   es: TEditStream;
   ts: TTextStream;
   format: Longint;
 begin
-  if Unicode then format := SF_UNICODE
-             else format := 0;
+  format := 0;
+  if Unicode then format := format or SF_UNICODE;
   if SelectionOnly then format := format or SFF_SELECTION;
   if PlainRTF then format := format or SFF_PLAINRTF;
   if PlainText then begin
@@ -106,13 +108,14 @@ begin
 end;
 
 function SetRichRTF(RichEditHandle: THandle; RTFStream: AnsiString;
-                    SelectionOnly, PlainText, PlainRTF: Boolean): Integer;
+                    SelectionOnly, PlainText, PlainRTF, Unicode: Boolean): Integer;
 var
   es: TEditStream;
   ts: TTextStream;
   format: Longint;
 begin
   format := 0;
+  if Unicode then format := format or SF_UNICODE;
   if SelectionOnly then format := format or SFF_SELECTION;
   if PlainRTF then format := format or SFF_PLAINRTF;
   if PlainText then format := format or SF_TEXT
@@ -145,6 +148,20 @@ begin
     end;
   end;
   Result := Result + '}';
+end;
+
+function GetRichWideString(RichEditHandle: THandle; SelectionOnly: Boolean = false): WideString;
+var
+  buffer: AnsiString;
+begin
+  GetRichRTF(RichEditHandle,buffer,SelectionOnly,True,False,True,True);
+  Result := WideString(PWideChar(@buffer[1]));
+end;
+
+function RtfToWideString(RichEditHandle: THandle; RTFStream: WideString): WideString;
+begin
+  SetRichRTF(RichEditHandle,RTFStream,false,false,true,false);
+  Result := GetRichWideString(RichEditHandle);
 end;
 
 end.

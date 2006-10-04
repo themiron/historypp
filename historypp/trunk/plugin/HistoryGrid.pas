@@ -2688,6 +2688,8 @@ begin
     end
     else begin
       mes := FItems[Item].Text;
+      if Options.RawRTFEnabled and IsRTF(mes) then
+        mes := RtfToWideString(FRich.Handle,mes);
       if mtIncoming in FItems[Item].MessageType then begin
         from_nick := ContactName;
         to_nick := ProfileName;
@@ -5120,7 +5122,7 @@ var
   rc: TRect;
   BkColor: TCOLORREF;
   Range: TFormatRange;
-  str: String;
+  //str: String;
 begin
   {$IFDEF DELPHI_9_UP}
   Item^.Bitmap.SetSize(Item^.Rich.Width,Item^.Height);
