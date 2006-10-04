@@ -8,7 +8,7 @@ uses
   commctrl,
   m_api,
   m_globaldefs,
-  hpp_global, hpp_options, hpp_services;
+  hpp_global, hpp_options, hpp_services, hpp_external;
 
 const
   IDD_OPT_HISTORYPP   = 207; // dialog id
@@ -16,11 +16,13 @@ const
   IDC_SHOWEVENTICONS  = 101; // "Show event icons" checkbox
   IDC_RECENTONTOP     = 102; // "Recent events on top" checkbox
   IDC_RTLDEFAULT      = 103; // "RTL by default" checkbox
-  IDC_OPENDETAILS     = 104; // "Open event details by default" checkbox
-  ID_PROCESSING_GROUP = 200;
-  IDC_BBCODE          = 201; // "Disable BBCode" checkbox
-  IDC_SMILEY          = 202; // "Disable SmileyAdd support" checkbox
-  IDC_MATH            = 203; // "Disable MathModule support" checkbox
+  IDC_OPENDETAILS     = 104; // "Open event details by Enter" checkbox
+  IDC_IEVIEWAPI       = 105; // "Imitate IEView API" checkbox
+  ID_FORMATTING_GROUP = 200;
+  IDC_BBCODE          = 201; // "Enable BBCodes" checkbox
+  IDC_SMILEY          = 202; // "Enable SmileyAdd support" checkbox
+  IDC_MATH            = 203; // "Enable MathModule support" checkbox
+  IDC_RAWRTF          = 204; // "Enable raw RTF support" checkbox
   ID_LOOK_GROUP       = 300;
   ID_LOOK_FONT1       = 301; // "To change fonts ..."
   ID_LOOK_FONT2       = 302;
@@ -31,6 +33,7 @@ const
   ID_LOOK_ICO_ICON    = 323;
   ID_LOOK_ICO_LINK    = 330; // "Download IcoLib plugin"
   ID_LOOK_INFO_LINK   = 340; // "More info on why ..."
+  ID_NEED_RESTART     = 999; // "Please restart Miranda IM..."
 
 const
   URL_FONTSERVICE = 'http://addons.miranda-im.org/details.php?action=viewfile&id=2065';
@@ -79,22 +82,24 @@ begin
   Result := True;
 
   if GetChecked(IDC_SHOWEVENTICONS) <> GridOptions.ShowIcons then exit;
-  if GetChecked(IDC_RECENTONTOP) <> (GetDBInt(hppDBName,'SortOrder',0) <> 0) then exit;
+  if GetChecked(IDC_RECENTONTOP) <> GetDBBool(hppDBName,'SortOrder',false) then exit;
   if GetChecked(IDC_RTLDEFAULT) <> GridOptions.RTLEnabled then exit;
   if GetChecked(IDC_OPENDETAILS) <> GridOptions.OpenDetailsMode then exit;
+  if GetChecked(IDC_IEVIEWAPI) <> GetDBBool(hppDBName,'IEViewAPI',false) then exit;
 
   if GetChecked(IDC_BBCODE) <> GridOptions.BBCodesEnabled then exit;
   if SmileyAddEnabled then
     if GetChecked(IDC_SMILEY) <> GridOptions.SmileysEnabled then exit;
   if MathModuleEnabled then
     if GetChecked(IDC_MATH) <> GridOptions.MathModuleEnabled then exit;
+  if GetChecked(IDC_RAWRTF) <> GridOptions.RawRTFEnabled then exit;
 
   Result := False;
 end;
 
 procedure SaveChangedOptions;
 var
-  OnTop: Boolean;
+  Checked: Boolean;
   i: Integer;
 begin
   GridOptions.StartChange;
@@ -109,20 +114,30 @@ begin
       GridOptions.SmileysEnabled := GetChecked(IDC_SMILEY);
     if MathModuleEnabled then
       GridOptions.MathModuleEnabled := GetChecked(IDC_MATH);
+    GridOptions.RawRTFEnabled := GetChecked(IDC_RAWRTF);
+
     SaveGridOptions;
   finally
     GridOptions.EndChange;
   end;
 
-  OnTop := GetChecked(IDC_RECENTONTOP);
-  if OnTop <> (GetDBInt(hppDBName,'SortOrder',0) <> 0) then begin
-    WriteDBInt(hppDBName,'SortOrder',Integer(OnTop));
+  Checked := GetChecked(IDC_RECENTONTOP);
+  if Checked <> (GetDBBool(hppDBName,'SortOrder',false) <> false) then begin
+    WriteDBBool(hppDBName,'SortOrder',Checked);
     for i := 0 to HstWindowList.Count - 1 do begin
-      THistoryFrm(HstWindowList[i]).SetRecentEventsPosition(OnTop);
+      THistoryFrm(HstWindowList[i]).SetRecentEventsPosition(Checked);
     end;
     if Assigned(fmGlobalSearch) then
-      fmGlobalSearch.SetRecentEventsPosition(OnTop);
+      fmGlobalSearch.SetRecentEventsPosition(Checked);
   end;
+
+  Checked := GetChecked(IDC_IEVIEWAPI);
+  if Checked <> (GetDBBool(hppDBName,'IEViewAPI',false) <> false) then
+    WriteDBBool(hppDBName,'IEViewAPI',Checked);
+  if Checked <> ImitateIEView then
+    ShowWindow(GetDlgItem(hDlg,ID_NEED_RESTART),SW_SHOW)
+  else
+    ShowWindow(GetDlgItem(hDlg,ID_NEED_RESTART),SW_HIDE);
 end;
 
 // WM_INITDIALOG message handler
@@ -145,9 +160,10 @@ begin
   end;
 
   SetChecked(IDC_SHOWEVENTICONS,GridOptions.ShowIcons);
-  SetChecked(IDC_RECENTONTOP,GetDBInt(hppDBName,'SortOrder',0) <> 0);
+  SetChecked(IDC_RECENTONTOP,GetDBBool(hppDBName,'SortOrder',false));
   SetChecked(IDC_RTLDEFAULT,GridOptions.RTLEnabled);
   SetChecked(IDC_OPENDETAILS,GridOptions.OpenDetailsMode);
+  SetChecked(IDC_IEVIEWAPI,GetDBBool(hppDBName,'IEViewAPI',false));
 
   SetChecked(IDC_BBCODE,GridOptions.BBCodesEnabled);
   EnableWindow(GetDlgItem(hDlg,IDC_SMILEY),SmileyAddEnabled);
@@ -156,6 +172,7 @@ begin
   EnableWindow(GetDlgItem(hDlg,IDC_MATH),MathModuleEnabled);
   if MathModuleEnabled then
     SetChecked(IDC_MATH,GridOptions.MathModuleEnabled);
+  SetChecked(IDC_RAWRTF,GridOptions.RawRTFEnabled);
 
   TranslateDialogDefault(hDlg);
   Result := 0;
