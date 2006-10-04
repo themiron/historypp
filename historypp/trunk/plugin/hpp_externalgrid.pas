@@ -22,6 +22,7 @@ type
     Items: array of TExtItem;
     Grid: THistoryGrid;
     FParentWindow: HWND;
+    FSelection: AnsiString;
     function GetGridHandle: HWND;
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
@@ -150,7 +151,7 @@ begin
   Item := ReadEvent(Items[Index].hDBEvent,Items[Index].Codepage);
   Item.RTLMode := Items[Index].RTLMode;
   Item.Bookmarked := BookmarkServer[Items[Index].hContact].Bookmarked[Items[Index].hDBEvent];
-  if not Item.IsRead then begin
+  if (not Item.IsRead) and Grid.Visible then begin
     PluginLink.CallService(MS_DB_EVENT_MARKREAD,Items[Index].hContact,Items[Index].hDBEvent);
     PluginLink.CallService(MS_CLIST_REMOVEEVENT,Items[Index].hContact,Items[Index].hDBEvent);
   end;
@@ -215,28 +216,26 @@ end;
 
 function TExternalGrid.GetSelection(NoUnicode: Boolean): PChar;
 var
-  TextW: WideString;
-  TextA: AnsiString;
+  Text: WideString;
+  Source: PChar;
+  Len: integer;
 begin
   if Grid.Count = 0 then exit;
-  if Grid.State = gsInline then begin
-    if NoUnicode then begin
-      GetRichRTF(Grid.InlineRichEdit.Handle,TextA,True,True,True,False);
-      Result := PChar(TextA);
-    end else begin
-      GetRichRTF(Grid.InlineRichEdit.Handle,TextA,True,True,True,False,CP_UTF8);
-      Result := PChar(PWideChar(AnsiToWideString(TextA,CP_UTF8)));
-    end;
+  if Grid.State = gsInline then
+    Text := GetRichWideString(Grid.InlineRichEdit.Handle,True)
+  else
+  if Grid.Selected <> -1 then
+    Text := Grid.FormatSelected(Grid.Options.ClipCopyFormat)
+  else
+    Text := Grid.FormatItem(Grid.BottomItem,Grid.Options.ClipCopyFormat);
+  if NoUnicode then begin
+    FSelection := WideToAnsiString(Text,CP_ACP)+#0;
   end else begin
-    if Grid.Selected <> -1 then
-      TextW := Grid.FormatSelected(Grid.Options.ClipCopyFormat)
-    else
-      TextW := Grid.FormatItem(Grid.BottomItem,Grid.Options.ClipCopyFormat);
-    if NoUnicode then
-      Result := PChar(WideToAnsiString(TextW,CP_ACP))
-    else
-      Result := PChar(PWideChar(TextW));
+    Text := Text+#0;
+    SetLength(FSelection,Length(Text)*SizeOf(WideChar));
+    Move(Pointer(@Text[1])^,Pointer(@FSelection[1])^,Length(FSelection));
   end;
+  Result := @FSelection[1];
 end;
 
 procedure TExternalGrid.Clear;
@@ -252,7 +251,7 @@ var
 begin
   if Url= '' then exit;
   bNewWindow := 0; // no, use existing window
-  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(@Url[1])));
+  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Longint(Pointer(@Url[1])));
 end;
 
 procedure TExternalGrid.GridBookmarkClick(Sender: TObject; Item: Integer);
