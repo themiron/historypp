@@ -38,10 +38,9 @@ type
 
 function GetRichRTF(RichEditHandle: THandle; var RTFStream: String;
                     SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean;
-                    UseCodepage: Cardinal = 0): Integer;
+                    Unicode: boolean = false): Integer;
 function SetRichRTF(RichEditHandle: THandle; RTFStream: String;
-                    SelectionOnly, PlainText, PlainRTF: Boolean;
-                    UseCodepage: Cardinal = 0): Integer;
+                    SelectionOnly, PlainText, PlainRTF: Boolean): Integer;
 function FormatTextUnicodeRTF(Text: WideString): String;
 
 implementation
@@ -79,14 +78,14 @@ end;
 
 function GetRichRTF(RichEditHandle: THandle; var RTFStream: String;
                     SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean;
-                    UseCodepage: Cardinal = 0): Integer;
+                    Unicode: boolean = false): Integer;
 var
   es: TEditStream;
   ts: TTextStream;
   format: Longint;
 begin
-  if UseCodepage = 0 then format := 0
-                     else format := SF_USECODEPAGE or (UseCodepage shl 16);
+  if Unicode then format := SF_UNICODE
+             else format := 0;
   if SelectionOnly then format := format or SFF_SELECTION;
   if PlainRTF then format := format or SFF_PLAINRTF;
   if PlainText then begin
@@ -106,16 +105,14 @@ begin
   Result := es.dwError;
 end;
 
-function SetRichRTF(RichEditHandle: THandle; RTFStream: String;
-                    SelectionOnly, PlainText, PlainRTF: Boolean;
-                    UseCodepage: Cardinal = 0): Integer;
+function SetRichRTF(RichEditHandle: THandle; RTFStream: AnsiString;
+                    SelectionOnly, PlainText, PlainRTF: Boolean): Integer;
 var
   es: TEditStream;
   ts: TTextStream;
   format: Longint;
 begin
-  if UseCodepage = 0 then format := 0
-                     else format := SF_USECODEPAGE or (UseCodepage shl 16);
+  format := 0;
   if SelectionOnly then format := format or SFF_SELECTION;
   if PlainRTF then format := format or SFF_PLAINRTF;
   if PlainText then format := format or SF_TEXT
