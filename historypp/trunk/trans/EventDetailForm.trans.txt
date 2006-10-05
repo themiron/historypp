@@ -14,6 +14,6 @@ Show receiver information
 &Copy
 Copy All
 Select &All
-Toggle &Processing
+Text Formatting
 Send &Message
 &Reply Quoted
