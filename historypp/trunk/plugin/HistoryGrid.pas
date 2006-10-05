@@ -67,6 +67,14 @@ uses
   RichEdit, ShellAPI;
 
 type
+
+  TMsgFilter = record
+    nmhdr: NMHdr;
+    msg: UINT;
+    wParam: WPARAM;
+    lParam: LPARAM;
+  end;
+
   TMouseMoveKey = (mmkControl,mmkLButton,mmkMButton,mmkRButton,mmkShift);
   TMouseMoveKeys = set of TMouseMoveKey;
 
@@ -99,7 +107,7 @@ type
   TOnItemDelete = procedure(Sender: TObject; Index: Integer) of object;
   TOnState = procedure(Sender: TObject; State: TGridState) of object;
   TOnItemFilter = procedure(Sender: TObject; Index: Integer; var Show: Boolean) of object;
-  TOnChar = procedure(Sender: TObject; Char: WideChar; Shift: TShiftState) of object;
+  TOnChar = procedure(Sender: TObject; var Char: WideChar; Shift: TShiftState) of object;
   TOnRTLChange = procedure(Sender: TObject; Enabled: boolean) of object;
   TOnProcessInlineChange = procedure(Sender: TObject; Enabled: boolean) of object;
   TOnProcessRichText = procedure(Sender: TObject; Handle: THandle; Item: Integer) of object;
@@ -325,6 +333,7 @@ type
     FOnProcessRichText: TOnProcessRichText;
     FItemDelete: TOnItemDelete;
     FState: TGridState;
+    FControlID: Cardinal;
 
     FTxtNoItems: WideString;
     FTxtStartup: WideString;
@@ -368,6 +377,7 @@ type
     FShowHeaders: Boolean;
     FCodepage: Cardinal;
     FOnChar: TOnChar;
+    FOnForbiddenChar: TOnChar;
     WindowPrePainting: Boolean;
     WindowPrePainted: Boolean;
     FExpandHeaders: Boolean;
@@ -425,6 +435,8 @@ type
     procedure CMBiDiModeChanged(var Message: TMessage); message CM_BIDIMODECHANGED;
     procedure CMCtl3DChanged(var Message: TMessage); message CM_CTL3DCHANGED;
     procedure WMCommand(var Message: TWMCommand); message WM_Command;
+    procedure SetContolID(const Value: Cardinal);
+    function SendMsgFilterMessage(var Message: TMessage): Longint;
     function GetCount: Integer;
     procedure SetContact(const Value: THandle);
     procedure SetPadding(Value: Integer);
@@ -473,6 +485,7 @@ type
     DownHitTests: TGridHitTests;
     procedure CreateWindowHandle(const Params: TCreateParams); override;
     procedure CreateParams(var Params: TCreateParams); override;
+    //procedure WndProc(var Message: TMessage); override;
     property Canvas: TCanvas read FCanvas;
     procedure Paint;
     procedure PaintHeader(Index: Integer; ItemRect: TRect);
@@ -481,8 +494,8 @@ type
     procedure DrawMessage(Text: WideString);
     procedure LoadItem(Item: Integer; LoadHeight: Boolean = True; Reload: Boolean = False);
     procedure DoOptionsChanged;
-    procedure DoKeyDown(Key: Word; ShiftState: TShiftState);
-    procedure DoChar(Ch: WideChar; ShiftState: TShiftState);
+    procedure DoKeyDown(var Key: Word; ShiftState: TShiftState);
+    procedure DoChar(var Ch: WideChar; ShiftState: TShiftState);
     procedure DoLButtonDblClick(X,Y: Integer; Keys: TMouseMoveKeys);
     procedure DoLButtonDown(X,Y: Integer; Keys: TMouseMoveKeys);
     procedure DoLButtonUp(X,Y: Integer; Keys: TMouseMoveKeys);
@@ -519,7 +532,7 @@ type
     procedure MakeSelected(Value: Integer);
     procedure BeginUpdate;
     procedure EndUpdate;
-    function IsVisible(Item: Integer): Boolean;
+    function IsVisible(Item: Integer; Partially: Boolean = True): Boolean;
     procedure Delete(Item: Integer);
     procedure DeleteSelected;
     procedure DeleteAll;
@@ -560,6 +573,7 @@ type
 
     property Codepage: Cardinal read FCodepage write SetCodepage;
     property Filter: TMessageTypes read FFilter write SetFilter;
+    property ControlID: Cardinal read FControlID write SetContolID;
   published
     procedure SetRichRTL(RTL: Boolean; RichEdit: TRichEdit; ProcessTag: Boolean = true);
     function GetItemRTL(Item: Integer): Boolean;
@@ -600,6 +614,7 @@ type
     property OnKeyUp;
     property OnProcessInlineChange: TOnProcessInlineChange read FOnProcessInlineChange write FOnProcessInlineChange;
     property OnChar: TOnChar read FOnChar write FOnChar;
+    property OnForbiddenChar: TOnChar read FOnForbiddenChar write FOnForbiddenChar;
     property OnState: TOnState read FOnState write FOnState;
     property OnSelect: TOnSelect read FOnSelect write FOnSelect;
     property OnXMLData: TGetXMLData read FGetXMLData write FGetXMLData;
@@ -748,7 +763,7 @@ begin
   FpmRichInline.Items.Add(WideNewItem('Copy All',0,false,true,OnInlineCopyAllClick,0,'pmCopyAll'));
   FpmRichInline.Items.Add(WideNewItem('Select &All',TextToShortCut('Ctrl+A'),false,true,OnInlineSelectAllClick,0,'pmSelectAll'));
   FpmRichInline.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN1'));
-  FpmRichInline.Items.Add(WideNewItem('Toggle &Processing',TextToShortCut('Ctrl+P'),false,true,OnInlineToggleProcessingClick,0,'pmToggleProcessing'));
+  FpmRichInline.Items.Add(WideNewItem('Text Formatting',TextToShortCut('Ctrl+P'),false,true,OnInlineToggleProcessingClick,0,'pmProcessInline'));
   FpmRichInline.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN2'));
   FpmRichInline.Items.Add(WideNewItem('Cancel',TextToShortCut('ESC'),false,true,OnInlineCancelClick,0,'pmCancel'));
   FpmRichInline.OnPopup := OnInlinePopup;
@@ -869,6 +884,8 @@ begin
   FontSizeMult := 2*74/LogY;
 
   FBorderStyle := bsSingle;
+
+  ControlID := 0;
 end;
 
 destructor THistoryGrid.Destroy;
@@ -1148,10 +1165,9 @@ begin
   FProcessInline := Value;
   if State = gsInline then begin
     FRichInline.Lines.BeginUpdate;
+    FRichInline.Perform(EM_EXGETSEL,0,LPARAM(@cr));
     ApplyItemToRich(Selected, FRichInline);
-    cr.cpMin := 0;
-    cr.cpMax := 0;
-    FRichInline.Perform(EM_EXSETSEL,0,Longint(@cr));
+    FRichInline.Perform(EM_EXSETSEL,0,LPARAM(@cr));
     FRichInline.Perform(EM_SCROLLCARET, 0, 0);
     FRichInline.Lines.EndUpdate;
   end;
@@ -1889,7 +1905,7 @@ begin
   UseTextFormatting := not (((State = gsInline) or ForceInline) and not ProcessInline);
 
   //RichEdit.Clear;
-  //RichEdit.Perform(WM_SETTEXT,0,0);
+  RichEdit.Perform(WM_SETTEXT,0,0);
   RichEdit.Perform(EM_SETBKGNDCOLOR,0,backColor);
   SetRichRTL(GetItemRTL(Item),RichEdit);
   if Options.RawRTFEnabled and UseTextFormatting and isRTF(FItems[Item].Text) then begin
@@ -2159,160 +2175,175 @@ begin
   Tnt_DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text),r, DT_NOPREFIX or DT_CENTER);
 end;
 
+procedure THistoryGrid.SetContolID(const Value: Cardinal);
+begin
+  FControlID := Value;
+end;
+
+function THistoryGrid.SendMsgFilterMessage(var Message: TMessage): Longint;
+var
+  mf: TMsgFilter;
+  res: Longint;
+begin
+  Result := 0;
+  if FControlID <> 0 then begin
+    mf.nmhdr.hwndFrom := WindowHandle;
+    mf.nmhdr.idFrom := FControlID;
+    mf.nmhdr.code := EN_MSGFILTER;
+    mf.msg := Message.Msg;
+    mf.wParam := Message.WParam;
+    mf.lParam := Message.LParam;
+    SendMessage(ParentWindow,WM_NOTIFY,FControlID,LParam(@mf));
+  end;
+end;
+
 procedure THistoryGrid.WMKeyDown(var Message: TWMKeyDown);
 begin
-  inherited;
   DoKeyDown(Message.CharCode,KeyDataToShiftState(Message.KeyData));
+  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message));
+  inherited;
 end;
 
 procedure THistoryGrid.WMKeyUp(var Message: TWMKeyUp);
 begin
   inherited;
+  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
 end;
 
-const
-  VK_PAGEDOWN = 34;
-
-procedure THistoryGrid.DoKeyDown(Key: Word; ShiftState: TShiftState);
+procedure THistoryGrid.DoKeyDown(var Key: Word; ShiftState: TShiftState);
 var
-NextItem,i,Item: Integer;
-r: TRect;
+  NextItem,i,Item: Integer;
+  r: TRect;
 begin
-CheckBusy;
-
-if Count = 0 then exit;
-
-Item := Selected;
-if Item = -1 then begin
+  CheckBusy;
   if Count = 0 then exit;
-  if Reversed then
-    Item := GetPrev(-1)
-  else
-    Item := GetNext(-1);
+  if (ssAlt in ShiftState) or (ssCtrl in ShiftState) then exit;
+
+  Item := Selected;
+  if Item = -1 then begin
+    if Count = 0 then exit;
+    if Reversed then Item := GetPrev(-1)
+                else Item := GetNext(-1);
   end;
-{
-if (Key = VK_RETURN) and (ShiftState = [ssCtrl]) then begin
-  if SearchPattern = '' then exit;
-  DoChar(#0,[]);
-  end;
-}
-if Key = VK_HOME then begin
-  if ShiftState <> [] then begin
+
+  {if (Key = VK_RETURN) and (ShiftState = [ssCtrl]) then begin
+    if SearchPattern = '' then exit;
+    DoChar(#0,[]);
+   end;}
+
+  if Key = VK_HOME then begin
     SearchPattern := '';
+    NextItem := GetNext(GetIdx(-1));
+    if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
+      Selected := NextItem;
+    end else begin
+      MakeSelectedTo(NextItem);
+      FSelected := NextItem;
+      MakeVisible(NextItem);
+      Invalidate;
     end;
-  SearchPattern := '';
-  NextItem := GetNext(GetIdx(-1));
-  if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
-    Selected := NextItem;
-    end
-  else begin
-    MakeSelectedTo(NextItem);
-    FSelected := NextItem;
-    MakeVisible(NextItem);
-    Invalidate;
-    end;
+    AdjustScrollBar;
+    Key := 0;
   end;
 
-if Key = VK_END then begin
-  SearchPattern := '';
-  NextItem := GetPrev(GetIdx(Count));
-  if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
-    Selected := NextItem;
-    end
-  else begin
-    MakeSelectedTo(NextItem);
-    FSelected := NextItem;
-    MakeVisible(NextItem);
-    Invalidate;
-    end;
-  AdjustScrollBar;
-  end;
-
-if Key = VK_NEXT then begin //PAGE DOWN
-  SearchPattern := '';
-  NextItem := Item;
-  r := GetItemRect(NextItem);
-  NextItem := FindItemAt(0,r.top+ClientHeight);
-  if NextItem = Item then begin
-    NextItem := GetNext(NextItem);
-    if NextItem = -1 then
-      NextItem := Item;
-    end
-  else if NextItem = -1 then begin
+  if Key = VK_END then begin
+    SearchPattern := '';
     NextItem := GetPrev(GetIdx(Count));
-    if NextItem = -1 then
-      NextItem := Item;
+    if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
+      Selected := NextItem;
+    end else begin
+      MakeSelectedTo(NextItem);
+      FSelected := NextItem;
+      MakeVisible(NextItem);
+      Invalidate;
     end;
-  if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
-    Selected := NextItem;
-    end
-  else begin
-    MakeSelectedTo(NextItem);
-    FSelected := NextItem;
-    MakeVisible(NextItem);
-    Invalidate;
-    end;
-  AdjustScrollBar;
+    AdjustScrollBar;
+    Key := 0;
   end;
 
-if Key = VK_PRIOR then begin //PAGE UP
-  SearchPattern := '';
-  NextItem := Item;
-  r := GetItemRect(NextItem);
-  NextItem := FindItemAt(0,r.top-ClientHeight);
-  if NextItem <> -1 then begin
-    if FItems[NextItem].Height < ClientHeight then
+  if Key = VK_NEXT then begin //PAGE DOWN
+    SearchPattern := '';
+    NextItem := Item;
+    r := GetItemRect(NextItem);
+    NextItem := FindItemAt(0,r.top+ClientHeight);
+    if NextItem = Item then begin
       NextItem := GetNext(NextItem);
-    end
-  else
-    NextItem := GetNext(NextItem);
-  if NextItem = -1 then begin
-    if IsMatched(GetIdx(0)) then
-      NextItem := GetIdx(0)
-    else
-      NextItem := GetNext(GetIdx(0));
-  end;
-  if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
-    Selected := NextItem;
-    end
-  else begin
-    MakeSelectedTo(NextItem);
-    FSelected := NextItem;
-    MakeVisible(NextItem);
-    Invalidate;
+      if NextItem = -1 then NextItem := Item;
+    end else
+    if NextItem = -1 then begin
+      NextItem := GetPrev(GetIdx(Count));
+      if NextItem = -1 then NextItem := Item;
     end;
-  AdjustScrollBar;
+    if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
+      Selected := NextItem;
+    end else begin
+      MakeSelectedTo(NextItem);
+      FSelected := NextItem;
+      MakeVisible(NextItem);
+      Invalidate;
+    end;
+    AdjustScrollBar;
+    Key := 0;
   end;
 
-if Key = VK_UP then begin
-  SearchPattern := '';
-  if GetIdx(Item) > 0 then Item := GetPrev(Item);
-  if item = -1 then exit;
-  if (ssShift in ShiftState) and (MultiSelect) then begin
-    MakeSelectedTo(Item);
-    FSelected := Item;
-    MakeVisible(Selected);
-    Invalidate;
-    end
-  else
-    Selected := Item;
-  AdjustScrollBar;
+  if Key = VK_PRIOR then begin //PAGE UP
+    SearchPattern := '';
+    NextItem := Item;
+    r := GetItemRect(NextItem);
+    NextItem := FindItemAt(0,r.top-ClientHeight);
+    if NextItem <> -1 then begin
+      if FItems[NextItem].Height < ClientHeight then
+        NextItem := GetNext(NextItem);
+    end else
+      NextItem := GetNext(NextItem);
+    if NextItem = -1 then begin
+      if IsMatched(GetIdx(0)) then
+        NextItem := GetIdx(0)
+      else
+        NextItem := GetNext(GetIdx(0));
+    end;
+    if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
+      Selected := NextItem;
+    end else begin
+      MakeSelectedTo(NextItem);
+      FSelected := NextItem;
+      MakeVisible(NextItem);
+      Invalidate;
+    end;
+    AdjustScrollBar;
+    Key := 0;
   end;
 
-if Key = VK_DOWN then begin
-  SearchPattern := '';
-  if GetIdx(Item) < Count-1 then Item := GetNext(Item);
-  if Item = -1 then exit;
-  if (ssShift in ShiftState) and (MultiSelect) then begin
-    MakeSelectedTo(Item);
-    FSelected := Item;
-    MakeVisible(Item);
-    Invalidate;
-    end
-  else
-    Selected := Item;
-  AdjustScrollBar;
+  if Key = VK_UP then begin
+    SearchPattern := '';
+    if GetIdx(Item) > 0 then Item := GetPrev(Item);
+    if item = -1 then exit;
+    if (ssShift in ShiftState) and (MultiSelect) then begin
+      MakeSelectedTo(Item);
+      FSelected := Item;
+      MakeVisible(Selected);
+      Invalidate;
+    end else
+      Selected := Item;
+    AdjustScrollBar;
+    Key := 0;
   end;
+
+  if Key = VK_DOWN then begin
+    SearchPattern := '';
+    if GetIdx(Item) < Count-1 then Item := GetNext(Item);
+    if Item = -1 then exit;
+    if (ssShift in ShiftState) and (MultiSelect) then begin
+      MakeSelectedTo(Item);
+      FSelected := Item;
+      MakeVisible(Item);
+      Invalidate;
+    end else
+      Selected := Item;
+    AdjustScrollBar;
+    Key := 0;
+  end;
+
 end;
 
 procedure THistoryGrid.WMNotify(var Message: TWMNotify);
@@ -2358,16 +2389,23 @@ begin
   {$IFDEF RENDER_RICH}
   if Message.NotifyCode = EN_KILLFOCUS then
     if Message.Ctl = FRichInline.Handle then begin
-      if State = gsInline then CancelInline(false);
+      CheckBusy;
       Message.Result := 0;
     end;
   {$ENDIF}
 end;
 
+{procedure THistoryGrid.WndProc(var Message: TMessage);
+begin
+  OutputDebugString(PChar('WndProc: '+intToStr(Message.Msg)));
+  inherited;
+end;}
+
 procedure THistoryGrid.WMGetDlgCode(var Message: TWMGetDlgCode);
 begin
   inherited;
-  Message.Result := DLGC_WANTARROWS;
+  //Message.Result := DLGC_WANTARROWS;
+  Message.Result := DLGC_WANTALLKEYS;
 end;
 
 procedure THistoryGrid.MakeRangeSelected(FromItem, ToItem: Integer);
@@ -2437,19 +2475,11 @@ begin
   LoadItem(Item,True);
   if not IsMatched(Item) then exit;
   if Item = GetFirstVisible then begin
-    {if BottomAlign and (FItems[Item].Height > ClientHeight) then begin
-      TopItemOffset := 0;
-      ScrollGridBy(FItems[Item].Height - ClientHeight,False);}
     if FItems[Item].Height > ClientHeight then begin
-      if BottomAlign then begin
-        TopItemOffset := 0;
-        ScrollGridBy(FItems[Item].Height - ClientHeight,False);
-      end else
-      if TopItemOffset <> 0 then begin
-        ScrollGridBy(0);
-      end else begin
-        ScrollGridBy(-TopItemOffset,False);
+      if BottomAlign or (TopItemOffset > FItems[Item].Height - ClientHeight) then begin
+        TopItemOffset := FItems[Item].Height - ClientHeight;
       end;
+      ScrollGridBy(0,False);
     end else
       ScrollGridBy(-TopItemOffset,False);
     exit;
@@ -2457,7 +2487,8 @@ begin
   if GetIdx(Item) < GetIdx(GetFirstVisible) then
     SetSBPos(GetIdx(Item))
   else begin
-    if IsVisible(Item) then exit;
+    //if IsVisible(Item) then exit;
+    if IsVisible(Item,False) then exit;
     SumHeight := 0;
     First := Item;
     while (Item >= 0) and (Item < Count) do begin
@@ -2932,7 +2963,7 @@ end;
 Return is item is visible on client area
 EVEN IF IT IS *PARTIALLY* VISIBLE
 *)
-function THistoryGrid.IsVisible(Item: Integer): Boolean;
+function THistoryGrid.IsVisible(Item: Integer; Partially: Boolean = True): Boolean;
 var
   idx,SumHeight: Integer;
 begin
@@ -2942,12 +2973,12 @@ begin
   SumHeight := -TopItemOffset;
   idx := GetFirstVisible;
   LoadItem(idx,True);
-  //or we wouldn't get visible status on long events 
-  //while (SumHeight+FItems[idx].Height <= ClientHeight) and (Item <> -1) and (Item < Count) do begin
-  //while (SumHeight <= ClientHeight) and (Item <> -1) and (Item < Count) do begin
   while (SumHeight < ClientHeight) and (Item <> -1) and (Item < Count) do begin
     if Item = idx then begin
-      Result := True;
+      if Partially then
+        Result := True
+      else
+        Result := (SumHeight+FItems[idx].Height <= ClientHeight);
       break;
     end;
     Inc(SumHeight,FItems[idx].height);
@@ -3054,19 +3085,15 @@ procedure THistoryGrid.WMKillFocus(var Message: TWMKillFocus);
 var
   r: TRect;
 begin
-  //See WMCommand for details
-  //CheckBusy;
-  inherited;
-  //if (FRich = nil) or (Message.FocusedWnd <> FRich.Handle) then begin
+  // look at WMCommand for details
   if (FRichInline = nil) or (Message.FocusedWnd <> FRichInline.Handle) then begin
-    if selected <> -1 then begin
-      if IsVisible(Selected) then begin
-        r := GetItemRect(Selected);
-        InvalidateRect(Handle,@r,False);
-      end;
+    if (Selected <> -1) and IsVisible(Selected) then begin
+      r := GetItemRect(Selected);
+      InvalidateRect(Handle,@r,False);
     end;
     if Assigned(FOnKillFocus) then FOnKillFocus(Self);
   end;
+  inherited;
 end;
 
 procedure THistoryGrid.WMSetCursor(var Message: TWMSetCursor);
@@ -3116,14 +3143,13 @@ procedure THistoryGrid.WMSetFocus(var Message: TWMSetFocus);
 var
   r: TRect;
 begin
-  CheckBusy;
-  if (FRich = nil) or (Message.FocusedWnd <> FRich.Handle) then
-    if selected <> -1 then begin
-      if IsVisible(Selected) then begin
-        r := GetItemRect(Selected);
-        InvalidateRect(Handle,@r,False);
-      end;
+  if (FRichInline = nil) or (Message.FocusedWnd <> FRichInline.Handle) then begin
+    CheckBusy;
+    if (selected <> -1) and IsVisible(Selected) then begin
+      r := GetItemRect(Selected);
+      InvalidateRect(Handle,@r,False);
     end;
+  end;
   inherited;
 end;
 
@@ -3447,11 +3473,15 @@ finally
 end;
 
 procedure THistoryGrid.WMChar(var Message: TWMChar);
+var
+  Key: WideChar;
 begin
+  Key := GetWideCharFromWMCharMsg(Message);
+  DoChar(Key,KeyDataToShiftState(Message.KeyData));
+  SetWideCharForWMCharMsg(Message,Key);
+  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message));
   inherited;
-  DoChar(GetWideCharFromWMCharMsg(Message),KeyDataToShiftState(Message.KeyData));
 end;
-
 
 const
   BT_BACKSPACE = #8;
@@ -3460,71 +3490,23 @@ const
   // #27 -- ESC
   ForbiddenChars: array[0..2] of WideChar = (#9,#13,#27);
 
-procedure THistoryGrid.DoChar(Ch: WideChar; ShiftState: TShiftState);
+procedure THistoryGrid.DoChar(var Ch: WideChar; ShiftState: TShiftState);
 var
-  OldPattern: WideString;
-  Down: Boolean;
-  Sr,i: Integer;
+  ForbiddenChar: Boolean;
+  i: Integer;
 begin
   CheckBusy;
-  if (ssAlt in ShiftState) or (ssCtrl in ShiftState) then exit;
-
-//if (ch <> #0) and (ch <> BT_BACKSPACE) then
-//  if (GetTickCount - LastKeyDown) > 5000 then SearchPattern := '';
-
-  {if IsDBCSLeadByte(Byte(Ch)) then begin
-    SearchPattern := SearchPattern+Ch;
-    LastKeyDown := GetTickCount;
-    exit;
-  end;}
-
-  for i := 0 to High(ForbiddenChars) do
-    if Ch = ForbiddenChars[i] then exit;
-
-  if Assigned(FOnChar) then begin
-    FOnChar(Self,Ch,ShiftState);
+  ForbiddenChar := ((ssAlt in ShiftState) or (ssCtrl in ShiftState));
+  i := 0;
+  While (not ForbiddenChar) and (i<=High(ForbiddenChars)) do begin
+    ForbiddenChar := (Ch = ForbiddenChars[i]);
+    Inc(i);
   end;
-  exit;
-
-Down := not Reversed;
-
-if Ch = BT_BACKSPACE then begin
-  OldPattern := SearchPattern;
-  if SearchPattern <> '' then
-    SetLength(SearchPattern,Length(SearchPattern)-1)
-  else
-    exit;
-  Down := not Down;
-  end
-else begin
-  OldPattern := SearchPattern;
-  if ch <> #0 then
-    SearchPattern := SearchPattern+Ch;
+  if ForbiddenChar then begin
+    if Assigned(FOnForbiddenChar) then FOnForbiddenChar(Self,Ch,ShiftState);
+  end else begin
+    if Assigned(FOnChar) then FOnChar(Self,Ch,ShiftState);
   end;
-
-sr := Search(SearchPattern, False,False,False,False{(ch = BT_BACKSPACE) or (ch=#0)},Down);
-if sr = -1 then
-  sr := Search(SearchPattern,False,True,False,False,Down);
-
-if Assigned(FSearchFinished) then begin
-    if (sr = -1) and (SearchPattern <>'')  then
-      FSearchFinished(Self,OldPattern,(sr <> -1))
-    else
-      FSearchFinished(Self,SearchPattern,(sr <> -1));
-  end;
-if sr <> -1 then begin
-  Selected := sr;
-  end
-else begin
-
-  // beep here
-  if SearchPattern <> '' then
-    SearchPattern := OldPattern;
-  //PlaySound('Stop',0,SND_ALIAS_ID or SND_ASYNC);
-  end;
-
-
-LastKeyDown := GetTickCount;
 end;
 
 procedure THistoryGrid.AddItem;
@@ -4314,16 +4296,14 @@ var
   p: TPoint;
   RTL: Boolean;
   Sel: Boolean;
-  TimeStamp: WideString;
-  //TimestampFont: TFont;
   TimestampOffset: Integer;
 
   function IsLinkAtPoint(RichEditRect: TRect): Boolean;
   var
     p: TPoint;
-    cp: DWord;
     cr: CHARRANGE;
     cf: CHARFORMAT2;
+    cp: DWord;
     res: DWord;
     AnsiUrl: String;
   begin
@@ -4344,6 +4324,7 @@ var
 
     Result := (cf.dwEffects and CFE_LINK) > 0;
   end;
+
 begin
   Result := [];
   Item := FindItemAt(X,Y);
@@ -4405,11 +4386,9 @@ begin
       end;
     end;
     if ShowBookmarks and (Sel or FItems[Item].Bookmarked) then begin
-      TimeStamp := GetTime(FItems[Item].Time);
-      //TimestampFont := Options.FontTimeStamp;
-      //Canvas.Font := TimestampFont;
+      //TimeStamp := GetTime(FItems[Item].Time);
       Canvas.Font.Assign(Options.FontTimeStamp);
-      TimestampOffset := WideCanvasTextWidth(Canvas,TimeStamp) + Padding;
+      TimestampOffset := WideCanvasTextWidth(Canvas,GetTime(FItems[Item].Time)) + Padding;
       if RTL then
         ButtonRect := Rect(HeaderRect.Left+TimestampOffset,HeaderRect.Top,HeaderRect.Left+TimestampOffset+16,HeaderRect.Bottom)
       else
@@ -4466,7 +4445,7 @@ begin
   ApplyItemToRich(Item, FRichInline);
   cr.cpMin := 0;
   cr.cpMax := 0;
-  FRichInline.Perform(EM_EXSETSEL,0,Longint(@cr));
+  FRichInline.Perform(EM_EXSETSEL,0,LPARAM(@cr));
   FRichInline.Perform(EM_SCROLLCARET, 0, 0);
   FRichInline.Show;
   FRichInline.SetFocus;
@@ -4582,6 +4561,7 @@ end;
 procedure THistoryGrid.OnInlinePopup(Sender: TObject);
 begin
   FpmRichInline.Items[0].Enabled := (FRichInline.SelLength > 0);
+  FpmRichInline.Items[4].Checked := FProcessInline;
 end;
 
 procedure THistoryGrid.OnInlineCopyClick(Sender: TObject);
@@ -4594,11 +4574,10 @@ var
   cr: TCharRange;
 begin
   FRichInline.Lines.BeginUpdate;
-  FRichInline.Perform(EM_EXGETSEL,0,Longint(@cr));
+  FRichInline.Perform(EM_EXGETSEL,0,LPARAM(@cr));
   FRichInline.SelectAll;
   FRichInline.CopyToClipboard;
-  FRichInline.Perform(EM_EXSETSEL,0,Longint(@cr));
-  FRichInline.Perform(EM_SCROLLCARET, 0, 0);
+  FRichInline.Perform(EM_EXSETSEL,0,LPARAM(@cr));
   FRichInline.Lines.EndUpdate;
 end;
 
@@ -5279,3 +5258,11 @@ initialization
   if Screen.Cursors[crHandPoint] = 0 then
     Screen.Cursors[crHandPoint] := LoadCursor(hInstance,'CR_HAND');
 end.
+
+
+
+
+
+
+
+

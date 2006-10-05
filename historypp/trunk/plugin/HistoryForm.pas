@@ -192,9 +192,8 @@ type
     procedure sbSearchPrevClick(Sender: TObject);
     procedure sbSearchNextClick(Sender: TObject);
     procedure edSearchChange(Sender: TObject);
-    procedure hgChar(Sender: TObject; Char: WideChar; Shift: TShiftState);
-    procedure edSearchKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure hgChar(Sender: TObject; var Char: WideChar; Shift: TShiftState);
+    procedure edSearchKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure edSearchKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tbFilterClick(Sender: TObject);
     procedure pbSearchPaint(Sender: TObject);
@@ -1630,8 +1629,7 @@ begin
   BookmarkServer[hContact].Bookmarked[hDBEvent] := val;
 end;
 
-procedure THistoryFrm.hgChar(Sender: TObject; Char: WideChar;
-  Shift: TShiftState);
+procedure THistoryFrm.hgChar(Sender: TObject; var Char: WideChar; Shift: TShiftState);
 begin
   edSearch.Text := Char;
   if SearchMode = smNone then
@@ -1639,6 +1637,7 @@ begin
   edSearch.SetFocus;
   edSearch.SelStart := Length(edSearch.Text);
   edSearch.SelLength := 0;
+  Char := #0;
 end;
 
 procedure THistoryFrm.hgDblClick(Sender: TObject);
@@ -1827,6 +1826,7 @@ procedure THistoryFrm.hgKeyDown(Sender: TObject; var Key: Word;
 begin
   if (Key = VK_DELETE) and (Shift=[]) then begin
     Delete1.Click;
+    Key := 0;
     end;
   WasReturnPressed := (Key = VK_RETURN);
 end;
@@ -2977,9 +2977,11 @@ begin
 
   if (Key = VK_RETURN) and (Shift = []) then begin
     hgDblClick(hg);
+    Key := 0;
     end;
   if (Key = VK_RETURN) and (Shift = [ssCtrl]) then begin
     Details1.Click;
+    Key := 0;
     end;
 end;
 
