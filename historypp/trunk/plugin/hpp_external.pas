@@ -50,6 +50,13 @@ const
   IEW_SETPOS       = 3; // set window position and size
   IEW_SCROLLBOTTOM = 4; // scroll text to bottom
 
+  IEWM_TABSRMM  = 1;  // TabSRMM-compatible HTML builder
+  IEWM_SCRIVER  = 3;  // Scriver-compatible HTML builder
+  IEWM_MUCC     = 4;  // MUCC group chats GUI
+  IEWM_CHAT     = 5;  // chat.dll group chats GUI
+  IEWM_HISTORY  = 6;  // history viewer
+
+
   IEE_LOG_DB_EVENTS  = 1; // log specified number of DB events
   IEE_CLEAR_LOG	     = 2; // clear log
   IEE_GET_SELECTION	 = 3; // get selected text
@@ -91,6 +98,7 @@ var
   par: PIEVIEWWINDOW;
   ExtGrid: TExternalGrid;
   i,n: Integer;
+  ControlId: Cardinal;
 begin
   try
     par := PIEVIEWWINDOW(lParam);
@@ -99,9 +107,13 @@ begin
         {$IFDEF DEBUG}
         OutputDebugString('IEW_CREATE');
         {$ENDIF}
+        case par.dwMode of
+          IEWM_TABSRMM: ControlID := 1006;
+        else ControlID := 0;
+        end;
         n := Length(ExternalGrids);
         SetLength(ExternalGrids,n+1);
-        ExternalGrids[n] := TExternalGrid.Create(par.Parent);
+        ExternalGrids[n] := TExternalGrid.Create(par.Parent,ControlID);
         par.Hwnd := ExternalGrids[n].GridHandle;
       end;
       IEW_DESTROY: begin
