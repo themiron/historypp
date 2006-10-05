@@ -33,8 +33,10 @@ type
     procedure GridBookmarkClick(Sender: TObject; Item: Integer);
     procedure GridKillFocus(Sender: TObject);
     procedure GridDblClick(Sender: TObject);
+    procedure GridForbiddenChar(Sender: TObject; var Char: WideChar; Shift: TShiftState);
+    procedure GridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
   public
-    constructor Create(AParentWindow: HWND);
+    constructor Create(AParentWindow: HWND; ControlID: Cardinal = 0);
     destructor Destroy; override;
 
     procedure AddEvent(hContact, hDBEvent: THandle; Codepage: Integer; RTL: boolean);
@@ -96,10 +98,11 @@ begin
   Grid.Allocate(Length(Items));
 end;
 
-constructor TExternalGrid.Create(AParentWindow: HWND);
+constructor TExternalGrid.Create(AParentWindow: HWND; ControlID: Cardinal = 0);
 begin
   FParentWindow := AParentWindow;
   Grid := THistoryGrid.CreateParented(ParentWindow);
+  Grid.ControlID := ControlID;
   Grid.ParentCtl3D := False;
   Grid.Ctl3D := True;
   Grid.ParentColor := False;
@@ -119,6 +122,8 @@ begin
   Grid.OnBookmarkClick := GridBookmarkClick;
   Grid.OnKillFocus := GridKillFocus;
   Grid.OnDblClick := GridDblClick;
+  Grid.OnForbiddenChar := GridForbiddenChar;
+  Grid.OnKeyUp := GridKeyUp;
   Grid.Options := GridOptions;
   TranslateMenu(Grid.InlineRichEdit.PopupMenu.Items);
 end;
@@ -294,6 +299,21 @@ begin
   Grid.EditInline(Grid.Selected);
 end;
 
+procedure TExternalGrid.GridForbiddenChar(Sender: TObject; var Char: WideChar; Shift: TShiftState);
+begin
+  if Char = #27 then begin
+    PostMessage(FParentWindow,WM_CLOSE,0,0);
+    Char := #0;
+  end;
+end;
+
+procedure TExternalGrid.GridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if (Key = VK_RETURN) and (Shift = []) then begin
+    GridDblClick(Grid);
+    Key := 0;
+  end;
+end;
 
 function FindExtGridByHandle(var Handle: HWND): TExternalGrid;
 var
