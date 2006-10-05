@@ -94,8 +94,8 @@ Show receiver information
 Copy All
 [Select &All]
 Select &All
-[Toggle &Processing]
-Toggle &Processing
+[Text Formatting]
+Text Formatting
 [Send &Message]
 Send &Message
 [&Reply Quoted]
