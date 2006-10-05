@@ -388,6 +388,7 @@ begin
   CopyText.Enabled := (EText.SelLength > 0);
   SendMessage1.Enabled := (ParentForm.hContact <> 0);
   ReplyQuoted1.Enabled := (ParentForm.hContact <> 0);
+  ToogleItemProcessing.Checked := ParentForm.hg.ProcessInline;
 end;
 
 procedure TEventDetailsFrm.SelectAllClick(Sender: TObject);

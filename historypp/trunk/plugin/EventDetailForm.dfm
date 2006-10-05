@@ -241,7 +241,7 @@ object EventDetailsFrm: TEventDetailsFrm
       Caption = '-'
     end
     object ToogleItemProcessing: TTntMenuItem
-      Caption = 'Toggle &Processing'
+      Caption = 'Text Formatting'
       ShortCut = 16464
       OnClick = ToogleItemProcessingClick
     end
