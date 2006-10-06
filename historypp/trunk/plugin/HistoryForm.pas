@@ -214,6 +214,7 @@ type
     //procedure FormHide(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormDestroy(Sender: TObject);
     procedure hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
     procedure hgTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
@@ -1181,9 +1182,6 @@ begin
 end;
 
 procedure THistoryFrm.FormClose(Sender: TObject; var Action: TCloseAction);
-var
-  Flag: UINT;
-  AppSysMenu: THandle;
 begin
   try
     Action:=caFree;
@@ -1201,19 +1199,29 @@ begin
     end;
     SavePosition;
     UnhookEvents;
-    if SessThread <> nil then begin
-      // disable close button
-      AppSysMenu:=GetSystemMenu(Handle,False);
-      Flag:=MF_GRAYED;
-      EnableMenuItem(AppSysMenu,SC_CLOSE,MF_BYCOMMAND or Flag);
-      // terminate thread
-      SessThread.Terminate;
-      SetThreadPriority(SessThread.Handle, THREAD_PRIORITY_ABOVE_NORMAL);
-    end;
-    while SessThread <> nil do begin
-      Application.ProcessMessages;
-    end;
   except
+  end;
+end;
+
+procedure THistoryFrm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+var
+  Flag: UINT;
+  AppSysMenu: THandle;
+begin
+  if SessThread <> nil then begin
+    // disable close button
+    AppSysMenu:=GetSystemMenu(Handle,False);
+    Flag:=MF_GRAYED;
+    EnableMenuItem(AppSysMenu,SC_CLOSE,MF_BYCOMMAND or Flag);
+    // terminate thread
+    SessThread.Terminate;
+    sb.SimpleText := TranslateWideW('Please wait while closing the window...');
+    if SessThread <> nil then
+      SetThreadPriority(SessThread.Handle, THREAD_PRIORITY_ABOVE_NORMAL);
+  end;
+  //while (SessThread <> nil) or (hg.State <> gsIdle) do begin
+  while SessThread <> nil do begin
+    Application.ProcessMessages;
   end;
 end;
 
