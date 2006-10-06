@@ -887,8 +887,7 @@ begin
   hg.Perform(WM_SIZE,SIZE_RESTORED,MakeLParam(hg.ClientWidth,hg.ClientHeight));
 end;
 
-procedure TfmGlobalSearch.FormCloseQuery(Sender: TObject;
-  var CanClose: Boolean);
+procedure TfmGlobalSearch.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var
   Flag: UINT;
   AppSysMenu: THandle;

@@ -17,6 +17,7 @@ object HistoryFrm: THistoryFrm
   OldCreateOrder = False
   Position = poDefault
   OnClose = FormClose
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
