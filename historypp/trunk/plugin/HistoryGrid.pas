@@ -79,7 +79,7 @@ type
   TMouseMoveKeys = set of TMouseMoveKey;
 
   TSaveFormat = (sfHTML,sfXML,sfRTF,sfUnicode,sfText);
-  TGridState = (gsIdle,gsDelete,gsSearch,gsSearchItem,gsLoad,gsSave,gsInline);
+  TGridState = (gsIdle,gsDelete,gsSearch,gsSearchItem,gsLoad,gsSave,gsInline,gsClose);
 
   TXMLItem = record
     Protocol: string;
@@ -390,7 +390,6 @@ type
     FShowBottomAligned: Boolean;
 
     FontSizeMult: Double;
-
     FOnKillFocus: TOnKillFocus;
 
     FBorderStyle: TBorderStyle;
@@ -434,7 +433,7 @@ type
     procedure WMMouseWheel(var Message: TWMMouseWheel); message WM_MOUSEWHEEL;
     procedure CMBiDiModeChanged(var Message: TMessage); message CM_BIDIMODECHANGED;
     procedure CMCtl3DChanged(var Message: TMessage); message CM_CTL3DCHANGED;
-    procedure WMCommand(var Message: TWMCommand); message WM_Command;
+    procedure WMCommand(var Message: TWMCommand); message WM_COMMAND;
     procedure SetContolID(const Value: Cardinal);
     function SendMsgFilterMessage(var Message: TMessage): Longint;
     function GetCount: Integer;
@@ -573,6 +572,7 @@ type
 
     property Codepage: Cardinal read FCodepage write SetCodepage;
     property Filter: TMessageTypes read FFilter write SetFilter;
+
     property ControlID: Cardinal read FControlID write SetContolID;
   published
     procedure SetRichRTL(RTL: Boolean; RichEdit: TRichEdit; ProcessTag: Boolean = true);
@@ -890,6 +890,7 @@ end;
 
 destructor THistoryGrid.Destroy;
 begin
+  FState := gsClose;
   {$IFDEF CUST_SB}
   VertScrollBar.Free;
   {$ENDIF}
@@ -903,7 +904,7 @@ begin
     Options.DeleteGrid(Self);
   FClient.Free;
   Finalize(FItems);
-inherited;
+  inherited;
 end;
 
 function THistoryGrid.GetBookmarked(Index: Integer): Boolean;
@@ -2395,12 +2396,6 @@ begin
   {$ENDIF}
 end;
 
-{procedure THistoryGrid.WndProc(var Message: TMessage);
-begin
-  OutputDebugString(PChar('WndProc: '+intToStr(Message.Msg)));
-  inherited;
-end;}
-
 procedure THistoryGrid.WMGetDlgCode(var Message: TWMGetDlgCode);
 begin
   inherited;
@@ -3238,29 +3233,20 @@ var
   i, NextItem, Temp, PrevSelCount: Integer;
 begin
   if Item = -1 then exit;
-
   State := gsDelete;
   try
     PrevSelCount := SelCount;
-
     if Selected = Item then begin
       NextItem := -1;
-      if Reversed then
-        NextItem := GetNext(Item)
-      else
-        NextItem := GetPrev(Item);
+      if Reversed then NextItem := GetNext(Item)
+                  else NextItem := GetPrev(Item);
     end;
-
     DeleteItem(Item);
-
     if Selected = Item then begin
       FSelected := -1;
-      if Reversed then
-        Temp := GetPrev(NextItem)
-      else
-        Temp := GetNext(NextItem);
-      if Temp <> -1 then
-        NextItem := Temp;
+      if Reversed then Temp := GetPrev(NextItem)
+                  else Temp := GetNext(NextItem);
+      if Temp <> -1 then NextItem := Temp;
       if PrevSelCount = 1 then
         // rebuild FSelItems
         Selected := NextItem
@@ -3279,56 +3265,52 @@ begin
         if Item <= FSelected then Dec(FSelected);
       end;
     end;
-
     BarAdjusted := False;
     AdjustScrollBar;
-
+    Invalidate;
   finally
     State := gsIdle;
-    Invalidate;
   end;
 end;
 
 procedure THistoryGrid.DeleteAll;
 var
-cur,max: Integer;
+  cur,max: Integer;
 begin
-State := gsDelete;
-try
-BarAdjusted := False;
+  State := gsDelete;
+  try
+    BarAdjusted := False;
 
-FRichCache.ResetItems(FSelItems);
-SetLength(FSelItems,0);
-FSelected := -1;
+    FRichCache.ResetItems(FSelItems);
+    SetLength(FSelItems,0);
+    FSelected := -1;
 
-max := length(FItems)-1;
-cur := 0;
+    max := length(FItems)-1;
+    cur := 0;
 
-ShowProgress := True;
+    ShowProgress := True;
 
-while Length(FItems) <> 0 do begin
-  LoadItem(0,False);
-  DeleteItem(0);
-  DoProgress(cur,max);
-  if cur = 0 then Invalidate;
-  Inc(cur);
-  end;
+    while Length(FItems) <> 0 do begin
+      LoadItem(0,False);
+      DeleteItem(0);
+      DoProgress(cur,max);
+      if cur = 0 then Invalidate;
+      Inc(cur);
+    end;
 
-AdjustScrollBar;
-
-ShowProgress := False;
-DoProgress(0,0);
-
-Invalidate;
-Update;
-finally
-  State := gsIdle;
+    AdjustScrollBar;
+    ShowProgress := False;
+    DoProgress(0,0);
+    Invalidate;
+    Update;
+  finally
+    State := gsIdle;
   end;
 end;
 
 const
   MIN_ITEMS_TO_SHOW_PROGRESS = 10;
-  
+
 procedure THistoryGrid.DeleteSelected;
 var
   nextitem: Integer;
@@ -3382,93 +3364,90 @@ begin
       DoProgress(0,0);
     end
     else Invalidate;
+    Update;
   finally
     State := gsIdle;
-    Update;
   end;
 end;
 
 function THistoryGrid.Search(Text: WideString; CaseSensitive: Boolean; FromStart: Boolean = False;
   SearchAll: Boolean = False; FromNext: Boolean = False; Down: Boolean = True): Integer;
 var
-StartItem: Integer;
-C,Item: Integer;
+  StartItem: Integer;
+  C,Item: Integer;
 begin
-Result := -1;
+  Result := -1;
 
-if not CaseSensitive then
-  Text := Tnt_WideUpperCase(Text);
+  if not CaseSensitive then
+    Text := Tnt_WideUpperCase(Text);
 
-if Selected = -1 then begin
-  FromStart := True;
-  FromNext := False;
+  if Selected = -1 then begin
+    FromStart := True;
+    FromNext := False;
   end;
 
-if FromStart then begin
-  if Down then
-    StartItem := GetTopItem
-  else
-    StartItem := GetBottomItem;
-end
-else if FromNext then begin
-  if Down then
-    StartItem := GetNext(Selected)
-  else
-    StartItem := GetPrev(Selected);
+  if FromStart then begin
+    if Down then
+      StartItem := GetTopItem
+    else
+      StartItem := GetBottomItem;
+  end
+  else if FromNext then begin
+    if Down then
+      StartItem := GetNext(Selected)
+    else
+      StartItem := GetPrev(Selected);
 
-  if StartItem = -1 then begin
-    StartItem := Selected;
+    if StartItem = -1 then begin
+      StartItem := Selected;
     end;
   end
-else begin
-  StartItem := Selected;
-  if Selected = -1 then
-    StartItem := GetNext(-1,True);
+  else begin
+    StartItem := Selected;
+    if Selected = -1 then
+      StartItem := GetNext(-1,True);
   end;
 
-Item := StartItem;
+  Item := StartItem;
 
-C := Count;
-CheckBusy;
-State := gsSearch;
-try
-while (Item >= 0) and (Item < C) do begin
-  if CaseSensitive then begin
-    // need to strip bbcodes
-    if Pos(Text,FItems[Item].Text) <> 0 then begin
-      Result := Item;
-      break;
+  C := Count;
+  CheckBusy;
+  State := gsSearch;
+  try
+    while (Item >= 0) and (Item < C) do begin
+      if CaseSensitive then begin
+        // need to strip bbcodes
+        if Pos(Text,FItems[Item].Text) <> 0 then begin
+          Result := Item;
+          break;
+        end;
+      end
+      else begin
+        // need to strip bbcodes
+        if Pos(Text,Tnt_WideUpperCase(FItems[Item].Text)) <> 0 then begin
+          Result := Item;
+          break;
+        end;
       end;
-    end
-  else begin
-    // need to strip bbcodes
-    if Pos(Text,Tnt_WideUpperCase(FItems[Item].Text)) <> 0 then begin
-      Result := Item;
-      break;
+
+      if SearchAll then Inc(Item)
+      else
+      if Down then Item := GetNext(Item)
+              else Item := GetPrev(Item);
+
+      if item <> -1 then begin
+        // prevent GetNext from drawing progress
+        IsCanvasClean := True;
+        ShowProgress := True;
+        DoProgress(Item,C-1);
+        ShowProgress := False;
       end;
     end;
 
-  if SearchAll then
-    Inc(Item)
-  else begin
-    if Down then
-      Item := GetNext(Item)
-    else
-      Item := GetPrev(Item);
-    end;
-
-  if item <> -1 then begin
-    // prevent GetNext from drawing progress
-    IsCanvasClean := True;
-    ShowProgress := True;
-    DoProgress(Item,C-1);
     ShowProgress := False;
-    end;
-  end;
-ShowProgress := False;
-DoProgress(0,0);
-finally
-  State := gsIdle;
+    DoProgress(0,0);
+  finally
+    State := gsIdle;
   end;
 end;
 
@@ -3598,20 +3577,20 @@ var
 begin
   if Count = 0 then
     raise Exception.Create('History is empty, nothing to save');
-  fs := TFileStream.Create(FileName,fmCreate or fmShareExclusive);
   State := gsSave;
   try
+    fs := TFileStream.Create(FileName,fmCreate or fmShareExclusive);
     SaveStart(fs,SaveFormat,TxtFullLog);
     ShowProgress := True;
     for i := Count-1 downto 0 do begin
-      DoProgress(Count-1-i,Count-1);
       SaveItem(fs,i,SaveFormat);
+      DoProgress(Count-1-i,Count-1);
     end;
     SaveEnd(fs,SaveFormat);
-  finally
     fs.Free;
     ShowProgress := False;
     DoProgress(0,0);
+  finally
     State := gsIdle;
   end;
 end;
@@ -3622,9 +3601,9 @@ var
   i: Integer;
 begin
   Assert((SelCount > 1),'Save Selection is available when more than 1 item is selected');
-  fs := TFileStream.Create(FileName,fmCreate or fmShareExclusive);
   State := gsSave;
   try
+    fs := TFileStream.Create(FileName,fmCreate or fmShareExclusive);
     SaveStart(fs,SaveFormat,TxtPartLog);
     ShowProgress := True;
     if FSelItems[0] > FSelItems[High(FSelItems)] then
@@ -3638,10 +3617,10 @@ begin
         SaveItem(fs,FSelItems[i],SaveFormat);
       end;
     SaveEnd(fs,SaveFormat);
-  finally
     fs.Free;
     ShowProgress := False;
     DoProgress(0,0);
+  finally
     State := gsIdle;
   end;
 end;
@@ -4538,24 +4517,27 @@ var
 begin
   if not Assigned(OnSearchItem) then
     raise Exception.Create('You must handle OnSearchItem event to use SearchItem function');
-
   Result := -1;
-  FirstItem := GetNext(-1,True);
   State := gsSearchItem;
-  ShowProgress := True;
-  for i := 0 to Count-1 do begin
-    if IsUnknown(i) then
-      LoadItem(i,False);
-    found := False;
-    OnSearchItem(Self,i,ItemID,found);
-    if found then begin
-      Result := i;
-      break;
+  try
+    FirstItem := GetNext(-1,True);
+    State := gsSearchItem;
+    ShowProgress := True;
+    for i := 0 to Count-1 do begin
+      if IsUnknown(i) then
+        LoadItem(i,False);
+      found := False;
+      OnSearchItem(Self,i,ItemID,found);
+      if found then begin
+        Result := i;
+        break;
       end;
-    DoProgress(i+1,Count);
+      DoProgress(i+1,Count);
     end;
-  ShowProgress := False;
-  State := gsIdle;
+    ShowProgress := False;
+  finally
+    State := gsIdle;
+  end;
 end;
 
 procedure THistoryGrid.OnInlinePopup(Sender: TObject);
