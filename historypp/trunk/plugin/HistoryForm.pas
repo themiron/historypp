@@ -1208,20 +1208,19 @@ var
   Flag: UINT;
   AppSysMenu: THandle;
 begin
-  if SessThread <> nil then begin
+  CanClose := (hg.State = gsIdle);
+  if CanClose and (SessThread <> nil) then begin
     // disable close button
     AppSysMenu:=GetSystemMenu(Handle,False);
     Flag:=MF_GRAYED;
     EnableMenuItem(AppSysMenu,SC_CLOSE,MF_BYCOMMAND or Flag);
+    sb.SimpleText := TranslateWideW('Please wait while closing the window...');
     // terminate thread
     SessThread.Terminate;
-    sb.SimpleText := TranslateWideW('Please wait while closing the window...');
     if SessThread <> nil then
       SetThreadPriority(SessThread.Handle, THREAD_PRIORITY_ABOVE_NORMAL);
-  end;
-  //while (SessThread <> nil) or (hg.State <> gsIdle) do begin
-  while SessThread <> nil do begin
-    Application.ProcessMessages;
+    while SessThread <> nil do
+      Application.ProcessMessages;
   end;
 end;
 
@@ -1841,12 +1840,9 @@ end;
 
 procedure THistoryFrm.hgState(Sender: TObject; State: TGridState);
 var
-  Idle: Boolean;
   t: WideString;
 begin
-  if csDestroying in ComponentState then
-    exit;
-  Idle := (State <> gsDelete);
+  if csDestroying in ComponentState then exit;
   case State of
     gsIdle:   t := WideFormat(TranslateWideW('%.0n items in history'),[HistoryLength/1]);
     gsLoad:   t := TranslateWideW('Loading...');
@@ -1856,7 +1852,6 @@ begin
   end;
   if PasswordMode then
     t := '';
-
   sb.SimpleText := t;
 end;
 
@@ -2013,14 +2008,14 @@ end;
 
 procedure THistoryFrm.hgSelect(Sender: TObject; Item, OldItem: Integer);
 begin
-tbDelete.Enabled := (Item <> -1);
-tbSave.Enabled := (hg.SelCount > 1);
-tbCopy.Enabled := (Item <> -1);
+  tbDelete.Enabled := (Item <> -1);
+  tbSave.Enabled := (hg.SelCount > 1);
+  tbCopy.Enabled := (Item <> -1);
 
-if hg.HotString = '' then begin
-  LastHotIdx := -1;
-  // redraw status bar
-  hgState(hg,gsIdle);
+  if hg.HotString = '' then begin
+    LastHotIdx := -1;
+    // redraw status bar
+    hgState(hg,gsIdle);
   end;
 end;
 

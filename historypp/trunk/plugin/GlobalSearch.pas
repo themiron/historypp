@@ -892,12 +892,13 @@ var
   Flag: UINT;
   AppSysMenu: THandle;
 begin
-  if IsSearching then begin
+  CanClose := (hg.State = gsIdle);
+  if CanClose and IsSearching then begin
     // disable close button
     AppSysMenu:=GetSystemMenu(Handle,False);
     Flag:=MF_GRAYED;
     EnableMenuItem(AppSysMenu,SC_CLOSE,MF_BYCOMMAND or Flag);
-
+    // terminate thread
     st.Terminate;
     laProgress.Caption := TranslateWideW('Please wait while closing the window...');
     laProgress.Font.Style := [fsBold];
@@ -906,7 +907,7 @@ begin
       SetThreadPriority(st.Handle, THREAD_PRIORITY_ABOVE_NORMAL);
     while IsSearching do
       Application.ProcessMessages;
-    end;
+  end;
 end;
 
 procedure TfmGlobalSearch.hgItemData(Sender: TObject; Index: Integer;
