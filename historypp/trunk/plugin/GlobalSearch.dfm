@@ -263,6 +263,7 @@ object fmGlobalSearch: TfmGlobalSearch
         OnSelect = hgSelect
         OnRTLChange = hgRTLEnabled
         OnUrlClick = hgUrlClick
+        OnUrlPopup = hgUrlPopup
         OnBookmarkClick = hgBookmarkClick
         OnItemFilter = hgItemFilter
         OnProcessRichText = hgProcessRichText
@@ -711,6 +712,28 @@ object fmGlobalSearch: TfmGlobalSearch
       Caption = '&Reply Quoted'
       ShortCut = 16466
       OnClick = InlineReplyQuotedClick
+    end
+  end
+  object pmLink: TTntPopupMenu
+    BiDiMode = bdLeftToRight
+    ParentBiDiMode = False
+    Left = 244
+    Top = 266
+    object OpenLink: TTntMenuItem
+      Caption = 'Open &Link'
+      Default = True
+      OnClick = OpenLinkClick
+    end
+    object OpenLinkNW: TTntMenuItem
+      Caption = 'Open Link in New &Window'
+      OnClick = OpenLinkNWClick
+    end
+    object TntMenuItem2: TTntMenuItem
+      Caption = '-'
+    end
+    object CopyLink: TTntMenuItem
+      Caption = '&Copy Link'
+      OnClick = CopyLinkClick
     end
   end
 end
