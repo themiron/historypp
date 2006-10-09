@@ -257,6 +257,8 @@ object fmGlobalSearch: TfmGlobalSearch
         OnItemDelete = hgItemDelete
         OnKeyDown = hgKeyDown
         OnKeyUp = hgKeyUp
+        OnInlineKeyDown = hgInlineKeyDown
+        OnInlinePopup = hgInlinePopup
         OnState = hgState
         OnSelect = hgSelect
         OnRTLChange = hgRTLEnabled
@@ -667,6 +669,48 @@ object fmGlobalSearch: TfmGlobalSearch
     object Customize1: TTntMenuItem
       Caption = '&Customize...'
       OnClick = Customize1Click
+    end
+  end
+  object pmInline: TTntPopupMenu
+    BiDiMode = bdLeftToRight
+    ParentBiDiMode = False
+    Left = 204
+    Top = 301
+    object InlineCopy: TTntMenuItem
+      Caption = '&Copy'
+      ShortCut = 16451
+      OnClick = InlineCopyClick
+    end
+    object InlineCopyAll: TTntMenuItem
+      Caption = 'Copy &Text'
+      ShortCut = 16468
+      OnClick = InlineCopyAllClick
+    end
+    object InlineSelectAll: TTntMenuItem
+      Caption = 'Select &All'
+      ShortCut = 16449
+      OnClick = InlineSelectAllClick
+    end
+    object TntMenuItem10: TTntMenuItem
+      Caption = '-'
+    end
+    object InlineTextFormatting: TTntMenuItem
+      Caption = 'Text Formatting'
+      ShortCut = 16464
+      OnClick = InlineTextFormattingClick
+    end
+    object TntMenuItem6: TTntMenuItem
+      Caption = '-'
+    end
+    object InlineSendMessage: TTntMenuItem
+      Caption = 'Send &Message'
+      ShortCut = 16461
+      OnClick = SendMessage1Click
+    end
+    object InlineReplyQuoted: TTntMenuItem
+      Caption = '&Reply Quoted'
+      ShortCut = 16466
+      OnClick = InlineReplyQuotedClick
     end
   end
 end
