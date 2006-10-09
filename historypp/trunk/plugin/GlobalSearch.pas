@@ -145,6 +145,11 @@ type
     TntMenuItem6: TTntMenuItem;
     InlineSendMessage: TTntMenuItem;
     InlineReplyQuoted: TTntMenuItem;
+    pmLink: TTntPopupMenu;
+    OpenLink: TTntMenuItem;
+    OpenLinkNW: TTntMenuItem;
+    TntMenuItem2: TTntMenuItem;
+    CopyLink: TTntMenuItem;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -214,6 +219,10 @@ type
     procedure InlineSelectAllClick(Sender: TObject);
     procedure InlineTextFormattingClick(Sender: TObject);
     procedure InlineReplyQuotedClick(Sender: TObject);
+    procedure hgUrlPopup(Sender: TObject; Item: Integer; Url: String);
+    procedure CopyLinkClick(Sender: TObject);
+    procedure OpenLinkClick(Sender: TObject);
+    procedure OpenLinkNWClick(Sender: TObject);
   private
     UserMenu: hMenu;
     UserMenuContact: THandle;
@@ -235,6 +244,7 @@ type
     AllContacts: Integer;
     HotFilterString: WideString;
     FormState: TGridState;
+    SavedLinkUrl: String;
 
     procedure SMPrepare(var M: TMessage); message HM_STRD_PREPARE;
     procedure SMProgress(var M: TMessage); message HM_STRD_PROGRESS;
@@ -718,6 +728,7 @@ begin
 
   TranslateMenu(pmGrid.Items);
   TranslateMenu(pmInline.Items);
+  TranslateMenu(pmLink.Items);
   TranslateMenu(pmEventsFilter.Items);
 
   hg.TxtFullLog := TranslateWideW(hg.txtFullLog);
@@ -1966,6 +1977,33 @@ begin
       key:=0;
     end;
   end;
+end;
+
+procedure TfmGlobalSearch.hgUrlPopup(Sender: TObject; Item: Integer; Url: String);
+begin
+  SavedLinkUrl := Url;
+  pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
+end;
+
+procedure TfmGlobalSearch.OpenLinkClick(Sender: TObject);
+begin
+  if SavedLinkUrl = '' then exit;
+  PluginLink.CallService(MS_UTILS_OPENURL,0,Integer(Pointer(@SavedLinkUrl[1])));
+  SavedLinkUrl := '';
+end;
+
+procedure TfmGlobalSearch.OpenLinkNWClick(Sender: TObject);
+begin
+  if SavedLinkUrl = '' then exit;
+  PluginLink.CallService(MS_UTILS_OPENURL,1,Integer(Pointer(@SavedLinkUrl[1])));
+  SavedLinkUrl := '';
+end;
+
+procedure TfmGlobalSearch.CopyLinkClick(Sender: TObject);
+begin
+  if SavedLinkUrl = '' then exit;
+  CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Handle,CP_ACP);
+  SavedLinkUrl := '';
 end;
 
 initialization
