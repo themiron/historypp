@@ -460,3 +460,7 @@ User %s (%d) removed himself from your contact list: %s
 Authorization future request by %s (%d): %s
 [Broadcast message from %s (%s): %s]
 Broadcast message from %s (%s): %s
+
+;; hpp_externalgrid.trans.txt file
+
+;; Text found in ..\plugin\hpp_externalgrid.pas:

@@ -61,9 +61,16 @@ Save...
 &Customize...
 Rename &Bookmark
 Remove &Bookmark
+&Copy
+Copy &Text
+Select &All
+Text Formatting
+Send &Message
+&Reply Quoted
 ;; Text found in ..\plugin\HistoryForm.pas:
 System History
 Error
+Please wait while closing the window...
 &Edit
 &Open
 HotSearch: %s (F3 to find next)
