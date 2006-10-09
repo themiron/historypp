@@ -396,6 +396,8 @@ type
     FontSizeMult: Double;
     FOnKillFocus: TOnKillFocus;
 
+    FSavedKeyMessage: TWMKey;
+
     FBorderStyle: TBorderStyle;
     procedure SetBorderStyle(Value: TBorderStyle);
 
@@ -1699,7 +1701,7 @@ end;
 function THistoryGrid.FormatItems(ItemList: array of Integer;
   Format: WideString): WideString;
 var
-  i,n: Integer;
+  ifrom,ito,i,n: Integer;
   linebreak: WideString;
   tok2,tok: TWideStrArray;
   toksp,tok_smartdt: TIntArray;
@@ -1722,9 +1724,19 @@ begin
   prevdt := 0;
 
   // start processing all items
-  for i := Length(ItemList)-1 downto 0 do begin
+
+  if Self.Reversed then begin
+    ifrom := High(ItemList);
+    ito := 0;
+  end else begin
+    ifrom := 0;
+    ito := High(ItemList);
+  end;
+  i := ifrom;
+  while (i >= 0) and (i <= High(ItemList)) do begin
+  //for i := Length(ItemList)-1 downto 0 do begin
     LoadItem(ItemList[i],False);
-    if i = 0 then linebreak := ''; // do not put linebr after last item
+    if i = ito then linebreak := ''; // do not put linebr after last item
     tok2 := Copy(tok,0,Length(tok));
 
     // handle smart dates:
@@ -1741,6 +1753,7 @@ begin
       Result := Result + tok2[n];
     Result := Result + linebreak;
     prevdt := dt;
+    if Reversed then Dec(i) else Inc(i);
   end;
 end;
 
@@ -2213,13 +2226,15 @@ end;
 procedure THistoryGrid.WMKeyDown(var Message: TWMKeyDown);
 begin
   DoKeyDown(Message.CharCode,KeyDataToShiftState(Message.KeyData));
-  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message));
   inherited;
+  FSavedKeyMessage := Message;
+  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
 end;
 
 procedure THistoryGrid.WMKeyUp(var Message: TWMKeyUp);
 begin
   inherited;
+  if FSavedKeyMessage.CharCode = 0 then exit;
   if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
 end;
 
@@ -3483,8 +3498,9 @@ begin
   Key := GetWideCharFromWMCharMsg(Message);
   DoChar(Key,KeyDataToShiftState(Message.KeyData));
   SetWideCharForWMCharMsg(Message,Key);
-  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message));
   inherited;
+  if FSavedKeyMessage.CharCode = 0 then exit;
+  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
 end;
 
 const
