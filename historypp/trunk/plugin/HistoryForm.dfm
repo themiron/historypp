@@ -679,43 +679,23 @@ object HistoryFrm: THistoryFrm
   object pmLink: TTntPopupMenu
     BiDiMode = bdLeftToRight
     ParentBiDiMode = False
-    Left = 484
-    Top = 262
-    object Open1: TTntMenuItem
+    Left = 368
+    Top = 258
+    object OpenLink: TTntMenuItem
       Caption = 'Open &Link'
       Default = True
-      OnClick = OpenLink1Click
+      OnClick = OpenLinkClick
     end
-    object OpeninNewWindow1: TTntMenuItem
+    object OpenLinkNW: TTntMenuItem
       Caption = 'Open Link in New &Window'
-      OnClick = OpenLinkInNewWindow1Click
+      OnClick = OpenLinkNWClick
     end
     object N1: TTntMenuItem
       Caption = '-'
     end
-    object Copy2: TTntMenuItem
-      Caption = '&Copy'
-      OnClick = CopyLink1Click
-    end
-  end
-  object pmFile: TTntPopupMenu
-    BiDiMode = bdLeftToRight
-    ParentBiDiMode = False
-    Left = 482
-    Top = 295
-    object OpenFile2: TTntMenuItem
-      Caption = 'Open &File'
-      OnClick = OpenFile1Click
-    end
-    object OpenFileFolder2: TTntMenuItem
-      Caption = 'Open File Fo&lder'
-      OnClick = OpenFileFolder1Click
-    end
-    object N5: TTntMenuItem
-      Caption = '-'
-    end
-    object CopyFile1: TTntMenuItem
-      Caption = '&Copy'
+    object CopyLink: TTntMenuItem
+      Caption = '&Copy Link'
+      OnClick = CopyLinkClick
     end
   end
   object ilSessions: TImageList
