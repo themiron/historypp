@@ -6,8 +6,9 @@ uses
   Windows, Classes, Controls, Forms, Graphics, Messages,
   m_api, m_globaldefs,
   hpp_global, hpp_events, hpp_contacts, hpp_services, hpp_forms, hpp_bookmarks,
-  hpp_richedit,
-  HistoryGrid;
+  hpp_richedit, hpp_messages,
+  HistoryGrid,
+  RichEdit, Menus, TntMenus;
 
 type
   TExtItem = record
@@ -23,6 +24,7 @@ type
     Grid: THistoryGrid;
     FParentWindow: HWND;
     FSelection: AnsiString;
+    pmGrid: TTntPopupMenu;
     function GetGridHandle: HWND;
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
@@ -35,6 +37,16 @@ type
     procedure GridDblClick(Sender: TObject);
     procedure GridForbiddenChar(Sender: TObject; var Char: WideChar; Shift: TShiftState);
     procedure GridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure GridPopup(Sender: TObject);
+    procedure GridInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+
+    procedure OnCopyClick(Sender: TObject);
+    procedure OnCopyTextClick(Sender: TObject);
+    procedure OnSelectAllClick(Sender: TObject);
+    procedure OnTextFormattingClick(Sender: TObject);
+    procedure OnReplyQuotedClick(Sender: TObject);
+    procedure OnBookmarkClick(Sender: TObject);
+
   public
     constructor Create(AParentWindow: HWND; ControlID: Cardinal = 0);
     destructor Destroy; override;
@@ -92,7 +104,10 @@ begin
     Flag := bdLeftToRight;
   end;
   if Grid.BiDiMode <> Flag then Grid.BiDiMode := Flag;
-  if Grid.Contact <> hContact then Grid.Contact := hContact;
+  if Grid.Contact <> hContact then begin
+    Grid.Contact := hContact;
+    Grid.Protocol := GetContactProto(hContact);
+  end;
   // comment or we'll get rerendering the whole grid
   //if Grid.Codepage <> Codepage then Grid.Codepage := Codepage;
   Grid.Allocate(Length(Items));
@@ -124,8 +139,23 @@ begin
   Grid.OnDblClick := GridDblClick;
   Grid.OnForbiddenChar := GridForbiddenChar;
   Grid.OnKeyUp := GridKeyUp;
+  Grid.OnPopup := GridPopup;
+  Grid.OnInlinePopup := GridPopup;
+  Grid.OnInlineKeyDown := GridInlineKeyDown;
   Grid.Options := GridOptions;
-  TranslateMenu(Grid.InlineRichEdit.PopupMenu.Items);
+
+  pmGrid := TTntPopupMenu.Create(Grid);
+  pmGrid.Items.Add(WideNewItem('&Copy',TextToShortCut('Ctrl+C'),false,true,OnCopyClick,0,'pmCopy'));
+  pmGrid.Items.Add(WideNewItem('Copy &Text',TextToShortCut('Ctrl+T'),false,true,OnCopyTextClick,0,'pmCopyText'));
+  pmGrid.Items.Add(WideNewItem('Select &All',TextToShortCut('Ctrl+A'),false,true,OnSelectAllClick,0,'pmSelectAll'));
+  pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN1'));
+  pmGrid.Items.Add(WideNewItem('Text Formatting',TextToShortCut('Ctrl+P'),false,true,OnTextFormattingClick,0,'pmTextFormatting'));
+  pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN2'));
+  pmGrid.Items.Add(WideNewItem('&Reply Quoted',TextToShortCut('Ctrl+R'),false,true,OnReplyQuotedClick,0,'pmReplyQuoted'));
+  pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN3'));
+  pmGrid.Items.Add(WideNewItem('Set &Bookmark',TextToShortCut('Ctrl+B'),false,true,OnBookmarkClick,0,'pmBookmark'));
+
+  TranslateMenu(pmGrid.Items);
 end;
 
 destructor TExternalGrid.Destroy;
@@ -154,6 +184,7 @@ procedure TExternalGrid.GridItemData(Sender: TObject; Index: Integer;
   var Item: THistoryItem);
 begin
   Item := ReadEvent(Items[Index].hDBEvent,Items[Index].Codepage);
+  Item.Proto := Grid.Protocol;
   Item.RTLMode := Items[Index].RTLMode;
   Item.Bookmarked := BookmarkServer[Items[Index].hContact].Bookmarked[Items[Index].hDBEvent];
   if (not Item.IsRead) and Grid.Visible then begin
@@ -312,6 +343,120 @@ begin
   if (Key = VK_RETURN) and (Shift = []) then begin
     GridDblClick(Grid);
     Key := 0;
+  end else
+  if (ssCtrl in Shift) then begin
+    if key=Ord('C') then begin
+      OnCopyClick(Sender);
+      key:=0;
+    end;
+    if key=Ord('T') then begin
+      OnCopyTextClick(Sender);
+      key:=0;
+    end;
+    if key=Ord('R') then begin
+      OnReplyQuotedClick(Sender);
+      key:=0;
+    end;
+  end;
+end;
+
+procedure TExternalGrid.GridPopup(Sender: TObject);
+begin
+  pmGrid.Items[2].Visible := (Grid.State = gsInline);
+  pmGrid.Items[4].Visible := (Grid.State = gsInline);
+  pmGrid.Items[4].Checked := Grid.ProcessInline;
+  if Grid.State = gsInline then
+    pmGrid.Items[0].Enabled := Grid.InlineRichEdit.SelLength > 0
+  else
+    pmGrid.Items[0].Enabled := True;
+  pmGrid.Items[6].Enabled := pmGrid.Items[0].Enabled;
+  if Grid.Selected <> -1 then begin
+    if Grid.Items[Grid.Selected].Bookmarked then
+      pmGrid.Items[8].Caption := TranslateWideW('Remove &Bookmark')
+    else
+      pmGrid.Items[8].Caption := TranslateWideW('Set &Bookmark');
+  end;
+  pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
+end;
+
+procedure TExternalGrid.OnCopyClick(Sender: TObject);
+begin
+  if Grid.Selected = -1 then exit;
+  if Grid.State = gsInline then begin
+    if Grid.InlineRichEdit.SelLength = 0 then exit;
+    Grid.InlineRichEdit.CopyToClipboard;
+  end else begin
+    CopyToClip(Grid.FormatSelected(Grid.Options.ClipCopyFormat),Grid.Handle,Items[Grid.Selected].Codepage);
+  end;
+end;
+
+procedure TExternalGrid.OnCopyTextClick(Sender: TObject);
+var
+  cr: TCharRange;
+begin
+  if Grid.Selected = -1 then exit;
+  if Grid.State = gsInline then begin
+    Grid.InlineRichEdit.Lines.BeginUpdate;
+    Grid.InlineRichEdit.Perform(EM_EXGETSEL,0,LPARAM(@cr));
+    Grid.InlineRichEdit.SelectAll;
+    Grid.InlineRichEdit.CopyToClipboard;
+    Grid.InlineRichEdit.Perform(EM_EXSETSEL,0,LPARAM(@cr));
+    Grid.InlineRichEdit.Lines.EndUpdate;
+  end else
+    CopyToClip(Grid.FormatSelected(Grid.Options.ClipCopyTextFormat),Grid.Handle,Items[Grid.Selected].Codepage);
+end;
+
+procedure TExternalGrid.OnSelectAllClick(Sender: TObject);
+begin
+  if (Grid.Selected = -1) or (Grid.State <> gsInline) then exit;
+  Grid.InlineRichEdit.SelectAll;
+end;
+
+procedure TExternalGrid.OnTextFormattingClick(Sender: TObject);
+begin
+  if Grid.Selected = -1 then exit;
+  Grid.ProcessInline := not Grid.ProcessInline;
+end;
+
+procedure TExternalGrid.OnReplyQuotedClick(Sender: TObject);
+begin
+  if Grid.Selected = -1 then exit;
+  if Grid.State = gsInline then begin
+    if Grid.InlineRichEdit.SelLength = 0 then exit;
+    SendMessageTo(Items[Grid.Selected].hContact,Grid.FormatSelected(DEFFORMAT_REPLYQUOTEDTEXT));
+  end else begin
+    //if (hContact = 0) or (hg.SelCount = 0) then exit;
+    SendMessageTo(Items[Grid.Selected].hContact,Grid.FormatSelected(Grid.Options.ReplyQuotedFormat));
+  end;
+end;
+
+procedure TExternalGrid.OnBookmarkClick(Sender: TObject);
+var
+  val: boolean;
+  hContact,hDBEvent: THandle;
+begin
+  if Grid.Selected = -1 then exit;
+  hContact := Items[Grid.Selected].hContact;
+  hDBEvent := Items[Grid.Selected].hDBEvent;
+  val := not BookmarkServer[hContact].Bookmarked[hDBEvent];
+  BookmarkServer[hContact].Bookmarked[hDBEvent] := val;
+end;
+
+procedure TExternalGrid.GridInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if (ssCtrl in Shift) then begin
+    if key=Ord('T') then begin
+      OnCopyTextClick(Sender);
+      key:=0;
+    end;
+    if key=Ord('P') then begin
+      OnTextFormattingClick(Sender);
+      key:=0;
+    end;
+    if key=Ord('R') then begin
+      OnReplyQuotedClick(Sender);
+      key:=0;
+    end;
   end;
 end;
 
