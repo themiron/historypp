@@ -24,7 +24,9 @@ type
     Grid: THistoryGrid;
     FParentWindow: HWND;
     FSelection: AnsiString;
+    SavedLinkUrl: AnsiString;
     pmGrid: TTntPopupMenu;
+    pmLink: TTntPopupMenu;
     function GetGridHandle: HWND;
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
@@ -36,8 +38,10 @@ type
     procedure GridKillFocus(Sender: TObject);
     procedure GridDblClick(Sender: TObject);
     procedure GridForbiddenChar(Sender: TObject; var Char: WideChar; Shift: TShiftState);
+    procedure GridKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure GridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure GridPopup(Sender: TObject);
+    procedure GridUrlPopup(Sender: TObject; Item: Integer; Url: String);
     procedure GridInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 
     procedure OnCopyClick(Sender: TObject);
@@ -46,6 +50,9 @@ type
     procedure OnTextFormattingClick(Sender: TObject);
     procedure OnReplyQuotedClick(Sender: TObject);
     procedure OnBookmarkClick(Sender: TObject);
+    procedure OnOpenLinkClick(Sender: TObject);
+    procedure OnOpenLinkNWClick(Sender: TObject);
+    procedure OnCopyLinkClick(Sender: TObject);
 
   public
     constructor Create(AParentWindow: HWND; ControlID: Cardinal = 0);
@@ -138,9 +145,11 @@ begin
   Grid.OnKillFocus := GridKillFocus;
   Grid.OnDblClick := GridDblClick;
   Grid.OnForbiddenChar := GridForbiddenChar;
+  Grid.OnKeyDown := GridKeyDown;
   Grid.OnKeyUp := GridKeyUp;
   Grid.OnPopup := GridPopup;
   Grid.OnInlinePopup := GridPopup;
+  Grid.OnUrlPopup := GridUrlPopup;
   Grid.OnInlineKeyDown := GridInlineKeyDown;
   Grid.Options := GridOptions;
 
@@ -156,7 +165,15 @@ begin
   pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN3'));
   pmGrid.Items.Add(WideNewItem('Set &Bookmark',TextToShortCut('Ctrl+B'),false,true,OnBookmarkClick,0,'pmBookmark'));
 
+  pmLink := TTntPopupMenu.Create(Grid);
+  pmLink.ParentBiDiMode := False;
+  pmLink.Items.Add(WideNewItem('Open &Link',0,false,true,OnOpenLinkClick,0,'pmOpenLink'));
+  pmLink.Items.Add(WideNewItem('Open Link in New &Window',0,false,true,OnOpenLinkNWClick,0,'pmOpenLinkNW'));
+  pmLink.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN4'));
+  pmLink.Items.Add(WideNewItem('&Copy Link',0,false,true,OnCopyLinkClick,0,'pmCopyLink'));
+
   TranslateMenu(pmGrid.Items);
+  TranslateMenu(pmLink.Items);
 end;
 
 destructor TExternalGrid.Destroy;
@@ -339,12 +356,8 @@ begin
   end;
 end;
 
-procedure TExternalGrid.GridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+procedure TExternalGrid.GridKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if (Key = VK_RETURN) and (Shift = []) then begin
-    GridDblClick(Grid);
-    Key := 0;
-  end else
   if (ssCtrl in Shift) then begin
     if key=Ord('C') then begin
       OnCopyClick(Sender);
@@ -358,6 +371,14 @@ begin
       OnReplyQuotedClick(Sender);
       key:=0;
     end;
+  end;
+end;
+
+procedure TExternalGrid.GridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if (Key = VK_RETURN) and (Shift = []) then begin
+    GridDblClick(Grid);
+    Key := 0;
   end;
 end;
 
@@ -459,6 +480,33 @@ begin
       key:=0;
     end;
   end;
+end;
+
+procedure TExternalGrid.GridUrlPopup(Sender: TObject; Item: Integer; Url: String);
+begin
+  SavedLinkUrl := Url;
+  pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
+end;
+
+procedure TExternalGrid.OnOpenLinkClick(Sender: TObject);
+begin
+  if SavedLinkUrl = '' then exit;
+  PluginLink.CallService(MS_UTILS_OPENURL,0,Integer(Pointer(@SavedLinkUrl[1])));
+  SavedLinkUrl := '';
+end;
+
+procedure TExternalGrid.OnOpenLinkNWClick(Sender: TObject);
+begin
+  if SavedLinkUrl = '' then exit;
+  PluginLink.CallService(MS_UTILS_OPENURL,1,Integer(Pointer(@SavedLinkUrl[1])));
+  SavedLinkUrl := '';
+end;
+
+procedure TExternalGrid.OnCopyLinkClick(Sender: TObject);
+begin
+  if SavedLinkUrl = '' then exit;
+  CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Grid.Handle,CP_ACP);
+  SavedLinkUrl := '';
 end;
 
 function FindExtGridByHandle(var Handle: HWND): TExternalGrid;
