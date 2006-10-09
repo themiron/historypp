@@ -78,6 +78,8 @@ object HistoryFrm: THistoryFrm
         OnItemDelete = hgItemDelete
         OnKeyDown = hgKeyDown
         OnKeyUp = hgKeyUp
+        OnInlineKeyDown = hgInlineKeyDown
+        OnInlinePopup = hgInlinePopup
         OnProcessInlineChange = hgProcessInlineChange
         OnChar = hgChar
         OnState = hgState
@@ -874,6 +876,48 @@ object HistoryFrm: THistoryFrm
       Caption = 'Remove &Bookmark'
       ShortCut = 16450
       OnClick = Bookmark1Click
+    end
+  end
+  object pmInline: TTntPopupMenu
+    BiDiMode = bdLeftToRight
+    ParentBiDiMode = False
+    Left = 324
+    Top = 293
+    object InlineCopy: TTntMenuItem
+      Caption = '&Copy'
+      ShortCut = 16451
+      OnClick = InlineCopyClick
+    end
+    object InlineCopyAll: TTntMenuItem
+      Caption = 'Copy &Text'
+      ShortCut = 16468
+      OnClick = InlineCopyAllClick
+    end
+    object InlineSelectAll: TTntMenuItem
+      Caption = 'Select &All'
+      ShortCut = 16449
+      OnClick = InlineSelectAllClick
+    end
+    object TntMenuItem10: TTntMenuItem
+      Caption = '-'
+    end
+    object InlineTextFormatting: TTntMenuItem
+      Caption = 'Text Formatting'
+      ShortCut = 16464
+      OnClick = InlineTextFormattingClick
+    end
+    object TntMenuItem6: TTntMenuItem
+      Caption = '-'
+    end
+    object InlineSendMessage: TTntMenuItem
+      Caption = 'Send &Message'
+      ShortCut = 16461
+      OnClick = SendMessage1Click
+    end
+    object InlineReplyQuoted: TTntMenuItem
+      Caption = '&Reply Quoted'
+      ShortCut = 16466
+      OnClick = InlineReplyQuotedClick
     end
   end
 end

@@ -49,7 +49,7 @@ uses
   TntWindows, TntGraphics, TntSysUtils, TntForms, TntDialogs, TntComCtrls, {WFindDialog,}
   m_globaldefs, m_api,
   hpp_global, hpp_database, hpp_messages, hpp_events, hpp_contacts, hpp_itemprocess,
-  hpp_bookmarks, hpp_forms,
+  hpp_bookmarks, hpp_forms, hpp_richedit,
   clipbrd, {FileCtrl,} shellapi,
   HistoryGrid, Checksum, TntExtCtrls, hpp_sessionsthread, DateUtils,
   ImgList, PasswordEditControl, TntStdCtrls, TntButtons, TntMenus,
@@ -181,6 +181,15 @@ type
     SaveSelected2: TTntMenuItem;
     N11: TTntMenuItem;
     RenameBookmark1: TTntMenuItem;
+    pmInline: TTntPopupMenu;
+    InlineReplyQuoted: TTntMenuItem;
+    TntMenuItem6: TTntMenuItem;
+    InlineCopy: TTntMenuItem;
+    InlineCopyAll: TTntMenuItem;
+    TntMenuItem10: TTntMenuItem;
+    InlineSelectAll: TTntMenuItem;
+    InlineTextFormatting: TTntMenuItem;
+    InlineSendMessage: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -288,6 +297,14 @@ type
       var S: WideString);
     procedure RenameBookmark1Click(Sender: TObject);
     procedure hgProcessInlineChange(Sender: TObject; Enabled: Boolean);
+    procedure hgInlinePopup(Sender: TObject);
+    procedure InlineCopyClick(Sender: TObject);
+    procedure InlineCopyAllClick(Sender: TObject);
+    procedure InlineSelectAllClick(Sender: TObject);
+    procedure InlineTextFormattingClick(Sender: TObject);
+    procedure hgInlineKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure InlineReplyQuotedClick(Sender: TObject);
   private
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
@@ -1057,7 +1074,7 @@ begin
     key := 0;
   end;
 
-  if (ssAlt in Shift) then
+  {if (ssAlt in Shift) then
     begin
     //if key=Ord('C') then
     //  bnClose.Click;
@@ -1070,7 +1087,7 @@ begin
     //if (key=Ord('F')) and (not PasswordMode) then
     //  bnFilter.Click;
     //key:=0;
-    end;
+    end;}
 
   // let only search keys be accepted if inline
   if hg.State = gsInline then exit;
@@ -2731,7 +2748,8 @@ begin
   TranslateToolbar(Toolbar);
 
   TranslateMenu(pmGrid.Items);
-  TranslateMenu(hg.InlineRichEdit.PopupMenu.Items);
+  TranslateMenu(pmInline.Items);
+
   TranslateMenu(pmLink.Items);
   TranslateMenu(pmFile.Items);
   TranslateMenu(pmHistory.Items);
@@ -3626,6 +3644,75 @@ procedure THistoryFrm.hgProcessInlineChange(Sender: TObject; Enabled: Boolean);
 begin
   if Assigned(EventDetailFrom) then
     TEventDetailsFrm(EventDetailFrom).Item := TEventDetailsFrm(EventDetailFrom).Item;
+end;
+
+procedure THistoryFrm.hgInlinePopup(Sender: TObject);
+begin
+  InlineCopy.Enabled := hg.InlineRichEdit.SelLength > 0;
+  InlineReplyQuoted.Enabled := InlineCopy.Enabled;
+  InlineTextFormatting.Checked := hg.ProcessInline;
+  InlineSendMessage.Visible := (hContact <> 0);
+  InlineReplyQuoted.Visible := (hContact <> 0);
+  pmInline.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
+end;
+
+procedure THistoryFrm.InlineCopyClick(Sender: TObject);
+begin
+  if hg.InlineRichEdit.SelLength = 0 then exit;
+  hg.InlineRichEdit.CopyToClipboard;
+end;
+
+procedure THistoryFrm.InlineCopyAllClick(Sender: TObject);
+var
+  cr: TCharRange;
+begin
+  hg.InlineRichEdit.Lines.BeginUpdate;
+  hg.InlineRichEdit.Perform(EM_EXGETSEL,0,LPARAM(@cr));
+  hg.InlineRichEdit.SelectAll;
+  hg.InlineRichEdit.CopyToClipboard;
+  hg.InlineRichEdit.Perform(EM_EXSETSEL,0,LPARAM(@cr));
+  hg.InlineRichEdit.Lines.EndUpdate;
+end;
+
+procedure THistoryFrm.InlineSelectAllClick(Sender: TObject);
+begin
+  hg.InlineRichEdit.SelectAll;
+end;
+
+procedure THistoryFrm.InlineTextFormattingClick(Sender: TObject);
+begin
+  hg.ProcessInline := not hg.ProcessInline;
+end;
+
+procedure THistoryFrm.InlineReplyQuotedClick(Sender: TObject);
+var
+  Text: WideString;
+begin
+  if (hg.Selected = -1) or (hContact = 0) then exit;
+  if hg.InlineRichEdit.SelLength = 0 then exit;
+  SendMessageTo(hContact,hg.FormatSelected(DEFFORMAT_REPLYQUOTEDTEXT));
+end;
+
+procedure THistoryFrm.hgInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if (ssCtrl in Shift) then begin
+    if key=Ord('T') then begin
+      InlineCopyAll.Click;
+      key:=0;
+    end;
+    if key=Ord('P') then begin
+      InlineTextFormatting.Click;
+      key:=0;
+    end;
+    if key=Ord('M') then begin
+      SendMessage1.Click;
+      key:=0;
+    end;
+    if key=Ord('R') then begin
+      InlineReplyQuoted.Click;
+      key:=0;
+    end;
+  end;
 end;
 
 end.

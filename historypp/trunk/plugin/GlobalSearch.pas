@@ -41,7 +41,7 @@ uses
   HistoryGrid,
   m_globaldefs, m_api,
   hpp_global, hpp_events, hpp_services, hpp_contacts,  hpp_database,  hpp_searchthread,
-  hpp_eventfilters, hpp_bookmarks,
+  hpp_eventfilters, hpp_bookmarks, hpp_richedit, RichEdit,
   ImgList, PasswordEditControl, Buttons, TntButtons, Math, CommCtrl,
   Contnrs, TntMenus, hpp_forms, ToolWin;
 
@@ -136,6 +136,15 @@ type
     pmEventsFilter: TTntPopupMenu;
     N4: TTntMenuItem;
     Customize1: TTntMenuItem;
+    pmInline: TTntPopupMenu;
+    InlineCopy: TTntMenuItem;
+    InlineCopyAll: TTntMenuItem;
+    InlineSelectAll: TTntMenuItem;
+    TntMenuItem10: TTntMenuItem;
+    InlineTextFormatting: TTntMenuItem;
+    TntMenuItem6: TTntMenuItem;
+    InlineSendMessage: TTntMenuItem;
+    InlineReplyQuoted: TTntMenuItem;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -197,6 +206,14 @@ type
     procedure tbEventsFilterClick(Sender: TObject);
     procedure EventsFilterItemClick(Sender: TObject);
     procedure Customize1Click(Sender: TObject);
+    procedure InlineCopyClick(Sender: TObject);
+    procedure hgInlinePopup(Sender: TObject);
+    procedure hgInlineKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure InlineCopyAllClick(Sender: TObject);
+    procedure InlineSelectAllClick(Sender: TObject);
+    procedure InlineTextFormattingClick(Sender: TObject);
+    procedure InlineReplyQuotedClick(Sender: TObject);
   private
     UserMenu: hMenu;
     UserMenuContact: THandle;
@@ -343,8 +360,6 @@ begin
 //  end;
   DesktopFont := True;
   MakeFontsParent(Self);
-
-  //hg.InlineRichEdit.PopupMenu := pmGridInline;
 
   FormState := gsIdle;
 
@@ -702,9 +717,8 @@ begin
   TranslateToolbar(Toolbar);
 
   TranslateMenu(pmGrid.Items);
+  TranslateMenu(pmInline.Items);
   TranslateMenu(pmEventsFilter.Items);
-  //TranslateMenu(pmGridInline.Items);
-  TranslateMenu(hg.InlineRichEdit.PopupMenu.Items);
 
   hg.TxtFullLog := TranslateWideW(hg.txtFullLog);
   hg.TxtGenHist1 := TranslateWideW(hg.txtGenHist1);
@@ -1881,6 +1895,77 @@ begin
   hDBEvent := GetSearchItem(hg.Selected).hDBEvent;
   val := not BookmarkServer[GetSearchItem(hg.Selected).Contact.Handle].Bookmarked[hDBEvent];
   BookmarkServer[GetSearchItem(hg.Selected).Contact.Handle].Bookmarked[hDBEvent] := val;
+end;
+
+procedure TfmGlobalSearch.hgInlinePopup(Sender: TObject);
+begin
+  InlineCopy.Enabled := hg.InlineRichEdit.SelLength > 0;
+  InlineReplyQuoted.Enabled := InlineCopy.Enabled;
+  InlineTextFormatting.Checked := hg.ProcessInline;
+  if hg.Selected <> -1 then begin
+    InlineSendMessage.Visible := (GetSearchItem(hg.Selected).Contact.Handle <> 0);
+    InlineReplyQuoted.Visible := (GetSearchItem(hg.Selected).Contact.Handle <> 0);
+  end;
+  pmInline.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
+end;
+
+procedure TfmGlobalSearch.InlineCopyClick(Sender: TObject);
+begin
+  if hg.InlineRichEdit.SelLength = 0 then exit;
+  hg.InlineRichEdit.CopyToClipboard;
+end;
+
+procedure TfmGlobalSearch.InlineCopyAllClick(Sender: TObject);
+var
+  cr: TCharRange;
+begin
+  hg.InlineRichEdit.Lines.BeginUpdate;
+  hg.InlineRichEdit.Perform(EM_EXGETSEL,0,LPARAM(@cr));
+  hg.InlineRichEdit.SelectAll;
+  hg.InlineRichEdit.CopyToClipboard;
+  hg.InlineRichEdit.Perform(EM_EXSETSEL,0,LPARAM(@cr));
+  hg.InlineRichEdit.Lines.EndUpdate;
+end;
+
+procedure TfmGlobalSearch.InlineSelectAllClick(Sender: TObject);
+begin
+  hg.InlineRichEdit.SelectAll;
+end;
+
+procedure TfmGlobalSearch.InlineTextFormattingClick(Sender: TObject);
+begin
+  hg.ProcessInline := not hg.ProcessInline;
+end;
+
+procedure TfmGlobalSearch.InlineReplyQuotedClick(Sender: TObject);
+begin
+  if hg.Selected <> -1 then begin
+    if GetSearchItem(hg.Selected).Contact.Handle = 0 then exit;
+    if hg.InlineRichEdit.SelLength = 0 then exit;
+    SendMessageTo(GetSearchItem(hg.Selected).Contact.Handle,hg.FormatSelected(DEFFORMAT_REPLYQUOTEDTEXT));
+  end;
+end;
+
+procedure TfmGlobalSearch.hgInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if (ssCtrl in Shift) then begin
+    if key=Ord('T') then begin
+      InlineCopyAll.Click;
+      key:=0;
+    end;
+    if key=Ord('P') then begin
+      InlineTextFormatting.Click;
+      key:=0;
+    end;
+    if key=Ord('M') then begin
+      SendMessage1.Click;
+      key:=0;
+    end;
+    if key=Ord('R') then begin
+      InlineReplyQuoted.Click;
+      key:=0;
+    end;
+  end;
 end;
 
 initialization
