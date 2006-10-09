@@ -362,7 +362,11 @@ type
     FRichInline: TRichEdit;
     FRichSave: TRichEdit;
     FRichSaveOLECB: TRichEditOleCallback;
-    FpmRichInline: TTntPopupMenu;
+
+    FOnInlineKeyDown: TKeyEvent;
+    FOnInlineKeyUp: TKeyEvent;
+    FOnInlinePopup: TOnPopup;
+
     FRichHeight: Integer;
     FRichParamsSet: Boolean;
     FOnSearchItem: TOnSearchItem;
@@ -405,10 +409,6 @@ type
     // FRich events
     //procedure OnRichResize(Sender: TObject; Rect: TRect);
     //procedure OnMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-    // FRichInline events
-    procedure RichInlineOnExit(Sender: TObject);
-    procedure RichInlineOnKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure RichInlineOnKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     {$ENDIF}
     procedure WMNotify(var Message: TWMNotify); message WM_NOTIFY;
     procedure WMSetFocus(var Message: TWMSetFocus); message WM_SETFOCUS;
@@ -473,12 +473,19 @@ type
     function GetBookmarked(Index: Integer): Boolean;
     procedure SetBookmarked(Index: Integer; const Value: Boolean);
 
-    procedure OnInlinePopup(Sender: TObject);
+    // FRichInline events
+    {procedure OnInlinePopup(Sender: TObject);
     procedure OnInlineCopyClick(Sender: TObject);
     procedure OnInlineCopyAllClick(Sender: TObject);
     procedure OnInlineSelectAllClick(Sender: TObject);
     procedure OnInlineToggleProcessingClick(Sender: TObject);
-    procedure OnInlineCancelClick(Sender: TObject);
+    procedure OnInlineCancelClick(Sender: TObject);}
+
+    procedure OnInlineOnExit(Sender: TObject);
+    procedure OnInlineOnKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure OnInlineOnKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure OnInlineOnMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure OnInlineOnMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 
   protected
     DownHitTests: TGridHitTests;
@@ -612,6 +619,9 @@ type
     property OnItemDelete: TOnItemDelete read FItemDelete write FItemDelete;
     property OnKeyDown;
     property OnKeyUp;
+    property OnInlineKeyDown: TKeyEvent read FOnInlineKeyDown write FOnInlineKeyDown;
+    property OnInlineKeyUp: TKeyEvent read FOnInlineKeyUp write FOnInlineKeyUp;
+    property OnInlinePopup: TOnPopup read FOnInlinePopup write FOnInlinePopup;
     property OnProcessInlineChange: TOnProcessInlineChange read FOnProcessInlineChange write FOnProcessInlineChange;
     property OnChar: TOnChar read FOnChar write FOnChar;
     property OnForbiddenChar: TOnChar read FOnForbiddenChar write FOnForbiddenChar;
@@ -758,7 +768,7 @@ begin
   {$IFDEF RENDER_RICH}
   FRichCache := TRichCache.Create(Self);
 
-  FpmRichInline := TTntPopupMenu.Create(Self);
+  {FpmRichInline := TTntPopupMenu.Create(Self);
   FpmRichInline.Items.Add(WideNewItem('&Copy',TextToShortCut('Ctrl+C'),false,true,OnInlineCopyClick,0,'pmCopy'));
   FpmRichInline.Items.Add(WideNewItem('Copy All',0,false,true,OnInlineCopyAllClick,0,'pmCopyAll'));
   FpmRichInline.Items.Add(WideNewItem('Select &All',TextToShortCut('Ctrl+A'),false,true,OnInlineSelectAllClick,0,'pmSelectAll'));
@@ -766,7 +776,7 @@ begin
   FpmRichInline.Items.Add(WideNewItem('Text Formatting',TextToShortCut('Ctrl+P'),false,true,OnInlineToggleProcessingClick,0,'pmProcessInline'));
   FpmRichInline.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN2'));
   FpmRichInline.Items.Add(WideNewItem('Cancel',TextToShortCut('ESC'),false,true,OnInlineCancelClick,0,'pmCancel'));
-  FpmRichInline.OnPopup := OnInlinePopup;
+  FpmRichInline.OnPopup := OnInlinePopup;}
 
   {tmp
   FRich := TRichEdit.Create(Self);
@@ -807,10 +817,12 @@ begin
 
   FRichInline.ScrollBars := ssVertical;
 
-  FRichInline.OnExit := RichInlineOnExit;
-  FRichInline.OnKeyDown := RichInlineOnKeyDown;
-  FRichInline.OnKeyUp := RichInlineOnKeyUp;
-  FRichInline.PopupMenu := FpmRichInline;
+  FRichInline.OnExit := OnInlineOnExit;
+  FRichInline.OnKeyDown := OnInlineOnKeyDown;
+  FRichInline.OnKeyUp := OnInlineOnKeyUp;
+  FRichInline.OnMouseDown := OnInlineOnMouseDown;
+  FRichInline.OnMouseUp := OnInlineOnMouseUp;
+  //FRichInline.PopupMenu := FpmRichInline;
 
   {$ENDIF}
   FCodepage := CP_ACP;
@@ -897,7 +909,7 @@ begin
   {$IFDEF RENDER_RICH}
   // it gets deleted autmagically because FRich.Owner = Self
   // FRich.Free;
-  FpmRichInline.Free;
+  //FpmRichInline.Free;
   FRichCache.Free;
   {$ENDIF}
   if Assigned(Options) then
@@ -2390,7 +2402,7 @@ begin
   {$IFDEF RENDER_RICH}
   if Message.NotifyCode = EN_KILLFOCUS then
     if Message.Ctl = FRichInline.Handle then begin
-      CheckBusy;
+      if State = gsInline then CancelInline(False);
       Message.Result := 0;
     end;
   {$ENDIF}
@@ -2696,7 +2708,7 @@ var
   subst: WideString;
   from_nick,to_nick,nick: WideString;
   dt: TDateTime;
-  mes: WideString;
+  mes,selmes: WideString;
 begin
   // item MUST be loaded before calling IntFormatItem!
 
@@ -2716,6 +2728,9 @@ begin
       mes := FItems[Item].Text;
       if Options.RawRTFEnabled and IsRTF(mes) then
         mes := RtfToWideString(FRich.Handle,mes);
+      if State = gsInline then
+        selmes := GetRichWideString(FRichInline.Handle,True)
+      else selmes := mes;
       if mtIncoming in FItems[Item].MessageType then begin
         from_nick := ContactName;
         to_nick := ProfileName;
@@ -2734,11 +2749,21 @@ begin
       if tok[toksp[i]] = '%mes%' then
         subst := mes
       else
-      if tok[toksp[i]] = '%adj_mes%' then begin
+      if tok[toksp[i]] = '%adj_mes%' then
         subst := WideWrapText(mes,#13#10,[' ',#9,'-'],72)
-      end else
+      else
       if tok[toksp[i]] = '%quot_mes%' then begin
         subst := Tnt_WideStringReplace('> '+mes,#13#10,#13#10+'> ',[rfReplaceAll]);
+        subst := WideWrapText(subst,#13#10+'> ',[' ',#9,'-'],70)
+      end else
+      if tok[toksp[i]] = '%selmes%' then
+        subst := selmes
+      else
+      if tok[toksp[i]] = '%adj_selmes%' then
+        subst := WideWrapText(selmes,#13#10,[' ',#9,'-'],72)
+      else
+      if tok[toksp[i]] = '%quot_selmes%' then begin
+        subst := Tnt_WideStringReplace('> '+selmes,#13#10,#13#10+'> ',[rfReplaceAll]);
         subst := WideWrapText(subst,#13#10+'> ',[' ',#9,'-'],70)
       end else
       if tok[toksp[i]] = '%nick%' then subst := nick
@@ -4391,7 +4416,7 @@ var
   r: TRect;
   cr: TCharRange;
 begin
-  if State = gsInline then CancelInline;
+  if State = gsInline then CancelInline(False);
   MakeVisible(Item);
   r := GetRichEditRect(Item);
   if IsRectEmpty(r) then exit;
@@ -4455,30 +4480,40 @@ begin
   FRichCache.ResetItem(Item);
 end;
 
-procedure THistoryGrid.RichInlineOnExit(Sender: TObject);
+procedure THistoryGrid.OnInlineOnExit(Sender: TObject);
 begin
   CancelInline;
 end;
 
-procedure THistoryGrid.RichInlineOnKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+procedure THistoryGrid.OnInlineOnKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if ((Key = VK_ESCAPE) or (Key = VK_RETURN)) then begin
     CancelInline;
-    //FRichInline.Hide;
     Key := 0;
-  end;
+  end else
+  if Assigned(FOnInlineKeyDown) then
+    FOnInlineKeyDown(Sender,Key,Shift);
 end;
 
-procedure THistoryGrid.RichInlineOnKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+procedure THistoryGrid.OnInlineOnKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if not FRichInline.Visible then begin
     CancelInline;
     Key := 0;
-  end;
-  if (Key = Ord('P')) and (ssCtrl in Shift) then begin
-    OnInlineToggleProcessingClick(Self);
-    key:=0;
-  end;
+  end else
+  if Assigned(FOnInlineKeyUp) then
+    FOnInlineKeyUp(Sender,Key,Shift);
+end;
+
+procedure THistoryGrid.OnInlineOnMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  ;
+end;
+
+procedure THistoryGrid.OnInlineOnMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if (Button = mbRight) and Assigned(FOnInlinePopup) then
+    FOnInlinePopup(Sender);
 end;
 
 function THistoryGrid.GetRichEditRect(Item: Integer; DontClipTop: Boolean): TRect;
@@ -4538,44 +4573,6 @@ begin
   finally
     State := gsIdle;
   end;
-end;
-
-procedure THistoryGrid.OnInlinePopup(Sender: TObject);
-begin
-  FpmRichInline.Items[0].Enabled := (FRichInline.SelLength > 0);
-  FpmRichInline.Items[4].Checked := FProcessInline;
-end;
-
-procedure THistoryGrid.OnInlineCopyClick(Sender: TObject);
-begin
-  FRichInline.CopyToClipboard;
-end;
-
-procedure THistoryGrid.OnInlineCopyAllClick(Sender: TObject);
-var
-  cr: TCharRange;
-begin
-  FRichInline.Lines.BeginUpdate;
-  FRichInline.Perform(EM_EXGETSEL,0,LPARAM(@cr));
-  FRichInline.SelectAll;
-  FRichInline.CopyToClipboard;
-  FRichInline.Perform(EM_EXSETSEL,0,LPARAM(@cr));
-  FRichInline.Lines.EndUpdate;
-end;
-
-procedure THistoryGrid.OnInlineSelectAllClick(Sender: TObject);
-begin
-  FRichInline.SelectAll;
-end;
-
-procedure THistoryGrid.OnInlineToggleProcessingClick(Sender: TObject);
-begin
-  ProcessInline := not ProcessInline;
-end;
-
-procedure THistoryGrid.OnInlineCancelClick(Sender: TObject);
-begin
-  CancelInline;
 end;
 
 procedure THistoryGrid.SetBorderStyle(Value: TBorderStyle);

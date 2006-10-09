@@ -63,9 +63,10 @@ type
   end;
 
 const
-  DEFFORMAT_CLIPCOPY     = '%nick%, %smart_datetime%:\n%mes%\n';
-  DEFFORMAT_CLIPCOPYTEXT = '%mes%\n';
-  DEFFORMAT_REPLYQUOTED  = '%nick%, %smart_datetime%:\n%quot_mes%\n';
+  DEFFORMAT_CLIPCOPY        = '%nick%, %smart_datetime%:\n%mes%\n';
+  DEFFORMAT_CLIPCOPYTEXT    = '%mes%\n';
+  DEFFORMAT_REPLYQUOTED     = '%nick%, %smart_datetime%:\n%quot_mes%\n';
+  DEFFORMAT_REPLYQUOTEDTEXT = '%quot_selmes%\n';
 
 const
 
