@@ -30,7 +30,6 @@ uses
   Windows, SysUtils, TntSysUtils,
   m_globaldefs, m_api, hpp_global;
 
-//function QuoteText(Text: WideString): WideString;
 function SendMessageTo(hContact: Integer; Text: WideString = ''): Boolean;
 //function ForwardMessage(Text: String): Boolean;
 
