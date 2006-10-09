@@ -74,17 +74,12 @@ type
     hg: THistoryGrid;
     sb: TTntStatusBar;
     pmLink: TTntPopupMenu;
-    pmFile: TTntPopupMenu;
     paSess: TTntPanel;
     spSess: TTntSplitter;
     ilSessions: TImageList;
     paSessInt: TTntPanel;
     laSess: TTntLabel;
     sbCloseSess: TTntSpeedButton;
-    CopyFile1: TTntMenuItem;
-    N5: TTntMenuItem;
-    OpenFileFolder2: TTntMenuItem;
-    OpenFile2: TTntMenuItem;
     N13: TTntMenuItem;
     SaveSelected1: TTntMenuItem;
     N2: TTntMenuItem;
@@ -96,10 +91,10 @@ type
     SendMessage1: TTntMenuItem;
     N8: TTntMenuItem;
     Details1: TTntMenuItem;
-    Copy2: TTntMenuItem;
+    CopyLink: TTntMenuItem;
     N1: TTntMenuItem;
-    OpeninNewWindow1: TTntMenuItem;
-    Open1: TTntMenuItem;
+    OpenLinkNW: TTntMenuItem;
+    OpenLink: TTntMenuItem;
     ContactRTLmode1: TTntMenuItem;
     ANSICodepage1: TTntMenuItem;
     RTLDisabled2: TTntMenuItem;
@@ -244,9 +239,9 @@ type
     procedure hgXMLData(Sender: TObject; Index: Integer; var Item: TXMLItem);
     procedure OpenFile1Click(Sender: TObject);
     procedure OpenFileFolder1Click(Sender: TObject);
-    procedure OpenLink1Click(Sender: TObject);
-    procedure OpenLinkInNewWindow1Click(Sender: TObject);
-    procedure CopyLink1Click(Sender: TObject);
+    procedure OpenLinkClick(Sender: TObject);
+    procedure OpenLinkNWClick(Sender: TObject);
+    procedure CopyLinkClick(Sender: TObject);
     //procedure OpenFile2Click(Sender: TObject);
     //procedure OpenFileFolder2Click(Sender: TObject);
     //procedure CopyFile1Click(Sender: TObject);
@@ -2342,31 +2337,22 @@ begin
 //  ShellExecute(0,nil,PChar(FileName),nil,PChar(FileName),SW_SHOWDEFAULT);
 end;
 
-procedure THistoryFrm.OpenLink1Click(Sender: TObject);
-var
-  bNewWindow: Integer;
+procedure THistoryFrm.OpenLinkClick(Sender: TObject);
 begin
-  //if LinkUrl1.Caption = '' then exit;
   if SavedLinkUrl = '' then exit;
-  bNewWindow := 0; // no, use existing window
-  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(@SavedLinkUrl[1])));
+  PluginLink.CallService(MS_UTILS_OPENURL,0,Integer(Pointer(@SavedLinkUrl[1])));
   SavedLinkUrl := '';
 end;
 
-procedure THistoryFrm.OpenLinkInNewWindow1Click(Sender: TObject);
-var
-  bNewWindow: Integer;
+procedure THistoryFrm.OpenLinkNWClick(Sender: TObject);
 begin
-  //if LinkUrl1.Caption = '' then exit;
   if SavedLinkUrl = '' then exit;
-  bNewWindow := 1; // use new window
-  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(@SavedLinkUrl[1])));
+  PluginLink.CallService(MS_UTILS_OPENURL,1,Integer(Pointer(@SavedLinkUrl[1])));
   SavedLinkUrl := '';
 end;
 
-procedure THistoryFrm.CopyLink1Click(Sender: TObject);
+procedure THistoryFrm.CopyLinkClick(Sender: TObject);
 begin
-  //if LinkUrl1.Caption = '' then exit;
   if SavedLinkUrl = '' then exit;
   CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Handle,CP_ACP);
   SavedLinkUrl := '';
@@ -2751,7 +2737,6 @@ begin
   TranslateMenu(pmInline.Items);
 
   TranslateMenu(pmLink.Items);
-  TranslateMenu(pmFile.Items);
   TranslateMenu(pmHistory.Items);
   TranslateMenu(pmEventsFilter.Items);
   TranslateMenu(pmSessions.Items);
@@ -2924,7 +2909,7 @@ end;
 procedure THistoryFrm.CustomizeToolbar;
 begin
   if hContact = 0 then exit;
-  
+
   if not Assigned(fmCustomizeToolbar)  then begin
     CustomizeToolbarForm := TfmCustomizeToolbar.Create(Self);
     CustomizeToolbarForm.Show;
@@ -2938,15 +2923,12 @@ procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
 var
   bNewWindow: Integer;
 begin
-  // if LinkUrl1.Caption = '' then exit;
   if Url= '' then exit;
-  bNewWindow := 0; // no, use existing window
-  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Integer(Pointer(@Url[1])));
+  PluginLink.CallService(MS_UTILS_OPENURL,0,Integer(Pointer(@Url[1])));
 end;
 
 procedure THistoryFrm.hgUrlPopup(Sender: TObject; Item: Integer; Url: String);
 begin
-  //LinkUrl1.Caption := AnsiToWideString(Url,CP_ACP);
   SavedLinkUrl := Url;
   pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
 end;
