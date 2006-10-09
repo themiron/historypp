@@ -154,7 +154,7 @@ function GetRichWideString(RichEditHandle: THandle; SelectionOnly: Boolean = fal
 var
   buffer: AnsiString;
 begin
-  GetRichRTF(RichEditHandle,buffer,SelectionOnly,True,False,True,True);
+  GetRichRTF(RichEditHandle,buffer,SelectionOnly,True,True,True,True);
   Result := WideString(PWideChar(@buffer[1]));
 end;
 
