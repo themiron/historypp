@@ -6,7 +6,7 @@ uses
   Windows, Classes, Controls, Forms, Graphics, Messages,
   m_api, m_globaldefs,
   hpp_global, hpp_events, hpp_contacts, hpp_services, hpp_forms, hpp_bookmarks,
-  hpp_richedit, hpp_messages,
+  hpp_richedit, hpp_messages, hpp_eventfilters,
   HistoryGrid,
   RichEdit, Menus, TntMenus;
 
@@ -205,9 +205,11 @@ begin
   Item.Proto := Grid.Protocol;
   Item.RTLMode := Items[Index].RTLMode;
   Item.Bookmarked := BookmarkServer[Items[Index].hContact].Bookmarked[Items[Index].hDBEvent];
-  if (not Item.IsRead) and Grid.Visible then begin
+  if (not Item.IsRead) and
+     (MessageTypesToDWord(Item.MessageType) and
+      MessageTypesToDWord([mtIncoming,mtMessage,mtUrl,mtStatus]) > 0) then begin
     PluginLink.CallService(MS_DB_EVENT_MARKREAD,Items[Index].hContact,Items[Index].hDBEvent);
-    PluginLink.CallService(MS_CLIST_REMOVEEVENT,Items[Index].hContact,Items[Index].hDBEvent);
+    //PluginLink.CallService(MS_CLIST_REMOVEEVENT,Items[Index].hContact,Items[Index].hDBEvent);
   end;
 end;
 
