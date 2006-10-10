@@ -237,14 +237,9 @@ type
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure hgSelect(Sender: TObject; Item, OldItem: Integer);
     procedure hgXMLData(Sender: TObject; Index: Integer; var Item: TXMLItem);
-    procedure OpenFile1Click(Sender: TObject);
-    procedure OpenFileFolder1Click(Sender: TObject);
     procedure OpenLinkClick(Sender: TObject);
     procedure OpenLinkNWClick(Sender: TObject);
     procedure CopyLinkClick(Sender: TObject);
-    //procedure OpenFile2Click(Sender: TObject);
-    //procedure OpenFileFolder2Click(Sender: TObject);
-    //procedure CopyFile1Click(Sender: TObject);
     procedure bnPassClick(Sender: TObject);
     procedure edPassKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure edPassKeyPress(Sender: TObject; var Key: Char);
@@ -419,8 +414,6 @@ const
 procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
 function ParseUrlItem(Item: THistoryItem; out Url,Mes: WideString): Boolean;
 function ParseFileItem(Item: THistoryItem; out FileName,Mes: WideString): Boolean;
-//function GetItemFile(Item: THistoryItem; hContact: THandle): string;
-//function GetItemUrl(Item: THistoryItem): string;
 
 implementation
 
@@ -438,29 +431,6 @@ function Max(a,b:integer):integer;
 begin if b>a then Result:=b else Result:=a end;
 function NotZero(x:dword):dword;//used that array doesn't store 0 for already loaded data
 begin if x=0 then Result:=1 else Result:=x end;
-
-{function GetItemFile(Item: THistoryItem; hContact: THandle): String;
-var
-  filename,mes: string;
-  dir: array[0..MAX_PATH] of Char;
-begin
-  if not ParseFileItem(Item,Filename,mes) then exit;
-  if mtOutgoing in Item.MessageType then begin
-    Result := filename;
-    exit;
-  end;
-  if hContact = 0 then exit;
-  if PluginLink.CallService(MS_FILE_GETRECEIVEDFILESFOLDER,hContact,Integer(@dir)) <> 0 then exit;
-  Result := string(dir) + FileName;
-end;}
-
-{function GetItemUrl(Item: THistoryItem): string;
-var
-url,mes: string;
-begin
-ParseUrlItem(Item,url,mes);
-Result := url;
-end;}
 
 function ParseUrlItem(Item: THistoryItem; out Url,Mes: WideString): Boolean;
 var
@@ -1559,14 +1529,8 @@ begin
 end;
 
 procedure THistoryFrm.hgPopup(Sender: TObject);
-//var
-//tmp1,tmp2: string;
+
 begin
-  //OpenURL1.Visible := False;
-  //CopyLink1.Visible := False;
-  //OpenURLNew1.Visible := False;
-  //OpenFile1.Visible := False;
-  //OpenFileFolder1.Visible := False;
   Delete1.Visible := False;
   SaveSelected1.Visible := False;
   if hContact = 0 then begin
@@ -1574,37 +1538,13 @@ begin
     ReplyQuoted1.Visible := False;
   end;
   if hg.Selected <> -1 then begin
-    //Details1.Default := True;
     Delete1.Visible := True;
     if hg.Options.OpenDetailsMode then
       Details1.Caption := TranslateWideW('&Edit')
     else
       Details1.Caption := TranslateWideW('&Open');
-    //if hContact <> 0 then
-      //ReplyQuoted1.Visible := True;
     if hg.SelCount > 1 then
       SaveSelected1.Visible := True;
-    {
-    if mtURL in hg.Items[hg.Selected].MessageType then begin
-      tmp1 := GetItemURL(hg.Items[hg.Selected]);
-      if tmp1 <> '' then begin
-        OpenURL1.Visible := True;
-        //OpenURLNew1.Visible := True;
-        CopyLink1.Visible := True;
-        end;
-      end;
-    }
-    {
-    if mtFile in hg.Items[hg.Selected].MessageType then begin
-      tmp1 := GetItemFile(hg.Items[hg.Selected],hContact);
-      if tmp1 <> '' then begin
-        if FileExists(tmp1) then
-          OpenFile1.Visible := True;
-        if DirectoryExists(ExtractFileDir(tmp1)) then
-          OpenFileFolder1.Visible := True;
-        end;
-      end;
-    }
     //AddMenuArray(pmGrid,[Options1,ANSICodepage1,ContactRTLmode1,N11,ConversationLog1],-1);
     pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
   end;
@@ -2320,23 +2260,6 @@ begin
     Item.ID := MakeTextXMLed(Item.ID);
 end;
 
-procedure THistoryFrm.OpenFile1Click(Sender: TObject);
-//var
-  //FileName: string;
-begin
-  //FileName := GetItemFile(hg.Items[hg.Selected],hContact);
-  //ShellExecute(0,nil,PChar(FileName),nil,PChar(ExtractFileDir(FileName)),SW_SHOWDEFAULT);
-end;
-
-procedure THistoryFrm.OpenFileFolder1Click(Sender: TObject);
-//var
-  //FileName: string;
-begin
-//  FileName := GetItemFile(hg.Items[hg.Selected],hContact);
-//  FileName := ExtractFileDir(FileName);
-//  ShellExecute(0,nil,PChar(FileName),nil,PChar(FileName),SW_SHOWDEFAULT);
-end;
-
 procedure THistoryFrm.OpenLinkClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
@@ -2357,42 +2280,6 @@ begin
   CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Handle,CP_ACP);
   SavedLinkUrl := '';
 end;
-
-// no file operations
-{procedure THistoryFrm.OpenFile2Click(Sender: TObject);
-begin
-ShellExecute(0,nil,PChar(FileLink1.Caption),nil,PChar(ExtractFileDir(FileLink1.Caption)),SW_SHOWDEFAULT);
-end;}
-
-// no file operations
-{procedure THistoryFrm.OpenFileFolder2Click(Sender: TObject);
-var
-tmp1: String;
-begin
-tmp1 := ExtractFileDir(FileLink1.Caption);
-ShellExecute(0,nil,PChar(tmp1),nil,PChar(tmp1),SW_SHOWDEFAULT);
-end;}
-
-{procedure THistoryFrm.CopyFile1Click(Sender: TObject);
-begin
-  if FileLink2.Caption = '' then exit;
-  CopyToClip(FileLink2.Caption,Handle);
-end;}
-
-{procedure THistoryFrm.OpenOptions;
-begin
-  if not Assigned(OptionsFm) then begin
-    OptionsFm := TfmOptions.Create(nil);
-    TfmOptions(OptionsFm).DateGrid.ProfileName := hg.ProfileName;
-    TfmOptions(OptionsFm).Load;
-  end;
-  OptionsFm.Show;
-end;}
-
-{procedure THistoryFrm.Options1Click(Sender: TObject);
-begin
-OpenOptions;
-end;}
 
 procedure THistoryFrm.SetPanel(const Value: THistoryPanel);
 var
