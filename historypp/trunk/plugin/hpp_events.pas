@@ -300,29 +300,28 @@ end;
 
 function GetEventTextForMessage(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 var
-  lenW,lenA : Cardinal;
-  PBlobEnd: Pointer;
-  PUnicode: PWideChar;
-  Source,Dest: PWideChar;
+  msgA: PAnsiChar;
+  msgW: PWideChar;
+  msglen: integer;
+  i,lenW: integer;
+  UseUnicode: boolean;
 begin
-  PBlobEnd := PChar(EventInfo.pBlob) + EventInfo.cbBlob;
-  AllocateTextBuffer(EventInfo.cbBlob+3);
-  lenA :=  StrLen(StrLCopy(buffer,PChar(EventInfo.pBlob),EventInfo.cbBlob));
-  PUnicode := Pointer(buffer+lenA+1);
-  Dest := PUnicode;
-  Source := Pointer(PChar(EventInfo.pBlob)+lenA+1);
-  lenW := 0;
-  While (Source < PBlobEnd) and (Source^ <> #0) do begin
-    Dest^ := Source^;
-    Inc(Source);
-    Inc(Dest);
-    Inc(lenW);
-  end;
-  if lenA = lenW then begin
-    Dest^ := #0;
-    SetString(Result,PUnicode,lenW);
-  end else
-    Result := AnsiToWideString(buffer,UseCP);
+  msgA := PChar(EventInfo.pBlob);
+  msglen := lstrlenA(PChar(EventInfo.pBlob))+1;
+  if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
+    msgW := PWideChar(msgA+msglen);
+    LenW := 0;
+    for i := 0 to (EventInfo.cbBlob-msglen) div SizeOf(WideChar) do
+      if msgW[i] = #0 then begin
+        LenW := i;
+        break;
+      end;
+    UseUnicode := (lenW <= (msglen-1)) and (lenW > 0);
+  end else UseUnicode := false;
+  if UseUnicode then
+    SetString(Result,msgW,lenW)
+  else
+    Result := AnsiToWideString(msgA,UseCP);
   if TextHasUrls(Result) then MessType := mtUrl;
 end;
 
@@ -486,37 +485,35 @@ end;
 
 function GetEventTextForAvatarChange(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
 var
-  lenW,lenA : Cardinal;
-  PBlobEnd: Pointer;
-  PUnicode: PWideChar;
-  Source,Dest: PWideChar;
+  msgA: PAnsiChar;
+  msgW: PWideChar;
+  msglen: integer;
+  i,lenW: integer;
+  UseUnicode: boolean;
   Link: WideString;
 begin
-  PBlobEnd := PChar(EventInfo.pBlob) + EventInfo.cbBlob;
-  AllocateTextBuffer(EventInfo.cbBlob+3);
-  lenA :=  StrLen(StrLCopy(buffer,PChar(EventInfo.pBlob),EventInfo.cbBlob));
-  PUnicode := Pointer(buffer+lenA+1);
-  Dest := PUnicode;
-  Source := Pointer(PChar(EventInfo.pBlob)+lenA+1);
-  lenW := 0;
-  While (Source < PBlobEnd) and (Source^ <> #0) do begin
-    Dest^ := Source^;
-    Inc(Source);
-    Inc(Dest);
-    Inc(lenW);
-  end;
-  if lenA = lenW then begin
-    Dest^ := #0;
-    SetString(Result,PUnicode,lenW)
-  end else begin
-    Result := AnsiToWideString(buffer,UseCP);
-    lenW := 0;
-  end;
-  lenA := (lenA+1)+(lenW+1)*2;
-  if lenA < EventInfo.cbBlob then begin
-    StrLCopy(buffer,PChar(EventInfo.pBlob)+lenA,EventInfo.cbBlob-lenA);
-    if StrLen(buffer) > 0 then begin
-      Link := URLEncode(hppProfileDir+'/'+buffer);
+  msgA := PChar(EventInfo.pBlob);
+  msglen := lstrlenA(PChar(EventInfo.pBlob))+1;
+  if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
+    msgW := PWideChar(msgA+msglen);
+    LenW := 0;
+    for i := 0 to (EventInfo.cbBlob-msglen) div SizeOf(WideChar) do
+      if msgW[i] = #0 then begin
+        LenW := i;
+        break;
+      end;
+    UseUnicode := (lenW <= (msglen-1)) and (lenW > 0);
+  end else
+    UseUnicode := false;
+  if UseUnicode then
+    SetString(Result,msgW,lenW)
+  else
+    Result := AnsiToWideString(msgA,UseCP);
+  msglen := msglen+(lenW+1)*SizeOf(WideChar);
+  if msglen < EventInfo.cbBlob then begin
+    msgA := msgA + msglen;
+    if lstrlenA(msgA) > 0 then begin
+      Link := URLEncode(hppProfileDir+'/'+msgA);
       Result := Result + #13#10 + 'file://localhost/'+AnsiToWideString(Link,CP_ACP);
     end;
   end;
