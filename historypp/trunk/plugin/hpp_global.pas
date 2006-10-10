@@ -68,6 +68,13 @@ type
     IsRead: Boolean;
   end;
 
+  TCodePage = record
+    cp: Cardinal;
+    lid: LCID;
+    name: WideString;
+  end;
+
+
   TWideStrArray = array of WideString;
   TIntArray = array of Integer;
 
@@ -104,6 +111,23 @@ const
   EVENTTYPE_STATUSCHANGE2   = 9002;		// from prescuma
   EVENTTYPE_AVATARCHANGE    = 9003;		// from prescuma
 
+  cpTable: array[0..14] of TCodePage = (
+    (cp:  874; lid: $041E; name: 'Thai'),
+    (cp:  932; lid: $0411; name: 'Japanese'),
+    (cp:  936; lid: $0804; name: 'Simplified Chinese'),
+    (cp:  949; lid: $0412; name: 'Korean'),
+    (cp:  950; lid: $0404; name: 'Traditional Chinese'),
+    (cp: 1250; lid: $0405; name: 'Central European'),
+    (cp: 1251; lid: $0419; name: 'Cyrillic'),
+    (cp: 1252; lid: $0409; name: 'Latin I'),
+    (cp: 1253; lid: $0408; name: 'Greek'),
+    (cp: 1254; lid: $041F; name: 'Turkish'),
+    (cp: 1255; lid: $040D; name: 'Hebrew'),
+    (cp: 1256; lid: $0801; name: 'Arabic'),
+    (cp: 1257; lid: $0425; name: 'Baltic'),
+    (cp: 1258; lid: $042A; name: 'Vietnamese'),
+    (cp: 1361; lid: $0412; name: 'Korean (Johab)'));
+
 var
   hppVersionStr: String;
   //hppVersionPrefix: String;
@@ -139,7 +163,7 @@ function WideToAnsiString(const WS: WideString; CodePage: Cardinal): AnsiString;
 function TranslateAnsiW(const S: AnsiString{TRANSLATE-IGNORE}): WideString;
 function TranslateWideW(const WS: WideString{TRANSLATE-IGNORE}): WideString;
 function MakeFileName(FileName: AnsiString): AnsiString;
-procedure CopyToClip(s: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
+procedure CopyToClip(WideStr: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
 function URLEncode(const ASrc: string): string;
 
@@ -171,9 +195,7 @@ var
   InputLength,
   OutputLength: Integer;
 begin
-  {if CodePage = CP_UTF7 then
-    Result := UTF7ToWideString(S)   // CP_UTF7 not supported on Windows 95
-  else }if CodePage = CP_UTF8 then begin
+  if CodePage = CP_UTF8 then begin
     Result := UTF8Decode(S);         // CP_UTF8 not supported on Windows 95
   end else begin
     InputLength := Length(S);
@@ -188,9 +210,7 @@ var
   InputLength,
   OutputLength: Integer;
 begin
-  {if CodePage = CP_UTF7 then
-    Result := WideStringToUTF7(WS) // CP_UTF7 not supported on Windows 95
-  else }if CodePage = CP_UTF8 then
+  if CodePage = CP_UTF8 then
     Result := UTF8Encode(WS) // CP_UTF8 not supported on Windows 95
   else begin
     InputLength := Length(WS);
@@ -232,7 +252,7 @@ begin
   Result := StringReplace(Result,'|','',[rfReplaceAll]);
 end;
 
-procedure CopyToClip(s: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
+procedure CopyToClip(WideStr: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
 
   function StrAllocW(Size: Cardinal): PWideChar;
   begin
@@ -257,10 +277,20 @@ var
   WDataPtr: PWideChar;
   ADataPtr: PAnsiChar;
   ASize,WSize: Integer;
-  a: AnsiString;
+  AnsiStr: AnsiString;
+  AnsiLCID: LCID;
+  i: integer;
 begin
-  ASize := Length(s)+1;
+  AnsiStr := WideToAnsiString(WideStr,CodePage);
+  ASize := Length(AnsiStr)+1;
   WSize := ASize*SizeOf(WideChar);
+  if CodePage = CP_ACP then CodePage := GetACP;
+  AnsiLCID := 0;
+  for i := 0 to High(cpTable) do
+    if cpTable[i].cp = CodePage then begin
+      AnsiLCID := cpTable[i].lid;
+      break;
+    end;
   OpenClipboard(Handle);
   try
     EmptyClipboard;
@@ -271,11 +301,11 @@ begin
       WDataPtr := GlobalLock(WData);
       ADataPtr := GlobalLock(AData);
       LDataPtr := GlobalLock(LData);
-      a := WideToAnsiString(S,CodePage);
       try
-        Move(s[1],WDataPtr^,WSize);
-        Move(a[1],ADataPtr^,ASize);
-        LDataPtr^ := CodePage;
+        Move(WideStr[1],WDataPtr^,WSize);
+        Move(AnsiStr[1],ADataPtr^,ASize);
+        LDataPtr^ := AnsiLCID;
+        LDataPtr^ := GetSystemDefaultLCID;
         SetClipboardData(CF_UNICODETEXT, WData);
         SetClipboardData(CF_TEXT, AData);
         SetClipboardData(CF_LOCALE, LData);

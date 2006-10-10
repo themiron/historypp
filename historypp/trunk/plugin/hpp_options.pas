@@ -57,11 +57,6 @@ type
     back: TColor;
   end;
 
-  TCodePage = record
-    cp: Cardinal;
-    name: WideString;
-  end;
-
 const
   DEFFORMAT_CLIPCOPY        = '%nick%, %smart_datetime%:\n%mes%\n';
   DEFFORMAT_CLIPCOPYTEXT    = '%mes%\n';
@@ -168,23 +163,6 @@ const
     (name: 'Nick changes'; Mes: [mtNickChange,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $00D7FDFF),
     (name: 'Avatar changes'; Mes: [mtAvatarChange,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $00D7FDFF)
     );
-
-  cpTable: array[0..14] of TCodePage = (
-    (cp:  874; name: 'Thai' ),
-    (cp:  932; name: 'Japanese' ),
-    (cp:  936; name: 'Simplified Chinese' ),
-    (cp:  949; name: 'Korean' ),
-    (cp:  950; name: 'Traditional Chinese' ),
-    (cp: 1250; name: 'Central European' ),
-    (cp: 1251; name: 'Cyrillic' ),
-    (cp: 1252; name: 'Latin I' ),
-    (cp: 1253; name: 'Greek' ),
-    (cp: 1254; name: 'Turkish' ),
-    (cp: 1255; name: 'Hebrew' ),
-    (cp: 1256; name: 'Arabic' ),
-    (cp: 1257; name: 'Baltic' ),
-    (cp: 1258; name: 'Vietnamese' ),
-    (cp: 1361; name: 'Korean (Johab)' ));
 
 var
   GridOptions: TGridOptions;
