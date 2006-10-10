@@ -163,6 +163,7 @@ function WideToAnsiString(const WS: WideString; CodePage: Cardinal): AnsiString;
 function TranslateAnsiW(const S: AnsiString{TRANSLATE-IGNORE}): WideString;
 function TranslateWideW(const WS: WideString{TRANSLATE-IGNORE}): WideString;
 function MakeFileName(FileName: AnsiString): AnsiString;
+function GetLCIDfromCodepage(Codepage: Cardinal): LCID;
 procedure CopyToClip(WideStr: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
 function URLEncode(const ASrc: string): string;
@@ -252,6 +253,19 @@ begin
   Result := StringReplace(Result,'|','',[rfReplaceAll]);
 end;
 
+function GetLCIDfromCodepage(Codepage: Cardinal): LCID;
+var
+  i: integer;
+begin
+  if CodePage = CP_ACP then CodePage := GetACP;
+  Result := 0;
+  for i := 0 to High(cpTable) do
+    if cpTable[i].cp = CodePage then begin
+      Result := cpTable[i].lid;
+      break;
+    end;
+end;
+
 procedure CopyToClip(WideStr: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
 
   function StrAllocW(Size: Cardinal): PWideChar;
@@ -278,19 +292,11 @@ var
   ADataPtr: PAnsiChar;
   ASize,WSize: Integer;
   AnsiStr: AnsiString;
-  AnsiLCID: LCID;
   i: integer;
 begin
   AnsiStr := WideToAnsiString(WideStr,CodePage);
   ASize := Length(AnsiStr)+1;
   WSize := ASize*SizeOf(WideChar);
-  if CodePage = CP_ACP then CodePage := GetACP;
-  AnsiLCID := 0;
-  for i := 0 to High(cpTable) do
-    if cpTable[i].cp = CodePage then begin
-      AnsiLCID := cpTable[i].lid;
-      break;
-    end;
   OpenClipboard(Handle);
   try
     EmptyClipboard;
@@ -304,8 +310,7 @@ begin
       try
         Move(WideStr[1],WDataPtr^,WSize);
         Move(AnsiStr[1],ADataPtr^,ASize);
-        LDataPtr^ := AnsiLCID;
-        LDataPtr^ := GetSystemDefaultLCID;
+        LDataPtr^ := GetLCIDfromCodepage(CodePage);
         SetClipboardData(CF_UNICODETEXT, WData);
         SetClipboardData(CF_TEXT, AData);
         SetClipboardData(CF_LOCALE, LData);
