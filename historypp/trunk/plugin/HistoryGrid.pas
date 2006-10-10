@@ -1938,7 +1938,8 @@ begin
     // stored text seems to be RTF
     RTF := WideToAnsiString(FItems[Item].Text,FItems[Item].Codepage)+#0
   end else begin
-    RTF := Format('{\rtf1\ansi\ansicpg%u\deff0{\fonttbl ',[FItems[Item].Codepage]);
+    RTF := '{\rtf1\ansi\deff0{\fonttbl ';
+    //RTF := Format('{\rtf1\ansi\ansicpg%u\deff0\deflang%u{\fonttbl ',[FItems[Item].Codepage,GetLCIDfromCodepage(CodePage)]);
     RTF := RTF + Format('{\f0\fnil\fcharset%u %s}',[textFont.CharSet,textFont.Name]);
     RTF := RTF + '}{\colortbl';
     RTF := RTF + Format('\red%u\green%u\blue%u;',[textColor and $FF,(textColor shr 8) and $FF,(textColor shr 16) and $FF]);
@@ -1954,7 +1955,7 @@ begin
        integer(fsUnderline in textFont.Style),
        integer(fsStrikeOut in textFont.Style),
        Round(abs(textFont.Height)*FontSizeMult)]);
-    if GetItemRTL(Item) then RTF := RTF + '\ltrch\rtlch' else RTF := RTF + '\rtlch\ltrch';
+    if GetItemRTL(Item) then RTF := RTF + '\ltrch\rtlch ' else RTF := RTF + '\rtlch\ltrch ';
     Text := FormatTextUnicodeRTF(FItems[Item].Text);
     if Options.BBCodesEnabled and UseTextFormatting then begin
       Text := DoSupportBBCodesRTF(Text,2,NoDefaultColors);
@@ -1962,6 +1963,7 @@ begin
     RTF := RTF + Text + '}'+#0;
   end;
 
+  Richedit.Font := textFont;
   SetRichRTF(RichEdit.Handle,RTF,False,False,True);
 
   if UseTextFormatting and Assigned(FOnProcessRichText) then begin

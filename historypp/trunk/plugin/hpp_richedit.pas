@@ -136,15 +136,17 @@ begin
   Result := '{\uc1 ';
   for i := 1 to Length(Text) do begin
     case Text[i] of
-      #13: ;
-      #10: Result := Result + '\line ';
+      #13: Result := Result + '\line ';
+      #10: ;
       #09: Result := Result + '\tab ';
       '\': Result := Result + '\\';
       '{': Result := Result + '\{';
       '}': Result := Result + '\}';
     else
-      if integer(Text[i]) < 128 then Result := Result + AnsiChar(integer(Text[i]))
-                                else Result := Result + Format('\u%d ?',[integer(Text[i])]);
+      if integer(Text[i]) < integer(High(AnsiChar)) then
+        Result := Result + AnsiChar(integer(Text[i]))
+      else
+        Result := Result + Format('\u%d?',[integer(Text[i])]);
     end;
   end;
   Result := Result + '}';
