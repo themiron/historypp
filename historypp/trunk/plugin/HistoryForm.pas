@@ -1190,7 +1190,7 @@ var
   Flag: UINT;
   AppSysMenu: THandle;
 begin
-  CanClose := (hg.State = gsIdle);
+  CanClose := (hg.State in [gsIdle,gsInline]);
   if CanClose and (SessThread <> nil) then begin
     // disable close button
     AppSysMenu:=GetSystemMenu(Handle,False);
