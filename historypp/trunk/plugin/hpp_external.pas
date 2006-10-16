@@ -82,6 +82,8 @@ const
   MS_HPP_EG_NOTIFICATION   = 'History++/ExtGrid/Notification';
 
 var
+  hExtWindowIE, hExtEventIE, hExtUtilsIE: THandle;
+  hExtOptChangedIE, hExtNotificationIE: THandle;
   hExtWindow, hExtEvent, hExtUtils: THandle;
   hExtOptChanged, hExtNotification: THandle;
   ImitateIEView: boolean;
@@ -209,23 +211,33 @@ procedure RegisterExtGridServices;
 begin
   ImitateIEView := GetDBBool(hppDBName,'IEViewAPI',false);
   if ImitateIEView then begin
-    hExtWindow := PluginLink.CreateServiceFunction(MS_HPP_IE_WINDOW,ExtWindow);
-    hExtEvent := PluginLink.CreateServiceFunction(MS_HPP_IE_EVENT,ExtEvent);
-    hExtUtils := PluginLink.CreateServiceFunction(MS_HPP_IE_UTILS,ExtUtils);
-    hExtOptChanged := PluginLink.CreateHookableEvent(MS_HPP_IE_OPTIONSCHANGED);
-    hExtNotification := PluginLink.CreateHookableEvent(MS_HPP_IE_NOTIFICATION);
+    hExtWindowIE := PluginLink.CreateServiceFunction(MS_HPP_IE_WINDOW,ExtWindow);
+    hExtEventIE := PluginLink.CreateServiceFunction(MS_HPP_IE_EVENT,ExtEvent);
+    hExtUtilsIE := PluginLink.CreateServiceFunction(MS_HPP_IE_UTILS,ExtUtils);
+    hExtOptChangedIE := PluginLink.CreateHookableEvent(MS_HPP_IE_OPTIONSCHANGED);
+    hExtNotificationIE := PluginLink.CreateHookableEvent(MS_HPP_IE_NOTIFICATION);
   end;
+  hExtWindow := PluginLink.CreateServiceFunction(MS_HPP_EG_WINDOW,ExtWindow);
+  hExtEvent := PluginLink.CreateServiceFunction(MS_HPP_EG_EVENT,ExtEvent);
+  hExtUtils := PluginLink.CreateServiceFunction(MS_HPP_EG_UTILS,ExtUtils);
+  hExtOptChanged := PluginLink.CreateHookableEvent(MS_HPP_EG_OPTIONSCHANGED);
+  hExtNotification := PluginLink.CreateHookableEvent(MS_HPP_EG_NOTIFICATION);
 end;
 
 procedure UnregisterExtGridServices;
 begin
   if ImitateIEView then begin
-    PluginLink.DestroyServiceFunction(hExtWindow);
-    PluginLink.DestroyServiceFunction(hExtEvent);
-    PluginLink.DestroyServiceFunction(hExtUtils);
-    PluginLink.DestroyHookableEvent(hExtOptChanged);
-    PluginLink.DestroyHookableEvent(hExtNotification);
+    PluginLink.DestroyServiceFunction(hExtWindowIE);
+    PluginLink.DestroyServiceFunction(hExtEventIE);
+    PluginLink.DestroyServiceFunction(hExtUtilsIE);
+    PluginLink.DestroyHookableEvent(hExtOptChangedIE);
+    PluginLink.DestroyHookableEvent(hExtNotificationIE);
   end;
+  PluginLink.DestroyServiceFunction(hExtWindow);
+  PluginLink.DestroyServiceFunction(hExtEvent);
+  PluginLink.DestroyServiceFunction(hExtUtils);
+  PluginLink.DestroyHookableEvent(hExtOptChanged);
+  PluginLink.DestroyHookableEvent(hExtNotification);
 end;
 
 end.
