@@ -393,7 +393,6 @@ type
 
     FShowBottomAligned: Boolean;
 
-    FontSizeMult: Double;
     FOnKillFocus: TOnKillFocus;
 
     FSavedKeyMessage: TWMKey;
@@ -762,24 +761,14 @@ end;
 
 constructor THistoryGrid.Create(AOwner: TComponent);
 var
-  LogY: Integer;
   dc: HDC;
+  LogY: Integer;
 begin
   inherited;
   ShowHint := True;
   {$IFDEF RENDER_RICH}
   FRichCache := TRichCache.Create(Self);
-
-  {FpmRichInline := TTntPopupMenu.Create(Self);
-  FpmRichInline.Items.Add(WideNewItem('&Copy',TextToShortCut('Ctrl+C'),false,true,OnInlineCopyClick,0,'pmCopy'));
-  FpmRichInline.Items.Add(WideNewItem('Copy All',0,false,true,OnInlineCopyAllClick,0,'pmCopyAll'));
-  FpmRichInline.Items.Add(WideNewItem('Select &All',TextToShortCut('Ctrl+A'),false,true,OnInlineSelectAllClick,0,'pmSelectAll'));
-  FpmRichInline.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN1'));
-  FpmRichInline.Items.Add(WideNewItem('Text Formatting',TextToShortCut('Ctrl+P'),false,true,OnInlineToggleProcessingClick,0,'pmProcessInline'));
-  FpmRichInline.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN2'));
-  FpmRichInline.Items.Add(WideNewItem('Cancel',TextToShortCut('ESC'),false,true,OnInlineCancelClick,0,'pmCancel'));
-  FpmRichInline.OnPopup := OnInlinePopup;}
-
+  
   {tmp
   FRich := TRichEdit.Create(Self);
   FRich.Name := 'OrgFRich';
@@ -894,8 +883,7 @@ begin
   dc := GetDC(0);
   LogY := GetDeviceCaps(dc, LOGPIXELSY);
   ReleaseDC(0,dc);
-  VLineScrollSize := Round(LogY*((13*5)/96));
-  FontSizeMult := 2*74/LogY;
+  VLineScrollSize := MulDiv(LogY,13*5,96);
 
   FBorderStyle := bsSingle;
 
@@ -1183,7 +1171,7 @@ begin
     FRichInline.Perform(EM_EXGETSEL,0,LPARAM(@cr));
     ApplyItemToRich(Selected, FRichInline);
     FRichInline.Perform(EM_EXSETSEL,0,LPARAM(@cr));
-    FRichInline.Perform(EM_SCROLLCARET, 0, 0);
+    //FRichInline.Perform(EM_SCROLLCARET, 0, 0);
     FRichInline.Lines.EndUpdate;
   end;
   if Assigned(FOnProcessInlineChange) then
@@ -1954,9 +1942,10 @@ begin
        integer(fsItalic in textFont.Style),
        integer(fsUnderline in textFont.Style),
        integer(fsStrikeOut in textFont.Style),
-       Round(abs(textFont.Height)*FontSizeMult)]);
+       integer(textFont.Size shl 1)]);
+       //-MulDiv(textFont.Size,2*72,LogY)]);
     if GetItemRTL(Item) then RTF := RTF + '\ltrch\rtlch ' else RTF := RTF + '\rtlch\ltrch ';
-    Text := FormatTextUnicodeRTF(FItems[Item].Text);
+    Text := FormatString2RTF(FItems[Item].Text);
     if Options.BBCodesEnabled and UseTextFormatting then begin
       Text := DoSupportBBCodesRTF(Text,2,NoDefaultColors);
     end;
@@ -2744,9 +2733,9 @@ begin
     else begin
       mes := FItems[Item].Text;
       if Options.RawRTFEnabled and IsRTF(mes) then
-        mes := RtfToWideString(FRich.Handle,mes);
+        mes := FormatRTF2String(FRich.Handle,mes);
       if State = gsInline then
-        selmes := GetRichWideString(FRichInline.Handle,True)
+        selmes := GetRichString(FRichInline.Handle,True)
       else selmes := mes;
       if mtIncoming in FItems[Item].MessageType then begin
         from_nick := ContactName;
@@ -3977,10 +3966,10 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     if mtIncoming in FItems[Item].MessageType then Text := ContactName
                                               else Text := ProfileName;
     Text := Text + ' ['+GetTime(FItems[Item].Time)+']:';
-    RTFStream := '{\rtf1 \par \b1 '+FormatTextUnicodeRTF(Text)+'\b0\par}';
-    SetRichRTF(FRichSave.Handle,RTFStream,true,false,true);
-    GetRichRTF(FRich.Handle,RTFStream,false,false,false,true);
-    SetRichRTF(FRichSave.Handle,RTFStream,true,false,true);
+    RTFStream := '{\rtf1\par\b1 '+FormatString2RTF(Text)+'\b0\par}';
+    SetRichRTF(FRichSave.Handle,RTFStream,true,false,false);
+    GetRichRTF(FRich.Handle,RTFStream,false,false,false,false);
+    SetRichRTF(FRichSave.Handle,RTFStream,true,false,false);
   end;
 
 begin
