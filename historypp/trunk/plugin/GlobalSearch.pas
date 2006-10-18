@@ -923,11 +923,10 @@ begin
     AppSysMenu:=GetSystemMenu(Handle,False);
     Flag:=MF_GRAYED;
     EnableMenuItem(AppSysMenu,SC_CLOSE,MF_BYCOMMAND or Flag);
-    // terminate thread
-    st.Terminate;
     laProgress.Caption := TranslateWideW('Please wait while closing the window...');
     laProgress.Font.Style := [fsBold];
     pb.Visible := False;
+    st.Terminate;
     if IsSearching then
       SetThreadPriority(st.Handle, THREAD_PRIORITY_ABOVE_NORMAL);
     while IsSearching do
@@ -1459,9 +1458,9 @@ end;
 
 procedure TfmGlobalSearch.HMContactDeleted(var M: TMessage);
 begin
-{wParam - hContact; lParam - zero}
-// do here something because the contact is deleted
-if IsSearching then exit;
+  {wParam - hContact; lParam - zero}
+  // do here something because the contact is deleted
+  if IsSearching then exit;
 end;
 
 procedure TfmGlobalSearch.HMContactIconChanged(var M: TMessage);
@@ -1678,13 +1677,12 @@ begin
   hg.Reversed := not OnTop;
 end;
 
-procedure TfmGlobalSearch.FormKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure TfmGlobalSearch.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
   Mask: Integer;
 begin
   if (Key = VK_ESCAPE) or ((Key = VK_F4) and (ssAlt in Shift)) then begin
-    if IsSearching then
+    if (Key = VK_ESCAPE) and IsSearching then
       StopSearching
     else
       close;
@@ -1697,9 +1695,7 @@ begin
     key := 0;
     end;
 
-  if hg.State = gsInline then begin
-    exit;
-    end;
+  if hg.State = gsInline then exit;
 
   if (ssCtrl in Shift) then begin
     if (key=Ord('R')) then begin
