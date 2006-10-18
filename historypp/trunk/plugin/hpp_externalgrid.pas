@@ -278,7 +278,7 @@ var
 begin
   if Grid.Count = 0 then exit;
   if Grid.State = gsInline then
-    Text := GetRichWideString(Grid.InlineRichEdit.Handle,True)
+    Text := GetRichString(Grid.InlineRichEdit.Handle,True)
   else
   if Grid.Selected <> -1 then
     Text := Grid.FormatSelected(Grid.Options.ClipCopyFormat)
