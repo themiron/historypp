@@ -1018,8 +1018,8 @@ var
   Mask: Integer;
 begin
   if (Key = VK_ESCAPE) or ((Key = VK_F4) and (ssAlt in Shift)) then begin
-    Key := 0;
     close;
+    Key := 0;
     exit;
   end;
 
@@ -1029,7 +1029,7 @@ begin
     else
       Panel := hpNone;
     key := 0;
-    end;
+  end;
 
   if (key = VK_F3) and ((Shift=[]) or (Shift=[ssShift])) and (not PasswordMode) and (SearchMode in [smSearch,smHotSearch]) then begin
     if ssShift in Shift then
@@ -2412,8 +2412,8 @@ begin
 end;
 procedure THistoryFrm.SMFinished(var M: TMessage);
 begin
-  SessThread.Free;
-  SessThread := nil;
+  SessThread.WaitFor;
+  FreeAndNil(SessThread);
 end;
 
 procedure THistoryFrm.bnPassClick(Sender: TObject);
