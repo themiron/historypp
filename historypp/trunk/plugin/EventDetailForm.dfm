@@ -218,6 +218,7 @@ object EventDetailsFrm: TEventDetailsFrm
     ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 0
+    OnResizeRequest = ETextResizeRequest
   end
   object pmEText: TTntPopupMenu
     OnPopup = pmETextPopup
