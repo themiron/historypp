@@ -124,15 +124,15 @@ var
   Buffer: AnsiString;
 begin
   _GetRichRTF(RichEditHandle,Buffer,SelectionOnly,PlainText,NoObjects,PlainRTF,True);
-  SetString(RTFStream,PChar(@Buffer[1]),Length(Buffer) div SizeOf(WideChar));
-  if PlainText then AdjustLineBreaks(RTFStream);
+  SetString(RTFStream,PWideChar(@Buffer[1]),Length(Buffer) div SizeOf(WideChar));
+  if PlainText then RTFStream := TntAdjustLineBreaks(RTFStream);
 end;
 
 function GetRichRTF(RichEditHandle: THandle; var RTFStream: AnsiString;
                     SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean): Integer;
 begin
   _GetRichRTF(RichEditHandle,RTFStream,SelectionOnly,PlainText,NoObjects,PlainRTF,False);
-  if PlainText then AdjustLineBreaks(RTFStream);
+  if PlainText then RTFStream := AdjustLineBreaks(RTFStream);
 end;
 
 function _SetRichRTF(RichEditHandle: THandle; Buffer: PByte; Length: integer;
