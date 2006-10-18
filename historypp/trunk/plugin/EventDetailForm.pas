@@ -91,16 +91,19 @@ type
     procedure SendMessage1Click(Sender: TObject);
     procedure ReplyQuoted1Click(Sender: TObject);
     procedure ToogleItemProcessingClick(Sender: TObject);
+    procedure ETextResizeRequest(Sender: TObject; Rect: TRect);
   private
     //FRowIdx: integer;
     FParentForm: THistoryFrm;
     FItem: Integer;
     Prev,Next: Integer;
+    FRichHeight: Integer;
 
 //    procedure SetRowIdx(const Value: integer);
     procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo); message wm_GetMinMaxInfo;
-    procedure WMNotify(var Message: TWMNotify); message WM_Notify;
+    procedure WMNotify(var Message: TWMNotify); message WM_NOTIFY;
+    procedure WMSetCursor(var Message: TWMSetCursor); message WM_SETCURSOR;
     procedure LoadPosition;
     procedure SavePosition;
     procedure SetItem(const Value: Integer);
@@ -280,12 +283,11 @@ begin
   TranslateForm;
   Prev := -1;
   Next := -1;
-  //EText.Parent := Self;
 
   re_mask := SendMessage(EText.Handle,EM_GETEVENTMASK, 0, 0);
-  SendMessage(EText.Handle,EM_SETMARGINS,EC_RIGHTMARGIN or EC_LEFTMARGIN,MakeLParam(3,3));
-  SendMessage(EText.Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK);
+  SendMessage(EText.Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK or ENM_REQUESTRESIZE);
   SendMessage(EText.Handle,EM_AUTOURLDETECT,1,0);
+  SendMessage(EText.Handle,EM_SETMARGINS,EC_RIGHTMARGIN or EC_LEFTMARGIN,MakeLParam(3,3));
 
   LoadPosition;
 end;
@@ -342,6 +344,9 @@ begin
 
   EText.Lines.BeginUpdate;
   ParentForm.hg.ApplyItemToRich(FItem,EText,false,true);
+  while FRichHeight = 0 do
+    EText.Perform(EM_REQUESTRESIZE,0,0);
+  
   EText.SelStart := 0;
   EText.SelLength := 0;
   EText.Lines.EndUpdate;
@@ -430,25 +435,36 @@ end;
 
 procedure TEventDetailsFrm.WMNotify(var Message: TWMNotify);
 var
+  p: TPoint;
   link: TENLink;
   tr: TextRange;
-  WideURL: WideString;
-  AnsiURL: String;
+  Url: String;
 begin
   if Message.NMHdr^.code = EN_LINK then begin
+    p := EText.ScreenToClient(Mouse.CursorPos);
     link := TENLink(Pointer(Message.NMHdr)^);
-    if link.msg = WM_LBUTTONUP then begin
+    if (link.msg = WM_LBUTTONUP) and (p.Y <= FRichHeight) then begin
       tr.chrg := link.chrg;
-      if hppOSUnicode then begin
-        SetLength(WideURL,link.chrg.cpMax-link.chrg.cpMin);
-        tr.lpstrText := @WideURL[1];
-      end else begin
-        SetLength(AnsiUrl,link.chrg.cpMax-link.chrg.cpMin);
-        tr.lpstrText := @AnsiUrl[1];
-      end;
+      SetLength(Url,link.chrg.cpMax-link.chrg.cpMin);
+      tr.lpstrText := @Url[1];
       EText.Perform(EM_GETTEXTRANGE,0,LongInt(@tr));
-      if hppOSUnicode then AnsiURL := WideToAnsiString(WideURL,CP_ACP);
-      PluginLink.CallService(MS_UTILS_OPENURL,1,Integer(Pointer(@AnsiURL[1])));
+      PluginLink.CallService(MS_UTILS_OPENURL,1,Integer(PChar(@Url[1])));
+    end;
+  end;
+  inherited;
+end;
+
+procedure TEventDetailsFrm.WMSetCursor(var Message: TWMSetCursor);
+var
+  p: TPoint;
+begin
+  if (Message.CursorWnd = EText.Handle) and (Message.HitTest = HTCLIENT) then begin
+    p := EText.ScreenToClient(Mouse.CursorPos);
+    if p.Y > FRichHeight then begin
+      if Windows.GetCursor <> Screen.Cursors[crIBeam] then
+        Windows.SetCursor(Screen.Cursors[crIBeam]);
+      Message.Result := 1;
+      exit;
     end;
   end;
   inherited;
@@ -495,6 +511,11 @@ procedure TEventDetailsFrm.HMIcons2Changed(var M: TMessage);
 begin
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
   LoadButtonIcons;
+end;
+
+procedure TEventDetailsFrm.ETextResizeRequest(Sender: TObject; Rect: TRect);
+begin
+  FRichHeight := Rect.Bottom - Rect.Top;
 end;
 
 end.
