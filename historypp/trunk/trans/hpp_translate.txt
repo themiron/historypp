@@ -312,6 +312,8 @@ Error
 &Edit
 [%.0n items in history]
 %.0n items in history
+[Pseudo-edit mode...]
+Pseudo-edit mode...
 [Full History [%s] - [%s]]
 Full History [%s] - [%s]
 [Phrase not found]

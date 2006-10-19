@@ -1801,6 +1801,7 @@ begin
     gsSave:   t := TranslateWideW('Saving...');
     gsSearch: t := TranslateWideW('Searching...');
     gsDelete: t := TranslateWideW('Deleting...');
+    gsInline: t := TranslateWideW('Pseudo-edit mode...');
   end;
   if PasswordMode then
     t := '';
