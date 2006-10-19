@@ -27,6 +27,7 @@ type
     SavedLinkUrl: AnsiString;
     pmGrid: TTntPopupMenu;
     pmLink: TTntPopupMenu;
+    WasReturnPressed: Boolean;
     function GetGridHandle: HWND;
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
@@ -123,6 +124,7 @@ end;
 constructor TExternalGrid.Create(AParentWindow: HWND; ControlID: Cardinal = 0);
 begin
   FParentWindow := AParentWindow;
+  WasReturnPressed := False;
   Grid := THistoryGrid.CreateParented(ParentWindow);
   Grid.ControlID := ControlID;
   Grid.ParentCtl3D := False;
@@ -283,15 +285,18 @@ begin
   if Grid.Selected <> -1 then
     Text := Grid.FormatSelected(Grid.Options.ClipCopyFormat)
   else
-    Text := Grid.FormatItem(Grid.BottomItem,Grid.Options.ClipCopyFormat);
-  if NoUnicode then begin
-    FSelection := WideToAnsiString(Text,CP_ACP)+#0;
-  end else begin
-    Text := Text+#0;
-    SetLength(FSelection,Length(Text)*SizeOf(WideChar));
-    Move(Pointer(@Text[1])^,Pointer(@FSelection[1])^,Length(FSelection));
-  end;
-  Result := @FSelection[1];
+    Text := '';
+  if Length(Text) > 0 then begin
+    if NoUnicode then begin
+      FSelection := WideToAnsiString(Text,CP_ACP)+#0;
+    end else begin
+      Text := Text+#0;
+      SetLength(FSelection,Length(Text)*SizeOf(WideChar));
+      Move(Pointer(@Text[1])^,Pointer(@FSelection[1])^,Length(FSelection));
+    end;
+    Result := @FSelection[1];
+  end else
+    Result := nil;
 end;
 
 procedure TExternalGrid.Clear;
@@ -374,10 +379,13 @@ begin
       key:=0;
     end;
   end;
+  WasReturnPressed := (Key = VK_RETURN);
 end;
 
 procedure TExternalGrid.GridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
+  if not WasReturnPressed then exit;
+  WasReturnPressed := False;
   if (Key = VK_RETURN) and (Shift = []) then begin
     GridDblClick(Grid);
     Key := 0;
