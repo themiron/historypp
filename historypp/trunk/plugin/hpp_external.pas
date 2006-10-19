@@ -102,6 +102,7 @@ var
   i,n: Integer;
   ControlId: Cardinal;
 begin
+  Result := 0;
   try
     par := PIEVIEWWINDOW(lParam);
     case par.iType of
@@ -111,37 +112,47 @@ begin
         {$ENDIF}
         case par.dwMode of
           IEWM_TABSRMM: ControlID := 1006;
-        else ControlID := 0;
+          IEWM_SCRIVER: ControlID := 0;
+          IEWM_MUCC:    ControlID := 0;
+          IEWM_CHAT:    ControlID := 0;
+          IEWM_HISTORY: ControlID := 0;
+        else            ControlID := 0;
         end;
         n := Length(ExternalGrids);
         SetLength(ExternalGrids,n+1);
         ExternalGrids[n] := TExternalGrid.Create(par.Parent,ControlID);
         par.Hwnd := ExternalGrids[n].GridHandle;
+        Result := 1;
       end;
       IEW_DESTROY: begin
         {$IFDEF DEBUG}
         OutputDebugString('IEW_DESTROY');
         {$ENDIF}
-        DeleteExtGridByHandle(par.Hwnd);
+        Result := integer(DeleteExtGridByHandle(par.Hwnd));
       end;
       IEW_SETPOS: begin
         {$IFDEF DEBUG}
         OutputDebugString('IEW_SETPOS');
         {$ENDIF}
         ExtGrid := FindExtGridByHandle(par.Hwnd);
-        ExtGrid.SetPosition(par.x,par.y,par.cx,par.cy);
+        if ExtGrid <> nil then begin
+          ExtGrid.SetPosition(par.x,par.y,par.cx,par.cy);
+          Result := 1;
+        end;
       end;
       IEW_SCROLLBOTTOM: begin
         {$IFDEF DEBUG}
         OutputDebugString('IEW_SCROLLBOTTOM');
         {$ENDIF}
         ExtGrid := FindExtGridByHandle(par.Hwnd);
-        ExtGrid.ScrollToBottom;
+        if ExtGrid <> nil then begin
+          ExtGrid.ScrollToBottom;
+          Result := 1;
+        end;
       end;
     end;
-    Result := 0;
   except
-    Result := 1;
+    Result := 0;
   end;
 end;
 
@@ -152,12 +163,14 @@ var
   i,n: Integer;
   ExtGrid: TExternalGrid;
 begin
+  Result := 0;
   try
     {$IFDEF DEBUG}
     OutputDebugString('MS_IEVIEW_EVENT');
     {$ENDIF}
     event := PIEVIEWEVENT(lParam);
     ExtGrid := FindExtGridByHandle(event.Hwnd);
+    if ExtGrid = nil then exit;
     case event.iType of
       IEE_LOG_DB_EVENTS: begin
         ExtGrid.BeginUpdate;
@@ -177,6 +190,7 @@ begin
           end;
         end;
         ExtGrid.EndUpdate;
+        Result := 1;
       end;
       IEE_CLEAR_LOG: begin
         ExtGrid.BeginUpdate;
@@ -187,11 +201,9 @@ begin
       IEE_GET_SELECTION: begin
         Result := integer(ExtGrid.GetSelection(boolean(event.dwFlags and IEEF_NO_UNICODE)));
       end;
-    else
-      Result := 0;
     end;
   except
-    Result := 1;
+    Result := 0;
   end;
 end;
 
@@ -201,9 +213,9 @@ begin
     {$IFDEF DEBUG}
     OutputDebugString('MS_IEVIEW_UTILS');
     {$ENDIF}
-    Result := 0;
-  except
     Result := 1;
+  except
+    Result := 0;
   end;
 end;
 
