@@ -164,7 +164,7 @@ function TranslateAnsiW(const S: AnsiString{TRANSLATE-IGNORE}): WideString;
 function TranslateWideW(const WS: WideString{TRANSLATE-IGNORE}): WideString;
 function MakeFileName(FileName: AnsiString): AnsiString;
 function GetLCIDfromCodepage(Codepage: Cardinal): LCID;
-procedure CopyToClip(WideStr: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
+procedure CopyToClip(WideStr: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP; Clear: Boolean = True);
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
 function URLEncode(const ASrc: string): string;
 
@@ -266,7 +266,7 @@ begin
     end;
 end;
 
-procedure CopyToClip(WideStr: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP);
+procedure CopyToClip(WideStr: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP; Clear: Boolean = True);
 
   function StrAllocW(Size: Cardinal): PWideChar;
   begin
@@ -299,7 +299,7 @@ begin
   WSize := ASize*SizeOf(WideChar);
   OpenClipboard(Handle);
   try
-    EmptyClipboard;
+    if Clear then EmptyClipboard;
     WData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, WSize);
     AData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, ASize);
     LData := GlobalAlloc(GMEM_MOVEABLE+GMEM_DDESHARE, SizeOf(Cardinal));
