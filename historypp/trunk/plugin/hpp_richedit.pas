@@ -122,17 +122,30 @@ function GetRichRTF(RichEditHandle: THandle; var RTFStream: WideString;
                     SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean): Integer;
 var
   Buffer: AnsiString;
+  len: integer;
 begin
   _GetRichRTF(RichEditHandle,Buffer,SelectionOnly,PlainText,NoObjects,PlainRTF,True);
   SetString(RTFStream,PWideChar(@Buffer[1]),Length(Buffer) div SizeOf(WideChar));
-  if PlainText then RTFStream := TntAdjustLineBreaks(RTFStream);
+  if PlainText then begin
+    len := Length(RTFStream);
+    if (len > 0) and (RTFStream[len] = #13) then
+      SetLength(RTFStream,len-1);
+    RTFStream := TntAdjustLineBreaks(RTFStream);
+  end;
 end;
 
 function GetRichRTF(RichEditHandle: THandle; var RTFStream: AnsiString;
                     SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean): Integer;
+var
+  len: integer;
 begin
   _GetRichRTF(RichEditHandle,RTFStream,SelectionOnly,PlainText,NoObjects,PlainRTF,False);
-  if PlainText then RTFStream := AdjustLineBreaks(RTFStream);
+  if PlainText then begin
+    len := Length(RTFStream);
+    if (len > 0) and (RTFStream[len] = #13) then
+      SetLength(RTFStream,len-1);
+    RTFStream := AdjustLineBreaks(RTFStream);
+  end;
 end;
 
 function _SetRichRTF(RichEditHandle: THandle; Buffer: PByte; Length: integer;
@@ -222,14 +235,12 @@ function FormatRTF2String(RichEditHandle: THandle; RTFStream: WideString): WideS
 begin
   SetRichRTF(RichEditHandle,RTFStream,false,false,true);
   GetRichRTF(RichEditHandle,Result,False,True,True,True);
-  Result := TntAdjustLineBreaks(Result);
 end;
 
 function FormatRTF2String(RichEditHandle: THandle; RTFStream: AnsiString): WideString;
 begin
   SetRichRTF(RichEditHandle,RTFStream,false,false,true);
   GetRichRTF(RichEditHandle,Result,False,True,True,True);
-  Result := TntAdjustLineBreaks(Result);
 end;
 
 function GetRichString(RichEditHandle: THandle; SelectionOnly: Boolean = false): WideString;
