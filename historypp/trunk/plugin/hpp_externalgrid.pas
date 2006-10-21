@@ -120,7 +120,7 @@ begin
   end;
   // comment or we'll get rerendering the whole grid
   //if Grid.Codepage <> Codepage then Grid.Codepage := Codepage;
-  Grid.Allocate(Length(Items));
+  Grid.Allocate(Length(Items),False);
 end;
 
 constructor TExternalGrid.Create(AParentWindow: HWND; ControlID: Cardinal = 0);
@@ -359,7 +359,7 @@ end;
 
 procedure TExternalGrid.GridGainFocus(Sender: TObject);
 begin
-  if FSelected <> -1 then
+  if (FSelected <> -1) and Grid.IsVisible(FSelected) then
     Grid.Selected := FSelected
   else
   if Grid.Count > 0 then

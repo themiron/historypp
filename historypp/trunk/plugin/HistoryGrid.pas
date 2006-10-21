@@ -540,7 +540,7 @@ type
     property Contact: THandle read FContact write SetContact;
     property Protocol: String read FProtocol write FProtocol;
     property LoadedCount: Integer read FLoadedCount;
-    procedure Allocate(ItemsCount: Integer);
+    procedure Allocate(ItemsCount: Integer; Scroll: Boolean = True);
     property Selected: Integer read FSelected write SetSelected;
     property SelCount: Integer read GetSelCount;
     function FindItemAt(x,y: Integer; out ItemRect: TRect): Integer; overload;
@@ -943,7 +943,7 @@ begin
   Result := Length(FItems);
 end;
 
-procedure THistoryGrid.Allocate(ItemsCount: Integer);
+procedure THistoryGrid.Allocate(ItemsCount: Integer; Scroll: Boolean = True);
 var
   i: Integer;
   PrevCount: Integer;
@@ -956,7 +956,7 @@ begin
     end;
   {$IFDEF CUST_SB}
     {$IFDEF PAGE_SIZE}
-      VertScrollBar.Visible := True;
+      //VertScrollBar.Visible := True;
       VertScrollBar.Range := ItemsCount + VertScrollBar.PageSize-1;
     {$ELSE}
       VertScrollBar.Range := ItemsCount+ClientHeight-1;
@@ -966,9 +966,11 @@ begin
   {$ENDIF}
   BarAdjusted := False;
   Allocated := True;
-  if ItemsCount > 0 then SetSBPos(GetIdx(0));
-  //if Reversed then SetSBPos(GetIdx(GetBottomItem))
-  //            else SetSBPos(GetIdx(GetTopItem));
+  //if ItemsCount > 0 then SetSBPos(GetIdx(0));
+  if Scroll then begin
+    if Reversed then SetSBPos(GetIdx(GetBottomItem))
+                else SetSBPos(GetIdx(GetTopItem));
+  end;
   Invalidate;
 end;
 
