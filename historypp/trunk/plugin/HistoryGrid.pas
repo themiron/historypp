@@ -113,6 +113,7 @@ type
   TOnProcessRichText = procedure(Sender: TObject; Handle: THandle; Item: Integer) of object;
   TOnSearchItem = procedure(Sender: TObject; Item: Integer; ID: Integer; var Found: Boolean) of object;
   TOnKillFocus = TNotifyEvent;
+  TOnGainFocus = TNotifyEvent;
 
   THPPRichEdit = class(TRichEdit)
   private
@@ -405,6 +406,7 @@ type
     FShowBottomAligned: Boolean;
 
     FOnKillFocus: TOnKillFocus;
+    FOnGainFocus: TOnGainFocus;
 
     FSavedKeyMessage: TWMKey;
 
@@ -446,6 +448,7 @@ type
     procedure CMBiDiModeChanged(var Message: TMessage); message CM_BIDIMODECHANGED;
     procedure CMCtl3DChanged(var Message: TMessage); message CM_CTL3DCHANGED;
     procedure WMCommand(var Message: TWMCommand); message WM_COMMAND;
+    procedure EMSetSel(var Message: TMessage); message EM_SETSEL;
     procedure SetContolID(const Value: Cardinal);
     function SendMsgFilterMessage(var Message: TMessage): Longint;
     function GetCount: Integer;
@@ -650,6 +653,7 @@ type
     property OnProcessRichText: TOnProcessRichText read FOnProcessRichText write FOnProcessRichText;
     property OnSearchItem: TOnSearchItem read FOnSearchItem write FOnSearchItem;
     property OnKillFocus: TOnKillFocus read FOnKillFocus write FOnKillFocus;
+    property OnGainFocus: TOnGainFocus read FOnGainFocus write FOnGainFocus;
     property Reversed: Boolean read FReversed write SetReversed;
     property TopItem: integer read GetTopItem;
     property BottomItem: integer read GetBottomItem;
@@ -2422,10 +2426,36 @@ begin
 end;
 
 procedure THistoryGrid.WMGetDlgCode(var Message: TWMGetDlgCode);
+type
+  PWMMsgKey = ^TWMMsgKey;
+  TWMMsgKey = packed record
+    hwnd: HWND;
+    Msg: Cardinal;
+    CharCode: Word;
+    Unused: Word;
+    KeyData: Longint;
+    Result: Longint;
+  end;
+var
+  msg: PWMMsgKey;
 begin
   inherited;
-  //Message.Result := DLGC_WANTARROWS;
   Message.Result := DLGC_WANTALLKEYS;
+  if (TMessage(Message).LParam <> 0) then begin
+    with PWMMsgKey(TMessage(Message).LParam)^ do begin
+      if (Msg = WM_KEYDOWN) or (Msg = WM_CHAR) or (Msg = WM_SYSCHAR) then
+        case CharCode of
+          VK_TAB: Message.Result := DLGC_WANTARROWS;
+        end;
+    end;
+  end;
+  Message.Result := Message.Result or DLGC_HASSETSEL;
+end;
+
+procedure THistoryGrid.EMSetSel(var Message: TMessage);
+begin
+  if Assigned(FOnGainFocus) then
+    FOnGainFocus(Self);
 end;
 
 procedure THistoryGrid.MakeRangeSelected(FromItem, ToItem: Integer);
