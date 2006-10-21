@@ -196,7 +196,7 @@ begin
     case Text[0] of
       #10: Result := Result + '\line ';
       #09: Result := Result + '\tab ';
-      '\','{','}': Result := Result + Text[1];
+      '\','{','}': Result := Result + '\' + Text[0];
     else
       if word(Text[0]) < word(High(AnsiChar)) then
         Result := Result + AnsiChar(integer(Text[0]))
@@ -222,7 +222,7 @@ begin
     case Text[0] of
       #10: Result := Result + '\line ';
       #09: Result := Result + '\tab ';
-      '\','{','}': Result := Result + Text[1];
+      '\','{','}': Result := Result + '\' + Text[0];
     else
       Result := Result + Text[0];
     end;
@@ -233,13 +233,13 @@ end;
 
 function FormatRTF2String(RichEditHandle: THandle; RTFStream: WideString): WideString;
 begin
-  SetRichRTF(RichEditHandle,RTFStream,false,false,true);
+  SetRichRTF(RichEditHandle,RTFStream,False,False,True);
   GetRichRTF(RichEditHandle,Result,False,True,True,True);
 end;
 
 function FormatRTF2String(RichEditHandle: THandle; RTFStream: AnsiString): WideString;
 begin
-  SetRichRTF(RichEditHandle,RTFStream,false,false,true);
+  SetRichRTF(RichEditHandle,RTFStream,False,False,True);
   GetRichRTF(RichEditHandle,Result,False,True,True,True);
 end;
 
