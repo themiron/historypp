@@ -57,7 +57,7 @@ type
     laTo: TTntLabel;
     EFrom: TTntEdit;
     ETo: TTntEdit;
-    EText: TRichEdit;
+    EText: THPPRichedit;
     pmEText: TTntPopupMenu;
     CopyText: TTntMenuItem;
     CopyAll: TTntMenuItem;
@@ -272,8 +272,8 @@ begin
 end;
 
 procedure TEventDetailsFrm.FormCreate(Sender: TObject);
-var
-  re_mask: integer;
+//var
+  //re_mask: integer;
 begin
   Icon.ReleaseHandle;
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
@@ -283,19 +283,17 @@ begin
   TranslateForm;
   Prev := -1;
   Next := -1;
-
-  re_mask := SendMessage(EText.Handle,EM_GETEVENTMASK, 0, 0);
-  SendMessage(EText.Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK or ENM_REQUESTRESIZE);
-  SendMessage(EText.Handle,EM_AUTOURLDETECT,1,0);
-  SendMessage(EText.Handle,EM_SETMARGINS,EC_RIGHTMARGIN or EC_LEFTMARGIN,MakeLParam(3,3));
-
+  //re_mask := SendMessage(EText.Handle,EM_GETEVENTMASK, 0, 0);
+  //SendMessage(EText.Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK or ENM_REQUESTRESIZE);
+  //SendMessage(EText.Handle,EM_AUTOURLDETECT,1,0);
+  //SendMessage(EText.Handle,EM_SETMARGINS,EC_RIGHTMARGIN or EC_LEFTMARGIN,MakeLParam(3,3));
+  //SendMessage(EText.Handle,EM_SETMARGINS,EC_RIGHTMARGIN or EC_LEFTMARGIN,0);
   LoadPosition;
 end;
 
 procedure TEventDetailsFrm.SetItem(const Value: Integer);
 var
   FromContact,ToContact : boolean;
-  //cf: TCharFormat;
 
   function GetMsgType(MesType: TMessageTypes; EventInfo: Word): WideString;
   var
@@ -344,9 +342,6 @@ begin
 
   EText.Lines.BeginUpdate;
   ParentForm.hg.ApplyItemToRich(FItem,EText,false,true);
-  while FRichHeight = 0 do
-    EText.Perform(EM_REQUESTRESIZE,0,0);
-  
   EText.SelStart := 0;
   EText.SelLength := 0;
   EText.Lines.EndUpdate;
@@ -458,7 +453,7 @@ procedure TEventDetailsFrm.WMSetCursor(var Message: TWMSetCursor);
 var
   p: TPoint;
 begin
-  if (Message.CursorWnd = EText.Handle) and (Message.HitTest = HTCLIENT) then begin
+  if (FRichHeight > 0) and (Message.CursorWnd = EText.Handle) and (Message.HitTest = HTCLIENT) then begin
     p := EText.ScreenToClient(Mouse.CursorPos);
     if p.Y > FRichHeight then begin
       if Windows.GetCursor <> Screen.Cursors[crIBeam] then
