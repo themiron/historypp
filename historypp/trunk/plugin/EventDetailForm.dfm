@@ -1,5 +1,5 @@
 object EventDetailsFrm: TEventDetailsFrm
-  Left = 308
+  Left = 269
   Top = 168
   Width = 466
   Height = 396
@@ -206,7 +206,7 @@ object EventDetailsFrm: TEventDetailsFrm
     BevelOuter = bvNone
     TabOrder = 3
   end
-  object EText: TRichEdit
+  object EText: THPPRichEdit
     Left = 0
     Top = 107
     Width = 450
@@ -214,6 +214,8 @@ object EventDetailsFrm: TEventDetailsFrm
     Align = alClient
     BevelInner = bvNone
     BevelOuter = bvNone
+    BiDiMode = bdLeftToRight
+    ParentBiDiMode = False
     PopupMenu = pmEText
     ReadOnly = True
     ScrollBars = ssVertical
