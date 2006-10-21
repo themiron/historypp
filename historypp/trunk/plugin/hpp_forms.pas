@@ -38,8 +38,11 @@ function Utils_SaveFormPosition(Form: TForm; hContact: THandle; Module,Prefix: S
 
 implementation
 
-uses hpp_global, hpp_services, HistoryForm, GlobalSearch, hpp_opt_dialog,
-  CustomizeFiltersForm, hpp_database, CustomizeToolbar, hpp_externalgrid;
+uses hpp_global, hpp_services, hpp_opt_dialog, hpp_database,
+  HistoryForm, GlobalSearch,
+  {$IFNDEF NO_EXTERNALGRID}hpp_externalgrid,{$ENDIF}
+  CustomizeFiltersForm,
+  CustomizeToolbar;
 
 function Utils_RestoreFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
 var
@@ -121,8 +124,10 @@ begin
     THistoryFrm(HstWindowList[i]).Perform(Msg,wParam,lParam);
   end;
 
+  {$IFNDEF NO_EXTERNALGRID}
   for i := 0 to Length(ExternalGrids)-1 do
     TExternalGrid(ExternalGrids[i]).Perform(Msg,wParam,lParam);
+  {$ENDIF}
 
   if Assigned(fmGlobalSearch) then
     fmGlobalSearch.Perform(Msg,wParam,lParam);
