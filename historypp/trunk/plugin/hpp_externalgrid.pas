@@ -28,6 +28,7 @@ type
     pmGrid: TTntPopupMenu;
     pmLink: TTntPopupMenu;
     WasReturnPressed: Boolean;
+    FSelected: integer;
     function GetGridHandle: HWND;
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
@@ -37,6 +38,7 @@ type
     procedure GridUrlClick(Sender: TObject; Item: Integer; Url: String);
     procedure GridBookmarkClick(Sender: TObject; Item: Integer);
     procedure GridKillFocus(Sender: TObject);
+    procedure GridGainFocus(Sender: TObject);
     procedure GridDblClick(Sender: TObject);
     procedure GridForbiddenChar(Sender: TObject; var Char: WideChar; Shift: TShiftState);
     procedure GridKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -125,6 +127,7 @@ constructor TExternalGrid.Create(AParentWindow: HWND; ControlID: Cardinal = 0);
 begin
   FParentWindow := AParentWindow;
   WasReturnPressed := False;
+  FSelected := -1;
   Grid := THistoryGrid.CreateParented(ParentWindow);
   Grid.ControlID := ControlID;
   Grid.ParentCtl3D := False;
@@ -145,6 +148,7 @@ begin
   Grid.OnUrlClick := GridUrlClick;
   Grid.OnBookmarkClick := GridBookmarkClick;
   Grid.OnKillFocus := GridKillFocus;
+  Grid.OnGainFocus := GridGainFocus;
   Grid.OnDblClick := GridDblClick;
   Grid.OnForbiddenChar := GridForbiddenChar;
   Grid.OnKeyDown := GridKeyDown;
@@ -259,8 +263,10 @@ end;
 
 procedure TExternalGrid.ScrollToBottom;
 begin
-  Grid.ScrollToBottom;
-  Grid.Repaint;
+  if Grid.State <> gsInline then begin
+    Grid.ScrollToBottom;
+    Grid.Repaint;
+  end;
 end;
 
 procedure TExternalGrid.SetPosition(x, y, cx, cy: Integer);
@@ -345,8 +351,19 @@ end;
 
 procedure TExternalGrid.GridKillFocus(Sender: TObject);
 begin
-  // deselect grid
-  Grid.Selected := -1;
+  if Grid.Selected <> -1 then begin
+    FSelected := Grid.Selected;
+    Grid.Selected := -1;
+  end;
+end;
+
+procedure TExternalGrid.GridGainFocus(Sender: TObject);
+begin
+  if FSelected <> -1 then
+    Grid.Selected := FSelected
+  else
+  if Grid.Count > 0 then
+    Grid.Selected := Grid.BottomItem;
 end;
 
 procedure TExternalGrid.GridDblClick(Sender: TObject);
