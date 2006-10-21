@@ -114,6 +114,17 @@ type
   TOnSearchItem = procedure(Sender: TObject; Item: Integer; ID: Integer; var Found: Boolean) of object;
   TOnKillFocus = TNotifyEvent;
 
+  THPPRichEdit = class(TRichEdit)
+  private
+    procedure SetAutoKeyboard(Enabled: Boolean);
+    procedure WMSetFocus(var Message: TWMSetFocus); message WM_SETFOCUS;
+    procedure WMLangChange(var Message: TMessage); message WM_INPUTLANGCHANGE;
+    procedure WMCopy(var Message: TWMCopy); message WM_COPY;
+    procedure WMKeyDown(var Message: TWMKey); message WM_KEYDOWN;
+  protected
+    procedure CreateHandle; override;
+  end;
+
   THistoryGrid = class;
 
   {IFDEF RENDER_RICH}
@@ -251,7 +262,7 @@ type
 
 
   TRichItem = record
-    Rich: TRichEdit;
+    Rich: THPPRichEdit;
     Bitmap: TBitmap;
     BitmapDrawn: Boolean;
     Height: Integer;
@@ -289,7 +300,7 @@ type
 
     function RequestItem(GridItem: Integer): PRichItem;
     function CalcItemHeight(GridItem: Integer): Integer;
-    function GetItemRich(GridItem: Integer): TRichEdit;
+    function GetItemRich(GridItem: Integer): THPPRichEdit;
     function GetItemRichBitmap(GridItem: Integer): TBitmap;
   end;
 
@@ -358,9 +369,9 @@ type
     FRichCache: TRichCache;
     FOnUrlClick: TUrlEvent;
     FOnUrlPopup: TUrlEvent;
-    FRich: TRichEdit;
-    FRichInline: TRichEdit;
-    FRichSave: TRichEdit;
+    FRich: THPPRichEdit;
+    FRichInline: THPPRichEdit;
+    FRichSave: THPPRichEdit;
     FRichSaveOLECB: TRichEditOleCallback;
 
     FOnInlineKeyDown: TKeyEvent;
@@ -563,8 +574,8 @@ type
 
     procedure EditInline(Item: Integer);
     procedure CancelInline(DoSetFocus: boolean = true);
-    property InlineRichEdit: TRichEdit read FRichInline write FRichInline;
-    property RichEdit: TRichEdit read FRich write FRich;
+    property InlineRichEdit: THPPRichEdit read FRichInline write FRichInline;
+    property RichEdit: THPPRichEdit read FRich write FRich;
 
     property Options: TGridOptions read FOptions write SetOptions;
     property HotString: WideString read SearchPattern;
@@ -583,11 +594,11 @@ type
 
     property ControlID: Cardinal read FControlID write SetContolID;
   published
-    procedure SetRichRTL(RTL: Boolean; RichEdit: TRichEdit; ProcessTag: Boolean = true);
+    procedure SetRichRTL(RTL: Boolean; RichEdit: THPPRichEdit; ProcessTag: Boolean = true);
     function GetItemRTL(Item: Integer): Boolean;
 
     //procedure CopyToClipSelected(const Format: WideString; ACodepage: Cardinal = CP_ACP);
-    procedure ApplyItemToRich(Item: Integer; RichEdit: TRichEdit = nil; UseSelection: Boolean = True; ForceInline: Boolean = False);
+    procedure ApplyItemToRich(Item: Integer; RichEdit: THPPRichEdit = nil; UseSelection: Boolean = True; ForceInline: Boolean = False);
 
     function FormatItem(Item: Integer; Format: WideString): WideString;
     function FormatItems(ItemList: array of Integer; Format: WideString): WideString;
@@ -755,6 +766,7 @@ end;
 procedure Register;
 begin
   RegisterComponents('Custom', [THistoryGrid]);
+  RegisterComponents('Custom', [THPPRichedit]);
 end;
 
 { THistoryGrid }
@@ -796,7 +808,7 @@ begin
   FRichParamsSet := False;
 
   // Ok, now inlined richedit
-  FRichInline := TRichEdit.Create(Self);
+  FRichInline := THPPRichEdit.Create(Self);
   FRichInline.Top := -100;
   FRichInline.Name := 'FRichInline';
   FRichInline.Visible := False;
@@ -1171,7 +1183,7 @@ begin
     FRichInline.Perform(EM_EXGETSEL,0,LPARAM(@cr));
     ApplyItemToRich(Selected, FRichInline);
     FRichInline.Perform(EM_EXSETSEL,0,LPARAM(@cr));
-    //FRichInline.Perform(EM_SCROLLCARET, 0, 0);
+    FRichInline.Perform(EM_SCROLLCARET, 0, 0);
     FRichInline.Lines.EndUpdate;
   end;
   if Assigned(FOnProcessInlineChange) then
@@ -1214,17 +1226,17 @@ begin
 end;
 
 procedure THistoryGrid.WMSize(var Message: TWMSize);
-var
-  re_mask: Longint;
+//var
+//  re_mask: Longint;
 begin
   if not FRichParamsSet then begin
     FRichCache.SetHandles;
     FRichParamsSet := true;
     FRichInline.ParentWindow := Handle;
-    re_mask := SendMessage(FRichInline.Handle,EM_GETEVENTMASK,0,0);
-    SendMessage(FRichInline.Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK);
-    SendMessage(FRichInline.Handle,EM_AUTOURLDETECT,1,0);
-    SendMessage(FRichInline.Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
+    //re_mask := SendMessage(FRichInline.Handle,EM_GETEVENTMASK,0,0);
+    //SendMessage(FRichInline.Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK);
+    //SendMessage(FRichInline.Handle,EM_AUTOURLDETECT,1,0);
+    //SendMessage(FRichInline.Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
   end;
   BeginUpdate;
   GridUpdates := GridUpdates + [guSize];
@@ -1886,7 +1898,7 @@ begin
 end;
 
 {$IFDEF RENDER_RICH}
-procedure THistoryGrid.ApplyItemToRich(Item: Integer; RichEdit: TRichEdit = nil; UseSelection: Boolean = True; ForceInline: Boolean = False);
+procedure THistoryGrid.ApplyItemToRich(Item: Integer; RichEdit: THPPRichEdit = nil; UseSelection: Boolean = True; ForceInline: Boolean = False);
 var
   textFont: TFont;
   textColor,backColor: TColor;
@@ -1921,7 +1933,9 @@ begin
   //RichEdit.Clear;
   RichEdit.Perform(WM_SETTEXT,0,0);
   RichEdit.Perform(EM_SETBKGNDCOLOR,0,backColor);
+
   SetRichRTL(GetItemRTL(Item),RichEdit);
+
   if Options.RawRTFEnabled and UseTextFormatting and isRTF(FItems[Item].Text) then begin
     // stored text seems to be RTF
     RTF := WideToAnsiString(FItems[Item].Text,FItems[Item].Codepage)+#0
@@ -1934,25 +1948,22 @@ begin
     RTF := RTF + Format('\red%u\green%u\blue%u;',[backColor and $FF,(backColor shr 8) and $FF,(backColor shr 16) and $FF]);
     // add color table for BBCodes
     if Options.BBCodesEnabled and NoDefaultColors then RTF := RTF + rtf_ctable_text;
-    RTF := RTF + '}\li30\ri30\fi0';
-    if GetItemRTL(Item) then RTF := RTF + '\rtlpar' else RTF := RTF + '\ltrpar';
-    //RTF := RTF + Format('\f0\highlight1\cf0\b%d\i%d\ul%d\strike%d\fs%u',
-    RTF := RTF + Format('\f0\cf0\b%d\i%d\ul%d\strike%d\fs%u',
+    RTF := RTF + '}\li30\ri30\fi0\highlight1\cf0';
+    if GetItemRTL(Item) then RTF := RTF + '\rtlpar\ltrch\rtlch '
+                        else RTF := RTF + '\ltrpar\rtlch\ltrch ';
+    RTF := RTF + Format('\f0\b%d\i%d\ul%d\strike%d\fs%u',
       [integer(fsBold in textFont.Style),
        integer(fsItalic in textFont.Style),
        integer(fsUnderline in textFont.Style),
        integer(fsStrikeOut in textFont.Style),
        integer(textFont.Size shl 1)]);
-       //-MulDiv(textFont.Size,2*72,LogY)]);
-    if GetItemRTL(Item) then RTF := RTF + '\ltrch\rtlch ' else RTF := RTF + '\rtlch\ltrch ';
     Text := FormatString2RTF(FItems[Item].Text);
     if Options.BBCodesEnabled and UseTextFormatting then begin
       Text := DoSupportBBCodesRTF(Text,2,NoDefaultColors);
     end;
-    RTF := RTF + Text + '}'+#0;
+    RTF := RTF + Text + '\par }'+#0;
   end;
 
-  Richedit.Font := textFont;
   SetRichRTF(RichEdit.Handle,RTF,False,False,True);
 
   if UseTextFormatting and Assigned(FOnProcessRichText) then begin
@@ -1976,13 +1987,6 @@ begin
   {$ENDIF}
 end;
 {$ENDIF}
-
-//{$IFDEF RENDER_RICH}
-//procedure THistoryGrid.OnRichResize(Sender: TObject; Rect: TRect);
-//begin
-//  FRichHeight := Rect.Bottom - Rect.Top;
-//end;
-//{$ENDIF}
 
 procedure THistoryGrid.DoRButtonUp(X, Y: Integer; Keys: TMouseMoveKeys);
 var
@@ -2115,11 +2119,11 @@ begin
   if IsUnknown(Item) then exit;
 
   ApplyItemToRich(Item);
-  Assert(FRichHeight <> 0, 'CalcItemHeight: rich is still 0 height');
+  Assert(FRichHeight > 0, 'CalcItemHeight: rich is still <= 0 height');
   // rude hack, but what the fuck??? First item with rtl chars is 1 line heighted always
   // probably fixed, see RichCache.ApplyItemToRich
-  if FRichHeight = 0 then exit
-                     else h := FRichHeight;
+  if FRichHeight <= 0 then exit
+                      else h := FRichHeight;
 
   if mtIncoming in FItems[Item].MessageType then
     hh := CHeaderHeight
@@ -2372,7 +2376,7 @@ var
   p: TPoint;
   tr: TextRange;
   OverInline: Boolean;
-  CurRich: TRichEdit;
+  CurRich: THPPRichEdit;
   Item: Integer;
 begin
   {$IFDEF RENDER_RICH}
@@ -3800,7 +3804,7 @@ var
 
   procedure SaveRTF;
   begin
-    FRichSave := TRichEdit.CreateParented(Handle);
+    FRichSave := THPPRichEdit.CreateParented(Handle);
     FRichSaveOLECB := TRichEditOleCallback.Create;
     FRichSave.Perform(EM_SETOLECALLBACK, 0, DWord(TRichEditOleCallback(FRichSaveOLECB) as IRichEditOleCallback));
   end;
@@ -4042,7 +4046,7 @@ begin
   Update;
 end;
 
-procedure THistoryGrid.SetRichRTL(RTL: Boolean; RichEdit: TRichEdit; ProcessTag: Boolean = true);
+procedure THistoryGrid.SetRichRTL(RTL: Boolean; RichEdit: THPPRichEdit; ProcessTag: Boolean = true);
 var
   pf: PARAFORMAT2;
   ExStyle: DWord;
@@ -4432,7 +4436,7 @@ begin
   // or positioning will be not perfectly correct
   // who knows why? i want to know! I already make corrections of margins!
   //Dec(r.left,1);
-  //Inc(r.right,1);
+  Inc(r.right,1);
 
   FRichInline.Top := r.top;
   FRichInline.Left := r.left;
@@ -4950,19 +4954,16 @@ begin
   //str := 'Apply item ['+IntToStr(Item.GridItem)+'] for "'+Copy(Item.Rich.Text,1,15)+'"';
   //OutputDebugString(PChar(str));
   // force to send the size:
+  FRichHeight := -1;
   Grid.ApplyItemToRich(Item^.GridItem,Item^.Rich);
   SendMessage(Item^.Rich.Handle,EM_SETEVENTMASK,0,ENM_REQUESTRESIZE);
   SendMessage(Item^.Rich.Handle,EM_REQUESTRESIZE,0,0);
-  if FRichHeight = 0 then begin
-    // try to "update" richedit here
-    //Item^.Rich.Text := Item.Rich.Text + 'sasme/m,ds ad34!a9-1da'; // any junk here
-    //Item^.Rich.Clear;
-    //Item^.Rich.Text := Item.Rich.Text;
-    Grid.ApplyItemToRich(Item.GridItem,Item^.Rich);
-    SendMessage(Item^.Rich.Handle,EM_REQUESTRESIZE,0,0);
-  end;
+  //if FRichHeight <= 0 then begin
+    //Grid.ApplyItemToRich(Item^.GridItem,Item^.Rich);
+    //SendMessage(Item^.Rich.Handle,EM_REQUESTRESIZE,0,0);
+  //end;
   SendMessage(Item^.Rich.Handle,EM_SETEVENTMASK,0,RichEventMasks);
-  Assert(FRichHeight <> 0, 'RichCache.ApplyItemToRich: rich is still 0 height');
+  Assert(FRichHeight > 0, 'RichCache.ApplyItemToRich: rich is still <= 0 height');
 end;
 
 function TRichCache.CalcItemHeight(GridItem: Integer): Integer;
@@ -4999,7 +5000,7 @@ begin
     RichItem^.Bitmap := TBitmap.Create;
     RichItem^.Height := -1;
     RichItem^.GridItem := -1;
-    RichItem^.Rich := TRichEdit.Create(nil);
+    RichItem^.Rich := THPPRichEdit.Create(nil);
     RichItem^.Rich.Name := 'CachedRichEdit'+IntToStr(i);
     RichItem^.Rich.Visible := False;
     // just a dirty hack to workaround problem with
@@ -5044,7 +5045,7 @@ begin
     end;
 end;
 
-function TRichCache.GetItemRich(GridItem: Integer): TRichEdit;
+function TRichCache.GetItemRich(GridItem: Integer): THPPRichEdit;
 var
   Item: PRichItem;
 begin
@@ -5194,9 +5195,9 @@ var
 begin
   for i := 0 to Length(Items) - 1 do begin
     Items[i].Rich.ParentWindow := Grid.Handle;
-    SendMessage(Items[i].Rich.Handle,EM_SETEVENTMASK,0,RichEventMasks);
-    SendMessage(Items[i].Rich.Handle,EM_AUTOURLDETECT,1,0);
-    SendMessage(Items[i].Rich.Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
+    //SendMessage(Items[i].Rich.Handle,EM_SETEVENTMASK,0,RichEventMasks);
+    //SendMessage(Items[i].Rich.Handle,EM_AUTOURLDETECT,1,0);
+    //SendMessage(Items[i].Rich.Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
     // make richedit transparent:
     exstyle := GetWindowLong(Items[i].Rich.Handle,GWL_EXSTYLE);
     exstyle := exstyle or WS_EX_TRANSPARENT;
@@ -5211,6 +5212,7 @@ var
 begin
   for i := 0 to Length(Items) - 1 do begin
     Items[i].Rich.Width := NewWidth;
+    Items[i].Rich.Height := -1;
     Items[i].Height := -1;
   end;
 end;
@@ -5239,16 +5241,72 @@ begin
     end;
 end;
 
+procedure THPPRichedit.SetAutoKeyboard(Enabled: Boolean);
+var
+  re_options,new_options: DWord;
+begin
+  re_options := SendMessage(Handle,EM_GETLANGOPTIONS,0,0);
+  case Enabled of
+    True:  new_options := re_options or IMF_AUTOKEYBOARD;
+    False: new_options := re_options and not IMF_AUTOKEYBOARD;
+  end;
+  if re_options <> new_options then
+    SendMessage(Handle,EM_SETLANGOPTIONS,0,new_options);
+end;
+
+procedure THPPRichedit.WMSetFocus(var Message: TWMSetFocus);
+begin
+  SetAutoKeyboard(False);
+  inherited;
+end;
+
+procedure THPPRichedit.WMLangChange(var Message: TMessage);
+begin
+  SetAutoKeyboard(False);
+  Message.Result:=1;
+end;
+
+procedure THPPRichedit.CreateHandle;
+var
+  re_mask: cardinal;
+begin
+  inherited;
+  re_mask := SendMessage(Handle,EM_GETEVENTMASK,0,0);
+  SendMessage(Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK);
+  SendMessage(Handle,EM_AUTOURLDETECT,1,0);
+  SendMessage(Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
+end;
+
+procedure THPPRichedit.WMCopy(var Message: TWMCopy);
+var
+  Text: WideString;
+  hClip: THandle;
+begin
+  inherited;
+  //EmptyClipboard();
+  Text := GetRichString(Handle,True);
+  CopyToClip(Text,Handle,CP_ACP,False);
+end;
+
+procedure THPPRichedit.WMKeyDown(var Message: TWMKey);
+begin
+  if (KeyDataToShiftState(Message.KeyData) = [ssCtrl]) then begin
+    case Message.CharCode of
+      Ord('C'),VK_INSERT: begin
+        PostMessage(Handle,WM_COPY,0,0);
+        Message.Result := 1;
+      end;
+      Ord('E'),Ord('J'):
+        Message.Result := 1;
+    else
+      inherited;
+    end;
+  end else
+    inherited;
+end;
+
 initialization
   Screen.Cursors[crHandPoint] := LoadCursor(0,IDC_HAND);
   if Screen.Cursors[crHandPoint] = 0 then
     Screen.Cursors[crHandPoint] := LoadCursor(hInstance,'CR_HAND');
 end.
-
-
-
-
-
-
-
-
