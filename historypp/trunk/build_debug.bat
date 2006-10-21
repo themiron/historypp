@@ -157,6 +157,7 @@ set DCUDIR="tmp"
 : Y  Symbol reference info
 set COMPDIR=-$A4 -$D+ -$J+ -$L+ -$O+ -$Q+ -$R- -$Y+ -$W+
 if not "%ALPHA%"=="" set COMPDIR=%COMPDIR% -DALPHA
+if not "%NO_EG%"=="" set COMPDIR=%COMPDIR% -DNO_EXTERNALGRID
 
 set EUDIR=--el_config"historypp.eof" -DEUREKALOG;EUREKALOG_VER5
 

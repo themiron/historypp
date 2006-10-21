@@ -3,12 +3,10 @@ unit hpp_opt_dialog;
 interface
 
 uses
-  Windows,
-  Messages,
-  commctrl,
-  m_api,
-  m_globaldefs,
-  hpp_global, hpp_options, hpp_services, hpp_external;
+  Windows, Messages, CommCtrl,
+  m_api, m_globaldefs,
+  hpp_global, hpp_options, hpp_services
+  {$IFNDEF NO_EXTERNALGRID}, hpp_external{$ENDIF};
 
 const
   IDD_OPT_HISTORYPP   = 207; // dialog id
@@ -85,8 +83,10 @@ begin
   if GetChecked(IDC_RECENTONTOP) <> GetDBBool(hppDBName,'SortOrder',false) then exit;
   if GetChecked(IDC_RTLDEFAULT) <> GridOptions.RTLEnabled then exit;
   if GetChecked(IDC_OPENDETAILS) <> GridOptions.OpenDetailsMode then exit;
+  {$IFNDEF NO_EXTERNALGRID}
   if GetChecked(IDC_IEVIEWAPI) <> GetDBBool(hppDBName,'IEViewAPI',false) then exit;
-
+  {$ENDIF}
+  
   if GetChecked(IDC_BBCODE) <> GridOptions.BBCodesEnabled then exit;
   if SmileyAddEnabled then
     if GetChecked(IDC_SMILEY) <> GridOptions.SmileysEnabled then exit;
@@ -131,6 +131,7 @@ begin
       fmGlobalSearch.SetRecentEventsPosition(Checked);
   end;
 
+  {$IFNDEF NO_EXTERNALGRID}
   Checked := GetChecked(IDC_IEVIEWAPI);
   if Checked <> (GetDBBool(hppDBName,'IEViewAPI',false) <> false) then
     WriteDBBool(hppDBName,'IEViewAPI',Checked);
@@ -138,6 +139,7 @@ begin
     ShowWindow(GetDlgItem(hDlg,ID_NEED_RESTART),SW_SHOW)
   else
     ShowWindow(GetDlgItem(hDlg,ID_NEED_RESTART),SW_HIDE);
+  {$ENDIF}
 end;
 
 // WM_INITDIALOG message handler
@@ -163,7 +165,11 @@ begin
   SetChecked(IDC_RECENTONTOP,GetDBBool(hppDBName,'SortOrder',false));
   SetChecked(IDC_RTLDEFAULT,GridOptions.RTLEnabled);
   SetChecked(IDC_OPENDETAILS,GridOptions.OpenDetailsMode);
+  {$IFNDEF NO_EXTERNALGRID}
   SetChecked(IDC_IEVIEWAPI,GetDBBool(hppDBName,'IEViewAPI',false));
+  {$ELSE}
+  ShowWindow(GetDlgItem(hDlg,IDC_IEVIEWAPI),SW_HIDE);
+  {$ENDIF}
 
   SetChecked(IDC_BBCODE,GridOptions.BBCodesEnabled);
   EnableWindow(GetDlgItem(hDlg,IDC_SMILEY),SmileyAddEnabled);

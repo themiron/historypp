@@ -69,12 +69,14 @@ uses
   hpp_forms in 'hpp_forms.pas',
   hpp_opt_dialog in 'hpp_opt_dialog.pas',
   hpp_eventfilters in 'hpp_eventfilters.pas',
-  hpp_richedit in 'hpp_richedit.pas',
-  hpp_richedit_ole in 'hpp_richedit_ole.pas',
   CustomizeFiltersForm in 'CustomizeFiltersForm.pas' {fmCustomizeFilters},
   CustomizeToolbar in 'CustomizeToolbar.pas' {fmCustomizeToolbar},
+  {$IFNDEF NO_EXTERNALGRID}
   hpp_external in 'hpp_external.pas',
-  hpp_externalgrid in 'hpp_externalgrid.pas';
+  hpp_externalgrid in 'hpp_externalgrid.pas',
+  {$ENDIF}
+  hpp_richedit in 'hpp_richedit.pas',
+  hpp_richedit_ole in 'hpp_richedit_ole.pas';
 
 type
   TMenuHandles = record
@@ -151,7 +153,9 @@ begin
   hookOptInit := PluginLink.HookEvent(ME_OPT_INITIALISE,OnOptInit);
   InitMMI;
   hppRegisterServices;
+  {$IFNDEF NO_EXTERNALGRID}
   RegisterExtGridServices;
+  {$ENDIF}
   Result := 0;
 end;
 
@@ -177,7 +181,9 @@ begin
 
     // unregistering events
     hppUnregisterServices;
+    {$IFNDEF NO_EXTERNALGRID}
     UnregisterExtGridServices;
+    {$ENDIF}
     // unregister bookmarks
     hppDeinitBookmarkServer;
 

@@ -129,6 +129,7 @@ set DCUDIR="tmp"
 : Y  Symbol reference info
 set COMPDIR=-$A4 -$D- -$J+ -$L- -$O+ -$Q- -$R- -$Y-
 if not "%ALPHA%"=="" set COMPDIR=%COMPDIR% -DALPHA
+if not "%NO_EG%"=="" set COMPDIR=%COMPDIR% -DNO_EXTERNALGRID
 
 set ADDCMD=
 if %DVER% GEQ 2006 set ADDCMD=--no-config
