@@ -1932,7 +1932,6 @@ begin
 
   //RichEdit.Clear;
   RichEdit.Perform(WM_SETTEXT,0,0);
-  RichEdit.Perform(EM_SETBKGNDCOLOR,0,backColor);
 
   SetRichRTL(GetItemRTL(Item),RichEdit);
 
@@ -1948,7 +1947,9 @@ begin
     RTF := RTF + Format('\red%u\green%u\blue%u;',[backColor and $FF,(backColor shr 8) and $FF,(backColor shr 16) and $FF]);
     // add color table for BBCodes
     if Options.BBCodesEnabled and NoDefaultColors then RTF := RTF + rtf_ctable_text;
-    RTF := RTF + '}\li30\ri30\fi0\highlight1\cf0';
+    // hav probs with pasting in ms word with wring back color
+    //RTF := RTF + '}\li30\ri30\fi0\highlight1\cf0';
+    RTF := RTF + '}\li30\ri30\fi0\cf0';
     if GetItemRTL(Item) then RTF := RTF + '\rtlpar\ltrch\rtlch '
                         else RTF := RTF + '\ltrpar\rtlch\ltrch ';
     RTF := RTF + Format('\f0\b%d\i%d\ul%d\strike%d\fs%u',
@@ -1965,6 +1966,8 @@ begin
   end;
 
   SetRichRTF(RichEdit.Handle,RTF,False,False,True);
+
+  RichEdit.Perform(EM_SETBKGNDCOLOR,0,backColor);
 
   if UseTextFormatting and Assigned(FOnProcessRichText) then begin
     try
