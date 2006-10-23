@@ -27,7 +27,7 @@ unit hpp_richedit_ole;
 interface
 
 uses
-  Windows, Classes, ActiveX, RichEdit, ComCtrls;
+  Windows, Classes, ActiveX, RichEdit;
 
 const
 
@@ -74,7 +74,6 @@ type
   TRichEditOleCallback = class(TObject, IUnknown, IRichEditOleCallback)
     private
       FRefCount: Longint;
-      FRichEdit: TRichEdit;
     public
       constructor Create;
       destructor Destroy; override;
@@ -119,8 +118,6 @@ type
     FFormatEtc: TFormatEtc;
     procedure SetBitmap(bmp:hBitmap);
     function GetOleObject(OleClientSite:IOleClientSite; Storage:IStorage):IOleObject;
-    destructor Destroy;override;
-
     // IDataObject
     function GetData(const formatetcIn: TFormatEtc; out medium: TStgMedium): HResult; stdcall;
     function GetDataHere(const formatetc: TFormatEtc; out medium: TStgMedium): HResult; stdcall;
@@ -132,6 +129,7 @@ type
     function DUnadvise(dwConnection: Longint): HResult; stdcall;
     function EnumDAdvise(out enumAdvise: IEnumStatData): HResult; stdcall;
   public
+    destructor Destroy;override;
     procedure InsertBitmap(wnd:HWND; Bitmap:hBitmap);
   end;
 
