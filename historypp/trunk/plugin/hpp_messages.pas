@@ -38,7 +38,6 @@ implementation
 function SendMessageTo(hContact: Integer; Text: WideString): Boolean;
 var
   buff: string;
-  res_new, res_old: boolean;
 begin
   if boolean(PluginLink.ServiceExists(MS_MSG_SENDMESSAGE+'W')) then
     Result := (PluginLink.CallService(MS_MSG_SENDMESSAGE+'W',WPARAM(hContact),LPARAM(PWideChar(Text))) = 0)

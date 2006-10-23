@@ -292,7 +292,6 @@ var
   ADataPtr: PAnsiChar;
   ASize,WSize: Integer;
   AnsiStr: AnsiString;
-  i: integer;
 begin
   AnsiStr := WideToAnsiString(WideStr,CodePage);
   ASize := Length(AnsiStr)+1;

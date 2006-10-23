@@ -2808,8 +2808,6 @@ begin
 end;
 
 procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
-var
-  bNewWindow: Integer;
 begin
   if Url= '' then exit;
   PluginLink.CallService(MS_UTILS_OPENURL,0,Integer(Pointer(@Url[1])));
@@ -2938,8 +2936,8 @@ begin
 end;
 
 procedure THistoryFrm.SethContact(const Value: THandle);
-var
-  i: integer;
+//var
+//  i: integer;
 begin
   FhContact := Value;
   {i := DBGetContactSettingByte(hContact,hppDBName,'RTL',255);
@@ -3293,7 +3291,6 @@ end;
 procedure THistoryFrm.SessSelectClick(Sender: TObject);
 var
   Items: Array of integer;
-  i: integer;
 
 function BuildIndexesFromSession(const Node: TtntTreeNode): boolean;
 var
@@ -3555,8 +3552,6 @@ begin
 end;
 
 procedure THistoryFrm.InlineReplyQuotedClick(Sender: TObject);
-var
-  Text: WideString;
 begin
   if (hg.Selected = -1) or (hContact = 0) then exit;
   if hg.InlineRichEdit.SelLength = 0 then exit;
