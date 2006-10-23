@@ -197,7 +197,7 @@ type
     procedure Copy1Click(Sender: TObject);
     procedure CopyText1Click(Sender: TObject);
     procedure Delete1Click(Sender: TObject);
-    procedure hgRTLEnabled(Sender: TObject; Enabled: Boolean);
+    procedure hgRTLEnabled(Sender: TObject; BiDiMode: TBiDiMode);
     procedure Bookmark1Click(Sender: TObject);
     procedure hgBookmarkClick(Sender: TObject; Item: Integer);
     procedure lvContactsContextPopup(Sender: TObject; MousePos: TPoint;
@@ -1879,19 +1879,14 @@ begin
   end;
 end;
 
-procedure TfmGlobalSearch.hgRTLEnabled(Sender: TObject; Enabled: Boolean);
-var
-  Flag: TBiDiMode;
+procedure TfmGlobalSearch.hgRTLEnabled(Sender: TObject; BiDiMode: TBiDiMode);
 begin
-  if Enabled then Flag := bdRightToLeft
-             else Flag := bdLeftToRight;
-  edPass.BiDiMode := Flag;
-  edSearch.BiDiMode := Flag;
-  edFilter.BiDiMode := Flag;
-  dtRange1.BiDiMode := Flag;
-  dtRange2.BiDiMode := Flag;
-  //lvContacts.BiDiMode := Flag;
-  hg.BiDiMode := Flag;
+  edPass.BiDiMode := BiDiMode;
+  edSearch.BiDiMode := BiDiMode;
+  edFilter.BiDiMode := BiDiMode;
+  dtRange1.BiDiMode := BiDiMode;
+  dtRange2.BiDiMode := BiDiMode;
+  //lvContacts.BiDiMode := BiDiMode;
 end;
 
 procedure TfmGlobalSearch.Bookmark1Click(Sender: TObject);
