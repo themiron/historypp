@@ -6,11 +6,13 @@ uses
   Windows, Classes, Controls, Forms, Graphics, Messages,
   m_api, m_globaldefs,
   hpp_global, hpp_events, hpp_contacts, hpp_services, hpp_forms, hpp_bookmarks,
-  hpp_richedit, hpp_messages, hpp_eventfilters,
+  hpp_richedit, hpp_messages, hpp_eventfilters, hpp_database,
   HistoryGrid,
   RichEdit, Menus, TntMenus;
 
 type
+  TExGridMode = (gmNative, gmIEView);
+
   TExtItem = record
     hDBEvent: THandle;
     hContact: THandle;
@@ -29,7 +31,11 @@ type
     pmLink: TTntPopupMenu;
     WasReturnPressed: Boolean;
     FSelected: integer;
+    FGridMode: TExGridMode;
+    FUseHistoryRTLMode: Boolean;
+    FExternalRTLMode: TRTLMode;
     function GetGridHandle: HWND;
+    procedure SetUseHistoryRTLMode(const Value: Boolean);
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
     procedure GridTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
@@ -46,7 +52,6 @@ type
     procedure GridPopup(Sender: TObject);
     procedure GridUrlPopup(Sender: TObject; Item: Integer; Url: String);
     procedure GridInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-
     procedure OnCopyClick(Sender: TObject);
     procedure OnCopyTextClick(Sender: TObject);
     procedure OnSelectAllClick(Sender: TObject);
@@ -56,11 +61,11 @@ type
     procedure OnOpenLinkClick(Sender: TObject);
     procedure OnOpenLinkNWClick(Sender: TObject);
     procedure OnCopyLinkClick(Sender: TObject);
-
+    procedure OnBidiModeLogClick(Sender: TObject);
+    procedure OnBidiModeHistoryClick(Sender: TObject);
   public
     constructor Create(AParentWindow: HWND; ControlID: Cardinal = 0);
     destructor Destroy; override;
-
     procedure AddEvent(hContact, hDBEvent: THandle; Codepage: Integer; RTL: boolean);
     procedure SetPosition(x,y,cx,cy: Integer);
     procedure ScrollToBottom;
@@ -68,6 +73,8 @@ type
     procedure Clear;
     property ParentWindow: HWND read FParentWindow;
     property GridHandle: HWND read GetGridHandle;
+    property GridMode: TExGridMode read FGridMode write FGridMode;
+    property UseHistoryRTLMode: Boolean read FUseHistoryRTLMode write SetUseHistoryRTLMode;
     function Perform(Msg: Cardinal; WParam, LParam: Longint): Longint;
     procedure HMBookmarkChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
@@ -100,23 +107,22 @@ end;
 
 procedure TExternalGrid.AddEvent(hContact, hDBEvent: THandle; Codepage: Integer; RTL: boolean);
 var
-  Flag: TBiDiMode;
+  RTLMode: TRTLMode;
 begin
   SetLength(Items,Length(Items)+1);
   Items[High(Items)].hDBEvent := hDBEvent;
   Items[High(Items)].hContact := hContact;
   Items[High(Items)].Codepage := Codepage;
-  if RTL then begin
-    Items[High(Items)].RTLMode := hppRTLEnable;
-    Flag := bdRightToLeft;
-  end else begin
-    Items[High(Items)].RTLMode := hppRTLDisable;
-    Flag := bdLeftToRight;
-  end;
-  if Grid.BiDiMode <> Flag then Grid.BiDiMode := Flag;
+  if RTL then RTLMode := hppRTLEnable
+         else RTLMode := hppRTLDisable;
+  Items[High(Items)].RTLMode := RTLMode;
   if Grid.Contact <> hContact then begin
     Grid.Contact := hContact;
     Grid.Protocol := GetContactProto(hContact);
+    FExternalRTLMode := RTLMode;
+    FUseHistoryRTLMode := GetDBBool(Grid.Contact,Grid.Protocol,'UseHistoryRTLMode',FUseHistoryRTLMode);
+    if FUseHistoryRTLMode then OnBidiModeHistoryClick(Self)
+                          else OnBidiModeLogClick(Self);
   end;
   // comment or we'll get rerendering the whole grid
   //if Grid.Codepage <> Codepage then Grid.Codepage := Codepage;
@@ -124,10 +130,20 @@ begin
 end;
 
 constructor TExternalGrid.Create(AParentWindow: HWND; ControlID: Cardinal = 0);
+
+  function RadioItem(Value: Boolean; mi: TTntMenuItem): TTntMenuItem;
+  begin
+    Result := mi;
+    Result.RadioItem := Value;
+  end;
+
 begin
   FParentWindow := AParentWindow;
   WasReturnPressed := False;
   FSelected := -1;
+  FGridMode := gmNative;
+  FUseHistoryRTLMode := False;
+  FExternalRTLMode := hppRTLDefault;
   Grid := THistoryGrid.CreateParented(ParentWindow);
   Grid.ControlID := ControlID;
   Grid.ParentCtl3D := False;
@@ -170,6 +186,11 @@ begin
   pmGrid.Items.Add(WideNewItem('&Reply Quoted',TextToShortCut('Ctrl+R'),false,true,OnReplyQuotedClick,0,'pmReplyQuoted'));
   pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN3'));
   pmGrid.Items.Add(WideNewItem('Set &Bookmark',TextToShortCut('Ctrl+B'),false,true,OnBookmarkClick,0,'pmBookmark'));
+  pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN4'));
+  pmGrid.Items.Add(WideNewSubMenu('Text direction',0,'pmBidiMode',[
+    RadioItem(true,WideNewItem('Log default',0,true,true,OnBidiModeLogClick,0,'pmBidiModeLog',)),
+    RadioItem(true,WideNewItem('History default',0,false,true,OnBidiModeHistoryClick,0,'pmBidiModeHistory'))
+  ],true));
 
   pmLink := TTntPopupMenu.Create(Grid);
   pmLink.ParentBiDiMode := False;
@@ -204,18 +225,20 @@ begin
   Grid.EndUpdate;
 end;
 
-procedure TExternalGrid.GridItemData(Sender: TObject; Index: Integer;
-  var Item: THistoryItem);
+procedure TExternalGrid.GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
 begin
   Item := ReadEvent(Items[Index].hDBEvent,Items[Index].Codepage);
   Item.Proto := Grid.Protocol;
-  Item.RTLMode := Items[Index].RTLMode;
   Item.Bookmarked := BookmarkServer[Items[Index].hContact].Bookmarked[Items[Index].hDBEvent];
-  if (not Item.IsRead) and
+  if not FUseHistoryRTLMode then
+      Item.RTLMode := Items[Index].RTLMode;
+  // tabSRMM still doesn't marks events read in case of hpp log is in use...
+  //if (FGridMode = gmIEView) and
+  if (not Item.IsRead) and (mtIncoming in Item.MessageType) and
      (MessageTypesToDWord(Item.MessageType) and
-      MessageTypesToDWord([mtIncoming,mtMessage,mtUrl,mtStatus]) > 0) then begin
+      MessageTypesToDWord([mtMessage,mtUrl,mtStatus,mtNickChange,mtAvatarChange]) > 0) then begin
     PluginLink.CallService(MS_DB_EVENT_MARKREAD,Items[Index].hContact,Items[Index].hDBEvent);
-    //PluginLink.CallService(MS_CLIST_REMOVEEVENT,Items[Index].hContact,Items[Index].hDBEvent);
+    PluginLink.CallService(MS_CLIST_REMOVEEVENT,Items[Index].hContact,Items[Index].hDBEvent);
   end;
 end;
 
@@ -425,6 +448,8 @@ begin
     else
       pmGrid.Items[8].Caption := TranslateWideW('Set &Bookmark');
   end;
+  pmGrid.Items[10].Items[0].Checked := not FUseHistoryRTLMode;
+  pmGrid.Items[10].Items[1].Checked := FUseHistoryRTLMode;
   pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
 end;
 
@@ -534,6 +559,25 @@ begin
   if SavedLinkUrl = '' then exit;
   CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Grid.Handle,CP_ACP);
   SavedLinkUrl := '';
+end;
+
+procedure TExternalGrid.OnBidiModeLogClick(Sender: TObject);
+begin
+  UseHistoryRTLMode := False;
+  Grid.RTLMode := FExternalRTLMode;
+end;
+
+procedure TExternalGrid.OnBidiModeHistoryClick(Sender: TObject);
+begin
+  UseHistoryRTLMode := True;
+  Grid.RTLMode := GetContactRTLModeTRTL(Grid.Contact,Grid.Protocol);
+end;
+
+procedure TExternalGrid.SetUseHistoryRTLMode(const Value: Boolean);
+begin
+  if FUseHistoryRTLMode = Value then exit;
+  FUseHistoryRTLMode := Value;
+  WriteDBBool(Grid.Contact,Grid.Protocol,'UseHistoryRTLMode',Value);
 end;
 
 function FindExtGridByHandle(var Handle: HWND): TExternalGrid;
