@@ -95,11 +95,11 @@ implementation
 
 uses hpp_externalgrid;
 
-function ExtWindow(wParam, lParam: DWord): Integer; cdecl;
+function _ExtWindow(wParam, lParam: DWord; GridMode: TExGridMode): Integer;
 var
   par: PIEVIEWWINDOW;
   ExtGrid: TExternalGrid;
-  i,n: Integer;
+  n: Integer;
   ControlId: Cardinal;
 begin
   Result := 0;
@@ -121,6 +121,7 @@ begin
         n := Length(ExternalGrids);
         SetLength(ExternalGrids,n+1);
         ExternalGrids[n] := TExternalGrid.Create(par.Parent,ControlID);
+        ExternalGrids[n].GridMode := GridMode;
         par.Hwnd := ExternalGrids[n].GridHandle;
         Result := 1;
       end;
@@ -156,11 +157,21 @@ begin
   end;
 end;
 
+function ExtWindowNative(wParam, lParam: DWord): Integer; cdecl;
+begin
+  Result := _ExtWindow(wParam,lParam,gmNative);
+end;
+
+function ExtWindowIEView(wParam, lParam: DWord): Integer; cdecl;
+begin
+  Result := _ExtWindow(wParam,lParam,gmIEView);
+end;
+
 function ExtEvent(wParam, lParam: DWord): Integer; cdecl;
 var
   event: PIEVIEWEVENT;
   hDBNext: THandle;
-  i,n: Integer;
+  i: Integer;
   ExtGrid: TExternalGrid;
 begin
   Result := 0;
@@ -223,13 +234,13 @@ procedure RegisterExtGridServices;
 begin
   ImitateIEView := GetDBBool(hppDBName,'IEViewAPI',false);
   if ImitateIEView then begin
-    hExtWindowIE := PluginLink.CreateServiceFunction(MS_HPP_IE_WINDOW,ExtWindow);
+    hExtWindowIE := PluginLink.CreateServiceFunction(MS_HPP_IE_WINDOW,ExtWindowIEView);
     hExtEventIE := PluginLink.CreateServiceFunction(MS_HPP_IE_EVENT,ExtEvent);
     hExtUtilsIE := PluginLink.CreateServiceFunction(MS_HPP_IE_UTILS,ExtUtils);
     hExtOptChangedIE := PluginLink.CreateHookableEvent(MS_HPP_IE_OPTIONSCHANGED);
     hExtNotificationIE := PluginLink.CreateHookableEvent(MS_HPP_IE_NOTIFICATION);
   end;
-  hExtWindow := PluginLink.CreateServiceFunction(MS_HPP_EG_WINDOW,ExtWindow);
+  hExtWindow := PluginLink.CreateServiceFunction(MS_HPP_EG_WINDOW,ExtWindowNative);
   hExtEvent := PluginLink.CreateServiceFunction(MS_HPP_EG_EVENT,ExtEvent);
   hExtUtils := PluginLink.CreateServiceFunction(MS_HPP_EG_UTILS,ExtUtils);
   hExtOptChanged := PluginLink.CreateHookableEvent(MS_HPP_EG_OPTIONSCHANGED);
