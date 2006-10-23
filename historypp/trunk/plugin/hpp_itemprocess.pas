@@ -226,7 +226,6 @@ begin
   mrei.hwndRichEditControl := wParam;
   mrei.sel := nil;
   mrei.disableredraw := integer(false);
-  Result := SendMessageA(wParam,WM_GETTEXTLENGTH,0,0);
   Result := PluginLink.CallService(MATH_RTF_REPLACE_FORMULAE,0,DWord(@mrei));
 end;
 
