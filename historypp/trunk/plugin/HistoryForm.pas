@@ -272,7 +272,7 @@ type
     procedure tvSessGetSelectedIndex(Sender: TObject; Node: TTreeNode);
     procedure Customize1Click(Sender: TObject);
     procedure tbEventsFilterClick(Sender: TObject);
-    procedure hgRTLEnabled(Sender: TObject; Enabled: Boolean);
+    procedure hgRTLEnabled(Sender: TObject; BiDiMode: TBiDiMode);
     procedure ToolbarDblClick(Sender: TObject);
     procedure Customize2Click(Sender: TObject);
     procedure Bookmark1Click(Sender: TObject);
@@ -3426,16 +3426,11 @@ begin
   Node.SelectedIndex := Node.ImageIndex;
 end;
 
-procedure THistoryFrm.hgRTLEnabled(Sender: TObject; Enabled: Boolean);
-var
-  Flag: TBiDiMode;
+procedure THistoryFrm.hgRTLEnabled(Sender: TObject; BiDiMode: TBiDiMode);
 begin
-  if Enabled then Flag := bdRightToLeft
-             else Flag := bdLeftToRight;
-  edPass.BiDiMode := Flag;
-  edSearch.BiDiMode := Flag;
-  //tvSess.BiDiMode := Flag;
-  hg.BiDiMode := Flag;
+  edPass.BiDiMode := BiDiMode;
+  edSearch.BiDiMode := BiDiMode;
+  //tvSess.BiDiMode := BiDiMode;
   if Assigned(EventDetailFrom) then
     TEventDetailsFrm(EventDetailFrom).Item := TEventDetailsFrm(EventDetailFrom).Item;
 end;

@@ -108,7 +108,7 @@ type
   TOnState = procedure(Sender: TObject; State: TGridState) of object;
   TOnItemFilter = procedure(Sender: TObject; Index: Integer; var Show: Boolean) of object;
   TOnChar = procedure(Sender: TObject; var Char: WideChar; Shift: TShiftState) of object;
-  TOnRTLChange = procedure(Sender: TObject; Enabled: boolean) of object;
+  TOnRTLChange = procedure(Sender: TObject; BiDiMode: TBiDiMode) of object;
   TOnProcessInlineChange = procedure(Sender: TObject; Enabled: boolean) of object;
   TOnProcessRichText = procedure(Sender: TObject; Handle: THandle; Item: Integer) of object;
   TOnSearchItem = procedure(Sender: TObject; Item: Integer; ID: Integer; var Found: Boolean) of object;
@@ -4215,18 +4215,21 @@ end;
 
 procedure THistoryGrid.SetRTLMode(const Value: TRTLMode);
 var
-  newMode: boolean;
+  NewBiDiMode: TBiDiMode;
 begin
   if FRTLMode <> Value then begin
     FRTLMode := Value;
     FRichCache.ResetAllItems;
     Repaint;
   end;
-  newMode := (RTLMode = hppRTLEnable) or ((RTLMode = hppRTLDefault) and Options.RTLEnabled);
-  if FRTLModeOld <> newMode then begin
+  if (RTLMode = hppRTLEnable) or ((RTLMode = hppRTLDefault) and Options.RTLEnabled) then
+    NewBiDiMode := bdRightToLeft
+  else
+    NewBiDiMode := bdLeftToRight;
+  if NewBiDiMode <> BiDiMode then begin
+    BiDiMode := NewBiDiMode;
     if Assigned(FOnRTLChange) then
-      OnRTLChange(Self,newMode);
-    FRTLModeOld := newMode;
+      OnRTLChange(Self,NewBiDiMode);
   end;
   // no need in it?
   // cause we set rich's RTL in ApplyItemToRich and
