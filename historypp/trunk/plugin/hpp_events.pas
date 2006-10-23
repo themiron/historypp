@@ -48,6 +48,15 @@ type
     TextFunction: TTextFunction;
   end;
 
+const
+
+  EVENTTYPE_STATUSCHANGE    = 25368;	  // from srmm's
+  EVENTTYPE_SMTPSIMPLE      = 2350;		  // from SMTP Simple
+  EVENTTYPE_NICKNAMECHANGE  = 9001;		  // from prescuma
+  EVENTTYPE_STATUSCHANGE2   = 9002;		  // from prescuma
+  EVENTTYPE_AVATARCHANGE    = 9003;     // from prescuma
+  EVENTTYPE_CONTACTLEFTCHANNEL = 9004;  // from tabSRMM
+
 // Miranda timestamp to TDateTime
 function TimestampToDateTime(Timestamp: DWord): TDateTime;
 function TimestampToString(Timestamp: DWord): WideString;
@@ -95,7 +104,7 @@ const
 
 var
 
-  EventTable: array[0..19] of TEventTableItem = (
+  EventTable: array[0..20] of TEventTableItem = (
     // must be the first item in array for unknown events
     (EventType: MaxWord; MessageType: mtOther; TextFunction: GetEventTextForOther),
     // events definitions
@@ -117,7 +126,8 @@ var
     (EventType: ICQEVENTTYPE_AUTH_DENIED; MessageType: mtSystem; TextFunction: GetEventTextForICQAuthDenied),
     (EventType: ICQEVENTTYPE_SELF_REMOVE; MessageType: mtSystem; TextFunction: GetEventTextForICQSelfRemove),
     (EventType: ICQEVENTTYPE_FUTURE_AUTH; MessageType: mtSystem; TextFunction: GetEventTextForICQFutureAuth),
-    (EventType: ICQEVENTTYPE_BROADCAST; MessageType: mtSystem; TextFunction: GetEventTextForICQBroadcast)
+    (EventType: ICQEVENTTYPE_BROADCAST; MessageType: mtSystem; TextFunction: GetEventTextForICQBroadcast),
+    (EventType: EVENTTYPE_CONTACTLEFTCHANNEL; MessageType: mtStatus; TextFunction: GetEventTextForMessage)
   );
 
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;

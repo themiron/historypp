@@ -105,12 +105,6 @@ const
   hppLoadBlock  = 4096;
   hppFirstLoadBlock = 200;
 
-  EVENTTYPE_STATUSCHANGE    = 25368;	// from srmm's
-  EVENTTYPE_SMTPSIMPLE      = 2350;		// from SMTP Simple
-  EVENTTYPE_NICKNAMECHANGE  = 9001;		// from prescuma
-  EVENTTYPE_STATUSCHANGE2   = 9002;		// from prescuma
-  EVENTTYPE_AVATARCHANGE    = 9003;		// from prescuma
-
   cpTable: array[0..14] of TCodePage = (
     (cp:  874; lid: $041E; name: 'Thai'),
     (cp:  932; lid: $0411; name: 'Japanese'),
