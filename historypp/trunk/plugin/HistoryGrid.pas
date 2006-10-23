@@ -393,7 +393,6 @@ type
     FShowHeaders: Boolean;
     FCodepage: Cardinal;
     FOnChar: TOnChar;
-    FOnForbiddenChar: TOnChar;
     WindowPrePainting: Boolean;
     WindowPrePainted: Boolean;
     FExpandHeaders: Boolean;
@@ -639,7 +638,6 @@ type
     property OnInlinePopup: TOnPopup read FOnInlinePopup write FOnInlinePopup;
     property OnProcessInlineChange: TOnProcessInlineChange read FOnProcessInlineChange write FOnProcessInlineChange;
     property OnChar: TOnChar read FOnChar write FOnChar;
-    property OnForbiddenChar: TOnChar read FOnForbiddenChar write FOnForbiddenChar;
     property OnState: TOnState read FOnState write FOnState;
     property OnSelect: TOnSelect read FOnSelect write FOnSelect;
     property OnXMLData: TGetXMLData read FGetXMLData write FGetXMLData;
@@ -3552,11 +3550,8 @@ begin
     ForbiddenChar := (Ch = ForbiddenChars[i]);
     Inc(i);
   end;
-  if ForbiddenChar then begin
-    if Assigned(FOnForbiddenChar) then FOnForbiddenChar(Self,Ch,ShiftState);
-  end else begin
-    if Assigned(FOnChar) then FOnChar(Self,Ch,ShiftState);
-  end;
+  if ForbiddenChar then exit;
+  if Assigned(FOnChar) then FOnChar(Self,Ch,ShiftState);
 end;
 
 procedure THistoryGrid.AddItem;
