@@ -158,7 +158,8 @@ type
 
     FFontProfile: TFont;
     FFontContact: TFont;
-    FFontTimestamp: TFont;
+    FFontIncomingTimestamp: TFont;
+    FFontOutgoingTimestamp: TFont;
     FFontSessHeader: TFont;
 
     //FItemFont: TFont;
@@ -194,7 +195,8 @@ type
 
     procedure SetFontContact(const Value: TFont);
     procedure SetFontProfile(const Value: TFont);
-    procedure SetFontTimestamp(const Value: TFont);
+    procedure SetFontIncomingTimestamp(const Value: TFont);
+    procedure SetFontOutgoingTimestamp(const Value: TFont);
     procedure SetFontSessHeader(const Value: TFont);
 
     procedure SetIconOther(const Value: TIcon);
@@ -246,7 +248,8 @@ type
 
     property FontProfile: TFont read FFontProfile write SetFontProfile;
     property FontContact: TFont read FFontContact write SetFontContact;
-    property FontTimeStamp: TFont read FFontTimestamp write SetFontTimestamp;
+    property FontIncomingTimestamp: TFont read FFontIncomingTimestamp write SetFontIncomingTimestamp;
+    property FontOutgoingTimestamp: TFont read FFontOutgoingTimestamp write SetFontOutgoingTimestamp;
     property FontSessHeader: TFont read FFontSessHeader write SetFontSessHeader;
 
     property ItemOptions: TItemOptions read FItemOptions write FItemOptions;
@@ -383,10 +386,8 @@ type
     FRichParamsSet: Boolean;
     FOnSearchItem: TOnSearchItem;
 
-    FOnRTLChange: TOnRTLChange;
-
     FRTLMode: TRTLMode;
-    FRTLModeOld: boolean;
+    FOnRTLChange: TOnRTLChange;
 
     TopItemOffset: Integer;
     MaxSBPos: Integer;
@@ -832,7 +833,6 @@ begin
   {$ENDIF}
   FCodepage := CP_ACP;
   //FRTLMode := hppRTLDefault;
-  //FRTLModeOld := false;
 
   CHeaderHeight := -1;
   PHeaderHeight := -1;
@@ -1399,8 +1399,7 @@ var
   hh,TopIconOffset,IconOffset,NickOffset,TimeOffset: Integer;
   icon: TIcon;
   BackColor: TColor;
-  //nameFont,timestampFont,textFont: TFont;
-  nameFont,textFont: TFont;
+  nameFont,timestampFont,textFont: TFont;
   Sel: Boolean;
   RTL: Boolean;
   RichBMP: TBitmap;
@@ -1437,17 +1436,18 @@ begin
   Inc(HeadRect.Top,Padding div 2);
   if mtIncoming in FItems[Index].MessageType then begin
     nameFont := Options.FontContact;
+    timestampFont := Options.FontIncomingTimestamp;
     HeaderName := ContactName;
     HeadRect.Bottom := HeadRect.Top+CHeaderHeight;
   end else begin
     nameFont := Options.FontProfile;
+    timestampFont := Options.FontOutgoingTimestamp;
     HeaderName := ProfileName;
     HeadRect.Bottom := HeadRect.Top+PHeaderHeight;
   end;
   if Assigned(FGetNameData) then
     FGetNameData(Self,Index,HeaderName);
   HeaderName := HeaderName + ':';
-  //timestampFont := Options.FontTimeStamp;
   TimeStamp := GetTime(FItems[Index].Time);
 
   if Sel then begin
@@ -1510,7 +1510,7 @@ begin
   Tnt_DrawTextW(Canvas.Handle,PWideChar(HeaderName),Length(HeaderName),HeadRect,dtf);
 
   //Canvas.Font := timestampFont;
-  Canvas.Font.Assign(Options.FontTimeStamp);
+  Canvas.Font.Assign(timestampFont);
   if sel then Canvas.Font.Color := Options.ColorSelectedText;
   TimeOffset := WideCanvasTextWidth(Canvas,TimeStamp);
   dtf := DT_NOPREFIX or DT_SINGLELINE or DT_VCENTER;
@@ -1936,7 +1936,6 @@ begin
 
   //RichEdit.Clear;
   RichEdit.Perform(WM_SETTEXT,0,0);
-
   SetRichRTL(GetItemRTL(Item),RichEdit);
 
   if Options.RawRTFEnabled and UseTextFormatting and isRTF(FItems[Item].Text) then begin
@@ -3791,7 +3790,8 @@ var
   end;
   WriteString(Stream,'.nick#inc { '+FontToCss(Options.FontContact)+' }'+#13#10);
   WriteString(Stream,'.nick#out { '+FontToCss(Options.FontProfile)+' }'+#13#10);
-  WriteString(Stream,'.date { '+FontToCss(Options.FontTimestamp)+' }'+#13#10);
+  WriteString(Stream,'.date#inc { '+FontToCss(Options.FontIncomingTimestamp)+' }'+#13#10);
+  WriteString(Stream,'.date#out { '+FontToCss(Options.FontOutgoingTimestamp)+' }'+#13#10);
   for i := 0 to High(Options.ItemOptions) do
     WriteString(Stream,'.mes#event'+intToStr(i)+' { background-color: '+
       ColorToCss(Options.ItemOptions[i].textColor)+'; '+
@@ -3936,7 +3936,7 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     MesTypeToStyle(FItems[Item].MessageType,mes_id,type_id);
     WriteString(Stream,'<div class=mes id='+mes_id+'>'+#13#10);
     WriteString(Stream,#9+'<div class=nick id='+type_id+'>'+cnt+'</div>'+#13#10);
-    WriteString(Stream,#9+'<div class=date>'+GetTime(FItems[Item].Time)+'</div>'+#13#10);
+    WriteString(Stream,#9+'<div class=date id='+type_id+'>'+GetTime(FItems[Item].Time)+'</div>'+#13#10);
     WriteString(Stream,#9+'<div class=text>'+#13#10#9+txt+#13#10#9+'</div>'+#13#10);
     WriteString(Stream,'</div>'+#13#10);
   end;
@@ -4097,8 +4097,8 @@ begin
     ExStyle := ExStyle or WS_EX_RIGHT;
     pf.wReserved := 0;
   end;
-  SetWindowLong(Richedit.Handle, GWL_EXSTYLE, ExStyle);
   RichEdit.Perform(EM_SETPARAFORMAT,0,integer(@pf));
+  SetWindowLong(Richedit.Handle, GWL_EXSTYLE, ExStyle);
   if ProcessTag then
     RichEdit.Tag := Integer(RTL);
 end;
@@ -4134,7 +4134,7 @@ end;
 procedure THistoryGrid.DoOptionsChanged;
 var
   i: integer;
-  ch,ph,th,sh: Integer;
+  ch,ph,pth,cth,sh: Integer;
   //pf: PARAFORMAT2;
 begin
   // recalc fonts
@@ -4171,13 +4171,15 @@ begin
   ph := WideCanvasTextHeight(Canvas,'Wy');
   Canvas.Font := Options.FontContact;
   ch := WideCanvasTextHeight(Canvas,'Wy');
-  Canvas.Font := Options.FontTimestamp;
-  th := WideCanvasTextHeight(Canvas,'Wy');
+  Canvas.Font := Options.FontOutgoingTimestamp;
+  pth := WideCanvasTextHeight(Canvas,'Wy');
+  Canvas.Font := Options.FontIncomingTimestamp;
+  cth := WideCanvasTextHeight(Canvas,'Wy');
   Canvas.Font := Options.FontSessHeader;
   sh := WideCanvasTextHeight(Canvas,'Wy');
   // find heighest and don't forget about icons
-  PHeaderHeight := Max(ph,th);
-  CHeaderHeight := Max(ch,th);
+  PHeaderHeight := Max(ph,pth);
+  CHeaderHeight := Max(ch,cth);
   SessHeaderHeight := sh+1+3*2;
   if Options.ShowIcons then begin
     CHeaderHeight := Max(CHeaderHeight,16);
@@ -4435,7 +4437,11 @@ begin
     end;
     if ShowBookmarks and (Sel or FItems[Item].Bookmarked) then begin
       //TimeStamp := GetTime(FItems[Item].Time);
-      Canvas.Font.Assign(Options.FontTimeStamp);
+      //Canvas.Font.Assign(Options.FontTimeStamp);
+      if mtIncoming in FItems[Item].MessageType then
+        Canvas.Font.Assign(Options.FontIncomingTimestamp)
+      else
+        Canvas.Font.Assign(Options.FontOutgoingTimestamp);
       TimestampOffset := WideCanvasTextWidth(Canvas,GetTime(FItems[Item].Time)) + Padding;
       if RTL then
         ButtonRect := Rect(HeaderRect.Left+TimestampOffset,HeaderRect.Top,HeaderRect.Left+TimestampOffset+16,HeaderRect.Bottom)
@@ -4705,8 +4711,10 @@ begin
   FFontContact.OnChange := FontChanged;
   FFontProfile := TFont.Create;
   FFontProfile.OnChange := FontChanged;
-  FFontTimestamp := TFont.Create;
-  FFontTimestamp.OnChange := FontChanged;
+  FFontIncomingTimestamp := TFont.Create;
+  FFontIncomingTimestamp.OnChange := FontChanged;
+  FFontOutgoingTimestamp := TFont.Create;
+  FFontOutgoingTimestamp.OnChange := FontChanged;
   FFontSessHeader := TFont.Create;
   FFontSessHeader.OnChange := FontChanged;
 
@@ -4737,7 +4745,8 @@ var
 begin
   FFontContact.Free;
   FFontProfile.Free;
-  FFontTimestamp.Free;
+  FFontIncomingTimestamp.Free;
+  FFontOutgoingTimestamp.Free;
   FFontSessHeader.Free;
   //FItemFont.Free;
   FIconUrl.Free;
@@ -4959,10 +4968,17 @@ begin
   DoChange;
 end;
 
-procedure TGridOptions.SetFontTimestamp(const Value: TFont);
+procedure TGridOptions.SetFontIncomingTimestamp(const Value: TFont);
 begin
-  FFontTimestamp.Assign(Value);
-  FFontTimestamp.OnChange := FontChanged;
+  FFontIncomingTimestamp.Assign(Value);
+  FFontIncomingTimestamp.OnChange := FontChanged;
+  DoChange;
+end;
+
+procedure TGridOptions.SetFontOutgoingTimestamp(const Value: TFont);
+begin
+  FFontOutgoingTimestamp.Assign(Value);
+  FFontOutgoingTimestamp.OnChange := FontChanged;
   DoChange;
 end;
 

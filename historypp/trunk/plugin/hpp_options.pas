@@ -47,7 +47,10 @@ type
     handle: hIcon;
   end;
 
+  ThppFontType = set of (hppFont, hppColor);
+
   ThppFontsRec = record
+    _type: ThppFontType;
     name: PChar;
     nameColor: PChar;
     mes: TMessageTypes;
@@ -141,27 +144,29 @@ const
     (name:'z_password_protect'; handle: 0)
   );
 
-  hppFontItems: array[0..19] of ThppFontsRec = (
-    (name: 'Incoming nick'; nameColor: 'Divider'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $6B3FC8; back: clGray),
-    (name: 'Outgoing nick'; nameColor: 'Selected text'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $BD6008; back: clHighlightText),
-    (name: 'Timestamp'; nameColor: 'Selected background'; Mes: []; style:0; size: -11; color: $000000; back: clHighlight),
-    (name: 'Incoming message'; Mes: [mtMessage,mtIncoming]; style:0; size: -11; color: $000000; back: $DBDBDB),
-    (name: 'Outgoing message'; Mes: [mtMessage,mtOutgoing]; style:0; size: -11; color: $000000; back: $EEEEEE),
-    (name: 'Incoming file'; Mes: [mtFile,mtIncoming]; style:0; size: -11; color: $000000; back: $9BEEE3),
-    (name: 'Outgoing file'; Mes: [mtFile,mtOutgoing]; style:0; size: -11; color: $000000; back: $9BEEE3),
-    (name: 'Incoming url'; Mes: [mtUrl,mtIncoming]; style:0; size: -11; color: $000000; back: $F4D9CC),
-    (name: 'Outgoing url'; Mes: [mtUrl,mtOutgoing]; style:0; size: -11; color: $000000; back: $F4D9CC),
-    (name: 'Incoming SMS Message'; Mes: [mtSMS,mtIncoming]; style:0; size: -11; color: $000000; back: $CFF4FE),
-    (name: 'Outgoing SMS Message'; Mes: [mtSMS,mtOutgoing]; style:0; size: -11; color: $000000; back: $CFF4FE),
-    (name: 'Incoming contacts'; Mes: [mtContacts,mtIncoming]; style:0; size: -11; color: $000000; back: $FEF4CF),
-    (name: 'Outgoing contacts'; Mes: [mtContacts,mtOutgoing]; style:0; size: -11; color: $000000; back: $FEF4CF),
-    (name: 'System message'; Mes: [mtSystem,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $CFFEDC),
-    (name: 'Status changes'; Mes: [mtStatus,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $F0F0F0),
-    (name: 'SMTP Simple Email'; Mes: [mtSMTPSimple,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF),
-    (name: 'Other events (unknown)'; Mes: [mtOther,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF),
-    (name: 'Conversation header'; Mes: []; style:0; size: -11; color: $000000; back: $00D7FDFF),
-    (name: 'Nick changes'; Mes: [mtNickChange,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $00D7FDFF),
-    (name: 'Avatar changes'; Mes: [mtAvatarChange,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $00D7FDFF)
+  hppFontItems: array[0..21] of ThppFontsRec = (
+    (_type:[hppFont,hppColor]; name: 'Incoming nick'; nameColor: 'Divider'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $6B3FC8; back: clGray),
+    (_type:[hppFont,hppColor]; name: 'Outgoing nick'; nameColor: 'Selected text'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $BD6008; back: clHighlightText),
+    (_type:[hppColor];         nameColor: 'Selected background'; Mes: []; back: clHighlight),
+    (_type:[hppFont,hppColor]; name: 'Incoming message'; Mes: [mtMessage,mtIncoming]; style:0; size: -11; color: $000000; back: $DBDBDB),
+    (_type:[hppFont,hppColor]; name: 'Outgoing message'; Mes: [mtMessage,mtOutgoing]; style:0; size: -11; color: $000000; back: $EEEEEE),
+    (_type:[hppFont,hppColor]; name: 'Incoming file'; Mes: [mtFile,mtIncoming]; style:0; size: -11; color: $000000; back: $9BEEE3),
+    (_type:[hppFont,hppColor]; name: 'Outgoing file'; Mes: [mtFile,mtOutgoing]; style:0; size: -11; color: $000000; back: $9BEEE3),
+    (_type:[hppFont,hppColor]; name: 'Incoming url'; Mes: [mtUrl,mtIncoming]; style:0; size: -11; color: $000000; back: $F4D9CC),
+    (_type:[hppFont,hppColor]; name: 'Outgoing url'; Mes: [mtUrl,mtOutgoing]; style:0; size: -11; color: $000000; back: $F4D9CC),
+    (_type:[hppFont,hppColor]; name: 'Incoming SMS Message'; Mes: [mtSMS,mtIncoming]; style:0; size: -11; color: $000000; back: $CFF4FE),
+    (_type:[hppFont,hppColor]; name: 'Outgoing SMS Message'; Mes: [mtSMS,mtOutgoing]; style:0; size: -11; color: $000000; back: $CFF4FE),
+    (_type:[hppFont,hppColor]; name: 'Incoming contacts'; Mes: [mtContacts,mtIncoming]; style:0; size: -11; color: $000000; back: $FEF4CF),
+    (_type:[hppFont,hppColor]; name: 'Outgoing contacts'; Mes: [mtContacts,mtOutgoing]; style:0; size: -11; color: $000000; back: $FEF4CF),
+    (_type:[hppFont,hppColor]; name: 'System message'; Mes: [mtSystem,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $CFFEDC),
+    (_type:[hppFont,hppColor]; name: 'Status changes'; Mes: [mtStatus,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $F0F0F0),
+    (_type:[hppFont,hppColor]; name: 'SMTP Simple Email'; Mes: [mtSMTPSimple,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF),
+    (_type:[hppFont,hppColor]; name: 'Other events (unknown)'; Mes: [mtOther,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF),
+    (_type:[hppFont,hppColor]; name: 'Conversation header'; Mes: []; style:0; size: -11; color: $000000; back: $00D7FDFF),
+    (_type:[hppFont,hppColor]; name: 'Nick changes'; Mes: [mtNickChange,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $00D7FDFF),
+    (_type:[hppFont,hppColor]; name: 'Avatar changes'; Mes: [mtAvatarChange,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $00D7FDFF),
+    (_type:[hppFont];          name: 'Incoming timestamp'; Mes: []; style:0; size: -11; color: $000000),
+    (_type:[hppFont];          name: 'Outgoing timestamp'; Mes: []; style:0; size: -11; color: $000000)
     );
 
 var
@@ -201,7 +206,7 @@ begin
   fid.deffontsettings := defFont;
   fid.deffontsettings.size := hppFontItems[Order].size;
   fid.deffontsettings.style := hppFontItems[Order].style;
-  fid.deffontsettings.colour := hppFontItems[Order].color;
+  fid.deffontsettings.colour := ColorToRGB(hppFontItems[Order].color);
   PluginLink.CallService(MS_FONT_REGISTER,integer(@fid),0);
 end;
 
@@ -215,7 +220,7 @@ begin
   cid.order := Order;
   lstrcpy(cid.name,Name);
   lstrcpy(cid.setting,PChar('Color'+intToStr(Order)));
-  cid.defcolour := defColor;
+  cid.defcolour := ColorToRGB(defColor);
   PluginLink.CallService(MS_COLOUR_REGISTER,integer(@cid),0);
 end;
 
@@ -282,11 +287,13 @@ begin
 end;
 
 procedure LoadGridOptions;
+
   function LoadColorDB(Order: integer): TColor;
   begin
     Result := GetDBInt(hppDBName,PChar('Color'+intToStr(Order)),ColorToRGB(hppFontItems[Order].back));
   end;
-  procedure LoadFont(Order: integer; F: TFont);
+
+  function LoadFont(Order: integer; F: TFont): TFont;
   const
     size: integer = -11;
   var
@@ -308,9 +315,11 @@ procedure LoadGridOptions;
       fs := [];
       if (hppFontItems[Order].style and DBFONTF_BOLD) > 0 then include(fs,fsBold);
       F.Style := fs;
-      F.Color := hppFontItems[Order].color;
+      F.Color := ColorToRGB(hppFontItems[Order].color);
     end;
+    Result := F;
   end;
+
 var
   i,index: integer;
 begin
@@ -318,9 +327,11 @@ begin
   try
     // load fonts
   LoadFont(0,GridOptions.FontContact);
-  LoadFont(1,GridOptions.FontProfile);
-  LoadFont(2,GridOptions.FontTimestamp);
-  LoadFont(17,GridOptions.FontSessHeader);
+  GridOptions.FontProfile := LoadFont(1,GridOptions.FontProfile);
+  //GridOptions.FontSelected := LoadFont(2,GridOptions.FontSelected);
+  GridOptions.FontSessHeader := LoadFont(17,GridOptions.FontSessHeader);
+  GridOptions.FontIncomingTimestamp := LoadFont(20,GridOptions.FontIncomingTimestamp);
+  GridOptions.FontOutgoingTimestamp := LoadFont(21,GridOptions.FontOutgoingTimestamp);
   // load colors
   GridOptions.ColorDivider := LoadColorDB(0);
   GridOptions.ColorSelectedText := LoadColorDB(1);
@@ -332,7 +343,7 @@ begin
     if hppFontItems[i].mes <> [] then begin
       if index > High(GridOptions.ItemOptions) then GridOptions.AddItemOptions;
       GridOptions.ItemOptions[index].MessageType := hppFontItems[i].Mes;
-      LoadFont(i,GridOptions.ItemOptions[index].textFont);
+      GridOptions.ItemOptions[index].textFont := LoadFont(i,GridOptions.ItemOptions[index].textFont);
       GridOptions.ItemOptions[index].textColor := LoadColorDB(i);
       Inc(index);
     end;
@@ -444,25 +455,16 @@ begin
     defFont.charset := DEFAULT_CHARSET;
     for i := 0 to High(hppFontItems) do begin
       if hppFontItems[i].mes <> [] then GridOptions.AddItemOptions;
-      RegisterFont(Translate(hppFontItems[i].name),i,defFont{TRANSLATE-IGNORE});
-      if hppFontItems[i].nameColor = '' then
-        RegisterColor(Translate(hppFontItems[i].name),i,ColorToRGB(hppFontItems[i].back){TRANSLATE-IGNORE})
-      else
-        RegisterColor(Translate(hppFontItems[i].nameColor),i,ColorToRGB(hppFontItems[i].back){TRANSLATE-IGNORE});
+      if hppFont in hppFontItems[i]._type then begin
+        RegisterFont(Translate(hppFontItems[i].name),i,defFont{TRANSLATE-IGNORE});
+      end;
+      if hppColor in hppFontItems[i]._type then begin
+        if hppFontItems[i].nameColor = '' then
+          RegisterColor(Translate(hppFontItems[i].name),i,hppFontItems[i].back{TRANSLATE-IGNORE})
+        else
+          RegisterColor(Translate(hppFontItems[i].nameColor),i,hppFontItems[i].back{TRANSLATE-IGNORE});
+      end;
     end;
-    //RegisterFont(Translate(hppFontItems[0].name),0,defFont{TRANSLATE-IGNORE});
-    //RegisterFont(Translate(hppFontItems[1].name),1,defFont{TRANSLATE-IGNORE});
-    //RegisterFont(Translate(hppFontItems[2].name),2,defFont{TRANSLATE-IGNORE});
-    //RegisterFont(Translate(hppFontItems[High(hppFontItems)].name),High(hppFontItems),defFont{TRANSLATE-IGNORE});
-    //RegisterColor(Translate(hppFontItems[0].nameColor),0,ColorToRGB(hppFontItems[0].back){TRANSLATE-IGNORE});
-    //RegisterColor(Translate(hppFontItems[1].nameColor),1,ColorToRGB(hppFontItems[1].back){TRANSLATE-IGNORE});
-    //RegisterColor(Translate(hppFontItems[2].nameColor),2,ColorToRGB(hppFontItems[2].back){TRANSLATE-IGNORE});
-    //RegisterColor(Translate(hppFontItems[17].name),High(hppFontItems),ColorToRGB(hppFontItems[High(hppFontItems)].back){TRANSLATE-IGNORE});
-    //for i := 3 to High(hppFontItems)-1 do begin
-    //  GridOptions.AddItemOptions;
-    //  RegisterFont(Translate(hppFontItems[i].name),i,defFont{TRANSLATE-IGNORE});
-    //  RegisterColor(Translate(hppFontItems[i].name),i,hppFontItems[i].back{TRANSLATE-IGNORE});
-    //end;
   end;
 end;
 
