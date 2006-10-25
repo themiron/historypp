@@ -114,7 +114,7 @@ begin
   Items[High(Items)].hContact := hContact;
   Items[High(Items)].Codepage := Codepage;
   if RTL then RTLMode := hppRTLEnable
-         else RTLMode := hppRTLDisable;
+         else RTLMode := hppRTLDefault;
   Items[High(Items)].RTLMode := RTLMode;
   if Grid.Contact <> hContact then begin
     Grid.Contact := hContact;
@@ -230,8 +230,8 @@ begin
   Item := ReadEvent(Items[Index].hDBEvent,Items[Index].Codepage);
   Item.Proto := Grid.Protocol;
   Item.Bookmarked := BookmarkServer[Items[Index].hContact].Bookmarked[Items[Index].hDBEvent];
-  if not FUseHistoryRTLMode then
-      Item.RTLMode := Items[Index].RTLMode;
+  if (not FUseHistoryRTLMode) and (Item.RTLMode <> hppRTLEnable) then
+    Item.RTLMode := Items[Index].RTLMode;
   // tabSRMM still doesn't marks events read in case of hpp log is in use...
   //if (FGridMode = gmIEView) and
   if (not Item.IsRead) and (mtIncoming in Item.MessageType) and
