@@ -305,6 +305,7 @@ const
     DBEF_FIRST = 1;     // internally only, do not use
     DBEF_SENT  = 2;     // if set, the event was sent by the user, otherwise it was received
     DBEF_READ  = 4;     // event has been read by the user -- only needed for history
+    DBEF_RTL   = 8;     //event contains the right-to-left aligned text
 
     EVENTTYPE_MESSAGE       = 0;
     EVENTTYPE_URL           = 1;

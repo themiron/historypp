@@ -284,6 +284,9 @@ begin
   else
     Result.MessageType := [mtOutgoing];
   Result.IsRead := boolean(EventInfo.flags and DBEF_READ);
+  // enable autoRTL feature
+  if boolean(EventInfo.flags and DBEF_RTL) then
+    Result.RTLMode := hppRTLEnable;
   EventIndex := 0;
   for i := 1 to High(EventTable) do
     if EventTable[i].EventType = EventInfo.EventType then begin
