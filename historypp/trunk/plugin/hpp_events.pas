@@ -347,7 +347,7 @@ begin
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Url,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Desc,BytePos);
   Hi.Text := WideFormat(TranslateWideW('URL: %s'),[AnsiToWideString(url+#13#10+desc,hi.Codepage)]);
-  Hi.FileRecord := Url;
+  Hi.Extended := Url;
 end;
 
 procedure GetEventTextForFile(EventInfo: TDBEventInfo; var Hi: THistoryItem);
@@ -364,7 +364,7 @@ begin
   else
     hi.Text := TranslateWideW('Incoming file transfer: %s');
   hi.Text := WideFormat(hi.Text,[AnsiToWideString(FileName+#13#10+Desc,hi.Codepage)]);
-  hi.FileRecord := FileName;
+  hi.Extended := FileName;
 end;
 
 procedure GetEventTextForAuthRequest(EventInfo: TDBEventInfo; var Hi: THistoryItem);
@@ -528,7 +528,7 @@ begin
   msglen := msglen+(lenW+1)*SizeOf(WideChar);
   if msglen < EventInfo.cbBlob then begin
     msgA := msgA + msglen;
-    if lstrlenA(msgA) > 0 then hi.FileRecord := msgA;
+    if lstrlenA(msgA) > 0 then hi.Extended := msgA;
   end;
 end;
 

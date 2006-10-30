@@ -66,7 +66,7 @@ type
     LinkedToPrev: Boolean; // for future use to group messages from one contact together
     Bookmarked: Boolean;
     IsRead: Boolean;
-    FileRecord: String;
+    Extended: String;
   end;
 
   TCodePage = record
