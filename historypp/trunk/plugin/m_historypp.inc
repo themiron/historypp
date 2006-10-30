@@ -70,17 +70,19 @@ const
 
 type
   TItemRenderDetails = packed record
-    cbSize: DWord; // size of the structure in bytes
-    hContact: THandle; // handle to the contact for which the event is processed
-    hDBEvent: THandle; // handle to the event which is processed
-    dwEventTime: DWord; // timestamp of the event
-    wEventType: Word; // Event's flags (see m_database, EVENTTYPE_*; m_icq, ICQEVENTTYPE_*)
-    IsEventSent: ByteBool; // Outgoing event. True if DBEF_SENT event flag is present (see m_database)
-    dwFlags: DWord; // Any reasonable combination of IRDF_* flags.
-    bHistoryWindow: Byte; // What kind of window history. See IRDHW_* values
-    pProto: PChar; // Proto of the event, if available
-    pModule: PChar; // Module of the event, if available
-    end;
+    cbSize: DWord;          // size of the structure in bytes
+    hContact: THandle;      // handle to the contact for which the event is processed
+    hDBEvent: THandle;      // handle to the event which is processed
+    dwEventTime: DWord;     // timestamp of the event
+    wEventType: Word;       // Event's flags (see m_database, EVENTTYPE_*; m_icq, ICQEVENTTYPE_*)
+    IsEventSent: ByteBool;  // Outgoing event. True if DBEF_SENT event flag is present (see m_database)
+    dwFlags: DWord;         // Any reasonable combination of IRDF_* flags.
+    bHistoryWindow: Byte;   // What kind of window history. See IRDHW_* values
+    pProto: PChar;          // Proto of the event, if available
+    pModule: PChar;         // Module of the event, if available
+    pText: PWideChar;       // Text of the event, not used now
+    pExtended: PChar;       // Extended text, used for storing urls, paths and so on
+  end;
 
   PItemRenderDetails = ^TItemRenderDetails;
 

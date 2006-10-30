@@ -275,6 +275,8 @@ begin
   ItemRenderDetails.hDBEvent := Items[Item].hDBEvent;
   ItemRenderDetails.pProto := PChar(Grid.Items[Item].Proto);
   ItemRenderDetails.pModule := PChar(Grid.Items[Item].Module);
+  ItemRenderDetails.pText := nil;
+  ItemRenderDetails.pExtended := PChar(Grid.Items[Item].Extended);
   ItemRenderDetails.dwEventTime := Grid.Items[Item].Time;
   ItemRenderDetails.wEventType := Grid.Items[Item].EventType;
   ItemRenderDetails.IsEventSent := (mtOutgoing in Grid.Items[Item].MessageType);
