@@ -170,17 +170,17 @@ type
     FIconUrl: TIcon;
     FIconOther: TIcon;
 
-    //FIconHistory: hIcon;
-    //FIconSearch: hIcon;
-
+    FRTLEnabled: Boolean;
+    FShowAvatars: Boolean;
     FShowIcons: Boolean;
     FOnShowIcons: TOnShowIcons;
 
-    FRTLEnabled: Boolean;
     FBBCodesEnabled: Boolean;
     FSmileysEnabled: Boolean;
     FMathModuleEnabled: Boolean;
     FRawRTFEnabled: Boolean;
+    FAvatarsHistoryEnabled: Boolean;
+
 
     FClipCopyTextFormat: WideString;
     FClipCopyFormat: WideString;
@@ -204,13 +204,15 @@ type
     procedure SetIconURL(const Value: TIcon);
     procedure SetIconMessage(const Value: TIcon);
 
-    procedure SetShowIcons(const Value: Boolean);
-
     procedure SetRTLEnabled(const Value: Boolean);
+    procedure SetShowIcons(const Value: Boolean);
+    procedure SetShowAvatars(const Value: Boolean);
+
     procedure SetBBCodesEnabled(const Value: Boolean);
     procedure SetSmileysEnabled(const Value: Boolean);
     procedure SetMathModuleEnabled(const Value: Boolean);
     procedure SetRawRTFEnabled(const Value: Boolean);
+    procedure SetAvatarsHistoryEnabled(const Value: Boolean);
 
     function GetLocked: Boolean;
   protected
@@ -254,12 +256,15 @@ type
 
     property ItemOptions: TItemOptions read FItemOptions write FItemOptions;
 
-    property ShowIcons: Boolean read FShowIcons write SetShowIcons;
     property RTLEnabled: Boolean read FRTLEnabled write SetRTLEnabled;
+    property ShowIcons: Boolean read FShowIcons write SetShowIcons;
+    property ShowAvatars: Boolean read FShowAvatars write SetShowAvatars;
+
     property BBCodesEnabled: Boolean read FBBCodesEnabled write SetBBCodesEnabled;
     property SmileysEnabled: Boolean read FSmileysEnabled write SetSmileysEnabled;
     property MathModuleEnabled: Boolean read FMathModuleEnabled write SetMathModuleEnabled;
     property RawRTFEnabled: Boolean read FRawRTFEnabled write SetRawRTFEnabled;
+    property AvatarsHistoryEnabled: Boolean read FAvatarsHistoryEnabled write SetAvatarsHistoryEnabled;
 
     property OpenDetailsMode: Boolean read FOpenDetailsMode write FOpenDetailsMode;
   end;
@@ -1962,9 +1967,8 @@ begin
        integer(fsStrikeOut in textFont.Style),
        integer(textFont.Size shl 1)]);
     Text := FormatString2RTF(FItems[Item].Text);
-    if Options.BBCodesEnabled and UseTextFormatting then begin
+    if Options.BBCodesEnabled and UseTextFormatting then
       Text := DoSupportBBCodesRTF(Text,2,NoDefaultColors);
-    end;
     RTF := RTF + Text + '\par }'+#0;
   end;
 
@@ -2625,6 +2629,8 @@ var
 begin
   if State = gsInline then CancelInline;
 
+  // avatars!!!
+  //FRichCache.SetWidth(ClientWidth - 3*FPadding - 64);
   FRichCache.SetWidth(ClientWidth - 2*FPadding);
 
   w := ClientWidth;
@@ -4576,6 +4582,8 @@ begin
   Result := GetItemRect(Item);
   Inc(Result.Left,Padding);
   Dec(Result.Right,Padding);
+  /// avatars!!!
+  //Dec(Result.Right,64+Padding);
   if mtIncoming in FItems[Item].MessageType then
     hh := CHeaderHeight
   else
@@ -4687,13 +4695,18 @@ end;
 constructor TGridOptions.Create;
 begin
   inherited;
-  ShowIcons := False;
-  RTLEnabled := False;
-  SmileysEnabled := False;
-  BBCodesEnabled := False;
-  MathModuleEnabled := False;
 
-  OpenDetailsMode := False;
+  FRTLEnabled := False;
+  FShowIcons := False;
+  FShowAvatars := False;
+
+  FSmileysEnabled := False;
+  FBBCodesEnabled := False;
+  FMathModuleEnabled := False;
+  FRawRTFEnabled := False;
+  FAvatarsHistoryEnabled := False;
+
+  FOpenDetailsMode := False;
 
   FLocks := 0;
   Changed := 0;
@@ -4906,6 +4919,18 @@ begin
   end;
 end;
 
+procedure TGridOptions.SetShowAvatars(const Value: Boolean);
+begin
+  if FShowAvatars = Value then exit;
+  FShowAvatars := Value;
+  Self.StartChange;
+  try
+    DoChange;
+  finally
+    Self.EndChange;
+  end;
+end;
+
 procedure TGridOptions.SetBBCodesEnabled(const Value: Boolean);
 begin
   if FBBCodesEnabled = Value then exit;
@@ -4946,6 +4971,18 @@ procedure TGridOptions.SetRawRTFEnabled(const Value: Boolean);
 begin
   if FRawRTFEnabled = Value then exit;
   FRawRTFEnabled := Value;
+  Self.StartChange;
+  try
+    DoChange;
+  finally
+    Self.EndChange;
+  end;
+end;
+
+procedure TGridOptions.SetAvatarsHistoryEnabled(const Value: Boolean);
+begin
+  if FAvatarsHistoryEnabled = Value then exit;
+  FAvatarsHistoryEnabled := Value;
   Self.StartChange;
   try
     DoChange;

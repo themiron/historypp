@@ -60,14 +60,13 @@ uses
 // our own processing of RichEdit for all history windows
 function AllHistoryRichEditProcess(wParam{hRichEdit}, lParam{PItemRenderDetails}: DWord): Integer; cdecl;
 begin
-
-  if GridOptions.SmileysEnabled then
-    DoSupportSmileys(wParam,lParam);
-
-  if GridOptions.MathModuleEnabled then
-    DoSupportMathModule(wParam,lParam);
-
   Result := 0;
+  if GridOptions.SmileysEnabled then
+    Result := Result or DoSupportSmileys(wParam,lParam);
+  if GridOptions.MathModuleEnabled then
+    Result := Result or DoSupportMathModule(wParam,lParam);
+  if GridOptions.AvatarsHistoryEnabled then
+    Result := Result or DoSupportAvatarHistory(wParam,lParam);
 end;
 
 procedure CloseHistoryWindows;
