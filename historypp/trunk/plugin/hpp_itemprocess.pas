@@ -35,7 +35,7 @@ interface
 uses
   Windows, Messages, SysUtils,
   m_globaldefs, m_api,
-  hpp_global, hpp_richedit;
+  hpp_global, hpp_events, hpp_richedit, hpp_richedit_ole;
 
 type
 
@@ -67,6 +67,7 @@ var
 
   function DoSupportSmileys(wParam, lParam: DWord): Integer;
   function DoSupportMathModule(wParam, lParam: DWord): Integer;
+  function DoSupportAvatarHistory(wParam, lParam: DWord): Integer;
 
 implementation
 
@@ -227,6 +228,50 @@ begin
   mrei.sel := nil;
   mrei.disableredraw := integer(false);
   Result := PluginLink.CallService(MATH_RTF_REPLACE_FORMULAE,0,DWord(@mrei));
+end;
+
+(*
+function DoSupportAvatars(wParam, lParam: DWord): Integer;
+const
+  crlf: String = '{\line }';
+var
+  ird: PItemRenderDetails;
+  ave: PAvatarCacheEntry;
+  msglen: integer;
+begin
+  ird := Pointer(lParam);
+  ave := Pointer(PluginLink.CallService(MS_AV_GETAVATARBITMAP,ird.hContact,0));
+  if (ave <> nil) and (ave.hbmPic <> 0) then begin
+    msglen := SendMessage(wParam,WM_GETTEXTLENGTH,0,0);
+    SendMessage(wParam,EM_SETSEL,msglen,msglen);
+    SetRichRTF(wParam,crlf,True,False,True);
+    InsertBitmapToRichEdit(wParam,ave.hbmPic);
+  end;
+  Result := 0;
+end;
+*)
+
+function DoSupportAvatarHistory(wParam, lParam: DWord): Integer;
+const
+  crlf: String = '{\line }';
+var
+  ird: PItemRenderDetails;
+  Link: String;
+  msglen: integer;
+  hBmp: hBitmap;
+begin
+  Result := 0;
+  ird := Pointer(lParam);
+  if ird.wEventType <> EVENTTYPE_AVATARCHANGE then exit;
+  if (ird.pExtended = nil) or (lstrlenA(ird.pExtended) = 0) then exit;
+  Link := hppProfileDir+'\'+ird.pExtended;
+  hBmp := PluginLink.CallService(MS_UTILS_LOADBITMAP,0,Cardinal(@Link[1]));
+  if hBmp <> 0 then begin
+    msglen := SendMessage(wParam,WM_GETTEXTLENGTH,0,0);
+    SendMessage(wParam,EM_SETSEL,msglen,msglen);
+    SetRichRTF(wParam,crlf,True,False,True);
+    InsertBitmapToRichEdit(wParam,hBmp);
+  end;
 end;
 
 initialization

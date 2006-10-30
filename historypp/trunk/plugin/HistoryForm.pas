@@ -2834,6 +2834,8 @@ begin
   ItemRenderDetails.hDBEvent := History[GridIndexToHistory(Item)];
   ItemRenderDetails.pProto := PChar(hg.Items[Item].Proto);
   ItemRenderDetails.pModule := PChar(hg.Items[Item].Module);
+  ItemRenderDetails.pText := nil;
+  ItemRenderDetails.pExtended := PChar(hg.Items[Item].Extended);
   ItemRenderDetails.dwEventTime := hg.Items[Item].Time;
   ItemRenderDetails.wEventType := hg.Items[Item].EventType;
   ItemRenderDetails.IsEventSent := (mtOutgoing in hg.Items[Item].MessageType);

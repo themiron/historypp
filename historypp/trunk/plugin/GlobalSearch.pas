@@ -1353,8 +1353,10 @@ begin
   ItemRenderDetails.cbSize := SizeOf(ItemRenderDetails);
   ItemRenderDetails.hContact := GetSearchItem(Item).Contact.Handle;
   ItemRenderDetails.hDBEvent := GetSearchItem(Item).hDBEvent;
-  ItemRenderDetails.pProto := Pointer(hg.Items[Item].Proto);
-  ItemRenderDetails.pModule := Pointer(hg.Items[Item].Module);
+  ItemRenderDetails.pProto := PChar(hg.Items[Item].Proto);
+  ItemRenderDetails.pModule := PChar(hg.Items[Item].Module);
+  ItemRenderDetails.pText := nil;
+  ItemRenderDetails.pExtended := PChar(hg.Items[Item].Extended);
   ItemRenderDetails.dwEventTime := hg.Items[Item].Time;
   ItemRenderDetails.wEventType := hg.Items[Item].EventType;
   ItemRenderDetails.IsEventSent := (mtOutgoing in hg.Items[Item].MessageType);

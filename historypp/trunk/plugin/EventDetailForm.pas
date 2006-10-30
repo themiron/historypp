@@ -156,6 +156,8 @@ begin
   ItemRenderDetails.hDBEvent := ParentForm.History[ParentForm.GridIndexToHistory(FItem)];
   ItemRenderDetails.pProto := PChar(ParentForm.hg.Items[FItem].Proto);
   ItemRenderDetails.pModule := PChar(ParentForm.hg.Items[FItem].Module);
+  ItemRenderDetails.pText := nil;
+  ItemRenderDetails.pExtended := PChar(ParentForm.hg.Items[FItem].Extended);
   ItemRenderDetails.dwEventTime := ParentForm.hg.Items[FItem].Time;
   ItemRenderDetails.wEventType := ParentForm.hg.Items[FItem].EventType;
   ItemRenderDetails.IsEventSent := (mtOutgoing in ParentForm.hg.Items[FItem].MessageType);
