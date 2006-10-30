@@ -40,7 +40,7 @@ uses
 
 type
 
-  TTextFunction = function(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+  TTextFunction = procedure(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 
   TEventTableItem = record
     EventType: Word;
@@ -62,27 +62,27 @@ function TimestampToDateTime(Timestamp: DWord): TDateTime;
 function TimestampToString(Timestamp: DWord): WideString;
 // general routine
 function ReadEvent(hDBEvent: THandle; UseCP: Cardinal = CP_ACP): THistoryItem;
+function GetEventInfo(hDBEvent: DWord): TDBEventInfo;
 function GetEventTimestamp(hDBEvent: THandle): DWord;
 function GetEventDateTime(hDBEvent: THandle): TDateTime;
 // specific routines
-function GetEventTextForMessage(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForFile(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForUrl(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForAuthRequest(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForYouWereAdded(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForSms(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForContacts(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForWebPager(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForEmailExpress(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForStatusChange(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForAvatarChange(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-//function GetEventTextForICQAuth(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForICQAuthGranted(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForICQAuthDenied(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForICQSelfRemove(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForICQFutureAuth(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForICQBroadcast(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
-function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForMessage(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForFile(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForUrl(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForAuthRequest(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForYouWereAdded(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForSms(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForContacts(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForWebPager(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForEmailExpress(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForStatusChange(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForAvatarChange(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForICQAuthGranted(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForICQAuthDenied(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForICQSelfRemove(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForICQFutureAuth(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForICQBroadcast(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForOther(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 // service routines
 function TextHasUrls(var Text: WideString): Boolean;
 function AllocateTextBuffer(len: integer): integer;
@@ -279,26 +279,25 @@ begin
   Result.Proto := '';
   Result.Time := EventInfo.timestamp;
   Result.EventType := EventInfo.EventType;
-  if (EventInfo.flags and DBEF_SENT) = 0 then
-    Result.MessageType := [mtIncoming]
-  else
-    Result.MessageType := [mtOutgoing];
   Result.IsRead := boolean(EventInfo.flags and DBEF_READ);
   // enable autoRTL feature
   if boolean(EventInfo.flags and DBEF_RTL) then
-    Result.RTLMode := hppRTLEnable;
+   Result.RTLMode := hppRTLEnable;
   EventIndex := 0;
   for i := 1 to High(EventTable) do
     if EventTable[i].EventType = EventInfo.EventType then begin
       EventIndex := i;
       break;
     end;
-  mt := EventTable[EventIndex].MessageType;
   Result.Codepage := UseCP;
-  Result.Text := EventTable[EventIndex].TextFunction(EventInfo,UseCP,mt);
+  Result.MessageType := [EventTable[EventIndex].MessageType];
+  EventTable[EventIndex].TextFunction(EventInfo,Result);
+  if (EventInfo.flags and DBEF_SENT) = 0 then
+    include(Result.MessageType,mtIncoming)
+  else
+    include(Result.MessageType,mtOutgoing);
   Result.Text := TntAdjustLineBreaks(Result.Text);
   Result.Text := TrimRight(Result.Text);
-  include(Result.MessageType,mt);
   if Assigned(EventInfo.pBlob) then FreeMem(EventInfo.pBlob);
 end;
 
@@ -311,7 +310,7 @@ begin
   Inc(Pos);
 end;
 
-function GetEventTextForMessage(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForMessage(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   msgA: PAnsiChar;
   msgW: PWideChar;
@@ -332,13 +331,14 @@ begin
     UseUnicode := (lenW <= (msglen-1)) and (lenW > 0);
   end else UseUnicode := false;
   if UseUnicode then
-    SetString(Result,msgW,lenW)
+    SetString(hi.Text,msgW,lenW)
   else
-    Result := AnsiToWideString(msgA,UseCP);
-  if TextHasUrls(Result) then MessType := mtUrl;
+    hi.Text := AnsiToWideString(msgA,hi.Codepage);
+  if TextHasUrls(hi.Text) then
+    hi.MessageType := [mtUrl];
 end;
 
-function GetEventTextForUrl(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForUrl(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   BytePos:LongWord;
   Url,Desc: String;
@@ -346,10 +346,11 @@ begin
   BytePos:=0;
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Url,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Desc,BytePos);
-  Result := WideFormat(TranslateWideW('URL: %s'),[AnsiToWideString(url+#13#10+desc,UseCP)]);
+  Hi.Text := WideFormat(TranslateWideW('URL: %s'),[AnsiToWideString(url+#13#10+desc,hi.Codepage)]);
+  Hi.FileRecord := Url;
 end;
 
-function GetEventTextForFile(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForFile(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   BytePos: LongWord;
   FileName,Desc: String;
@@ -359,13 +360,14 @@ begin
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Filename,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Desc,BytePos);
   if (EventInfo.Flags and DBEF_SENT)>0 then
-    Result := TranslateWideW('Outgoing file transfer: %s')
+    hi.Text := TranslateWideW('Outgoing file transfer: %s')
   else
-    Result := TranslateWideW('Incoming file transfer: %s');
-  Result := WideFormat(Result,[AnsiToWideString(FileName+#13#10+Desc,UseCP)]);
+    hi.Text := TranslateWideW('Incoming file transfer: %s');
+  hi.Text := WideFormat(hi.Text,[AnsiToWideString(FileName+#13#10+Desc,hi.Codepage)]);
+  hi.FileRecord := FileName;
 end;
 
-function GetEventTextForAuthRequest(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForAuthRequest(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   BytePos: LongWord;
   uin,hContact: integer;
@@ -399,11 +401,11 @@ begin
     ReasonW := ReasonUTF
   else
     ReasonW := ReasonACP;
-  Result := WideFormat(TranslateWideW('Authorisation request by %s (%s%d): %s'),
-            [NickW,AnsiToWideString(Name+Email,hppCodepage),uin,ReasonW]);
+  hi.Text := WideFormat(TranslateWideW('Authorisation request by %s (%s%d): %s'),
+                        [NickW,AnsiToWideString(Name+Email,hppCodepage),uin,ReasonW]);
 end;
 
-function GetEventTextForYouWereAdded(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForYouWereAdded(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   BytePos: LongWord;
   uin,hContact: integer;
@@ -429,16 +431,16 @@ begin
   if Name <> '' then Name:=Name + ', ';
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
   if Email <> '' then Email := Email + ', ';
-  Result := WideFormat(TranslateWideW('You were added by %s (%s%d)'),
-            [NickW,AnsiToWideString(Name+Email,hppCodepage),uin]);
+  hi.Text := WideFormat(TranslateWideW('You were added by %s (%s%d)'),
+                        [NickW,AnsiToWideString(Name+Email,hppCodepage),uin]);
 end;
 
-function GetEventTextForSms(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForSms(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 begin
-  Result := AnsiToWideString(PChar(EventInfo.pBlob),UseCP);
+  hi.Text := AnsiToWideString(PChar(EventInfo.pBlob),hi.Codepage);
 end;
 
-function GetEventTextForContacts(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForContacts(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   BytePos: LongWord;
   Contacts: String;
@@ -448,18 +450,18 @@ begin
   While BytePos < EventInfo.cbBlob do begin
     Contacts := Contacts + #13#10;
     ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Contacts,BytePos);
-    Contacts := Contacts + ' (';
+    Contacts := Contacts + ' (ICQ: ';
     ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Contacts,BytePos);
     Contacts := Contacts + ')';
   end;
-  if (EventInfo.Flags and DBEF_SENT)>0 then
-    Result := TranslateWideW('Outgoing contacts: %s')
+  if (EventInfo.flags and DBEF_SENT) = 0 then
+    hi.Text := TranslateWideW('Incoming contacts: %s')
   else
-    Result := TranslateWideW('Incoming contacts: %s');
-  Result := WideFormat(Result ,[AnsiToWideString(Contacts,UseCP)]);
+    hi.Text := TranslateWideW('Outgoing contacts: %s');
+  hi.Text := WideFormat(hi.Text,[AnsiToWideString(Contacts,hi.Codepage)]);
 end;
 
-function GetEventTextForWebPager(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForWebPager(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   BytePos: LongWord;
   Body,Name,Email: String;
@@ -468,13 +470,13 @@ begin
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
-  Result := TranslateWideW('Webpager message from %s (%s): %s');
-  Result := WideFormat(Result ,[AnsiToWideString(Name,hppCodepage),
-                                AnsiToWideString(Email,hppCodepage),
-                                AnsiToWideString(#13#10+Body,hppCodepage)]);
+  hi.Text := TranslateWideW('Webpager message from %s (%s): %s');
+  hi.Text := WideFormat(hi.Text,[AnsiToWideString(Name,hppCodepage),
+                                 AnsiToWideString(Email,hppCodepage),
+                                 AnsiToWideString(#13#10+Body,hppCodepage)]);
 end;
 
-function GetEventTextForEmailExpress(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForEmailExpress(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   BytePos: LongWord;
   Body,Name,Email: String;
@@ -483,20 +485,22 @@ begin
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
-  Result := TranslateWideW('Email express from %s (%s): %s');
-  Result := WideFormat(Result ,[AnsiToWideString(Name,hppCodepage),
-                                AnsiToWideString(Email,hppCodepage),
-                                AnsiToWideString(#13#10+Body,hppCodepage)]);
+  hi.Text := TranslateWideW('Email express from %s (%s): %s');
+  hi.Text := WideFormat(hi.Text,[AnsiToWideString(Name,hppCodepage),
+                                 AnsiToWideString(Email,hppCodepage),
+                                 AnsiToWideString(#13#10+Body,hppCodepage)]);
 end;
 
-function GetEventTextForStatusChange(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForStatusChange(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
-  mt: TMessageType;
+  tmp: THistoryItem;
 begin
-  Result := WideFormat(TranslateWideW('Status change: %s'),[GetEventTextForMessage(EventInfo,hppCodepage,mt)]);
+  tmp.Codepage := hppCodepage;
+  GetEventTextForMessage(EventInfo,tmp);
+  hi.Text := WideFormat(TranslateWideW('Status change: %s'),[tmp.Text]);
 end;
 
-function GetEventTextForAvatarChange(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForAvatarChange(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   msgA: PAnsiChar;
   msgW: PWideChar;
@@ -507,28 +511,24 @@ var
 begin
   msgA := PChar(EventInfo.pBlob);
   msglen := lstrlenA(PChar(EventInfo.pBlob))+1;
+  LenW := 0;
   if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
     msgW := PWideChar(msgA+msglen);
-    LenW := 0;
     for i := 0 to (EventInfo.cbBlob-msglen) div SizeOf(WideChar) do
       if msgW[i] = #0 then begin
         LenW := i;
         break;
       end;
     UseUnicode := (lenW <= (msglen-1)) and (lenW > 0);
-  end else
-    UseUnicode := false;
+  end else UseUnicode := false;
   if UseUnicode then
-    SetString(Result,msgW,lenW)
+    SetString(hi.Text,msgW,lenW)
   else
-    Result := AnsiToWideString(msgA,UseCP);
+    hi.Text := AnsiToWideString(msgA,hi.Codepage);
   msglen := msglen+(lenW+1)*SizeOf(WideChar);
   if msglen < EventInfo.cbBlob then begin
     msgA := msgA + msglen;
-    if lstrlenA(msgA) > 0 then begin
-      Link := URLEncode(hppProfileDir+'/'+msgA);
-      Result := Result + #13#10 + 'file://localhost/'+AnsiToWideString(Link,CP_ACP);
-    end;
+    if lstrlenA(msgA) > 0 then hi.FileRecord := msgA;
   end;
 end;
 
@@ -548,31 +548,31 @@ begin
   Result := WideFormat(Template ,[Name,uin,AnsiToWideString(#13#10+Body,hppCodepage)]);
 end;
 
-function GetEventTextForICQAuthGranted(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForICQAuthGranted(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 begin
-  Result := GetEventTextForICQAuth(EventInfo,
+  hi.Text := GetEventTextForICQAuth(EventInfo,
     TranslateWideW('Authorization request granted by %s (%d): %s'));
 end;
 
-function GetEventTextForICQAuthDenied(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForICQAuthDenied(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 begin
-  Result := GetEventTextForICQAuth(EventInfo,
+  hi.Text := GetEventTextForICQAuth(EventInfo,
     TranslateWideW('Authorization request denied by %s (%d): %s'));
 end;
 
-function GetEventTextForICQSelfRemove(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForICQSelfRemove(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 begin
-  Result := GetEventTextForICQAuth(EventInfo,
+  hi.Text := GetEventTextForICQAuth(EventInfo,
     TranslateWideW('User %s (%d) removed himself from your contact list: %s'));
 end;
 
-function GetEventTextForICQFutureAuth(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForICQFutureAuth(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 begin
-  Result := GetEventTextForICQAuth(EventInfo,
+  hi.Text := GetEventTextForICQAuth(EventInfo,
     TranslateWideW('Authorization future request by %s (%d): %s'));
 end;
 
-function GetEventTextForICQBroadcast(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForICQBroadcast(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   BytePos: LongWord;
   Body,Name,Email: String;
@@ -581,17 +581,17 @@ begin
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
   ReadStringTillZero(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
-  Result := TranslateWideW('Broadcast message from %s (%s): %s');
-  Result := WideFormat(Result ,[AnsiToWideString(Name,hppCodepage),
-                                AnsiToWideString(Email,hppCodepage),
-                                AnsiToWideString(#13#10+Body,hppCodepage)]);
+  hi.Text := TranslateWideW('Broadcast message from %s (%s): %s');
+  hi.Text := WideFormat(hi.Text,[AnsiToWideString(Name,hppCodepage),
+                                 AnsiToWideString(Email,hppCodepage),
+                                 AnsiToWideString(#13#10+Body,hppCodepage)]);
 end;
 
-function GetEventTextForOther(EventInfo: TDBEventInfo; UseCP: Cardinal; var MessType: TMessageType): WideString;
+procedure GetEventTextForOther(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 begin
   AllocateTextBuffer(EventInfo.cbBlob+1);
   StrLCopy(buffer,PChar(EventInfo.pBlob),EventInfo.cbBlob);
-  Result := AnsiToWideString(buffer,UseCP);
+  hi.Text := AnsiToWideString(buffer,hi.Codepage);
 end;
 
 initialization
