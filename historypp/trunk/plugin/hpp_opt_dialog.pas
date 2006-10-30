@@ -16,11 +16,13 @@ const
   IDC_RTLDEFAULT      = 103; // "RTL by default" checkbox
   IDC_OPENDETAILS     = 104; // "Open event details by Enter" checkbox
   IDC_IEVIEWAPI       = 105; // "Imitate IEView API" checkbox
+  IDC_SHOWAVATARS     = 106; // "Show avatars" checkbox
   ID_FORMATTING_GROUP = 200;
   IDC_BBCODE          = 201; // "Enable BBCodes" checkbox
   IDC_SMILEY          = 202; // "Enable SmileyAdd support" checkbox
   IDC_MATH            = 203; // "Enable MathModule support" checkbox
   IDC_RAWRTF          = 204; // "Enable raw RTF support" checkbox
+  IDC_AVATARSHISTORY  = 205; // "Display chanage avatars" checkbox
   ID_LOOK_GROUP       = 300;
   ID_LOOK_FONT1       = 301; // "To change fonts ..."
   ID_LOOK_FONT2       = 302;
@@ -86,13 +88,15 @@ begin
   {$IFNDEF NO_EXTERNALGRID}
   if GetChecked(IDC_IEVIEWAPI) <> GetDBBool(hppDBName,'IEViewAPI',false) then exit;
   {$ENDIF}
-  
+  if GetChecked(IDC_SHOWAVATARS) <> GridOptions.ShowAvatars then exit;
+
   if GetChecked(IDC_BBCODE) <> GridOptions.BBCodesEnabled then exit;
   if SmileyAddEnabled then
     if GetChecked(IDC_SMILEY) <> GridOptions.SmileysEnabled then exit;
   if MathModuleEnabled then
     if GetChecked(IDC_MATH) <> GridOptions.MathModuleEnabled then exit;
   if GetChecked(IDC_RAWRTF) <> GridOptions.RawRTFEnabled then exit;
+  if GetChecked(IDC_AVATARSHISTORY) <> GridOptions.AvatarsHistoryEnabled then exit;
 
   Result := False;
 end;
@@ -108,6 +112,7 @@ begin
     //GridOptions.RecentOnTop := GetChecked(IDC_RECENTONTOP);
     GridOptions.RTLEnabled := GetChecked(IDC_RTLDEFAULT);
     GridOptions.OpenDetailsMode := GetChecked(IDC_OPENDETAILS);
+    GridOptions.ShowAvatars := GetChecked(IDC_SHOWAVATARS);
 
     GridOptions.BBCodesEnabled := GetChecked(IDC_BBCODE);
     if SmileyAddEnabled then
@@ -115,6 +120,7 @@ begin
     if MathModuleEnabled then
       GridOptions.MathModuleEnabled := GetChecked(IDC_MATH);
     GridOptions.RawRTFEnabled := GetChecked(IDC_RAWRTF);
+    GridOptions.AvatarsHistoryEnabled := GetChecked(IDC_AVATARSHISTORY);
 
     SaveGridOptions;
   finally
@@ -170,6 +176,10 @@ begin
   {$ELSE}
   ShowWindow(GetDlgItem(hDlg,IDC_IEVIEWAPI),SW_HIDE);
   {$ENDIF}
+  //SetChecked(IDC_SHOWAVATARS,GridOptions.ShowAvatars);
+  // temporary disable
+  SetChecked(IDC_SHOWAVATARS,false);
+  EnableWindow(GetDlgItem(hDlg,IDC_SHOWAVATARS),false);
 
   SetChecked(IDC_BBCODE,GridOptions.BBCodesEnabled);
   EnableWindow(GetDlgItem(hDlg,IDC_SMILEY),SmileyAddEnabled);
@@ -179,6 +189,7 @@ begin
   if MathModuleEnabled then
     SetChecked(IDC_MATH,GridOptions.MathModuleEnabled);
   SetChecked(IDC_RAWRTF,GridOptions.RawRTFEnabled);
+  SetChecked(IDC_AVATARSHISTORY,GridOptions.AvatarsHistoryEnabled);
 
   TranslateDialogDefault(hDlg);
   Result := 0;
