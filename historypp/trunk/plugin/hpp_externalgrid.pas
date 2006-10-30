@@ -287,6 +287,7 @@ end;
 procedure TExternalGrid.ScrollToBottom;
 begin
   if Grid.State <> gsInline then begin
+    Grid.ShowBottomAligned := True;
     Grid.ScrollToBottom;
     Grid.Repaint;
   end;
