@@ -738,7 +738,7 @@ begin
   hg.TxtNoItems := TranslateWideW(hg.TxtNoItems);
   hg.TxtNoSuch := TranslateWideW(hg.TxtNoSuch);
   hg.TxtPartLog := TranslateWideW(hg.TxtPartLog);
-  hg.txtStartUp := TranslateWideW(hg.txtStartUp);
+  hg.TxtStartUp := TranslateWideW(hg.TxtStartUp);
 
   edSearch.Left := laSearch.Left + laSearch.Width + 5;
   edSearch.Width := bnSearch.Left - edSearch.Left - 5;

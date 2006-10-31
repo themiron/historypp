@@ -172,6 +172,16 @@ begin
   Grid.OnInlinePopup := GridPopup;
   Grid.OnUrlPopup := GridUrlPopup;
   Grid.OnInlineKeyDown := GridInlineKeyDown;
+
+  Grid.TxtFullLog := TranslateWideW(Grid.txtFullLog);
+  Grid.TxtGenHist1 := TranslateWideW(Grid.TxtGenHist1);
+  Grid.TxtGenHist2 := TranslateWideW(Grid.TxtGenHist2);
+  Grid.TxtHistExport := TranslateWideW(Grid.TxtHistExport);
+  Grid.TxtNoItems := '';
+  Grid.TxtNoSuch := TranslateWideW(Grid.TxtNoSuch);
+  Grid.TxtPartLog := TranslateWideW(Grid.TxtPartLog);
+  Grid.TxtStartUp := TranslateWideW(Grid.TxtStartUp);
+
   Grid.Options := GridOptions;
 
   pmGrid := TTntPopupMenu.Create(Grid);
