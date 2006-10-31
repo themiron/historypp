@@ -155,12 +155,14 @@ type
     FColorSelectedText: TColor;
     FColorSelected: TColor;
     FColorSessHeader: TColor;
+    FColorBackground: TColor;
 
     FFontProfile: TFont;
     FFontContact: TFont;
     FFontIncomingTimestamp: TFont;
     FFontOutgoingTimestamp: TFont;
     FFontSessHeader: TFont;
+    FFontMessage: TFont;
 
     //FItemFont: TFont;
     FItemOptions: TItemOptions;
@@ -192,12 +194,14 @@ type
     procedure SetColorSelectedText(const Value: TColor);
     procedure SetColorSelected(const Value: TColor);
     procedure SetColorSessHeader(const Value: TColor);
+    procedure SetColorBackground(const Value: TColor);
 
     procedure SetFontContact(const Value: TFont);
     procedure SetFontProfile(const Value: TFont);
     procedure SetFontIncomingTimestamp(const Value: TFont);
     procedure SetFontOutgoingTimestamp(const Value: TFont);
     procedure SetFontSessHeader(const Value: TFont);
+    procedure SetFontMessage(const Value: TFont);
 
     procedure SetIconOther(const Value: TIcon);
     procedure SetIconFile(const Value: TIcon);
@@ -247,12 +251,14 @@ type
     property ColorSelectedText: TColor read FColorSelectedText write SetColorSelectedText;
     property ColorSelected: TColor read FColorSelected write SetColorSelected;
     property ColorSessHeader: TColor read FColorSessHeader write SetColorSessHeader;
+    property ColorBackground: TColor read FColorBackground write SetColorBackground;
 
     property FontProfile: TFont read FFontProfile write SetFontProfile;
     property FontContact: TFont read FFontContact write SetFontContact;
     property FontIncomingTimestamp: TFont read FFontIncomingTimestamp write SetFontIncomingTimestamp;
     property FontOutgoingTimestamp: TFont read FFontOutgoingTimestamp write SetFontOutgoingTimestamp;
     property FontSessHeader: TFont read FFontSessHeader write SetFontSessHeader;
+    property FontMessage: TFont read FFontMessage write SetFontMessage;
 
     property ItemOptions: TItemOptions read FItemOptions write FItemOptions;
 
@@ -1056,7 +1062,7 @@ begin
     //Inc(idx);
   end;
   if SumHeight < ch then begin
-    Canvas.Brush.Color := clWindow;
+    Canvas.Brush.Color := Options.ColorBackground;
     Canvas.FillRect(Rect(0,SumHeight,ClientWidth,ClientHeight));
   end;
 end;
@@ -1930,12 +1936,16 @@ begin
   Options.GetItemOptions(FItems[Item].MessageType,textFont,backColor);
 
   if (IsSelected(Item)) and (not (RichEdit = FRichInline)) and UseSelection then begin
-    textColor := ColorToRGB(Options.ColorSelectedText);
-    backColor := ColorToRGB(Options.ColorSelected);
+    //textColor := ColorToRGB(Options.ColorSelectedText);
+    //backColor := ColorToRGB(Options.ColorSelected);
+    textColor := Options.ColorSelectedText;
+    backColor := Options.ColorSelected;
     NoDefaultColors := false;
   end else begin
-    textColor := ColorToRGB(textFont.Color);
-    backColor := ColorToRGB(backColor);
+    //textColor := ColorToRGB(textFont.Color);
+    //backColor := ColorToRGB(backColor);
+    textColor := textFont.Color;
+    backColor := backColor;
     NoDefaultColors := true;
   end;
 
@@ -2192,9 +2202,11 @@ procedure THistoryGrid.DrawMessage(Text: WideString);
 var
   cr,r: TRect;
 begin
-  Canvas.Font := Screen.MenuFont;
-  Canvas.Brush.Color := clWindow;
-  Canvas.Font.Color := clWindowText;
+  //Canvas.Font := Screen.MenuFont;
+  //Canvas.Brush.Color := clWindow;
+  //Canvas.Font.Color := clWindowText;
+  Canvas.Font := Options.FontMessage;
+  Canvas.Brush.Color := Options.ColorBackground;
   r := ClientRect;
   cr := ClientRect;
   Canvas.FillRect(r);
@@ -2437,18 +2449,6 @@ begin
   end;
 {$ENDIF}
   inherited;
-end;
-
-procedure THistoryGrid.WMCommand(var Message: TWMCommand);
-begin
-  inherited;
-  {$IFDEF RENDER_RICH}
-  if Message.NotifyCode = EN_KILLFOCUS then
-    if Message.Ctl = FRichInline.Handle then begin
-      if State = gsInline then CancelInline(False);
-      Message.Result := 0;
-    end;
-  {$ENDIF}
 end;
 
 procedure THistoryGrid.WMGetDlgCode(var Message: TWMGetDlgCode);
@@ -3112,8 +3112,11 @@ var
 r: TRect;
 begin
   r := ClientRect;
-  Canvas.Brush.Color := clWindow;
-  Canvas.Font.Color := clWindowText;
+  //Canvas.Brush.Color := clWindow;
+  //Canvas.Font.Color := clWindowText;
+  Canvas.Font := Options.FontMessage;
+  Canvas.Brush.Color := Options.ColorBackground;
+  Canvas.Pen.Color := Options.FontMessage.Color;
   if not IsCanvasClean then begin
     Canvas.FillRect(r);
     ProgressRect := r;
@@ -3129,7 +3132,9 @@ begin
   //InflateRect(r,-30,-((ClientHeight - 15) div 2));
   Canvas.Rectangle(r);
   InflateRect(r,-2,-2);
-  Canvas.Brush.Color := clHighlight;
+  //Canvas.Brush.Color := clHighlight;
+  //Canvas.Brush.Color := Options.ColorSelected;
+  Canvas.Brush.Color := Options.FontMessage.Color;
   if ProgressPercent < 100 then
     r.right := r.left + Round(((r.right-r.left) * ProgressPercent) / 100);
   Canvas.FillRect(r);
@@ -3170,21 +3175,6 @@ begin
     ReleaseDC(Handle,dc);
   end;
   Application.ProcessMessages;
-end;
-
-procedure THistoryGrid.WMKillFocus(var Message: TWMKillFocus);
-var
-  r: TRect;
-begin
-  // look at WMCommand for details
-  if (FRichInline = nil) or (Message.FocusedWnd <> FRichInline.Handle) then begin
-    if (Selected <> -1) and IsVisible(Selected) then begin
-      r := GetItemRect(Selected);
-      InvalidateRect(Handle,@r,False);
-    end;
-    if Assigned(FOnKillFocus) then FOnKillFocus(Self);
-  end;
-  inherited;
 end;
 
 procedure THistoryGrid.WMSetCursor(var Message: TWMSetCursor);
@@ -3236,12 +3226,45 @@ var
 begin
   if (FRichInline = nil) or (Message.FocusedWnd <> FRichInline.Handle) then begin
     CheckBusy;
-    if (selected <> -1) and IsVisible(Selected) then begin
+    if (Selected <> -1) and IsVisible(Selected) then begin
       r := GetItemRect(Selected);
       InvalidateRect(Handle,@r,False);
     end;
   end;
   inherited;
+end;
+
+procedure THistoryGrid.WMKillFocus(var Message: TWMKillFocus);
+var
+  r: TRect;
+begin
+  if (FRichInline = nil) or (Message.FocusedWnd <> FRichInline.Handle) then begin
+    if (Selected <> -1) and IsVisible(Selected) then begin
+      r := GetItemRect(Selected);
+      InvalidateRect(Handle,@r,False);
+    end;
+    // look at WMCommand for details
+    if (not Focused) and (Assigned(FOnKillFocus)) then FOnKillFocus(Self);
+  end;
+  inherited;
+end;
+
+procedure THistoryGrid.WMCommand(var Message: TWMCommand);
+begin
+  inherited;
+  {$IFDEF RENDER_RICH}
+  if Message.NotifyCode = EN_KILLFOCUS then
+    if Message.Ctl = FRichInline.Handle then begin
+      if State = gsInline then begin
+        CancelInline(False);
+        // post message to self to get WM_KILLFOCUS after WM_SETFOCUS,
+        // if grid is backfocused from inline mode. This allows us
+        // to control grid actually looses focus to external controls
+        PostMessage(Handle,WM_KILLFOCUS,Handle,0);
+      end;
+      Message.Result := 0;
+    end;
+  {$ENDIF}
 end;
 
 procedure THistoryGrid.ScrollBy(DeltaX, DeltaY: Integer);
@@ -3760,7 +3783,8 @@ function ColorToCss(Color: TColor): String;
 var
   first2, mid2, last2: String;
 begin
-  Result := IntToHex(ColorToRGB(Color),6);
+  //Result := IntToHex(ColorToRGB(Color),6);
+  Result := IntToHex(Color,6);
   if Length(Result) > 6 then SetLength(Result,6);
   // rotate for HTML color format from AA AB AC to AC AB AA
   First2 := Copy(Result,1,2);
@@ -4759,6 +4783,8 @@ begin
   FFontOutgoingTimestamp.OnChange := FontChanged;
   FFontSessHeader := TFont.Create;
   FFontSessHeader.OnChange := FontChanged;
+  FFontMessage := TFont.Create;
+  FFontMessage.OnChange := FontChanged;
 
   //FItemFont := TFont.Create;
 
@@ -4892,6 +4918,13 @@ procedure TGridOptions.SetColorSessHeader(const Value: TColor);
 begin
   if FColorSessHeader = Value then exit;
   FColorSessHeader := Value;
+  DoChange;
+end;
+
+procedure TGridOptions.SetColorBackground(const Value: TColor);
+begin
+  if FColorBackground = Value then exit;
+  FColorBackground := Value;
   DoChange;
 end;
 
@@ -5052,6 +5085,13 @@ procedure TGridOptions.SetFontSessHeader(const Value: TFont);
 begin
   FFontSessHeader.Assign(Value);
   FFontSessHeader.OnChange := FontChanged;
+  DoChange;
+end;
+
+procedure TGridOptions.SetFontMessage(const Value: TFont);
+begin
+  FFontMessage.Assign(Value);
+  FFontMessage.OnChange := FontChanged;
   DoChange;
 end;
 
