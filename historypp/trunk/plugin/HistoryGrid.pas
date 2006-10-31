@@ -521,6 +521,7 @@ type
     procedure LoadItem(Item: Integer; LoadHeight: Boolean = True; Reload: Boolean = False);
     procedure DoOptionsChanged;
     procedure DoKeyDown(var Key: Word; ShiftState: TShiftState);
+    procedure DoKeyUp(var Key: Word; ShiftState: TShiftState);
     procedure DoChar(var Ch: WideChar; ShiftState: TShiftState);
     procedure DoLButtonDblClick(X,Y: Integer; Keys: TMouseMoveKeys);
     procedure DoLButtonDown(X,Y: Integer; Keys: TMouseMoveKeys);
@@ -2238,6 +2239,7 @@ end;
 
 procedure THistoryGrid.WMKeyUp(var Message: TWMKeyUp);
 begin
+  DoKeyUp(Message.CharCode,KeyDataToShiftState(Message.KeyData));
   inherited;
   if FSavedKeyMessage.CharCode = 0 then exit;
   if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
@@ -2258,11 +2260,6 @@ begin
     if Reversed then Item := GetPrev(-1)
                 else Item := GetNext(-1);
   end;
-
-  {if (Key = VK_RETURN) and (ShiftState = [ssCtrl]) then begin
-    if SearchPattern = '' then exit;
-    DoChar(#0,[]);
-   end;}
 
   if Key = VK_HOME then begin
     SearchPattern := '';
@@ -2374,6 +2371,29 @@ begin
     end else
       Selected := Item;
     AdjustScrollBar;
+    Key := 0;
+  end;
+
+end;
+
+procedure THistoryGrid.DoKeyUp(var Key: Word; ShiftState: TShiftState);
+var
+  NextItem,i,Item: Integer;
+  r: TRect;
+begin
+  CheckBusy;
+  if Count = 0 then exit;
+  if (ssAlt in ShiftState) or (ssCtrl in ShiftState) then exit;
+
+  Item := Selected;
+  if Item = -1 then begin
+    if Count = 0 then exit;
+    if Reversed then Item := GetPrev(-1)
+                else Item := GetNext(-1);
+  end;
+
+  if Key = VK_APPS then begin
+    if Assigned(FOnPopup) then OnPopup(Self);
     Key := 0;
   end;
 
@@ -4557,6 +4577,12 @@ begin
     CancelInline;
     Key := 0;
   end else
+
+  if Key = VK_APPS then begin
+    if Assigned(FOnInlinePopup) then FOnInlinePopup(Sender);
+    Key := 0;
+  end else
+
   if Assigned(FOnInlineKeyUp) then
     FOnInlineKeyUp(Sender,Key,Shift);
 end;
