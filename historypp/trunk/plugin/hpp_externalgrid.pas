@@ -126,7 +126,9 @@ begin
   end;
   // comment or we'll get rerendering the whole grid
   //if Grid.Codepage <> Codepage then Grid.Codepage := Codepage;
-  Grid.Allocate(Length(Items),False);
+  // wtf!!! last message doesn't scrolls to down.
+  //Grid.Allocate(Length(Items),False);
+  Grid.Allocate(Length(Items));
 end;
 
 constructor TExternalGrid.Create(AParentWindow: HWND; ControlID: Cardinal = 0);
@@ -173,14 +175,14 @@ begin
   Grid.OnUrlPopup := GridUrlPopup;
   Grid.OnInlineKeyDown := GridInlineKeyDown;
 
-  Grid.TxtFullLog := TranslateWideW(Grid.txtFullLog);
-  Grid.TxtGenHist1 := TranslateWideW(Grid.TxtGenHist1);
-  Grid.TxtGenHist2 := TranslateWideW(Grid.TxtGenHist2);
-  Grid.TxtHistExport := TranslateWideW(Grid.TxtHistExport);
+  Grid.TxtFullLog := TranslateWideW(Grid.TxtFullLog{TRANSLATE-IGNORE});
+  Grid.TxtGenHist1 := TranslateWideW(Grid.TxtGenHist1{TRANSLATE-IGNORE});
+  Grid.TxtGenHist2 := TranslateWideW(Grid.TxtGenHist2{TRANSLATE-IGNORE});
+  Grid.TxtHistExport := TranslateWideW(Grid.TxtHistExport{TRANSLATE-IGNORE});
   Grid.TxtNoItems := '';
-  Grid.TxtNoSuch := TranslateWideW(Grid.TxtNoSuch);
-  Grid.TxtPartLog := TranslateWideW(Grid.TxtPartLog);
-  Grid.TxtStartUp := TranslateWideW(Grid.TxtStartUp);
+  Grid.TxtNoSuch := TranslateWideW(Grid.TxtNoSuch{TRANSLATE-IGNORE});
+  Grid.TxtPartLog := TranslateWideW(Grid.TxtPartLog{TRANSLATE-IGNORE});
+  Grid.TxtStartUp := TranslateWideW(Grid.TxtStartUp{TRANSLATE-IGNORE});
 
   Grid.Options := GridOptions;
 
@@ -252,8 +254,7 @@ begin
   end;
 end;
 
-procedure TExternalGrid.GridTranslateTime(Sender: TObject; Time: Cardinal;
-  var Text: WideString);
+procedure TExternalGrid.GridTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
 begin
   Text := TimestampToString(Time);
 end;
@@ -299,7 +300,6 @@ end;
 procedure TExternalGrid.ScrollToBottom;
 begin
   if Grid.State <> gsInline then begin
-    Grid.ShowBottomAligned := True;
     Grid.ScrollToBottom;
     Grid.Repaint;
   end;
