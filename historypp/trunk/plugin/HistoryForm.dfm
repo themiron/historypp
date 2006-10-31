@@ -1,12 +1,12 @@
 object HistoryFrm: THistoryFrm
   Left = 319
   Top = 173
-  Width = 586
-  Height = 418
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   Caption = '%s - History++'
+  ClientHeight = 404
+  ClientWidth = 578
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -29,7 +29,7 @@ object HistoryFrm: THistoryFrm
     Left = 0
     Top = 0
     Width = 578
-    Height = 372
+    Height = 385
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 2
@@ -37,16 +37,17 @@ object HistoryFrm: THistoryFrm
     object spSess: TTntSplitter
       Left = 314
       Top = 33
-      Height = 312
+      Height = 325
       AutoSnap = False
       MinSize = 100
       Visible = False
+      ExplicitHeight = 312
     end
     object paGrid: TPanel
       Left = 317
       Top = 33
       Width = 259
-      Height = 312
+      Height = 325
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
@@ -54,7 +55,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 0
         Width = 259
-        Height = 312
+        Height = 325
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         ShowBottomAligned = False
@@ -109,7 +110,7 @@ object HistoryFrm: THistoryFrm
       Left = 158
       Top = 33
       Width = 156
-      Height = 312
+      Height = 325
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 1
@@ -159,7 +160,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 21
         Width = 156
-        Height = 291
+        Height = 304
         Align = alClient
         BevelInner = bvNone
         BevelOuter = bvNone
@@ -182,7 +183,7 @@ object HistoryFrm: THistoryFrm
     end
     object paSearch: TTntPanel
       Left = 2
-      Top = 345
+      Top = 358
       Width = 574
       Height = 25
       Align = alBottom
@@ -292,7 +293,7 @@ object HistoryFrm: THistoryFrm
           Left = 22
           Top = 3
           Width = 12
-          Height = 19
+          Height = 13
           Align = alRight
           Caption = '>>'
           Layout = tlCenter
@@ -330,7 +331,6 @@ object HistoryFrm: THistoryFrm
         BorderWidth = 2
         EdgeInner = esNone
         EdgeOuter = esNone
-        Flat = True
         Images = ilToolbar
         ParentShowHint = False
         PopupMenu = pmToolbar
@@ -343,6 +343,7 @@ object HistoryFrm: THistoryFrm
           Left = 0
           Top = 0
           Hint = 'User Details'
+          HelpKeyword = 'Ctrl+I'
           OnClick = tbUserDetailsClick
         end
         object tbUserMenu: TTntToolButton
@@ -361,7 +362,9 @@ object HistoryFrm: THistoryFrm
           Left = 54
           Top = 0
           Hint = 'Conversations (F4)'
+          HelpKeyword = 'F4'
           AllowAllUp = True
+          Caption = 'Conversations'
           Style = tbsCheck
           OnClick = tbSessionsClick
         end
@@ -369,7 +372,9 @@ object HistoryFrm: THistoryFrm
           Left = 77
           Top = 0
           Hint = 'Bookmarks'
+          HelpKeyword = 'F5'
           AllowAllUp = True
+          Caption = 'Bookmarks'
           Style = tbsCheck
           OnClick = tbBookmarksClick
         end
@@ -383,7 +388,9 @@ object HistoryFrm: THistoryFrm
           Left = 107
           Top = 0
           Hint = 'Find'
+          HelpKeyword = 'Ctrl+F'
           AllowAllUp = True
+          Caption = 'Find'
           Grouped = True
           Style = tbsCheck
           OnClick = tbFilterClick
@@ -392,7 +399,9 @@ object HistoryFrm: THistoryFrm
           Left = 130
           Top = 0
           Hint = 'Filter'
+          HelpKeyword = 'Ctrl+E'
           AllowAllUp = True
+          Caption = 'Filter'
           Grouped = True
           Style = tbsCheck
           OnClick = tbFilterClick
@@ -425,18 +434,21 @@ object HistoryFrm: THistoryFrm
           Left = 277
           Top = 0
           Hint = 'Copy'
+          Caption = 'Copy'
           OnClick = Copy1Click
         end
         object tbDelete: TTntToolButton
           Left = 300
           Top = 0
           Hint = 'Delete'
+          Caption = 'Delete'
           OnClick = tbDeleteClick
         end
         object tbSave: TTntToolButton
           Left = 323
           Top = 0
           Hint = 'Save'
+          Caption = 'Save'
           Visible = False
         end
         object TntToolButton5: TTntToolButton
@@ -449,12 +461,15 @@ object HistoryFrm: THistoryFrm
           Left = 354
           Top = 0
           Hint = 'History'
+          Caption = 'History Actions'
+          PopupMenu = pmHistory
           OnClick = tbHistoryClick
         end
         object tbHistorySearch: TTntToolButton
           Left = 377
           Top = 0
           Hint = 'History Search'
+          Caption = 'Global Search'
           OnClick = tbHistorySearchClick
         end
       end
@@ -463,7 +478,7 @@ object HistoryFrm: THistoryFrm
       Left = 2
       Top = 33
       Width = 156
-      Height = 312
+      Height = 325
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 4
@@ -513,7 +528,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 21
         Width = 156
-        Height = 291
+        Height = 304
         Align = alClient
         BevelInner = bvNone
         BevelOuter = bvNone
@@ -535,7 +550,7 @@ object HistoryFrm: THistoryFrm
   end
   object sb: TTntStatusBar
     Left = 0
-    Top = 372
+    Top = 385
     Width = 578
     Height = 19
     Panels = <>
@@ -675,6 +690,12 @@ object HistoryFrm: THistoryFrm
     object N13: TTntMenuItem
       Caption = '-'
     end
+    object N9: TTntMenuItem
+      Caption = '--'
+      ShortCut = 16449
+      Visible = False
+      OnClick = N9Click
+    end
   end
   object pmLink: TTntPopupMenu
     BiDiMode = bdLeftToRight
@@ -711,7 +732,6 @@ object HistoryFrm: THistoryFrm
     Top = 72
   end
   object ilToolbar: TImageList
-    DrawingStyle = dsFocus
     Left = 540
     Top = 4
   end
@@ -797,6 +817,7 @@ object HistoryFrm: THistoryFrm
   object pmEventsFilter: TTntPopupMenu
     BiDiMode = bdLeftToRight
     ParentBiDiMode = False
+    OnPopup = pmEventsFilterPopup
     Left = 412
     Top = 4
     object Showall1: TTntMenuItem
@@ -830,8 +851,12 @@ object HistoryFrm: THistoryFrm
     end
   end
   object pmToolbar: TTntPopupMenu
+    Images = ilToolbar
     Left = 476
     Top = 4
+    object N5: TTntMenuItem
+      Caption = '-'
+    end
     object Customize2: TTntMenuItem
       Caption = '&Customize...'
       OnClick = Customize2Click
@@ -898,6 +923,21 @@ object HistoryFrm: THistoryFrm
       Caption = '&Reply Quoted'
       ShortCut = 16466
       OnClick = InlineReplyQuotedClick
+    end
+  end
+  object mmAcc: TTntMainMenu
+    Left = 70
+    Top = 146
+    object Toolbar1: TTntMenuItem
+      Caption = 'Toolbar'
+      OnClick = Toolbar1Click
+    end
+    object Service1: TTntMenuItem
+      Caption = 'Service'
+      object HideMenu1: TTntMenuItem
+        Caption = 'Hide Menu'
+        OnClick = HideMenu1Click
+      end
     end
   end
 end
