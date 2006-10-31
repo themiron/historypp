@@ -2604,7 +2604,7 @@ begin
   hg.TxtNoItems := TranslateWideW(hg.TxtNoItems);
   hg.TxtNoSuch := TranslateWideW(hg.TxtNoSuch);
   hg.TxtPartLog := TranslateWideW(hg.TxtPartLog);
-  hg.txtStartUp := TranslateWideW(hg.txtStartUp);
+  hg.TxtStartUp := TranslateWideW(hg.TxtStartUp);
 
   SearchUpHint := TranslateWideW(SearchUpHint);
   SearchDownHint := TranslateWideW(SearchDownHint);
