@@ -448,6 +448,7 @@ type
     procedure CNVScroll(var Message: TWMVScroll); message CN_VSCROLL;
     procedure WMKeyDown(var Message: TWMKeyDown); message WM_KEYDOWN;
     procedure WMKeyUp(var Message: TWMKeyUp); message WM_KEYUP;
+    procedure WMSysKeyUp(var Message: TWMSysKeyUp); message WM_SYSKEYUP;
     procedure WMChar(var Message: TWMChar); message WM_CHAR;
     procedure WMMouseWheel(var Message: TWMMouseWheel); message WM_MOUSEWHEEL;
     procedure CMBiDiModeChanged(var Message: TMessage); message CM_BIDIMODECHANGED;
@@ -2245,18 +2246,25 @@ begin
   if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
 end;
 
+procedure THistoryGrid.WMSysKeyUp(var Message: TWMSysKeyUp);
+begin
+  DoKeyUp(Message.CharCode,KeyDataToShiftState(Message.KeyData));
+  inherited;
+  if FSavedKeyMessage.CharCode = 0 then exit;
+  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
+end;
+
 procedure THistoryGrid.DoKeyDown(var Key: Word; ShiftState: TShiftState);
 var
   NextItem,i,Item: Integer;
   r: TRect;
 begin
-  CheckBusy;
   if Count = 0 then exit;
   if (ssAlt in ShiftState) or (ssCtrl in ShiftState) then exit;
+  CheckBusy;
 
   Item := Selected;
   if Item = -1 then begin
-    if Count = 0 then exit;
     if Reversed then Item := GetPrev(-1)
                 else Item := GetNext(-1);
   end;
@@ -2381,22 +2389,17 @@ var
   NextItem,i,Item: Integer;
   r: TRect;
 begin
-  CheckBusy;
   if Count = 0 then exit;
   if (ssAlt in ShiftState) or (ssCtrl in ShiftState) then exit;
-
-  Item := Selected;
-  if Item = -1 then begin
-    if Count = 0 then exit;
-    if Reversed then Item := GetPrev(-1)
-                else Item := GetNext(-1);
-  end;
-
-  if Key = VK_APPS then begin
+  if (Key = VK_APPS) or ((Key = VK_F10) and (ssShift in ShiftState)) then begin
+    CheckBusy;
+    if Selected = -1 then begin
+      if Reversed then Selected := GetPrev(-1)
+                  else Selected := GetNext(-1);
+    end;
     if Assigned(FOnPopup) then OnPopup(Self);
     Key := 0;
   end;
-
 end;
 
 procedure THistoryGrid.WMNotify(var Message: TWMNotify);
@@ -4578,7 +4581,7 @@ begin
     Key := 0;
   end else
 
-  if Key = VK_APPS then begin
+  if (Key = VK_APPS) or ((Key= VK_F10) and (ssShift in Shift)) then begin
     if Assigned(FOnInlinePopup) then FOnInlinePopup(Sender);
     Key := 0;
   end else
