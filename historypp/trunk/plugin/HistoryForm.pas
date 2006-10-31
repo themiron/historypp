@@ -185,6 +185,12 @@ type
     InlineSelectAll: TTntMenuItem;
     InlineTextFormatting: TTntMenuItem;
     InlineSendMessage: TTntMenuItem;
+    N5: TTntMenuItem;
+    mmAcc: TTntMainMenu;
+    Toolbar1: TTntMenuItem;
+    Service1: TTntMenuItem;
+    HideMenu1: TTntMenuItem;
+    N9: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -295,6 +301,10 @@ type
     procedure hgInlineKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure InlineReplyQuotedClick(Sender: TObject);
+    procedure pmEventsFilterPopup(Sender: TObject);
+    procedure Toolbar1Click(Sender: TObject);
+    procedure HideMenu1Click(Sender: TObject);
+    procedure N9Click(Sender: TObject);
   private
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
@@ -320,6 +330,7 @@ type
     procedure HMEventDeleted(var Message: TMessage); message HM_HIST_EVENTDELETED;
     procedure HMPreShutdown(var Message: TMessage); message HM_HIST_PRESHUTDOWN;
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
+    procedure HMAccChanged(var M: TMessage); message HM_NOTF_ACCCHANGED;
 
     procedure HookEvents;
     procedure UnhookEvents;
@@ -381,6 +392,7 @@ type
 
     procedure CustomizeToolbar;
     procedure LoadToolbar;
+    procedure LoadAccMenu;
     procedure HMToolbarChanged(var M: TMessage); message HM_NOTF_TOOLBARCHANGED;
 
     procedure SetRecentEventsPosition(OnTop: Boolean);
@@ -635,6 +647,12 @@ begin
   end;
 
   TranslateForm;
+
+  LoadAccMenu; // load accessability menu before LoadToolbar
+               // put here because we want to translate everything
+               // before copying to menu
+  if GetDBBool(hppDBName,'Accessability', False) then
+    Menu := mmAcc;
 
   //cbFilter.ItemIndex := 0;
   RecentFormat := sfHtml;
@@ -970,6 +988,14 @@ begin
   hg.Repaint;
 end;
 
+procedure THistoryFrm.HMAccChanged(var M: TMessage);
+begin
+  if Boolean(M.WParam) then
+    Menu := mmAcc
+  else
+    Menu := nil;
+end;
+
 procedure THistoryFrm.HMBookmarkChanged(var M: TMessage);
 var
   i: integer;
@@ -1017,18 +1043,17 @@ procedure THistoryFrm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftS
 var
   Mask: Integer;
 begin
+  if (not PasswordMode) and (IsFormShortCut(Self,Key,Shift)) then exit;
+
   if (Key = VK_ESCAPE) or ((Key = VK_F4) and (ssAlt in Shift)) then begin
     close;
     Key := 0;
     exit;
   end;
 
-  if (key = VK_F4) and (Shift=[]) and (not PasswordMode) then begin
-    if Panel <> hpSessions then
-      Panel := hpSessions
-    else
-      Panel := hpNone;
-    key := 0;
+  if (Key = VK_F10) and (Shift=[]) and (not PasswordMode) then begin
+    WriteDBBool(hppDBName,'Accessability', true);
+    NotifyAllForms(HM_NOTF_ACCCHANGED,DWord(True),0);
   end;
 
   if (key = VK_F3) and ((Shift=[]) or (Shift=[ssShift])) and (not PasswordMode) and (SearchMode in [smSearch,smHotSearch]) then begin
@@ -1039,25 +1064,10 @@ begin
     key := 0;
   end;
 
-  {if (ssAlt in Shift) then
-    begin
-    //if key=Ord('C') then
-    //  bnClose.Click;
-    //if (key=Ord('A')) and (not PasswordMode) then
-    //  bbAddit.Click;
-    //if (key=Ord('D')) and (not PasswordMode) then
-    //  bnDelete.Click;
-    //if (key=Ord('S')) and (not PasswordMode) then
-    //  bnSearch.Click;
-    //if (key=Ord('F')) and (not PasswordMode) then
-    //  bnFilter.Click;
-    //key:=0;
-    end;}
-
   // let only search keys be accepted if inline
   if hg.State = gsInline then exit;
 
-  if (ssCtrl in Shift) then begin
+{  if (ssCtrl in Shift) then begin
     if (key=Ord('R')) and (not PasswordMode) then begin
       if hg.Selected <> -1 then ReplyQuoted(hg.Selected);
       key:=0;
@@ -1105,7 +1115,7 @@ begin
       hg.Invalidate;
       key:=0;
       end;
-    end;
+    end;   }
 
   with Sender as TWinControl do
     begin
@@ -1213,6 +1223,36 @@ begin
   PostLoadHistory;
 end;
 
+procedure THistoryFrm.LoadAccMenu;
+var
+  n,i: Integer;
+  wstr: WideString;
+  menuitem: TTntMenuItem;
+  pm: TTntPopupMenu;
+begin
+  Toolbar1.Clear;
+
+  for i := Toolbar.ButtonCount - 1 downto 0 do begin
+    wstr := '';
+    wstr := Toolbar.Buttons[i].Caption;
+    if wstr = '' then wstr := Toolbar.Buttons[i].Hint;
+    if wstr <> '' then begin
+      menuitem := TTntMenuItem.Create(Toolbar1);
+      pm := TTntPopupMenu(Toolbar.Buttons[i].PopupMenu);
+      if pm = nil then
+        menuitem.OnClick := Toolbar.Buttons[i].OnClick
+      else begin
+        menuitem.Tag := Integer(Pointer(pm));
+      end;
+      menuitem.Caption := wstr;
+      menuitem.ShortCut := WideTextToShortCut(Toolbar.Buttons[i].HelpKeyword);
+      menuitem.Visible := Toolbar.Buttons[i].Visible;
+      Toolbar1.Insert(0,menuitem);
+    end;
+  end;
+  Toolbar1.RethinkHotkeys;
+end;
+
 var
   SearchUpHint: WideString = 'Search Up (Ctrl+Up)';
   SearchDownHint: WideString = 'Search Down (Ctrl+Down)';
@@ -1289,20 +1329,15 @@ end;
 procedure THistoryFrm.LoadEventFilterButton;
 var
   pad: DWord;
-  PadV, PadH, GlyphHeight, GlyphTopOffset: Integer;
-  //TopBorderHeight: Integer;
+  PadV, PadH, GlyphHeight: Integer;
   sz: TSize;
   FirstName, Name: WideString;
-
-  //Button: TThemedButton;
-  //ToolButton: TThemedToolBar;
-  //Details: TThemedElementDetails;
   PaintRect: TRect;
   DrawTextFlags: Cardinal;
+  GlyphWidth: Integer;
 begin
   FirstName := hppEventFilters[0].Name;
   Name := hppEventFilters[tbEventsFilter.Tag].Name;
-  //name := Tnt_WideStringReplace(name,'&','&&',[rfReplaceAll]);
   tbEventsFilter.Hint := Name; // show hint because the whole name may not fit in button
 
   pad := SendMessage(Toolbar.Handle,TB_GETPADDING,0,0);
@@ -1311,20 +1346,26 @@ begin
 
   tbEventsFilter.Glyph.Canvas.Font := tbEventsFilter.Font;
   sz := WideCanvasTextExtent(tbEventsFilter.Glyph.Canvas,FirstName);
-  GlyphTopOffset := 0;
   GlyphHeight := Max(sz.cy,16);
+  GlyphWidth := 16+sz.cx+tbEventsFilter.Spacing;
 
-  tbEventsFilter.Glyph.Height := GlyphHeight+GlyphTopOffset;
-  tbEventsFilter.Glyph.Width := 16+sz.cx+tbEventsFilter.Spacing;
+  tbEventsFilter.Glyph.Height := GlyphHeight;
+  tbEventsFilter.Glyph.Width := GlyphWidth*2;
   tbEventsFilter.Glyph.Canvas.Brush.Color := Toolbar.Color;
   tbEventsFilter.Glyph.Canvas.FillRect(tbEventsFilter.Glyph.Canvas.ClipRect);
-  DrawIconEx(tbEventsFilter.Glyph.Canvas.Handle,sz.cx+tbEventsFilter.Spacing,GlyphTopOffset+((GlyphHeight-16) div 2),
+  DrawIconEx(tbEventsFilter.Glyph.Canvas.Handle,sz.cx+tbEventsFilter.Spacing,((GlyphHeight-16) div 2),
              hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,16,16,0,tbEventsFilter.Glyph.Canvas.Brush.Handle,DI_NORMAL);
-
-  PaintRect := Rect(0,GlyphTopOffset+((GlyphHeight-sz.cy) div 2),tbEventsFilter.Glyph.Width-16-tbEventsFilter.Spacing,tbEventsFilter.Glyph.Height);
+  DrawState(tbEventsFilter.Glyph.Canvas.Handle,0,nil,Integer(hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle),
+            0,sz.cx+tbEventsFilter.Spacing+GlyphWidth,((GlyphHeight-16) div 2),0,0,DST_ICON or DSS_DISABLED);
+  PaintRect := Rect(0,((GlyphHeight-sz.cy) div 2),GlyphWidth-16-tbEventsFilter.Spacing,tbEventsFilter.Glyph.Height);
   DrawTextFlags := DT_END_ELLIPSIS or DT_NOPREFIX or DT_CENTER;
+  tbEventsFilter.Glyph.Canvas.Font.Color := clWindowText;
   Tnt_DrawTextW(tbEventsFilter.Glyph.Canvas.Handle,@Name[1],Length(Name),PaintRect,DrawTextFlags);
-  tbEventsFilter.Width := tbEventsFilter.Glyph.Width+2*PadH;
+  OffsetRect(PaintRect,GlyphWidth,0);
+  tbEventsFilter.Glyph.Canvas.Font.Color := clGrayText;
+  Tnt_DrawTextW(tbEventsFilter.Glyph.Canvas.Handle,@Name[1],Length(Name),PaintRect,DrawTextFlags);
+  tbEventsFilter.Width := GlyphWidth+2*PadH;
+  tbEventsFilter.NumGlyphs := 2;
 end;
 
 procedure THistoryFrm.LoadPendingHeaders(rowidx: integer; count: integer);
@@ -1725,6 +1766,12 @@ end;
 function THistoryFrm.GridIndexToHistory(Index: Integer): Integer;
 begin
   Result := Length(History)-1-Index;
+end;
+
+procedure THistoryFrm.HideMenu1Click(Sender: TObject);
+begin
+  WriteDBBool(hppDBName,'Accessability', False);
+  NotifyAllForms(HM_NOTF_ACCCHANGED,DWord(False),0);
 end;
 
 function THistoryFrm.HistoryIndexToGrid(Index: Integer): Integer;
@@ -2575,6 +2622,24 @@ begin
   FillBookmarks;
 end;
 
+procedure THistoryFrm.Toolbar1Click(Sender: TObject);
+var
+  i,n: Integer;
+  pm: TTntPopupMenu;
+  mi: TMenuItem;
+  menuitem: TTntMenuItem;
+begin
+  for i := 0 to Toolbar1.Count - 1 do begin
+    if Toolbar1.Items[i].Tag = 0 then continue;
+    pm := TTntPopupMenu(Pointer(Toolbar1.Items[i].Tag));
+    for n := pm.Items.Count-1 downto 0 do begin
+      mi := pm.Items[n];
+      pm.Items.Remove(mi);
+      Toolbar1.Items[i].Insert(0,mi);
+    end;
+  end;
+end;
+
 procedure THistoryFrm.ToolbarDblClick(Sender: TObject);
 begin
   CustomizeToolbar;
@@ -2914,6 +2979,7 @@ end;
 procedure THistoryFrm.SetEventFilter(FilterIndex: Integer = -1; DelayApply: Boolean = false);
 var
   i,fi: Integer;
+  mi: TMenuItem;
 begin
   if FilterIndex = -1 then begin
     fi := tbEventsFilter.Tag+1;
@@ -2924,9 +2990,10 @@ begin
   tbEventsFilter.Tag := fi;
   LoadEventFilterButton;
   //tbEventsFilter.Repaint;
-  for i := 0 to pmEventsFilter.Items.Count-1 do
-    if pmEventsFilter.Items[i].RadioItem then
-      pmEventsFilter.Items[i].Checked := (pmEventsFilter.Items[i].Tag = fi);
+  mi := Customize1.Parent;
+  for i := 0 to mi.Count-1 do
+    if mi[i].RadioItem then
+      mi[i].Checked := (mi[i].Tag = fi);
   hg.ShowHeaders := (tbSessions.Enabled) and (mtMessage in hppEventFilters[fi].Events);
 
   if DelayApply then
@@ -3173,6 +3240,10 @@ end;
 
 procedure THistoryFrm.tbBookmarksClick(Sender: TObject);
 begin
+  // when called from menu item handler
+  if Sender <> tbBookmarks then
+    tbBookmarks.Down := not tbBookmarks.Down;
+
   if tbBookmarks.Down then
     Panel := hpBookmarks
   else
@@ -3247,6 +3318,10 @@ end;
 
 procedure THistoryFrm.tbSessionsClick(Sender: TObject);
 begin
+  // when called from menu item handler
+  if Sender <> tbSessions then
+    tbSessions.Down := not tbSessions.Down;
+
   if tbSessions.Down then
     Panel := hpSessions
   else
@@ -3363,6 +3438,21 @@ begin
   end;
 end;}
 
+procedure THistoryFrm.pmEventsFilterPopup(Sender: TObject);
+var
+  i: Integer;
+  pmi,mi: TMenuItem;
+begin
+  if Customize1.Parent <> pmEventsFilter.Items then begin
+    pmi := Customize1.Parent;
+    for i := pmi.Count - 1 downto 0 do begin
+      mi := pmi.Items[i];
+      pmi.Remove(mi);
+      pmEventsFilter.Items.Insert(0,mi);
+    end;
+  end;
+end;
+
 procedure THistoryFrm.pmGridPopup(Sender: TObject);
 begin
   LoadInOptions();
@@ -3374,7 +3464,18 @@ begin
 end;
 
 procedure THistoryFrm.pmHistoryPopup(Sender: TObject);
+var
+  pmi,mi: TMenuItem;
+  i: Integer;
 begin
+  if SaveSelected2.Parent <> pmHistory.Items then begin
+    pmi := SaveSelected2.Parent;
+    for i := pmi.Count - 1 downto 0 do begin
+      mi := pmi.Items[i];
+      pmi.Remove(mi);
+      pmHistory.Items.Insert(0,mi);
+    end;
+  end;
   LoadInOptions();
   SaveSelected2.Visible := (hg.SelCount > 1);
   AddMenuArray(pmHistory,[ContactRTLmode1,ANSICodepage1],7);
@@ -3386,6 +3487,7 @@ var
 begin
   case Message.Msg of
     WM_COMMAND: begin
+      if mmAcc.DispatchCommand(Message.WParam) then exit;
       res := PluginLink.CallService(MS_CLIST_MENUPROCESSCOMMAND,MAKEWPARAM(Message.WParamLo,MPCF_CONTACTMENU),hContact);
       if res = 0 then exit;
     end;
@@ -3477,6 +3579,12 @@ begin
   ShowAllEvents;
   hg.Selected := Index;
   hg.EndUpdate;
+end;
+
+procedure THistoryFrm.N9Click(Sender: TObject);
+begin
+  hg.MakeRangeSelected(0,hg.Count-1);
+  hg.Invalidate;
 end;
 
 procedure THistoryFrm.lvBookContextPopup(Sender: TObject; MousePos: TPoint;

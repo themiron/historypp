@@ -3,7 +3,7 @@ unit hpp_forms;
 interface
 
 uses Graphics, Windows, Messages, Forms, Controls, StdCtrls, Menus, ComCtrls,
-  TntControls, TntMenus, TntComCtrls, TntStdCtrls;
+  TntControls, TntMenus, TntComCtrls, TntStdCtrls, Classes;
 
 type
   THppHintWindow = class (TTntHintWindow)
@@ -20,18 +20,22 @@ const
   HM_NOTF_BASE = HM_BASE + 500; // base for plugin-wide notification messages
 
   // notification messages:
-  HM_NOTF_ICONSCHANGED   = HM_NOTF_BASE + 1; // Skin icons has changed
-  HM_NOTF_ICONS2CHANGED  = HM_NOTF_BASE + 2; // IcoLib icons has changed
-  HM_NOTF_FILTERSCHANGED = HM_NOTF_BASE + 3; // Filters has changed
-  HM_NOTF_TOOLBARCHANGED = HM_NOTF_BASE + 4; // Toolbar has changed
+  HM_NOTF_ICONSCHANGED    = HM_NOTF_BASE + 1; // Skin icons has changed
+  HM_NOTF_ICONS2CHANGED   = HM_NOTF_BASE + 2; // IcoLib icons has changed
+  HM_NOTF_FILTERSCHANGED  = HM_NOTF_BASE + 3; // Filters has changed
+  HM_NOTF_TOOLBARCHANGED  = HM_NOTF_BASE + 4; // Toolbar has changed
   HM_NOTF_BOOKMARKCHANGED = HM_NOTF_BASE + 5; // Toolbar has changed
-
+  HM_NOTF_ACCCHANGED      = HM_NOTF_BASE + 6; // Accessability prefs changed (menu toggle)
+  
 procedure NotifyAllForms(Msg,wParam,lParam: DWord);
 procedure BringFormToFront(Form: TForm);
 procedure MakeFontsParent(Control: TControl);
 
 procedure TranslateMenu(mi: TMenuItem);
 procedure TranslateToolbar(const tb: TTntToolBar);
+
+function ShiftStateToKeyData(ShiftState :TShiftState):Longint;
+function IsFormShortCut(Form: TForm; Key: DWord; ShiftState: TShiftState): Boolean;
 
 function Utils_RestoreFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
 function Utils_SaveFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
@@ -43,6 +47,44 @@ uses hpp_global, hpp_services, hpp_opt_dialog, hpp_database,
   {$IFNDEF NO_EXTERNALGRID}hpp_externalgrid,{$ENDIF}
   CustomizeFiltersForm,
   CustomizeToolbar;
+
+function IsFormShortCut(Form: TForm; Key: DWord; ShiftState: TShiftState): Boolean;
+var
+  mes: TWMKeyDown;
+  
+  function DispatchShortcut: Boolean;
+  var
+    i: Integer;
+    comp: TComponent;
+  begin
+    for i := 0 to Form.ComponentCount - 1 do begin
+      comp := Form.Components[i];
+      if comp is TMenu then begin
+        Result := TMenu(comp).IsShortCut(mes);
+        if Result then break;        
+      end;
+    end;
+  end;
+begin
+  mes.CharCode := Key;
+  mes.KeyData := ShiftStateToKeyData(ShiftState);
+  Result :=
+    ((Form.Menu <> nil) and (Form.Menu.WindowHandle <> 0) and (Form.Menu.IsShortCut(mes))) or
+    (DispatchShortcut);
+end;
+
+function ShiftStateToKeyData(ShiftState :TShiftState):Longint;
+const
+  AltMask = $20000000;
+begin
+  Result := 0;
+  if ssShift in ShiftState then
+    Result := Result or VK_SHIFT;
+  if ssCtrl in ShiftState then
+    Result := Result or VK_CONTROL;
+  if ssAlt in ShiftState then
+    Result := Result or AltMask;
+end;
 
 function Utils_RestoreFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
 var
@@ -196,9 +238,10 @@ var
   i: integer;
 begin
   for i := 0 to tb.ButtonCount-1 do
-    if tb.Buttons[i].Style <> tbsSeparator then
+    if tb.Buttons[i].Style <> tbsSeparator then begin
       TTntToolBar(tb.Buttons[i]).Hint := TranslateWideW(tb.Buttons[i].Hint{TRANSLATE-IGNORE});
+      TTntToolBar(tb.Buttons[i]).Caption := TranslateWideW(tb.Buttons[i].Caption{TRANSLATE-IGNORE});
+    end;
 end;
-
 
 end.

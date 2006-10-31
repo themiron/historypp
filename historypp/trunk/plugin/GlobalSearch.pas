@@ -150,6 +150,10 @@ type
     OpenLinkNW: TTntMenuItem;
     TntMenuItem2: TTntMenuItem;
     CopyLink: TTntMenuItem;
+    mmAcc: TTntMainMenu;
+    Toolbar1: TTntMenuItem;
+    Service1: TTntMenuItem;
+    HideMenu1: TTntMenuItem;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -223,6 +227,9 @@ type
     procedure CopyLinkClick(Sender: TObject);
     procedure OpenLinkClick(Sender: TObject);
     procedure OpenLinkNWClick(Sender: TObject);
+    procedure HideMenu1Click(Sender: TObject);
+    procedure Toolbar1Click(Sender: TObject);
+    procedure pmEventsFilterPopup(Sender: TObject);
   private
     UserMenu: hMenu;
     UserMenuContact: THandle;
@@ -262,7 +269,7 @@ type
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
     procedure HMBookmarksChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
     procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED;
-
+    procedure HMAccChanged(var M: TMessage); message HM_NOTF_ACCCHANGED;
     procedure TranslateForm;
 
     procedure HookEvents;
@@ -308,6 +315,7 @@ type
     procedure LoadContactsIcons;
     procedure LoadToolbarIcons;
 
+    procedure LoadAccMenu;
     procedure LoadEventFilterButton;
   public
     { Public declarations }
@@ -381,6 +389,13 @@ begin
   LoadToolbarIcons;
   LoadButtonIcons;
   LoadContactsIcons;
+
+  TranslateForm;
+  LoadAccMenu; // load accessability menu before LoadToolbar
+               // put here because we want to translate everything
+               // before copying to menu
+  if GetDBBool(hppDBName,'Accessability', False) then
+    Menu := mmAcc;
 end;
 
 procedure TfmGlobalSearch.SMFinished(var M: TMessage);
@@ -678,6 +693,24 @@ begin
     OrganizePanels;
   finally
     if Visible and Lock then LockWindowUpdate(0);
+  end;
+end;
+
+procedure TfmGlobalSearch.Toolbar1Click(Sender: TObject);
+var
+  i,n: Integer;
+  pm: TTntPopupMenu;
+  mi: TMenuItem;
+  menuitem: TTntMenuItem;
+begin
+  for i := 0 to Toolbar1.Count - 1 do begin
+    if Toolbar1.Items[i].Tag = 0 then continue;
+    pm := TTntPopupMenu(Pointer(Toolbar1.Items[i].Tag));
+    for n := pm.Items.Count-1 downto 0 do begin
+      mi := pm.Items[n];
+      pm.Items.Remove(mi);
+      Toolbar1.Items[i].Insert(0,mi);
+    end;
   end;
 end;
 
@@ -992,6 +1025,36 @@ begin
   //edSearch.SelectAll;
 end;
 
+procedure TfmGlobalSearch.LoadAccMenu;
+var
+  n,i: Integer;
+  wstr: WideString;
+  menuitem: TTntMenuItem;
+  pm: TTntPopupMenu;
+begin
+  Toolbar1.Clear;
+
+  for i := Toolbar.ButtonCount - 1 downto 0 do begin
+    wstr := '';
+    wstr := Toolbar.Buttons[i].Caption;
+    if wstr = '' then wstr := Toolbar.Buttons[i].Hint;
+    if wstr <> '' then begin
+      menuitem := TTntMenuItem.Create(Toolbar1);
+      pm := TTntPopupMenu(Toolbar.Buttons[i].PopupMenu);
+      if pm = nil then
+        menuitem.OnClick := Toolbar.Buttons[i].OnClick
+      else begin
+        menuitem.Tag := Integer(Pointer(pm));
+      end;
+      menuitem.Caption := wstr;
+      menuitem.ShortCut := WideTextToShortCut(Toolbar.Buttons[i].HelpKeyword);
+      menuitem.Visible := Toolbar.Buttons[i].Visible;
+      Toolbar1.Insert(0,menuitem);
+    end;
+  end;
+  Toolbar1.RethinkHotkeys;
+end;
+
 procedure TfmGlobalSearch.LoadButtonIcons;
 begin
   with sbClearFilter.Glyph do begin
@@ -1227,6 +1290,21 @@ begin
     16,16,0,pbFilter.Canvas.Brush.Handle,DI_NORMAL);
 end;
 
+procedure TfmGlobalSearch.pmEventsFilterPopup(Sender: TObject);
+var
+  i: Integer;
+  pmi,mi: TMenuItem;
+begin
+  if Customize1.Parent <> pmEventsFilter.Items then begin
+    pmi := Customize1.Parent;
+    for i := pmi.Count - 1 downto 0 do begin
+      mi := pmi.Items[i];
+      pmi.Remove(mi);
+      pmEventsFilter.Items.Insert(0,mi);
+    end;
+  end;
+end;
+
 procedure TfmGlobalSearch.ReplyQuoted(Item: Integer);
 begin
   if (GetSearchItem(Item).Contact.Handle = 0) or (hg.SelCount = 0) then exit;
@@ -1398,6 +1476,7 @@ var
 begin
   case Message.Msg of
     WM_COMMAND: begin
+      if mmAcc.DispatchCommand(Message.WParam) then exit;
       res := PluginLink.CallService(MS_CLIST_MENUPROCESSCOMMAND,MAKEWPARAM(Message.WParamLo,MPCF_CONTACTMENU),UserMenuContact);
       if res = 0 then exit;
     end;
@@ -1436,7 +1515,6 @@ begin
   if (PassMode = PASSMODE_PROTALL) then
     TogglePasswordPanel(True);
 
-  TranslateForm;
   LoadPosition;
 
   HookEvents;
@@ -1516,6 +1594,20 @@ begin
   pbFilter.Repaint;
   LoadContactsIcons;
   hg.Repaint;
+end;
+
+procedure TfmGlobalSearch.HideMenu1Click(Sender: TObject);
+begin
+  WriteDBBool(hppDBName,'Accessability', False);
+  NotifyAllForms(HM_NOTF_ACCCHANGED,DWord(False),0);
+end;
+
+procedure TfmGlobalSearch.HMAccChanged(var M: TMessage);
+begin
+  if Boolean(M.WParam) then
+    Menu := mmAcc
+  else
+    Menu := nil;
 end;
 
 procedure TfmGlobalSearch.HMBookmarksChanged(var M: TMessage);
@@ -1658,6 +1750,7 @@ end;
 procedure TfmGlobalSearch.SetEventFilter(FilterIndex: Integer);
 var
   i,fi: Integer;
+  mi: TMenuItem;
 begin
   if FilterIndex = -1 then begin
     fi := tbEventsFilter.Tag+1;
@@ -1665,11 +1758,12 @@ begin
   end else
     fi := FilterIndex;
 
+  mi := Customize1.Parent;
   tbEventsFilter.Tag := fi;
   LoadEventFilterButton;
-  for i := 0 to pmEventsFilter.Items.Count-1 do
-    if pmEventsFilter.Items[i].RadioItem then
-      pmEventsFilter.Items[i].Checked := (pmEventsFilter.Items[i].Tag = fi);
+  for i := 0 to mi.Count-1 do
+    if mi[i].RadioItem then
+      mi[i].Checked := (pmEventsFilter.Items[i].Tag = fi);
 
   hg.Filter := hppEventFilters[fi].Events;
 end;
@@ -1682,7 +1776,10 @@ end;
 procedure TfmGlobalSearch.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
   Mask: Integer;
+  mes: TWMKeyDown;
 begin
+  if IsFormShortCut(Self,Key,Shift) then exit;  
+
   if (Key = VK_ESCAPE) or ((Key = VK_F4) and (ssAlt in Shift)) then begin
     if (Key = VK_ESCAPE) and IsSearching then
       StopSearching
@@ -1692,6 +1789,11 @@ begin
     exit;
   end;
 
+  if (Key = VK_F10) and (Shift=[]) then begin
+    WriteDBBool(hppDBName,'Accessability', true);
+    NotifyAllForms(HM_NOTF_ACCCHANGED,DWord(True),0);
+  end;
+
   if (key = VK_F3) and ((Shift=[]) or (Shift=[ssShift])) and (Length(History) > 0) then begin
     SearchNext(ssShift in Shift,True);
     key := 0;
@@ -1699,7 +1801,7 @@ begin
 
   if hg.State = gsInline then exit;
 
-  if (ssCtrl in Shift) then begin
+  {if (ssCtrl in Shift) then begin
     if (key=Ord('R')) then begin
       if hg.Selected <> -1 then ReplyQuoted(hg.Selected);
       key:=0;
@@ -1724,7 +1826,7 @@ begin
       if hg.Selected <> -1 then hgDblClick(Sender);
       key:=0;
     end;
-  end;
+  end; }
 
   with Sender as TWinControl do
     begin
