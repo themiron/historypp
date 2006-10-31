@@ -498,6 +498,9 @@ begin
       case Key of
         VK_TAB:
           Mask := DLGC_WANTTAB;
+        VK_LEFT, VK_RIGHT, VK_UP, VK_DOWN:
+          // added to change radio buttons from keyboard
+          if (Self.ActiveControl is TRadioButton) then Mask := DLGC_WANTARROWS;
         VK_RETURN, VK_EXECUTE, VK_ESCAPE, VK_CANCEL:
           Mask := DLGC_WANTALLKEYS;
       end;
