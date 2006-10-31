@@ -144,7 +144,7 @@ const
     (name:'z_password_protect'; handle: 0)
   );
 
-  hppFontItems: array[0..21] of ThppFontsRec = (
+  hppFontItems: array[0..22] of ThppFontsRec = (
     (_type:[hppFont,hppColor]; name: 'Incoming nick'; nameColor: 'Divider'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $6B3FC8; back: clGray),
     (_type:[hppFont,hppColor]; name: 'Outgoing nick'; nameColor: 'Selected text'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $BD6008; back: clHighlightText),
     (_type:[hppColor];         nameColor: 'Selected background'; Mes: []; back: clHighlight),
@@ -166,7 +166,8 @@ const
     (_type:[hppFont,hppColor]; name: 'Nick changes'; Mes: [mtNickChange,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $00D7FDFF),
     (_type:[hppFont,hppColor]; name: 'Avatar changes'; Mes: [mtAvatarChange,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $00D7FDFF),
     (_type:[hppFont];          name: 'Incoming timestamp'; Mes: []; style:0; size: -11; color: $000000),
-    (_type:[hppFont];          name: 'Outgoing timestamp'; Mes: []; style:0; size: -11; color: $000000)
+    (_type:[hppFont];          name: 'Outgoing timestamp'; Mes: []; style:0; size: -11; color: $000000),
+    (_type:[hppFont,hppColor]; name: 'Grid messages'; nameColor: 'Grid background'; Mes: []; style:0; size: -11; color: $000000; back: $E9EAEB)
     );
 
 var
@@ -332,11 +333,13 @@ begin
   GridOptions.FontSessHeader := LoadFont(17,GridOptions.FontSessHeader);
   GridOptions.FontIncomingTimestamp := LoadFont(20,GridOptions.FontIncomingTimestamp);
   GridOptions.FontOutgoingTimestamp := LoadFont(21,GridOptions.FontOutgoingTimestamp);
+  GridOptions.FontMessage := LoadFont(22,GridOptions.FontMessage);
   // load colors
   GridOptions.ColorDivider := LoadColorDB(0);
   GridOptions.ColorSelectedText := LoadColorDB(1);
   GridOptions.ColorSelected := LoadColorDB(2);
   GridOptions.ColorSessHeader := LoadColorDB(17);
+  GridOptions.ColorBackground := LoadColorDB(22);
   // load mestype-related
   index := 0;
   for i :=  0 to High(hppFontItems) do begin
