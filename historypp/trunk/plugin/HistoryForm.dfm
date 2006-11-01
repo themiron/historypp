@@ -936,6 +936,7 @@ object HistoryFrm: THistoryFrm
       Caption = 'Service'
       object mmHideMenu: TTntMenuItem
         Caption = 'Hide Menu'
+        ShortCut = 32889
         OnClick = mmHideMenuClick
       end
     end
