@@ -166,8 +166,7 @@ type
     procedure hgPopup(Sender: TObject);
     procedure ReplyQuoted1Click(Sender: TObject);
     procedure SendMessage1Click(Sender: TObject);
-    procedure edFilterKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure edFilterKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure hgItemFilter(Sender: TObject; Index: Integer; var Show: Boolean);
     procedure edFilterChange(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -605,7 +604,7 @@ end;
 procedure TfmGlobalSearch.edFilterKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR] then begin
+  if Key in [VK_UP,VK_DOWN,VK_NEXT,VK_PRIOR] then begin
     SendMessage(hg.Handle,WM_KEYDOWN,Key,0);
     Key := 0;
   end;
@@ -1033,23 +1032,28 @@ var
   pm: TTntPopupMenu;
 begin
   mmToolbar.Clear;
-
   for i := Toolbar.ButtonCount - 1 downto 0 do begin
-    wstr := '';
-    wstr := Toolbar.Buttons[i].Caption;
-    if wstr = '' then wstr := Toolbar.Buttons[i].Hint;
-    if wstr <> '' then begin
+    if Toolbar.Buttons[i].Style = tbsSeparator then begin
       menuitem := TTntMenuItem.Create(mmToolbar);
-      pm := TTntPopupMenu(Toolbar.Buttons[i].PopupMenu);
-      if pm = nil then
-        menuitem.OnClick := Toolbar.Buttons[i].OnClick
-      else begin
-        menuitem.Tag := Integer(Pointer(pm));
-      end;
-      menuitem.Caption := wstr;
-      menuitem.ShortCut := WideTextToShortCut(Toolbar.Buttons[i].HelpKeyword);
-      menuitem.Visible := Toolbar.Buttons[i].Visible;
+      menuitem.Caption := '-';
       mmToolbar.Insert(0,menuitem);
+    end else begin
+      wstr := Toolbar.Buttons[i].Caption;
+      if wstr = '' then wstr := Toolbar.Buttons[i].Hint;
+      if wstr <> '' then begin
+        menuitem := TTntMenuItem.Create(mmToolbar);
+        pm := TTntPopupMenu(Toolbar.Buttons[i].PopupMenu);
+        if pm = nil then
+          menuitem.OnClick := Toolbar.Buttons[i].OnClick
+        else begin
+          menuitem.Tag := Integer(Pointer(pm));
+        end;
+        menuitem.Caption := wstr;
+        menuitem.ShortCut := WideTextToShortCut(Toolbar.Buttons[i].HelpKeyword);
+        menuitem.Visible := Toolbar.Buttons[i].Visible;
+        menuitem.Enabled := Toolbar.Buttons[i].Enabled;
+        mmToolbar.Insert(0,menuitem);
+      end;
     end;
   end;
   mmToolbar.RethinkHotkeys;
@@ -1634,7 +1638,9 @@ procedure TfmGlobalSearch.hgKeyDown(Sender: TObject; var Key: Word;
 begin
   if (Key = VK_DELETE) and (Shift=[]) then begin
     Delete1.Click;
-    end;
+    Key := 0;
+    exit;
+  end;
   WasReturnPressed := (Key = VK_RETURN);
 end;
 
@@ -1775,10 +1781,7 @@ end;
 procedure TfmGlobalSearch.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
   Mask: Integer;
-  mes: TWMKeyDown;
 begin
-  if IsFormShortCut(Self,Key,Shift) then exit;  
-
   if (Key = VK_ESCAPE) or ((Key = VK_F4) and (ssAlt in Shift)) then begin
     if (Key = VK_ESCAPE) and IsSearching then
       StopSearching
@@ -1791,6 +1794,7 @@ begin
   if (Key = VK_F10) and (Shift=[]) then begin
     WriteDBBool(hppDBName,'Accessability', true);
     NotifyAllForms(HM_NOTF_ACCCHANGED,DWord(True),0);
+    exit;
   end;
 
   if (key = VK_F3) and ((Shift=[]) or (Shift=[ssShift])) and (Length(History) > 0) then begin
@@ -1799,6 +1803,12 @@ begin
     end;
 
   if hg.State = gsInline then exit;
+
+  if (Shift = [ssCtrl]) and (Key = VK_INSERT) then Key := Ord('C');
+  if IsFormShortCut([mmAcc,pmGrid],Key,Shift) then begin
+    Key := 0;
+    exit;
+  end;
 
   {if (ssCtrl in Shift) then begin
     if (key=Ord('R')) then begin
@@ -2053,7 +2063,11 @@ end;
 
 procedure TfmGlobalSearch.hgInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if (ssCtrl in Shift) then begin
+  if IsFormShortCut([mmAcc,pmInline],Key,Shift) then begin
+    key:=0;
+    exit;
+  end;
+  {if (ssCtrl in Shift) then begin
     if key=Ord('T') then begin
       InlineCopyAll.Click;
       key:=0;
@@ -2070,7 +2084,7 @@ begin
       InlineReplyQuoted.Click;
       key:=0;
     end;
-  end;
+  end;}
 end;
 
 procedure TfmGlobalSearch.hgUrlPopup(Sender: TObject; Item: Integer; Url: String);

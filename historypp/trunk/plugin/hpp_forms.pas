@@ -26,7 +26,7 @@ const
   HM_NOTF_TOOLBARCHANGED  = HM_NOTF_BASE + 4; // Toolbar has changed
   HM_NOTF_BOOKMARKCHANGED = HM_NOTF_BASE + 5; // Toolbar has changed
   HM_NOTF_ACCCHANGED      = HM_NOTF_BASE + 6; // Accessability prefs changed (menu toggle)
-  
+
 procedure NotifyAllForms(Msg,wParam,lParam: DWord);
 procedure BringFormToFront(Form: TForm);
 procedure MakeFontsParent(Control: TControl);
@@ -35,7 +35,8 @@ procedure TranslateMenu(mi: TMenuItem);
 procedure TranslateToolbar(const tb: TTntToolBar);
 
 function ShiftStateToKeyData(ShiftState :TShiftState):Longint;
-function IsFormShortCut(Form: TForm; Key: DWord; ShiftState: TShiftState): Boolean;
+//function IsFormShortCut(Form: TForm; Key: DWord; ShiftState: TShiftState): Boolean;
+function IsFormShortCut(List: Array of TComponent; Key: DWord; ShiftState: TShiftState): Boolean;
 
 function Utils_RestoreFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
 function Utils_SaveFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
@@ -48,29 +49,57 @@ uses hpp_global, hpp_services, hpp_opt_dialog, hpp_database,
   CustomizeFiltersForm,
   CustomizeToolbar;
 
-function IsFormShortCut(Form: TForm; Key: DWord; ShiftState: TShiftState): Boolean;
+{function IsFormShortCut(Form: TComponent; Key: DWord; ShiftState: TShiftState): Boolean;
 var
-  mes: TWMKeyDown;
-  
+  mes: TWMKey;
+
   function DispatchShortcut: Boolean;
   var
     i: Integer;
-    comp: TComponent;
+    Comp: TComponent;
   begin
     for i := 0 to Form.ComponentCount - 1 do begin
-      comp := Form.Components[i];
-      if comp is TMenu then begin
-        Result := TMenu(comp).IsShortCut(mes);
-        if Result then break;        
+      Comp := Form.Components[i];
+      if Comp is TMenu then begin
+        Result := TMenu(Comp).IsShortCut(mes);
+        if Result then break;
       end;
     end;
   end;
+
 begin
+  Result := False;
   mes.CharCode := Key;
   mes.KeyData := ShiftStateToKeyData(ShiftState);
-  Result :=
-    ((Form.Menu <> nil) and (Form.Menu.WindowHandle <> 0) and (Form.Menu.IsShortCut(mes))) or
-    (DispatchShortcut);
+  if Form is TMenu then
+    Result := TMenu(Form).IsShortCut(mes)
+  else
+  if Form is TForm then
+    Result := (TForm(Form).Menu <> nil) and
+              (TForm(Form).Menu.WindowHandle <> 0) and
+              (TForm(Form).Menu.IsShortCut(mes));
+  Result := Result or DispatchShortcut;
+end;}
+
+function IsFormShortCut(List: Array of TComponent; Key: DWord; ShiftState: TShiftState): Boolean;
+var
+  i: integer;
+  mes: TWMKey;
+begin
+  Result := False;
+  mes.CharCode := Key;
+  mes.KeyData := ShiftStateToKeyData(ShiftState);
+  for i := 0 to High(List) do begin
+    if List[i] is TMenu then begin
+      Result := TMenu(List[i]).IsShortCut(mes);
+    end else
+    if List[i] is TForm then begin
+      Result := (TForm(List[i]).Menu <> nil) and
+                (TForm(List[i]).Menu.WindowHandle <> 0) and
+                (TForm(List[i]).Menu.IsShortCut(mes));
+    end;
+    if Result then break;
+  end;
 end;
 
 function ShiftStateToKeyData(ShiftState :TShiftState):Longint;

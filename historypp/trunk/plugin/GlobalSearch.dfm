@@ -337,6 +337,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Top = 0
         Hint = 'Advanced search options'
         HelpKeyword = 'F4'
+        Caption = 'Advanced search options'
         Style = tbsCheck
         OnClick = tbAdvancedClick
       end
@@ -345,6 +346,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Top = 0
         Hint = 'Limit search range'
         HelpKeyword = 'F5'
+        Caption = 'Limit search range'
         Style = tbsCheck
         OnClick = tbRangeClick
       end
@@ -353,6 +355,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Top = 0
         Hint = 'Search protected contacts'
         HelpKeyword = 'F6'
+        Caption = 'Search protected contacts'
         ImageIndex = 0
         Style = tbsCheck
         OnClick = tbPasswordClick
@@ -590,7 +593,6 @@ object fmGlobalSearch: TfmGlobalSearch
     Top = 266
     object Open1: TTntMenuItem
       Caption = 'Sh&ow in context'
-      ShortCut = 16397
       OnClick = hgDblClick
     end
     object Bookmark1: TTntMenuItem
@@ -627,7 +629,6 @@ object fmGlobalSearch: TfmGlobalSearch
     end
     object Delete1: TTntMenuItem
       Caption = '&Delete'
-      ShortCut = 46
       OnClick = Delete1Click
     end
     object N1: TTntMenuItem
@@ -753,6 +754,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Caption = 'Service'
       object mmHideMenu: TTntMenuItem
         Caption = 'Hide Menu'
+        ShortCut = 16505
         OnClick = mmHideMenuClick
       end
     end
