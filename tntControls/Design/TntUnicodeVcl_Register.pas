@@ -3,7 +3,7 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.5                                                       }
+{        Version: 2.2.8                                                       }
 {                                                                             }
 {    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
@@ -11,7 +11,7 @@
 
 unit TntUnicodeVcl_Register;
 
-{$INCLUDE ..\TntCompilers.inc}
+{$INCLUDE ..\Source\TntCompilers.inc}
 
 interface
 
