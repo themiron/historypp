@@ -1,6 +1,6 @@
 object HistoryFrm: THistoryFrm
-  Left = 319
-  Top = 173
+  Left = 260
+  Top = 205
   Width = 586
   Height = 431
   VertScrollBar.Tracking = True
@@ -25,7 +25,7 @@ object HistoryFrm: THistoryFrm
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object paClient: TPanel
+  object paClient: TTntPanel
     Left = 0
     Top = 0
     Width = 578
@@ -36,17 +36,17 @@ object HistoryFrm: THistoryFrm
     TabOrder = 0
     object spSess: TTntSplitter
       Left = 314
-      Top = 33
-      Height = 325
+      Top = 32
+      Height = 326
       AutoSnap = False
       MinSize = 100
       Visible = False
     end
-    object paGrid: TPanel
+    object paGrid: TTntPanel
       Left = 317
-      Top = 33
+      Top = 32
       Width = 259
-      Height = 325
+      Height = 326
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
@@ -54,7 +54,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 0
         Width = 259
-        Height = 325
+        Height = 326
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         ShowBottomAligned = False
@@ -107,9 +107,9 @@ object HistoryFrm: THistoryFrm
     end
     object paSess: TTntPanel
       Left = 158
-      Top = 33
+      Top = 32
       Width = 156
-      Height = 325
+      Height = 326
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 1
@@ -159,7 +159,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 21
         Width = 156
-        Height = 304
+        Height = 305
         Align = alClient
         BevelInner = bvNone
         BevelOuter = bvNone
@@ -311,11 +311,11 @@ object HistoryFrm: THistoryFrm
         end
       end
     end
-    object TopPanel: TPanel
+    object TopPanel: TTntPanel
       Left = 2
       Top = 2
       Width = 574
-      Height = 31
+      Height = 30
       Align = alTop
       AutoSize = True
       BevelOuter = bvNone
@@ -324,10 +324,10 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 0
         Width = 574
-        Height = 31
-        Align = alClient
+        Height = 30
         AutoSize = True
         BorderWidth = 2
+        EdgeBorders = []
         EdgeInner = esNone
         EdgeOuter = esNone
         Flat = True
@@ -476,9 +476,9 @@ object HistoryFrm: THistoryFrm
     end
     object paBook: TTntPanel
       Left = 2
-      Top = 33
+      Top = 32
       Width = 156
-      Height = 325
+      Height = 326
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 4
@@ -528,7 +528,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 21
         Width = 156
-        Height = 304
+        Height = 305
         Align = alClient
         BevelInner = bvNone
         BevelOuter = bvNone
@@ -567,7 +567,7 @@ object HistoryFrm: THistoryFrm
     TabOrder = 2
     Visible = False
     OnResize = paPassHolderResize
-    object paPassword: TPanel
+    object paPassword: TTntPanel
       Left = 8
       Top = 16
       Width = 301
@@ -740,7 +740,7 @@ object HistoryFrm: THistoryFrm
     ParentBiDiMode = False
     OnPopup = pmHistoryPopup
     Left = 444
-    Top = 4
+    Top = 20
     object SaveSelected2: TTntMenuItem
       Caption = '&Save Selected...'
       OnClick = SaveSelected1Click
@@ -819,7 +819,7 @@ object HistoryFrm: THistoryFrm
     ParentBiDiMode = False
     OnPopup = pmEventsFilterPopup
     Left = 412
-    Top = 4
+    Top = 20
     object Showall1: TTntMenuItem
       Caption = '-'
     end
@@ -853,7 +853,7 @@ object HistoryFrm: THistoryFrm
   object pmToolbar: TTntPopupMenu
     Images = ilToolbar
     Left = 476
-    Top = 4
+    Top = 20
     object N5: TTntMenuItem
       Caption = '-'
     end
@@ -926,10 +926,8 @@ object HistoryFrm: THistoryFrm
     end
   end
   object mmAcc: TTntMainMenu
-    BiDiMode = bdLeftToRight
-    ParentBiDiMode = False
-    Left = 70
-    Top = 146
+    Left = 10
+    Top = 98
     object mmToolbar: TTntMenuItem
       Caption = 'Toolbar'
       OnClick = mmToolbarClick

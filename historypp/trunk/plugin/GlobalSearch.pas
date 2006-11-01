@@ -700,14 +700,14 @@ procedure TfmGlobalSearch.mmToolbarClick(Sender: TObject);
 var
   i,n: Integer;
   pm: TTntPopupMenu;
-  mi: TMenuItem;
+  mi: TTntMenuItem;
   menuitem: TTntMenuItem;
 begin
   for i := 0 to mmToolbar.Count - 1 do begin
     if mmToolbar.Items[i].Tag = 0 then continue;
     pm := TTntPopupMenu(Pointer(mmToolbar.Items[i].Tag));
     for n := pm.Items.Count-1 downto 0 do begin
-      mi := pm.Items[n];
+      mi := TTntMenuItem(pm.Items[n]);
       pm.Items.Remove(mi);
       mmToolbar.Items[i].Insert(0,mi);
     end;
@@ -1293,12 +1293,12 @@ end;
 procedure TfmGlobalSearch.pmEventsFilterPopup(Sender: TObject);
 var
   i: Integer;
-  pmi,mi: TMenuItem;
+  pmi,mi: TTntMenuItem;
 begin
   if Customize1.Parent <> pmEventsFilter.Items then begin
-    pmi := Customize1.Parent;
+    pmi := TTntMenuItem(Customize1.Parent);
     for i := pmi.Count - 1 downto 0 do begin
-      mi := pmi.Items[i];
+      mi := TTntMenuItem(pmi.Items[i]);
       pmi.Remove(mi);
       pmEventsFilter.Items.Insert(0,mi);
     end;
@@ -1477,8 +1477,9 @@ begin
   case Message.Msg of
     WM_COMMAND: begin
       if mmAcc.DispatchCommand(Message.WParam) then exit;
-      res := PluginLink.CallService(MS_CLIST_MENUPROCESSCOMMAND,MAKEWPARAM(Message.WParamLo,MPCF_CONTACTMENU),UserMenuContact);
-      if res = 0 then exit;
+      if PluginLink.CallService(MS_CLIST_MENUPROCESSCOMMAND,
+        MAKEWPARAM(Message.WParamLo,MPCF_CONTACTMENU),UserMenuContact) = 0 then
+        exit;
     end;
     WM_MEASUREITEM: begin
       Message.Result := PluginLink.CallService(MS_CLIST_MENUMEASUREITEM,Message.WParam,Message.LParam);
@@ -1604,10 +1605,8 @@ end;
 
 procedure TfmGlobalSearch.HMAccChanged(var M: TMessage);
 begin
-  if Boolean(M.WParam) then
-    Menu := mmAcc
-  else
-    Menu := nil;
+  if Boolean(M.WParam) then Menu := mmAcc
+                       else Menu := nil;
 end;
 
 procedure TfmGlobalSearch.HMBookmarksChanged(var M: TMessage);
@@ -1750,7 +1749,7 @@ end;
 procedure TfmGlobalSearch.SetEventFilter(FilterIndex: Integer);
 var
   i,fi: Integer;
-  mi: TMenuItem;
+  mi: TTntMenuItem;
 begin
   if FilterIndex = -1 then begin
     fi := tbEventsFilter.Tag+1;
@@ -1758,7 +1757,7 @@ begin
   end else
     fi := FilterIndex;
 
-  mi := Customize1.Parent;
+  mi := TTntMenuItem(Customize1.Parent);
   tbEventsFilter.Tag := fi;
   LoadEventFilterButton;
   for i := 0 to mi.Count-1 do
