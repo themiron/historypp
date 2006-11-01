@@ -267,8 +267,6 @@ User Details
 Ctrl+I
 [User Menu]
 User Menu
-[Conversations (F4)]
-Conversations (F4)
 [Bookmarks]
 Bookmarks
 [Find]
@@ -289,8 +287,6 @@ History
 History Actions
 [History Search]
 History Search
-[Global Search]
-Global Search
 [You need password to access this history]
 You need password to access this history
 [Enter]

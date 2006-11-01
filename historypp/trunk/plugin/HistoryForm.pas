@@ -1256,6 +1256,7 @@ begin
         menuitem.Caption := wstr;
         menuitem.ShortCut := WideTextToShortCut(Toolbar.Buttons[i].HelpKeyword);
         menuitem.Visible := Toolbar.Buttons[i].Visible;
+        //menuitem.Enabled := Toolbar.Buttons[i].Enabled;
         mmToolbar.Insert(0,menuitem);
       end;
     end;

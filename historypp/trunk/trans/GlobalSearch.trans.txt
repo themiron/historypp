@@ -15,10 +15,13 @@ History++ export
 Clear Search
 Advanced search options
 F4
+Advanced search options
 Limit search range
 F5
+Limit search range
 Search protected contacts
 F6
+Search protected contacts
 tbSearch
 tbFilter
 Advanced Search Options

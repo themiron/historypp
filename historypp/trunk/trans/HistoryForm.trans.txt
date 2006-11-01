@@ -12,8 +12,10 @@ Conversations
 Clear Search
 User Details
 Ctrl+I
+User Details
 User Menu
-Conversations (F4)
+User Menu
+Conversations
 F4
 Conversations
 Bookmarks
@@ -34,7 +36,7 @@ Save
 History
 History Actions
 History Search
-Global Search
+History Search
 Bookmarks
 You need password to access this history
 Password:
@@ -48,6 +50,7 @@ Send &Message
 Copy &Text
 &Delete
 &Save Selected...
+Select &All
 Open &Link
 Open Link in New &Window
 &Copy Link
