@@ -146,6 +146,7 @@ begin
   FGridMode := gmNative;
   FUseHistoryRTLMode := False;
   FExternalRTLMode := hppRTLDefault;
+
   Grid := THistoryGrid.CreateParented(ParentWindow);
   Grid.ControlID := ControlID;
   Grid.ParentCtl3D := False;
@@ -188,7 +189,7 @@ begin
 
   pmGrid := TTntPopupMenu.Create(Grid);
   pmGrid.ParentBiDiMode := False;
-  pmGrid.Items.Add(WideNewItem('Sh&ow in context',TextToShortCut('Ctrl+Enter'),false,true,OnOpenClick,0,'pmOpen'));
+  pmGrid.Items.Add(WideNewItem('Sh&ow in context',0,false,true,OnOpenClick,0,'pmOpen'));
   pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN1'));
   pmGrid.Items.Add(WideNewItem('&Copy',TextToShortCut('Ctrl+C'),false,true,OnCopyClick,0,'pmCopy'));
   pmGrid.Items.Add(WideNewItem('Copy &Text',TextToShortCut('Ctrl+T'),false,true,OnCopyTextClick,0,'pmCopyText'));
@@ -410,19 +411,10 @@ end;
 
 procedure TExternalGrid.GridKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if (ssCtrl in Shift) then begin
-    if key=Ord('C') then begin
-      OnCopyClick(Sender);
-      key:=0;
-    end;
-    if key=Ord('T') then begin
-      OnCopyTextClick(Sender);
-      key:=0;
-    end;
-    if key=Ord('R') then begin
-      OnReplyQuotedClick(Sender);
-      key:=0;
-    end;
+  if (Shift = [ssCtrl]) and (Key = VK_INSERT) then Key := Ord('C');
+  if IsFormShortCut([pmGrid],Key,Shift) then begin
+    Key := 0;
+    exit;
   end;
   WasKeyPressed := (Key in [VK_RETURN,VK_ESCAPE]);
 end;
@@ -455,7 +447,7 @@ begin
     pmGrid.Items[2].Enabled := Grid.InlineRichEdit.SelLength > 0
   else
     pmGrid.Items[2].Enabled := True;
-  pmGrid.Items[8].Enabled := pmGrid.Items[0].Enabled;
+  pmGrid.Items[8].Enabled := pmGrid.Items[2].Enabled;
   if Grid.Selected <> -1 then begin
     if Grid.Items[Grid.Selected].Bookmarked then
       pmGrid.Items[9].Caption := TranslateWideW('Remove &Bookmark')
@@ -503,7 +495,7 @@ end;
 
 procedure TExternalGrid.OnTextFormattingClick(Sender: TObject);
 begin
-  if Grid.Selected = -1 then exit;
+  if (Grid.Selected = -1) or (Grid.State <> gsInline) then exit;
   Grid.ProcessInline := not Grid.ProcessInline;
 end;
 
@@ -543,19 +535,9 @@ end;
 
 procedure TExternalGrid.GridInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if (ssCtrl in Shift) then begin
-    if key=Ord('T') then begin
-      OnCopyTextClick(Sender);
-      key:=0;
-    end;
-    if key=Ord('P') then begin
-      OnTextFormattingClick(Sender);
-      key:=0;
-    end;
-    if key=Ord('R') then begin
-      OnReplyQuotedClick(Sender);
-      key:=0;
-    end;
+  if IsFormShortCut([pmGrid],Key,Shift) then begin
+    Key := 0;
+    exit;
   end;
 end;
 

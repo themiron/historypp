@@ -190,7 +190,7 @@ type
     mmToolbar: TTntMenuItem;
     mmService: TTntMenuItem;
     mmHideMenu: TTntMenuItem;
-    N9: TTntMenuItem;
+    SelectAll1: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -205,6 +205,7 @@ type
     procedure hgChar(Sender: TObject; var Char: WideChar; Shift: TShiftState);
     procedure edSearchKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure edSearchKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure tbSearchClick(Sender: TObject);
     procedure tbFilterClick(Sender: TObject);
     procedure pbSearchPaint(Sender: TObject);
     procedure paPassHolderResize(Sender: TObject);
@@ -304,7 +305,7 @@ type
     procedure pmEventsFilterPopup(Sender: TObject);
     procedure mmToolbarClick(Sender: TObject);
     procedure mmHideMenuClick(Sender: TObject);
-    procedure N9Click(Sender: TObject);
+    procedure SelectAll1Click(Sender: TObject);
   private
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
@@ -1041,8 +1042,6 @@ procedure THistoryFrm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftS
 var
   Mask: Integer;
 begin
-  if (not PasswordMode) and (IsFormShortCut(Self,Key,Shift)) then exit;
-
   if (Key = VK_ESCAPE) or ((Key = VK_F4) and (ssAlt in Shift)) then begin
     close;
     Key := 0;
@@ -1052,6 +1051,7 @@ begin
   if (Key = VK_F10) and (Shift=[]) and (not PasswordMode) then begin
     WriteDBBool(hppDBName,'Accessability', true);
     NotifyAllForms(HM_NOTF_ACCCHANGED,DWord(True),0);
+    exit;
   end;
 
   if (key = VK_F3) and ((Shift=[]) or (Shift=[ssShift])) and (not PasswordMode) and (SearchMode in [smSearch,smHotSearch]) then begin
@@ -1064,6 +1064,14 @@ begin
 
   // let only search keys be accepted if inline
   if hg.State = gsInline then exit;
+
+  if not PasswordMode then begin
+    if (Shift = [ssCtrl]) and (Key = VK_INSERT) then Key := Ord('C');
+    if IsFormShortCut([mmAcc,pmGrid],Key,Shift) then begin
+      Key := 0;
+      exit;
+    end;
+  end;
 
 {  if (ssCtrl in Shift) then begin
     if (key=Ord('R')) and (not PasswordMode) then begin
@@ -1229,23 +1237,27 @@ var
   pm: TTntPopupMenu;
 begin
   mmToolbar.Clear;
-
   for i := Toolbar.ButtonCount - 1 downto 0 do begin
-    wstr := '';
-    wstr := Toolbar.Buttons[i].Caption;
-    if wstr = '' then wstr := Toolbar.Buttons[i].Hint;
-    if wstr <> '' then begin
+    if Toolbar.Buttons[i].Style = tbsSeparator then begin
       menuitem := TTntMenuItem.Create(mmToolbar);
-      pm := TTntPopupMenu(Toolbar.Buttons[i].PopupMenu);
-      if pm = nil then
-        menuitem.OnClick := Toolbar.Buttons[i].OnClick
-      else begin
-        menuitem.Tag := Integer(Pointer(pm));
-      end;
-      menuitem.Caption := wstr;
-      menuitem.ShortCut := WideTextToShortCut(Toolbar.Buttons[i].HelpKeyword);
-      menuitem.Visible := Toolbar.Buttons[i].Visible;
+      menuitem.Caption := '-';
       mmToolbar.Insert(0,menuitem);
+    end else begin
+      wstr := Toolbar.Buttons[i].Caption;
+      if wstr = '' then wstr := Toolbar.Buttons[i].Hint;
+      if wstr <> '' then begin
+        menuitem := TTntMenuItem.Create(mmToolbar);
+        pm := TTntPopupMenu(Toolbar.Buttons[i].PopupMenu);
+        if pm = nil then
+          menuitem.OnClick := Toolbar.Buttons[i].OnClick
+        else begin
+          menuitem.Tag := Integer(Pointer(pm));
+        end;
+        menuitem.Caption := wstr;
+        menuitem.ShortCut := WideTextToShortCut(Toolbar.Buttons[i].HelpKeyword);
+        menuitem.Visible := Toolbar.Buttons[i].Visible;
+        mmToolbar.Insert(0,menuitem);
+      end;
     end;
   end;
   mmToolbar.RethinkHotkeys;
@@ -1825,13 +1837,13 @@ end;
 var
   WasReturnPressed: Boolean = False;
 
-procedure THistoryFrm.hgKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure THistoryFrm.hgKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if (Key = VK_DELETE) and (Shift=[]) then begin
     Delete1.Click;
     Key := 0;
-    end;
+    exit;
+  end;
   WasReturnPressed := (Key = VK_RETURN);
 end;
 
@@ -2933,7 +2945,7 @@ begin
   if (Key = VK_RETURN) and (Shift = [ssCtrl]) then begin
     Details1.Click;
     Key := 0;
-    end;
+  end;
 end;
 
 procedure THistoryFrm.LoadInOptions();
@@ -3262,8 +3274,28 @@ begin
   tbEventsFilter.ShowHint := true;
 end;
 
+procedure THistoryFrm.tbSearchClick(Sender: TObject);
+begin
+  // when called from menu item handler
+  if Sender <> tbSearch then
+    tbSearch.Down := not tbSearch.Down;
+
+  if tbSearch.Down then
+    SearchMode := smSearch
+  else if tbFilter.Down then
+    SearchMode := smFilter
+  else
+    SearchMode := smNone;
+
+  if paSearch.Visible then edSearch.SetFocus;
+end;
+
 procedure THistoryFrm.tbFilterClick(Sender: TObject);
 begin
+  // when called from menu item handler
+  if Sender <> tbFilter then
+    tbFilter.Down := not tbFilter.Down;
+
   if tbSearch.Down then
     SearchMode := smSearch
   else if tbFilter.Down then
@@ -3575,7 +3607,7 @@ begin
   hg.EndUpdate;
 end;
 
-procedure THistoryFrm.N9Click(Sender: TObject);
+procedure THistoryFrm.SelectAll1Click(Sender: TObject);
 begin
   hg.MakeRangeSelected(0,hg.Count-1);
   hg.Invalidate;
@@ -3659,7 +3691,11 @@ end;
 
 procedure THistoryFrm.hgInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if (ssCtrl in Shift) then begin
+  if IsFormShortCut([mmAcc,pmInline],Key,Shift) then begin
+    key:=0;
+    exit;
+  end;
+  {if (ssCtrl in Shift) then begin
     if key=Ord('T') then begin
       InlineCopyAll.Click;
       key:=0;
@@ -3676,7 +3712,7 @@ begin
       InlineReplyQuoted.Click;
       key:=0;
     end;
-  end;
+  end;}
 end;
 
 end.

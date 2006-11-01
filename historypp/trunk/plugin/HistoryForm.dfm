@@ -1,6 +1,6 @@
 object HistoryFrm: THistoryFrm
-  Left = 260
-  Top = 205
+  Left = 330
+  Top = 167
   Width = 586
   Height = 431
   VertScrollBar.Tracking = True
@@ -344,12 +344,14 @@ object HistoryFrm: THistoryFrm
           Top = 0
           Hint = 'User Details'
           HelpKeyword = 'Ctrl+I'
+          Caption = 'User Details'
           OnClick = tbUserDetailsClick
         end
         object tbUserMenu: TTntToolButton
           Left = 23
           Top = 0
           Hint = 'User Menu'
+          Caption = 'User Menu'
           OnClick = tbUserMenuClick
         end
         object TntToolButton1: TTntToolButton
@@ -361,7 +363,7 @@ object HistoryFrm: THistoryFrm
         object tbSessions: TTntToolButton
           Left = 54
           Top = 0
-          Hint = 'Conversations (F4)'
+          Hint = 'Conversations'
           HelpKeyword = 'F4'
           AllowAllUp = True
           Caption = 'Conversations'
@@ -393,7 +395,7 @@ object HistoryFrm: THistoryFrm
           Caption = 'Find'
           Grouped = True
           Style = tbsCheck
-          OnClick = tbFilterClick
+          OnClick = tbSearchClick
         end
         object tbFilter: TTntToolButton
           Left = 130
@@ -469,7 +471,7 @@ object HistoryFrm: THistoryFrm
           Left = 377
           Top = 0
           Hint = 'History Search'
-          Caption = 'Global Search'
+          Caption = 'History Search'
           OnClick = tbHistorySearchClick
         end
       end
@@ -641,7 +643,6 @@ object HistoryFrm: THistoryFrm
     Top = 257
     object Details1: TTntMenuItem
       Caption = '&Open'
-      ShortCut = 16397
       OnClick = Details1Click
     end
     object Bookmark1: TTntMenuItem
@@ -677,7 +678,6 @@ object HistoryFrm: THistoryFrm
     end
     object Delete1: TTntMenuItem
       Caption = '&Delete'
-      ShortCut = 46
       OnClick = Delete1Click
     end
     object N2: TTntMenuItem
@@ -690,11 +690,11 @@ object HistoryFrm: THistoryFrm
     object N13: TTntMenuItem
       Caption = '-'
     end
-    object N9: TTntMenuItem
-      Caption = '--'
+    object SelectAll1: TTntMenuItem
+      Caption = 'Select &All'
       ShortCut = 16449
       Visible = False
-      OnClick = N9Click
+      OnClick = SelectAll1Click
     end
   end
   object pmLink: TTntPopupMenu
@@ -936,7 +936,7 @@ object HistoryFrm: THistoryFrm
       Caption = 'Service'
       object mmHideMenu: TTntMenuItem
         Caption = 'Hide Menu'
-        ShortCut = 32889
+        ShortCut = 16505
         OnClick = mmHideMenuClick
       end
     end
