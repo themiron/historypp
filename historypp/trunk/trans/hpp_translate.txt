@@ -134,10 +134,16 @@ History++ export
 Clear Search
 [Advanced search options]
 Advanced search options
+[F4]
+F4
 [Limit search range]
 Limit search range
+[F5]
+F5
 [Search protected contacts]
 Search protected contacts
+[F6]
+F6
 [tbSearch]
 tbSearch
 [tbFilter]
@@ -174,6 +180,12 @@ Open &Link
 Open Link in New &Window
 [&Copy Link]
 &Copy Link
+[Toolbar]
+Toolbar
+[Service]
+Service
+[Hide Menu]
+Hide Menu
 ;; Text found in ..\plugin\GlobalSearch.pas:
 [%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.]
 %.0n items in %d contacts found. Searched for %.1f sec in %.0n items.
@@ -251,6 +263,8 @@ No such items
 Conversations
 [User Details]
 User Details
+[Ctrl+I]
+Ctrl+I
 [User Menu]
 User Menu
 [Conversations (F4)]
@@ -259,16 +273,24 @@ Conversations (F4)
 Bookmarks
 [Find]
 Find
+[Ctrl+F]
+Ctrl+F
 [Filter]
 Filter
+[Ctrl+E]
+Ctrl+E
 [Copy]
 Copy
 [Save]
 Save
 [History]
 History
+[History Actions]
+History Actions
 [History Search]
 History Search
+[Global Search]
+Global Search
 [You need password to access this history]
 You need password to access this history
 [Enter]

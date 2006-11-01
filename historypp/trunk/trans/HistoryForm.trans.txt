@@ -11,16 +11,30 @@ History++ export
 Conversations
 Clear Search
 User Details
+Ctrl+I
 User Menu
 Conversations (F4)
+F4
+Conversations
+Bookmarks
+F5
 Bookmarks
 Find
+Ctrl+F
+Find
+Filter
+Ctrl+E
 Filter
 Copy
+Copy
+Delete
 Delete
 Save
+Save
 History
+History Actions
 History Search
+Global Search
 Bookmarks
 You need password to access this history
 Password:
@@ -64,6 +78,9 @@ Select &All
 Text Formatting
 Send &Message
 &Reply Quoted
+Toolbar
+Service
+Hide Menu
 ;; Text found in ..\plugin\HistoryForm.pas:
 System History
 Error

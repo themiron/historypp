@@ -1,12 +1,12 @@
 object HistoryFrm: THistoryFrm
   Left = 319
   Top = 173
+  Width = 586
+  Height = 431
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   Caption = '%s - History++'
-  ClientHeight = 404
-  ClientWidth = 578
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -41,7 +41,6 @@ object HistoryFrm: THistoryFrm
       AutoSnap = False
       MinSize = 100
       Visible = False
-      ExplicitHeight = 312
     end
     object paGrid: TPanel
       Left = 317
@@ -293,7 +292,7 @@ object HistoryFrm: THistoryFrm
           Left = 22
           Top = 3
           Width = 12
-          Height = 13
+          Height = 19
           Align = alRight
           Caption = '>>'
           Layout = tlCenter
@@ -331,6 +330,7 @@ object HistoryFrm: THistoryFrm
         BorderWidth = 2
         EdgeInner = esNone
         EdgeOuter = esNone
+        Flat = True
         Images = ilToolbar
         ParentShowHint = False
         PopupMenu = pmToolbar
@@ -926,17 +926,19 @@ object HistoryFrm: THistoryFrm
     end
   end
   object mmAcc: TTntMainMenu
+    BiDiMode = bdLeftToRight
+    ParentBiDiMode = False
     Left = 70
     Top = 146
-    object Toolbar1: TTntMenuItem
+    object mmToolbar: TTntMenuItem
       Caption = 'Toolbar'
-      OnClick = Toolbar1Click
+      OnClick = mmToolbarClick
     end
-    object Service1: TTntMenuItem
+    object mmService: TTntMenuItem
       Caption = 'Service'
-      object HideMenu1: TTntMenuItem
+      object mmHideMenu: TTntMenuItem
         Caption = 'Hide Menu'
-        OnClick = HideMenu1Click
+        OnClick = mmHideMenuClick
       end
     end
   end

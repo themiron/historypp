@@ -68,7 +68,7 @@ type
     end;
 
   TfmGlobalSearch = class(TTntForm)
-    Panel1: TtntPanel;
+    paClient: TTntPanel;
     paSearch: TtntPanel;
     laSearch: TTntLabel;
     edSearch: TtntEdit;
@@ -151,9 +151,9 @@ type
     TntMenuItem2: TTntMenuItem;
     CopyLink: TTntMenuItem;
     mmAcc: TTntMainMenu;
-    Toolbar1: TTntMenuItem;
-    Service1: TTntMenuItem;
-    HideMenu1: TTntMenuItem;
+    mmToolbar: TTntMenuItem;
+    mmService: TTntMenuItem;
+    mmHideMenu: TTntMenuItem;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -227,8 +227,8 @@ type
     procedure CopyLinkClick(Sender: TObject);
     procedure OpenLinkClick(Sender: TObject);
     procedure OpenLinkNWClick(Sender: TObject);
-    procedure HideMenu1Click(Sender: TObject);
-    procedure Toolbar1Click(Sender: TObject);
+    procedure mmHideMenuClick(Sender: TObject);
+    procedure mmToolbarClick(Sender: TObject);
     procedure pmEventsFilterPopup(Sender: TObject);
   private
     UserMenu: hMenu;
@@ -631,21 +631,21 @@ end;
 procedure TfmGlobalSearch.TntFormMouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 var
-  ctrl: TControl;
+  Ctrl: TControl;
 begin
   Handled := True;
-  ctrl := Panel1.ControlAtPos(Panel1.ScreenToClient(MousePos),False,True);
+  Ctrl := paClient.ControlAtPos(paClient.ScreenToClient(MousePos),False,True);
   {$RANGECHECKS OFF}
-  if Assigned(ctrl) then begin
+  if Assigned(Ctrl) then begin
     if Ctrl.Name = 'paContacts' then begin
-      Handled := not TTntListView(ctrl).Focused;
+      Handled := not TTntListView(Ctrl).Focused;
       if Handled then begin
         // ??? what to do here?
         // how to tell listview to scroll?
       end;
     end
     else begin
-      hg.perform(WM_MOUSEWHEEL,MakeLong(MK_CONTROL,WheelDelta),0);
+      hg.Perform(WM_MOUSEWHEEL,MakeLong(MK_CONTROL,WheelDelta),0);
     end;
   end;
   {$RANGECHECKS ON}
@@ -696,20 +696,20 @@ begin
   end;
 end;
 
-procedure TfmGlobalSearch.Toolbar1Click(Sender: TObject);
+procedure TfmGlobalSearch.mmToolbarClick(Sender: TObject);
 var
   i,n: Integer;
   pm: TTntPopupMenu;
   mi: TMenuItem;
   menuitem: TTntMenuItem;
 begin
-  for i := 0 to Toolbar1.Count - 1 do begin
-    if Toolbar1.Items[i].Tag = 0 then continue;
-    pm := TTntPopupMenu(Pointer(Toolbar1.Items[i].Tag));
+  for i := 0 to mmToolbar.Count - 1 do begin
+    if mmToolbar.Items[i].Tag = 0 then continue;
+    pm := TTntPopupMenu(Pointer(mmToolbar.Items[i].Tag));
     for n := pm.Items.Count-1 downto 0 do begin
       mi := pm.Items[n];
       pm.Items.Remove(mi);
-      Toolbar1.Items[i].Insert(0,mi);
+      mmToolbar.Items[i].Insert(0,mi);
     end;
   end;
 end;
@@ -1032,14 +1032,14 @@ var
   menuitem: TTntMenuItem;
   pm: TTntPopupMenu;
 begin
-  Toolbar1.Clear;
+  mmToolbar.Clear;
 
   for i := Toolbar.ButtonCount - 1 downto 0 do begin
     wstr := '';
     wstr := Toolbar.Buttons[i].Caption;
     if wstr = '' then wstr := Toolbar.Buttons[i].Hint;
     if wstr <> '' then begin
-      menuitem := TTntMenuItem.Create(Toolbar1);
+      menuitem := TTntMenuItem.Create(mmToolbar);
       pm := TTntPopupMenu(Toolbar.Buttons[i].PopupMenu);
       if pm = nil then
         menuitem.OnClick := Toolbar.Buttons[i].OnClick
@@ -1049,10 +1049,10 @@ begin
       menuitem.Caption := wstr;
       menuitem.ShortCut := WideTextToShortCut(Toolbar.Buttons[i].HelpKeyword);
       menuitem.Visible := Toolbar.Buttons[i].Visible;
-      Toolbar1.Insert(0,menuitem);
+      mmToolbar.Insert(0,menuitem);
     end;
   end;
-  Toolbar1.RethinkHotkeys;
+  mmToolbar.RethinkHotkeys;
 end;
 
 procedure TfmGlobalSearch.LoadButtonIcons;
@@ -1596,7 +1596,7 @@ begin
   hg.Repaint;
 end;
 
-procedure TfmGlobalSearch.HideMenu1Click(Sender: TObject);
+procedure TfmGlobalSearch.mmHideMenuClick(Sender: TObject);
 begin
   WriteDBBool(hppDBName,'Accessability', False);
   NotifyAllForms(HM_NOTF_ACCCHANGED,DWord(False),0);
