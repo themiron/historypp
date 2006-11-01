@@ -187,9 +187,9 @@ type
     InlineSendMessage: TTntMenuItem;
     N5: TTntMenuItem;
     mmAcc: TTntMainMenu;
-    Toolbar1: TTntMenuItem;
-    Service1: TTntMenuItem;
-    HideMenu1: TTntMenuItem;
+    mmToolbar: TTntMenuItem;
+    mmService: TTntMenuItem;
+    mmHideMenu: TTntMenuItem;
     N9: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
@@ -302,8 +302,8 @@ type
       Shift: TShiftState);
     procedure InlineReplyQuotedClick(Sender: TObject);
     procedure pmEventsFilterPopup(Sender: TObject);
-    procedure Toolbar1Click(Sender: TObject);
-    procedure HideMenu1Click(Sender: TObject);
+    procedure mmToolbarClick(Sender: TObject);
+    procedure mmHideMenuClick(Sender: TObject);
     procedure N9Click(Sender: TObject);
   private
     DelayedFilter: TMessageTypes;
@@ -1230,14 +1230,14 @@ var
   menuitem: TTntMenuItem;
   pm: TTntPopupMenu;
 begin
-  Toolbar1.Clear;
+  mmToolbar.Clear;
 
   for i := Toolbar.ButtonCount - 1 downto 0 do begin
     wstr := '';
     wstr := Toolbar.Buttons[i].Caption;
     if wstr = '' then wstr := Toolbar.Buttons[i].Hint;
     if wstr <> '' then begin
-      menuitem := TTntMenuItem.Create(Toolbar1);
+      menuitem := TTntMenuItem.Create(mmToolbar);
       pm := TTntPopupMenu(Toolbar.Buttons[i].PopupMenu);
       if pm = nil then
         menuitem.OnClick := Toolbar.Buttons[i].OnClick
@@ -1247,10 +1247,10 @@ begin
       menuitem.Caption := wstr;
       menuitem.ShortCut := WideTextToShortCut(Toolbar.Buttons[i].HelpKeyword);
       menuitem.Visible := Toolbar.Buttons[i].Visible;
-      Toolbar1.Insert(0,menuitem);
+      mmToolbar.Insert(0,menuitem);
     end;
   end;
-  Toolbar1.RethinkHotkeys;
+  mmToolbar.RethinkHotkeys;
 end;
 
 var
@@ -1768,7 +1768,7 @@ begin
   Result := Length(History)-1-Index;
 end;
 
-procedure THistoryFrm.HideMenu1Click(Sender: TObject);
+procedure THistoryFrm.mmHideMenuClick(Sender: TObject);
 begin
   WriteDBBool(hppDBName,'Accessability', False);
   NotifyAllForms(HM_NOTF_ACCCHANGED,DWord(False),0);
@@ -2609,9 +2609,6 @@ begin
 end;
 
 procedure THistoryFrm.FormShow(Sender: TObject);
-//var
-  //book: Boolean;
-  //i,n: Integer;
 begin
   // EndUpdate is better here, not in PostHistoryLoad, because it's faster
   // when called from OnShow. Don't know why.
@@ -2622,20 +2619,20 @@ begin
   FillBookmarks;
 end;
 
-procedure THistoryFrm.Toolbar1Click(Sender: TObject);
+procedure THistoryFrm.mmToolbarClick(Sender: TObject);
 var
   i,n: Integer;
   pm: TTntPopupMenu;
   mi: TMenuItem;
   menuitem: TTntMenuItem;
 begin
-  for i := 0 to Toolbar1.Count - 1 do begin
-    if Toolbar1.Items[i].Tag = 0 then continue;
-    pm := TTntPopupMenu(Pointer(Toolbar1.Items[i].Tag));
+  for i := 0 to mmToolbar.Count - 1 do begin
+    if mmToolbar.Items[i].Tag = 0 then continue;
+    pm := TTntPopupMenu(Pointer(mmToolbar.Items[i].Tag));
     for n := pm.Items.Count-1 downto 0 do begin
       mi := pm.Items[n];
       pm.Items.Remove(mi);
-      Toolbar1.Items[i].Insert(0,mi);
+      mmToolbar.Items[i].Insert(0,mi);
     end;
   end;
 end;
