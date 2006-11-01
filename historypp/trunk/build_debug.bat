@@ -142,6 +142,7 @@ if "%TRIES%"=="000000" goto exitloop
 set TRIES=0%TRIES%
 goto loop
 :exitloop
+set TNTPATH=%TNTPATH%;%TNTPATH%\Source
 set JCLPATH=%LIBPATH%jcl
 
 set INCDIR="%DELPHILIB%;%TNTPATH%;%JCLPATH%;..\inc;"
