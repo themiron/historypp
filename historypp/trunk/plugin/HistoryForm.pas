@@ -69,8 +69,8 @@ type
   THistoryFrm = class(TTntForm)
     SaveDialog: TSaveDialog;
     pmGrid: TTntPopupMenu;
-    paClient: TPanel;
-    paGrid: TPanel;
+    paClient: TTntPanel;
+    paGrid: TTntPanel;
     hg: THistoryGrid;
     sb: TTntStatusBar;
     pmLink: TTntPopupMenu;
@@ -108,7 +108,7 @@ type
     Toolbar: TTntToolBar;
     tbHistory: TTntToolButton;
     paPassHolder: TTntPanel;
-    paPassword: TPanel;
+    paPassword: TTntPanel;
     laPass: TTntLabel;
     Image1: TImage;
     laPass2: TTntLabel;
@@ -147,7 +147,7 @@ type
     Customize1: TTntMenuItem;
     N6: TTntMenuItem;
     Passwordprotection1: TTntMenuItem;
-    TopPanel: TPanel;
+    TopPanel: TTntPanel;
     paSearchButtons: TTntPanel;
     pmSessions: TTntPopupMenu;
     SessCopy: TTntMenuItem;
@@ -990,10 +990,8 @@ end;
 
 procedure THistoryFrm.HMAccChanged(var M: TMessage);
 begin
-  if Boolean(M.WParam) then
-    Menu := mmAcc
-  else
-    Menu := nil;
+  if Boolean(M.WParam) then Menu := mmAcc
+                       else Menu := nil;
 end;
 
 procedure THistoryFrm.HMBookmarkChanged(var M: TMessage);
@@ -2623,14 +2621,14 @@ procedure THistoryFrm.mmToolbarClick(Sender: TObject);
 var
   i,n: Integer;
   pm: TTntPopupMenu;
-  mi: TMenuItem;
+  mi: TTntMenuItem;
   menuitem: TTntMenuItem;
 begin
   for i := 0 to mmToolbar.Count - 1 do begin
     if mmToolbar.Items[i].Tag = 0 then continue;
     pm := TTntPopupMenu(Pointer(mmToolbar.Items[i].Tag));
     for n := pm.Items.Count-1 downto 0 do begin
-      mi := pm.Items[n];
+      mi := TTntMenuItem(pm.Items[n]);
       pm.Items.Remove(mi);
       mmToolbar.Items[i].Insert(0,mi);
     end;
@@ -2976,7 +2974,7 @@ end;
 procedure THistoryFrm.SetEventFilter(FilterIndex: Integer = -1; DelayApply: Boolean = false);
 var
   i,fi: Integer;
-  mi: TMenuItem;
+  mi: TTntMenuItem;
 begin
   if FilterIndex = -1 then begin
     fi := tbEventsFilter.Tag+1;
@@ -2987,7 +2985,7 @@ begin
   tbEventsFilter.Tag := fi;
   LoadEventFilterButton;
   //tbEventsFilter.Repaint;
-  mi := Customize1.Parent;
+  mi := TTntMenuItem(Customize1.Parent);
   for i := 0 to mi.Count-1 do
     if mi[i].RadioItem then
       mi[i].Checked := (mi[i].Tag = fi);
@@ -3438,12 +3436,12 @@ end;}
 procedure THistoryFrm.pmEventsFilterPopup(Sender: TObject);
 var
   i: Integer;
-  pmi,mi: TMenuItem;
+  pmi,mi: TTntMenuItem;
 begin
   if Customize1.Parent <> pmEventsFilter.Items then begin
-    pmi := Customize1.Parent;
+    pmi := TTntMenuItem(Customize1.Parent);
     for i := pmi.Count - 1 downto 0 do begin
-      mi := pmi.Items[i];
+      mi := TTntMenuItem(pmi.Items[i]);
       pmi.Remove(mi);
       pmEventsFilter.Items.Insert(0,mi);
     end;
@@ -3462,13 +3460,13 @@ end;
 
 procedure THistoryFrm.pmHistoryPopup(Sender: TObject);
 var
-  pmi,mi: TMenuItem;
+  pmi,mi: TTntMenuItem;
   i: Integer;
 begin
   if SaveSelected2.Parent <> pmHistory.Items then begin
-    pmi := SaveSelected2.Parent;
+    pmi := TTntMenuItem(SaveSelected2.Parent);
     for i := pmi.Count - 1 downto 0 do begin
-      mi := pmi.Items[i];
+      mi := TTntMenuItem(pmi.Items[i]);
       pmi.Remove(mi);
       pmHistory.Items.Insert(0,mi);
     end;
@@ -3479,14 +3477,13 @@ begin
 end;
 
 procedure THistoryFrm.WndProc(var Message: TMessage);
-var
-  res: integer;
 begin
   case Message.Msg of
     WM_COMMAND: begin
       if mmAcc.DispatchCommand(Message.WParam) then exit;
-      res := PluginLink.CallService(MS_CLIST_MENUPROCESSCOMMAND,MAKEWPARAM(Message.WParamLo,MPCF_CONTACTMENU),hContact);
-      if res = 0 then exit;
+      if PluginLink.CallService(MS_CLIST_MENUPROCESSCOMMAND,
+        MAKEWPARAM(Message.WParamLo,MPCF_CONTACTMENU),hContact)= 0 then
+        exit;
     end;
     WM_MEASUREITEM: begin
  	    Message.Result := PluginLink.CallService(MS_CLIST_MENUMEASUREITEM,Message.WParam,Message.LParam);
