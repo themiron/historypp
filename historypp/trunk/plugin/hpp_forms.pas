@@ -86,7 +86,14 @@ var
   i: integer;
   mes: TWMKey;
 begin
-  if (ShiftState = [ssCtrl]) and (Key = VK_INSERT) then Key := Ord('C');
+  if Key = VK_INSERT then begin
+    if ShiftState = [ssCtrl] then begin
+      Key := Ord('C')
+    end else
+    if ShiftState = [ssShift] then begin
+      Key := Ord('V'); ShiftState := [ssCtrl];
+    end;
+  end;
   Result := False;
   mes.CharCode := Key;
   mes.KeyData := ShiftStateToKeyData(ShiftState);
