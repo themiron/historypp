@@ -348,6 +348,7 @@ type
     procedure PostLoadHistory;
     procedure SetSearchMode(const Value: TSearchMode);
     procedure SetPanel(const Value: THistoryPanel);
+    procedure ToggleMainMenu(Enabled: Boolean);
 
   public
     UserCodepage: Cardinal;
@@ -652,8 +653,7 @@ begin
   LoadAccMenu; // load accessability menu before LoadToolbar
                // put here because we want to translate everything
                // before copying to menu
-  if GetDBBool(hppDBName,'Accessability', False) then
-    Menu := mmAcc;
+  ToggleMainMenu(GetDBBool(hppDBName,'Accessability', False));
 
   //cbFilter.ItemIndex := 0;
   RecentFormat := sfHtml;
@@ -991,8 +991,7 @@ end;
 
 procedure THistoryFrm.HMAccChanged(var M: TMessage);
 begin
-  if Boolean(M.WParam) then Menu := mmAcc
-                       else Menu := nil;
+  ToggleMainMenu(Boolean(M.WParam));
 end;
 
 procedure THistoryFrm.HMBookmarkChanged(var M: TMessage);
@@ -3714,6 +3713,17 @@ begin
       key:=0;
     end;
   end;}
+end;
+
+procedure THistoryFrm.ToggleMainMenu(Enabled: Boolean);
+begin
+  if Enabled then begin
+    Toolbar.EdgeBorders := [ebTop];
+    Menu := mmAcc
+  end else begin
+    Toolbar.EdgeBorders := [];
+    Menu := nil;
+  end;
 end;
 
 end.
