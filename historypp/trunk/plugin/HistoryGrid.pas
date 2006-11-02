@@ -3400,7 +3400,7 @@ begin
   try
     BarAdjusted := False;
 
-    FRichCache.ResetItems(FSelItems);
+    FRichCache.ResetAllItems;
     SetLength(FSelItems,0);
     FSelected := -1;
 
@@ -3409,13 +3409,13 @@ begin
 
     ShowProgress := True;
 
-    while Length(FItems) <> 0 do begin
-      LoadItem(0,False);
-      DeleteItem(0);
+    for cur := 0 to max do begin
+      if Assigned(FItemDelete) then
+        FItemDelete(Self,-1);
       DoProgress(cur,max);
       if cur = 0 then Invalidate;
-      Inc(cur);
     end;
+    SetLength(FItems,0);
 
     AdjustScrollBar;
     ShowProgress := False;
