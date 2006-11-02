@@ -190,6 +190,8 @@ type
     mmToolbar: TTntMenuItem;
     mmService: TTntMenuItem;
     mmHideMenu: TTntMenuItem;
+    N9: TTntMenuItem;
+    N10: TTntMenuItem;
     SelectAll1: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
@@ -306,6 +308,8 @@ type
     procedure mmToolbarClick(Sender: TObject);
     procedure mmHideMenuClick(Sender: TObject);
     procedure SelectAll1Click(Sender: TObject);
+    procedure lvBookKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure tvSessKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
@@ -1065,62 +1069,11 @@ begin
   if hg.State = gsInline then exit;
 
   if not PasswordMode then begin
-    if (Shift = [ssCtrl]) and (Key = VK_INSERT) then Key := Ord('C');
-    if IsFormShortCut([mmAcc,pmGrid],Key,Shift) then begin
+    if IsFormShortCut([mmAcc],Key,Shift) then begin
       Key := 0;
       exit;
     end;
   end;
-
-{  if (ssCtrl in Shift) then begin
-    if (key=Ord('R')) and (not PasswordMode) then begin
-      if hg.Selected <> -1 then ReplyQuoted(hg.Selected);
-      key:=0;
-      end;
-    if (key=Ord('M')) and (not PasswordMode) then begin
-      SendMessage1.Click;
-      key:=0;
-      end;
-    if (key=Ord('I')) and (not PasswordMode) then begin
-      tbUserDetails.Click;
-      key:=0;
-      end;
-    if (key=Ord('E')) and (not PasswordMode) then begin
-      if SearchMode = smFilter then
-        SearchMode := smNone
-      else begin
-        SearchMode := smFilter;
-        edSearch.SetFocus;
-      end;
-      key:=0;
-      end;
-    if (key=Ord('F')) and (not PasswordMode) then begin
-      if SearchMode = smSearch then
-        SearchMode := smNone
-      else begin
-        SearchMode := smSearch;
-        edSearch.SetFocus;
-      end;
-      key:=0;
-      end;
-    if (key=Ord('B')) and (not PasswordMode) then begin
-      Bookmark1.Click;
-      key:=0;
-      end;
-    if ((key=Ord('C')) or (key = VK_INSERT)) and (not PasswordMode) then begin
-      Copy1.Click;
-      key:=0;
-      end;
-    if (key=Ord('T')) and (not PasswordMode) then begin
-      CopyText1.Click;
-      key:=0;
-      end;
-    if (key=Ord('A')) and (not PasswordMode) then begin
-      hg.MakeRangeSelected(0,hg.Count-1);
-      hg.Invalidate;
-      key:=0;
-      end;
-    end;   }
 
   with Sender as TWinControl do
     begin
@@ -1838,12 +1791,17 @@ var
   WasReturnPressed: Boolean = False;
 
 procedure THistoryFrm.hgKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+var
+  pm: TPopupMenu;
 begin
-  if (Key = VK_DELETE) and (Shift=[]) then begin
-    Delete1.Click;
+  if hg.State = gsInline then pm := pmInline
+  else pm := pmGrid;
+
+  if IsFormShortCut([pm],Key,Shift) then begin
     Key := 0;
     exit;
   end;
+
   WasReturnPressed := (Key = VK_RETURN);
 end;
 
@@ -3555,6 +3513,13 @@ begin
   Node.SelectedIndex := Node.ImageIndex;
 end;
 
+procedure THistoryFrm.tvSessKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if IsFormShortCut([pmBook],Key,Shift) then
+    Key := 0;  
+end;
+
 procedure THistoryFrm.hgRTLEnabled(Sender: TObject; BiDiMode: TBiDiMode);
 begin
   edPass.BiDiMode := BiDiMode;
@@ -3630,6 +3595,13 @@ end;
 procedure THistoryFrm.lvBookEdited(Sender: TObject; Item: TTntListItem;  var S: WideString);
 begin
   BookmarkServer[hContact].BookmarkName[THandle(Item.Data)] := S;
+end;
+
+procedure THistoryFrm.lvBookKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if IsFormShortCut([pmBook],Key,Shift) then
+    Key := 0;  
 end;
 
 procedure THistoryFrm.RenameBookmark1Click(Sender: TObject);

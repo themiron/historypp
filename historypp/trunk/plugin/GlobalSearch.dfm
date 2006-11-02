@@ -1,9 +1,9 @@
 object fmGlobalSearch: TfmGlobalSearch
   Left = 271
   Top = 113
-  Width = 559
-  Height = 558
   Caption = 'Global History Search'
+  ClientHeight = 524
+  ClientWidth = 551
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -25,7 +25,7 @@ object fmGlobalSearch: TfmGlobalSearch
     Left = 0
     Top = 0
     Width = 551
-    Height = 512
+    Height = 505
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 2
@@ -33,8 +33,9 @@ object fmGlobalSearch: TfmGlobalSearch
     object spContacts: TTntSplitter
       Left = 157
       Top = 202
-      Height = 254
+      Height = 247
       Visible = False
+      ExplicitHeight = 254
     end
     object paSearch: TTntPanel
       Left = 2
@@ -81,7 +82,7 @@ object fmGlobalSearch: TfmGlobalSearch
     end
     object paProgress: TTntPanel
       Left = 2
-      Top = 456
+      Top = 449
       Width = 547
       Height = 54
       Align = alBottom
@@ -191,7 +192,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Left = 2
       Top = 202
       Width = 155
-      Height = 254
+      Height = 247
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 2
@@ -200,7 +201,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Left = 0
         Top = 0
         Width = 155
-        Height = 254
+        Height = 247
         Align = alClient
         Columns = <
           item
@@ -224,7 +225,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Left = 160
       Top = 202
       Width = 389
-      Height = 254
+      Height = 247
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 4
@@ -232,7 +233,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Left = 0
         Top = 0
         Width = 389
-        Height = 226
+        Height = 219
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         ShowBottomAligned = False
@@ -277,7 +278,7 @@ object fmGlobalSearch: TfmGlobalSearch
       end
       object paFilter: TTntPanel
         Left = 0
-        Top = 226
+        Top = 219
         Width = 389
         Height = 28
         Align = alBottom
@@ -324,8 +325,6 @@ object fmGlobalSearch: TfmGlobalSearch
       Height = 30
       AutoSize = True
       BorderWidth = 2
-      EdgeBorders = []
-      Flat = True
       Images = ilToolbar
       ParentShowHint = False
       ShowHint = True
@@ -579,7 +578,7 @@ object fmGlobalSearch: TfmGlobalSearch
   end
   object sb: TTntStatusBar
     Left = 0
-    Top = 512
+    Top = 505
     Width = 551
     Height = 19
     Panels = <>
@@ -628,6 +627,7 @@ object fmGlobalSearch: TfmGlobalSearch
     end
     object Delete1: TTntMenuItem
       Caption = '&Delete'
+      ShortCut = 46
       OnClick = Delete1Click
     end
     object N1: TTntMenuItem
@@ -753,6 +753,15 @@ object fmGlobalSearch: TfmGlobalSearch
         Caption = 'Hide Menu'
         ShortCut = 16505
         OnClick = mmHideMenuClick
+      end
+    end
+    object N5: TTntMenuItem
+      Caption = '>>'
+      Visible = False
+      object N6: TTntMenuItem
+        Caption = '--'
+        ShortCut = 16450
+        OnClick = Bookmark1Click
       end
     end
   end

@@ -1,12 +1,12 @@
 object HistoryFrm: THistoryFrm
   Left = 245
   Top = 167
-  Width = 586
-  Height = 431
   VertScrollBar.Tracking = True
   VertScrollBar.Visible = False
   ActiveControl = hg
   Caption = '%s - History++'
+  ClientHeight = 397
+  ClientWidth = 578
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -29,7 +29,7 @@ object HistoryFrm: THistoryFrm
     Left = 0
     Top = 0
     Width = 578
-    Height = 385
+    Height = 378
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 2
@@ -37,16 +37,17 @@ object HistoryFrm: THistoryFrm
     object spSess: TTntSplitter
       Left = 314
       Top = 32
-      Height = 326
+      Height = 319
       AutoSnap = False
       MinSize = 100
       Visible = False
+      ExplicitHeight = 326
     end
     object paGrid: TTntPanel
       Left = 317
       Top = 32
       Width = 259
-      Height = 326
+      Height = 319
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
@@ -54,7 +55,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 0
         Width = 259
-        Height = 326
+        Height = 319
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         ShowBottomAligned = False
@@ -109,7 +110,7 @@ object HistoryFrm: THistoryFrm
       Left = 158
       Top = 32
       Width = 156
-      Height = 326
+      Height = 319
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 1
@@ -159,7 +160,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 21
         Width = 156
-        Height = 305
+        Height = 298
         Align = alClient
         BevelInner = bvNone
         BevelOuter = bvNone
@@ -176,13 +177,14 @@ object HistoryFrm: THistoryFrm
         ToolTips = False
         OnChange = tvSessChange
         OnGetSelectedIndex = tvSessGetSelectedIndex
+        OnKeyDown = tvSessKeyDown
         OnKeyPress = edPassKeyPress
         OnMouseMove = tvSessMouseMove
       end
     end
     object paSearch: TTntPanel
       Left = 2
-      Top = 358
+      Top = 351
       Width = 574
       Height = 25
       Align = alBottom
@@ -296,6 +298,7 @@ object HistoryFrm: THistoryFrm
           Align = alRight
           Caption = '>>'
           Layout = tlCenter
+          ExplicitHeight = 13
         end
         object imSearchEndOfPage: TTntImage
           Left = 3
@@ -327,8 +330,6 @@ object HistoryFrm: THistoryFrm
         Height = 30
         AutoSize = True
         BorderWidth = 2
-        EdgeBorders = []
-        Flat = True
         Images = ilToolbar
         ParentShowHint = False
         PopupMenu = pmToolbar
@@ -478,7 +479,7 @@ object HistoryFrm: THistoryFrm
       Left = 2
       Top = 32
       Width = 156
-      Height = 326
+      Height = 319
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 4
@@ -528,7 +529,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 21
         Width = 156
-        Height = 305
+        Height = 298
         Align = alClient
         BevelInner = bvNone
         BevelOuter = bvNone
@@ -544,13 +545,14 @@ object HistoryFrm: THistoryFrm
         ViewStyle = vsReport
         OnContextPopup = lvBookContextPopup
         OnEdited = lvBookEdited
+        OnKeyDown = lvBookKeyDown
         OnSelectItem = lvBookSelectItem
       end
     end
   end
   object sb: TTntStatusBar
     Left = 0
-    Top = 385
+    Top = 378
     Width = 578
     Height = 19
     Panels = <>
@@ -676,6 +678,7 @@ object HistoryFrm: THistoryFrm
     end
     object Delete1: TTntMenuItem
       Caption = '&Delete'
+      ShortCut = 46
       OnClick = Delete1Click
     end
     object N2: TTntMenuItem
@@ -683,6 +686,7 @@ object HistoryFrm: THistoryFrm
     end
     object SaveSelected1: TTntMenuItem
       Caption = '&Save Selected...'
+      ShortCut = 16467
       OnClick = SaveSelected1Click
     end
     object N13: TTntMenuItem
@@ -936,6 +940,15 @@ object HistoryFrm: THistoryFrm
         Caption = 'Hide Menu'
         ShortCut = 16505
         OnClick = mmHideMenuClick
+      end
+    end
+    object N9: TTntMenuItem
+      Caption = '>>'
+      Visible = False
+      object N10: TTntMenuItem
+        Caption = '--'
+        ShortCut = 16450
+        OnClick = Bookmark1Click
       end
     end
   end
