@@ -296,6 +296,7 @@ type
     procedure ToggleRangePanel(Show: Boolean);
     procedure TogglePasswordPanel(Show: Boolean);
     procedure OrganizePanels;
+    procedure ToggleMainMenu(Enabled: Boolean);
 
     procedure SetEventFilter(FilterIndex: Integer = -1);
     procedure CreateEventsFilterMenu;
@@ -393,8 +394,7 @@ begin
   LoadAccMenu; // load accessability menu before LoadToolbar
                // put here because we want to translate everything
                // before copying to menu
-  if GetDBBool(hppDBName,'Accessability', False) then
-    Menu := mmAcc;
+  ToggleMainMenu(GetDBBool(hppDBName,'Accessability', False));
 end;
 
 procedure TfmGlobalSearch.SMFinished(var M: TMessage);
@@ -1616,8 +1616,7 @@ end;
 
 procedure TfmGlobalSearch.HMAccChanged(var M: TMessage);
 begin
-  if Boolean(M.WParam) then Menu := mmAcc
-                       else Menu := nil;
+  ToggleMainMenu(Boolean(M.WParam));
 end;
 
 procedure TfmGlobalSearch.HMBookmarksChanged(var M: TMessage);
@@ -2119,6 +2118,17 @@ begin
   if SavedLinkUrl = '' then exit;
   CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Handle,CP_ACP);
   SavedLinkUrl := '';
+end;
+
+procedure TfmGlobalSearch.ToggleMainMenu(Enabled: Boolean);
+begin
+  if Enabled then begin
+    Toolbar.EdgeBorders := [ebTop];
+    Menu := mmAcc
+  end else begin
+    Toolbar.EdgeBorders := [];
+    Menu := nil;
+  end;
 end;
 
 initialization

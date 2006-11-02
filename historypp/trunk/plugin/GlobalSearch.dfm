@@ -324,8 +324,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Height = 30
       AutoSize = True
       BorderWidth = 2
-      EdgeInner = esNone
-      EdgeOuter = esNone
+      EdgeBorders = []
       Flat = True
       Images = ilToolbar
       ParentShowHint = False

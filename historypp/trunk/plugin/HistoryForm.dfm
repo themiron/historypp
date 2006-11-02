@@ -1,5 +1,5 @@
 object HistoryFrm: THistoryFrm
-  Left = 330
+  Left = 245
   Top = 167
   Width = 586
   Height = 431
@@ -328,8 +328,6 @@ object HistoryFrm: THistoryFrm
         AutoSize = True
         BorderWidth = 2
         EdgeBorders = []
-        EdgeInner = esNone
-        EdgeOuter = esNone
         Flat = True
         Images = ilToolbar
         ParentShowHint = False
@@ -462,7 +460,7 @@ object HistoryFrm: THistoryFrm
         object tbHistory: TTntToolButton
           Left = 354
           Top = 0
-          Hint = 'History'
+          Hint = 'History Actions'
           Caption = 'History Actions'
           PopupMenu = pmHistory
           OnClick = tbHistoryClick
