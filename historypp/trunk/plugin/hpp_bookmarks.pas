@@ -49,7 +49,6 @@ type
     procedure SetBookmarked(Index: THandle; const Value: Boolean);
     function GetBookmarkName(Index: THandle): WideString;
     procedure SetBookmarkName(Index: THandle; const Value: WideString);
-    procedure DeleteBookmarks;
     procedure LoadBookmarks;
     procedure SaveBookmarks;
     function GetCount: Integer;
@@ -58,6 +57,7 @@ type
   public
     constructor Create(AContact: THandle);
     destructor Destroy; override;
+    procedure DeleteBookmarks;
     property Bookmarked[Index: THandle]: Boolean read GetBookmarked write SetBookmarked;
     property BookmarkName[Index: THandle]: WideString read GetBookmarkName write SetBookmarkName;
     property Items[Index: Integer]: THandle read GetItems;

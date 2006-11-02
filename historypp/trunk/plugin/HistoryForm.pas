@@ -1669,17 +1669,26 @@ end;
 procedure THistoryFrm.hgItemDelete(Sender: TObject; Index: Integer);
 var
   idx: Integer;
+  hDBEvent: DWord;
 begin
-  idx := GridIndexToHistory(Index);
-  if (FormState = gsDelete) and (History[idx] <> 0) then
-    PluginLink.CallService(MS_DB_EVENT_DELETE,hContact,History[idx]);
-  DeleteEventFromSessions(idx);
-  if History[idx] <> 0 then begin
-    if Assigned(EventDetailFrom) then
-      if TEventDetailsFrm(EventDetailFrom).Item=Index then
-        EventDetailFrom.Release;
+  if Index = -1 then begin // routine is called from DeleteAll
+    if FormState = gsDelete then begin // probably unnecessary considering prev check
+      hDBEvent := PluginLink.CallService(MS_DB_EVENT_FINDFIRST,hContact,0);
+      PluginLink.CallService(MS_DB_EVENT_DELETE,hContact,LPARAM(hDBEvent));
+    end;
+  end
+  else begin
+    idx := GridIndexToHistory(Index);
+    if (FormState = gsDelete) and (History[idx] <> 0) then
+      PluginLink.CallService(MS_DB_EVENT_DELETE,hContact,History[idx]);
+    DeleteEventFromSessions(idx);
+    if History[idx] <> 0 then begin
+      if Assigned(EventDetailFrom) then
+        if TEventDetailsFrm(EventDetailFrom).Item=Index then
+          EventDetailFrom.Release;
+    end;
+    DeleteHistoryItem(idx);
   end;
-  DeleteHistoryItem(idx);
   hgState(hg,hg.State);
   Application.ProcessMessages;
 end;
@@ -3191,6 +3200,14 @@ begin
     WideFormat(TranslateWideW('Do you really want to delete ALL items (%.0f) for this contact?')+
     #10#13+''+#10#13+TranslateWideW('Note: It can take several minutes for large history.'),
     [hg.Count/1]), TranslateWideW('Empty History'), MB_YESNO or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) = IDNO then exit;
+
+  if Assigned(EventDetailFrom) then
+    EventDetailFrom.Release;
+  SetLength(History,0);
+  SetLength(Sessions,0);
+  BookmarkServer.Contacts[hContact].DeleteBookmarks;
+  tvSess.Items.Clear;
+  lvBook.Items.Clear;
 
   SetSafetyMode(False);
   try
