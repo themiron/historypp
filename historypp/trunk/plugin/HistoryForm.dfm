@@ -325,9 +325,11 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 0
         Width = 574
-        Height = 34
+        Height = 30
         AutoSize = True
         BorderWidth = 2
+        EdgeBorders = []
+        Flat = True
         Images = ilToolbar
         ParentShowHint = False
         PopupMenu = pmToolbar
@@ -338,7 +340,7 @@ object HistoryFrm: THistoryFrm
         OnDblClick = ToolbarDblClick
         object tbUserDetails: TTntToolButton
           Left = 0
-          Top = 2
+          Top = 0
           Hint = 'User Details'
           HelpKeyword = 'Ctrl+I'
           Caption = 'User Details'
@@ -346,20 +348,20 @@ object HistoryFrm: THistoryFrm
         end
         object tbUserMenu: TTntToolButton
           Left = 23
-          Top = 2
+          Top = 0
           Hint = 'User Menu'
           Caption = 'User Menu'
           OnClick = tbUserMenuClick
         end
         object TntToolButton1: TTntToolButton
           Left = 46
-          Top = 2
+          Top = 0
           Width = 8
           Style = tbsSeparator
         end
         object tbSessions: TTntToolButton
           Left = 54
-          Top = 2
+          Top = 0
           Hint = 'Conversations'
           HelpKeyword = 'F4'
           AllowAllUp = True
@@ -369,7 +371,7 @@ object HistoryFrm: THistoryFrm
         end
         object tbBookmarks: TTntToolButton
           Left = 77
-          Top = 2
+          Top = 0
           Hint = 'Bookmarks'
           HelpKeyword = 'F5'
           AllowAllUp = True
@@ -379,13 +381,13 @@ object HistoryFrm: THistoryFrm
         end
         object TntToolButton2: TTntToolButton
           Left = 100
-          Top = 2
+          Top = 0
           Width = 7
           Style = tbsSeparator
         end
         object tbSearch: TTntToolButton
           Left = 107
-          Top = 2
+          Top = 0
           Hint = 'Find'
           HelpKeyword = 'Ctrl+F'
           AllowAllUp = True
@@ -396,7 +398,7 @@ object HistoryFrm: THistoryFrm
         end
         object tbFilter: TTntToolButton
           Left = 130
-          Top = 2
+          Top = 0
           Hint = 'Filter'
           HelpKeyword = 'Ctrl+E'
           AllowAllUp = True
@@ -407,13 +409,13 @@ object HistoryFrm: THistoryFrm
         end
         object TntToolButton3: TTntToolButton
           Left = 153
-          Top = 2
+          Top = 0
           Width = 7
           Style = tbsSeparator
         end
         object tbEventsFilter: TTntSpeedButton
           Left = 160
-          Top = 2
+          Top = 0
           Width = 110
           Height = 22
           Flat = True
@@ -425,40 +427,40 @@ object HistoryFrm: THistoryFrm
         end
         object TntToolButton4: TTntToolButton
           Left = 270
-          Top = 2
+          Top = 0
           Width = 7
           Style = tbsSeparator
         end
         object tbCopy: TTntToolButton
           Left = 277
-          Top = 2
+          Top = 0
           Hint = 'Copy'
           Caption = 'Copy'
           OnClick = Copy1Click
         end
         object tbDelete: TTntToolButton
           Left = 300
-          Top = 2
+          Top = 0
           Hint = 'Delete'
           Caption = 'Delete'
           OnClick = tbDeleteClick
         end
         object tbSave: TTntToolButton
           Left = 323
-          Top = 2
+          Top = 0
           Hint = 'Save'
           Caption = 'Save'
           Visible = False
         end
         object TntToolButton5: TTntToolButton
           Left = 346
-          Top = 2
+          Top = 0
           Width = 8
           Style = tbsSeparator
         end
         object tbHistory: TTntToolButton
           Left = 354
-          Top = 2
+          Top = 0
           Hint = 'History Actions'
           Caption = 'History Actions'
           PopupMenu = pmHistory
@@ -466,7 +468,7 @@ object HistoryFrm: THistoryFrm
         end
         object tbHistorySearch: TTntToolButton
           Left = 377
-          Top = 2
+          Top = 0
           Hint = 'History Search'
           Caption = 'History Search'
           OnClick = tbHistorySearchClick
