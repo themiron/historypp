@@ -281,8 +281,6 @@ Ctrl+E
 Copy
 [Save]
 Save
-[History]
-History
 [History Actions]
 History Actions
 [History Search]
