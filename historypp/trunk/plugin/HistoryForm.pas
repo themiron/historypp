@@ -382,6 +382,7 @@ type
     //procedure ApplyFilter(DoApply: boolean = true);
     procedure ReplyQuoted(Item: Integer);
     procedure OpenPassword;
+    procedure EmptyHistory;
 
     procedure SMItemsFound(var M: TMessage); message HM_SESS_ITEMSFOUND;
     procedure SMFinished(var M: TMessage); message HM_SESS_FINISHED;
@@ -1729,13 +1730,18 @@ begin
     if HppMessageBox(Handle, TranslateWideW('Do you really want to delete selected item?'),
     TranslateWideW('Delete'), MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = IDNO then exit;
   end;
-  SetSafetyMode(False);
-  try
-    FormState := gsDelete;
-    hg.DeleteSelected;
-  finally
-    FormState := gsIdle;
-    SetSafetyMode(True);
+
+  if hg.SelCount = hg.Count then
+    EmptyHistory
+  else begin
+    SetSafetyMode(False);
+    try
+      FormState := gsDelete;
+      hg.DeleteSelected;
+    finally
+      FormState := gsIdle;
+      SetSafetyMode(True);
+    end;
   end;
 end;
 
@@ -3194,16 +3200,13 @@ begin
   end;
 end;
 
-procedure THistoryFrm.Emptyhistory1Click(Sender: TObject);
+procedure THistoryFrm.EmptyHistory;
 begin
-  if HppMessageBox(Handle,
-    WideFormat(TranslateWideW('Do you really want to delete ALL items (%.0f) for this contact?')+
-    #10#13+''+#10#13+TranslateWideW('Note: It can take several minutes for large history.'),
-    [hg.Count/1]), TranslateWideW('Empty History'), MB_YESNO or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) = IDNO then exit;
-
   if Assigned(EventDetailFrom) then
     EventDetailFrom.Release;
+
   SetLength(History,0);
+  HistoryLength := 0;
   SetLength(Sessions,0);
   BookmarkServer.Contacts[hContact].DeleteBookmarks;
   tvSess.Items.Clear;
@@ -3217,6 +3220,16 @@ begin
     FormState := gsIdle;
     SetSafetyMode(True);
     end;
+end;
+
+procedure THistoryFrm.Emptyhistory1Click(Sender: TObject);
+begin
+  if HppMessageBox(Handle,
+    WideFormat(TranslateWideW('Do you really want to delete ALL items (%.0f) for this contact?')+
+    #10#13+''+#10#13+TranslateWideW('Note: It can take several minutes for large history.'),
+    [hg.Count/1]), TranslateWideW('Empty History'), MB_YESNO or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) = IDNO then exit;
+
+  EmptyHistory;
 end;
 
 procedure THistoryFrm.EndHotFilterTimer(DoClearFilter: Boolean = False);
