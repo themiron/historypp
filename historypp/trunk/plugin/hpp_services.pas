@@ -55,7 +55,7 @@ var
 implementation
 
 uses
-  {Dialogs, }GlobalSearch, hpp_global, hpp_itemprocess, hpp_forms;
+  {Dialogs, }GlobalSearch, PassForm, hpp_global, hpp_itemprocess, hpp_forms;
 
 // our own processing of RichEdit for all history windows
 function AllHistoryRichEditProcess(wParam{hRichEdit}, lParam{PItemRenderDetails}: DWord): Integer; cdecl;
@@ -157,40 +157,30 @@ end;
 
 // MS_HPP_OPENHISTORYEVENT service
 // See m_historypp.inc for details
-function HppOpenHistoryEvent(wParam{hDBEvent}, lParam{hContact}: DWord): Integer; cdecl;
+function HppOpenHistoryEvent(wParam{POpenEventParams}, lParam: DWord): Integer; cdecl;
 var
-  hContact: THandle;
   wHistory: THistoryFrm;
   hDbEvent,item,sel: Integer;
+  oep: TOpenEventParams;
 begin
-  // first, let's get contact
-  // WHAT THE F*CK? Why this service always return ZERO?
-  // Because of that I had to change API to include hContact!
-  // DAMN!
-  //hContact := PluginLink.CallService(MS_DB_EVENT_GETCONTACT, wParam,0);
-  hContact := lParam;
+  oep := POpenEventParams(wParam)^;
 
-  //PluginLink.CallService(MS_HISTORY_SHOWCONTACTHISTORY,hContact,0);
-  //wHistory := FindContactWindow(hContact);
-
-  hDbEvent := PluginLink.CallService(MS_DB_EVENT_FINDLAST,hContact,0);
+  hDbEvent := PluginLink.CallService(MS_DB_EVENT_FINDLAST,oep.hContact,0);
   item := 0;
   sel := -1;
-  while (hDbEvent <> wParam) and (hDbEvent <> 0) do begin
+  while (hDbEvent <> oep.hDBEvent) and (hDbEvent <> 0) do begin
     hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDPREV,hDbEvent,0);
     inc(item);
   end;
-  if hDbEvent = wParam then sel := item;
+  if hDbEvent = oep.hDBEvent then sel := item;
 
-  wHistory := OpenContactHistory(hContact,sel);
+  wHistory := OpenContactHistory(oep.hContact,sel);
 
-  // if we have password prompt -- remove
-  wHistory.PasswordMode := False;
-  // and find the item
-  //item := wHistory.hg.SearchItem(wParam);
-  // make it selected
+  if wHistory.PasswordMode then
+    if CheckPassword(String(oep.pPassword)) then
+      wHistory.PasswordMode := False;
 
-  Result := 0;
+  Result := DWord(not wHistory.PasswordMode);
 end;
 
 procedure hppRegisterServices;

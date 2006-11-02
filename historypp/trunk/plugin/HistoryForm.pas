@@ -661,7 +661,6 @@ begin
   LoadAccMenu; // load accessability menu before LoadToolbar
                // put here because we want to translate everything
                // before copying to menu
-  ToggleMainMenu(GetDBBool(hppDBName,'Accessability', False));
 
   //cbFilter.ItemIndex := 0;
   RecentFormat := sfHtml;
@@ -2350,6 +2349,7 @@ if value = true then begin
     Self.ActiveControl := edPass;
   end
 else begin
+  ToggleMainMenu(GetDBBool(hppDBName,'Accessability', False));
   hg.MakeVisible(hg.Selected);
   if Self.Visible then
     hg.SetFocus
@@ -2515,6 +2515,9 @@ procedure THistoryFrm.PostLoadHistory;
 begin
   LoadPosition;
   ProcessPassword;
+  if not PasswordMode then
+    ToggleMainMenu(GetDBBool(hppDBName,'Accessability', False));
+
   //if hContact = 0 then paTop.Visible := False;
   // set reversed here, after Allocate, because of some scrollbar
   // "features", we'll load end of the list if put before Allocate

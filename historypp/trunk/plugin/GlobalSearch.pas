@@ -232,6 +232,7 @@ type
     procedure mmToolbarClick(Sender: TObject);
     procedure pmEventsFilterPopup(Sender: TObject);
   private
+    UsedPassword: String;
     UserMenu: hMenu;
     UserMenuContact: THandle;
     WasReturnPressed: Boolean;
@@ -902,6 +903,7 @@ begin
     end;
   end;
 
+  UsedPassword := edPass.Text;
   st := TSearchThread.Create(True);
 
   if edSearch.text = '' then
@@ -1030,9 +1032,15 @@ begin
 end;
 
 procedure TfmGlobalSearch.hgDblClick(Sender: TObject);
+var
+  oep: TOpenEventParams;
 begin
   if hg.Selected = -1 then exit;
-  PluginLink.CallService(MS_HPP_OPENHISTORYEVENT,GetSearchItem(hg.Selected).hDBEvent,GetSearchItem(hg.Selected).Contact.Handle);
+  oep.cbSize := SizeOf(oep);
+  oep.hContact := GetSearchItem(hg.Selected).Contact.Handle;
+  oep.hDBEvent := GetSearchItem(hg.Selected).hDBEvent;
+  oep.pPassword := PAnsiChar(UsedPassword);
+  PluginLink.CallService(MS_HPP_OPENHISTORYEVENT,WPARAM(@oep),0);
 end;
 
 procedure TfmGlobalSearch.edSearchChange(Sender: TObject);
