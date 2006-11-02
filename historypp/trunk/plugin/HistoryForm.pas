@@ -1230,7 +1230,7 @@ end;
 
 procedure THistoryFrm.LoadAccMenu;
 var
-  n,i: Integer;
+  i: Integer;
   wstr: WideString;
   menuitem: TTntMenuItem;
   pm: TTntPopupMenu;
@@ -2634,7 +2634,6 @@ var
   i,n: Integer;
   pm: TTntPopupMenu;
   mi: TTntMenuItem;
-  menuitem: TTntMenuItem;
 begin
   for i := 0 to mmToolbar.Count - 1 do begin
     if mmToolbar.Items[i].Tag = 0 then continue;

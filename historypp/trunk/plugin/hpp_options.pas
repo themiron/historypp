@@ -266,7 +266,6 @@ end;
 
 procedure LoadIcons2;
 var
-  lhic,hic: HIcon;
   i: integer;
   NeedIcons,CountIconsDll: Integer;
   SmallIcons: array of HICON;

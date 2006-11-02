@@ -270,7 +270,6 @@ function ReadEvent(hDBEvent: THandle; UseCP: Cardinal = CP_ACP): THistoryItem;
 var
   EventInfo: TDBEventInfo;
   i,EventIndex: integer;
-  mt: TMessageType;
 begin
   ZeroMemory(@Result,SizeOf(Result));
   Result.Height := -1;
@@ -314,8 +313,8 @@ procedure GetEventTextForMessage(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   msgA: PAnsiChar;
   msgW: PWideChar;
-  msglen: integer;
-  i,lenW: integer;
+  msglen,lenW: Cardinal;
+  i: integer;
   UseUnicode: boolean;
 begin
   msgA := PChar(EventInfo.pBlob);
@@ -504,10 +503,9 @@ procedure GetEventTextForAvatarChange(EventInfo: TDBEventInfo; var Hi: THistoryI
 var
   msgA: PAnsiChar;
   msgW: PWideChar;
-  msglen: integer;
-  i,lenW: integer;
+  msglen,lenW: Cardinal;
+  i: integer;
   UseUnicode: boolean;
-  Link: WideString;
 begin
   msgA := PChar(EventInfo.pBlob);
   msglen := lstrlenA(PChar(EventInfo.pBlob))+1;

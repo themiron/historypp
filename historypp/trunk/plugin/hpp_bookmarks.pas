@@ -34,7 +34,7 @@ type
   TEventData = record
     hDBEvent: DWord;
     CRC32: DWord;
-    Timestamp: DWord;
+    Timestamp: Cardinal;
   end;
   PEventData = ^TEventData;
 
@@ -343,8 +343,6 @@ begin
 end;
 
 procedure TContactBookmarks.SetBookmarkName(Index: THandle; const Value: WideString);
-var
-  res: Boolean;
 begin
   Bookmarks.AddItemName(Index,Value);
 end;
@@ -446,7 +444,7 @@ function TContactsHash.GetContactBookmarks(Index: THandle): TContactBookmarks;
 var
   val: Pointer;
 begin
-  Result := nil;
+  //Result := nil;
   if GetKey(Cardinal(Index),Cardinal(val)) then
     Result := TContactBookmarks(val)
   else begin
@@ -472,7 +470,6 @@ end;
 function TBookmarksHash.AddEventData(var EventData: TEventData): Boolean;
 var
   ped: PEventData;
-  hi: THistoryItem;
   ts: Cardinal;
   ItemExists, ItemCorrect, NewItemFound: Boolean;
 begin
