@@ -124,7 +124,7 @@ var
   Buffer: AnsiString;
   len: integer;
 begin
-  _GetRichRTF(RichEditHandle,Buffer,SelectionOnly,PlainText,NoObjects,PlainRTF,True);
+  Result := _GetRichRTF(RichEditHandle,Buffer,SelectionOnly,PlainText,NoObjects,PlainRTF,True);
   SetString(RTFStream,PWideChar(@Buffer[1]),Length(Buffer) div SizeOf(WideChar));
   if PlainText then begin
     len := Length(RTFStream);
@@ -139,7 +139,7 @@ function GetRichRTF(RichEditHandle: THandle; var RTFStream: AnsiString;
 var
   len: integer;
 begin
-  _GetRichRTF(RichEditHandle,RTFStream,SelectionOnly,PlainText,NoObjects,PlainRTF,False);
+  Result := _GetRichRTF(RichEditHandle,RTFStream,SelectionOnly,PlainText,NoObjects,PlainRTF,False);
   if PlainText then begin
     len := Length(RTFStream);
     if (len > 0) and (RTFStream[len] = #13) then
@@ -173,13 +173,13 @@ end;
 function SetRichRTF(RichEditHandle: THandle; RTFStream: WideString;
                     SelectionOnly, PlainText, PlainRTF: Boolean): Integer;
 begin
-  _SetRichRTF(RichEditHandle,@RTFStream[1],Length(RTFStream),SelectionOnly,PlainText,PlainRTF,True);
+  Result := _SetRichRTF(RichEditHandle,@RTFStream[1],Length(RTFStream),SelectionOnly,PlainText,PlainRTF,True);
 end;
 
 function SetRichRTF(RichEditHandle: THandle; RTFStream: AnsiString;
                     SelectionOnly, PlainText, PlainRTF: Boolean): Integer;
 begin
-  _SetRichRTF(RichEditHandle,@RTFStream[1],Length(RTFStream),SelectionOnly,PlainText,PlainRTF,False);
+  Result := _SetRichRTF(RichEditHandle,@RTFStream[1],Length(RTFStream),SelectionOnly,PlainText,PlainRTF,False);
 end;
 
 function FormatString2RTF(Source: WideString; Suffix: String = ''): String;
