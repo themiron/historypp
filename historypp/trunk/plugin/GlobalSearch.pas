@@ -935,10 +935,13 @@ var
   EventDeleted: Boolean;
 begin
   if Item = -1 then exit;
-  for i := Item to Length(History) - 2 do begin
-    History[i] := History[i+1];
-  end;
-  SetLength(History,Length(History)-1);
+  //for i := Item to Length(History) - 2 do begin
+  //  History[i] := History[i+1];
+  //end;
+  //SetLength(History,Length(History)-1);
+  if Item <> High(History) then
+    Move(History[Item+1],History[Item],(High(History)-Item)*SizeOf(History[0]));
+  SetLength(History,High(History));
 
   if not FFiltered then exit;
 
