@@ -154,6 +154,8 @@ type
     mmToolbar: TTntMenuItem;
     mmService: TTntMenuItem;
     mmHideMenu: TTntMenuItem;
+    N5: TTntMenuItem;
+    N6: TTntMenuItem;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -1640,12 +1642,17 @@ end;
 
 procedure TfmGlobalSearch.hgKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
+var
+  pm: TPopupMenu;
 begin
-  if (Key = VK_DELETE) and (Shift=[]) then begin
-    Delete1.Click;
+  if hg.State = gsInline then pm := pmInline
+  else pm := pmGrid;
+
+  if IsFormShortCut([pm],Key,Shift) then begin
     Key := 0;
     exit;
   end;
+
   WasReturnPressed := (Key = VK_RETURN);
 end;
 
@@ -1809,38 +1816,10 @@ begin
 
   if hg.State = gsInline then exit;
 
-  if (Shift = [ssCtrl]) and (Key = VK_INSERT) then Key := Ord('C');
-  if IsFormShortCut([mmAcc,pmGrid],Key,Shift) then begin
+  if IsFormShortCut([mmAcc],Key,Shift) then begin
     Key := 0;
     exit;
   end;
-
-  {if (ssCtrl in Shift) then begin
-    if (key=Ord('R')) then begin
-      if hg.Selected <> -1 then ReplyQuoted(hg.Selected);
-      key:=0;
-    end;
-    if (key=Ord('M')) then begin
-      if hg.Selected <> -1 then SendMessage1.Click;
-      key:=0;
-    end;
-    if (key=Ord('B')) then begin
-      Bookmark1.Click;
-      key:=0;
-    end;
-    if (key=Ord('C')) or (key = VK_INSERT) then begin
-      Copy1.Click;
-      key:=0;
-    end;
-    if (key=Ord('T')) then begin
-      CopyText1.Click;
-      key:=0;
-    end;
-    if key=VK_RETURN then begin
-      if hg.Selected <> -1 then hgDblClick(Sender);
-      key:=0;
-    end;
-  end; }
 
   with Sender as TWinControl do
     begin

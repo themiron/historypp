@@ -197,20 +197,9 @@ procedure TEventDetailsFrm.FormKeyDown(Sender: TObject; var Key: Word;
 var
   Mask: Integer;
 begin
-  if (ssCtrl in Shift) then begin
-    if key=Ord('R') then begin
-      ReplyQuoted1.Click;
-      key:=0;
-    end;
-    if key=Ord('M') then begin
-      SendMessage1.Click;
-      key:=0;
-    end;
-    if key=Ord('P') then begin
-      Self.ToogleItemProcessing.Click;
-      key:=0;
-    end;
-  end;
+  if IsFormShortCut([pmEText],Key,Shift) then
+    key := 0;
+
   with Sender as TWinControl do
     begin
       if Perform(CM_CHILDKEY, Key, Integer(Sender)) <> 0 then

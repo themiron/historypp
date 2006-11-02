@@ -1,10 +1,10 @@
 object EventDetailsFrm: TEventDetailsFrm
   Left = 269
   Top = 168
-  Width = 466
-  Height = 396
   BorderWidth = 4
   Caption = 'Event Details'
+  ClientHeight = 354
+  ClientWidth = 450
   Color = clBtnFace
   Constraints.MinHeight = 340
   Constraints.MinWidth = 466
@@ -23,7 +23,7 @@ object EventDetailsFrm: TEventDetailsFrm
   TextHeight = 13
   object paBottom: TTntPanel
     Left = 0
-    Top = 329
+    Top = 322
     Width = 450
     Height = 32
     Align = alBottom
@@ -210,7 +210,7 @@ object EventDetailsFrm: TEventDetailsFrm
     Left = 0
     Top = 107
     Width = 450
-    Height = 222
+    Height = 215
     Align = alClient
     BevelInner = bvNone
     BevelOuter = bvNone
