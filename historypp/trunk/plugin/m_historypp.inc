@@ -124,20 +124,31 @@ const
   // lParam - zero
   MS_HPP_SHOWGLOBALSEARCH = 'History++/ShowGlobalSearch';
 
+  type
+    TOpenEventParams = packed record
+      cbSize: DWord;
+      hContact: DWord;
+      hDBEvent: DWord;
+      pPassword: PChar;
+    end;
+
+  POpenEventParams = ^TOpenEventParams;
+
+const
+
   // MS_HPP_OPENHISTORYEVENT
   // (supported from 1.5.0)
+  // (changed in 1.5.110)
+  //
   // Opens contact's history and selects
   // provided event
-  // wParam - DBEvent handle
-  // lParam - Contact handle
-  //
+  // wParam - pointer to TOpenEventParams structure
+  // lParam - zero
+  // Return - BOOL, True if contact opened, False if password
+  //          field opened
   // Note: if you just want to show contact's history,
   //       use system service MS_HISTORY_SHOWCONTACTHISTORY
-  //
-  //       [BETA] if the history is protected, password will not
-  //       be asked and the history will open. may change in the
-  //       future
-  MS_HPP_OPENHISTORYEVENT = 'History++/OpenHistoryEvent';
+  MS_HPP_OPENHISTORYEVENT = 'History++/OpenHistoryEvent2';
 
   // MS_HPP_GETVERSION
   // (supported from 1.5.0)

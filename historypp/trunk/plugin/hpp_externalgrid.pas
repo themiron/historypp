@@ -526,11 +526,14 @@ end;
 procedure TExternalGrid.OnOpenClick(Sender: TObject);
 var
   hContact,hDBEvent: THandle;
+  oep: TOpenEventParams;
 begin
   if Grid.Selected = -1 then exit;
-  hContact := Items[Grid.Selected].hContact;
-  hDBEvent := Items[Grid.Selected].hDBEvent;
-  PluginLink.CallService(MS_HPP_OPENHISTORYEVENT,hDBEvent,hContact);
+  oep.cbSize := SizeOf(oep);
+  oep.hContact := Items[Grid.Selected].hContact;
+  oep.hDBEvent := Items[Grid.Selected].hDBEvent;
+  oep.pPassword := nil;
+  PluginLink.CallService(MS_HPP_OPENHISTORYEVENT,WPARAM(@oep),0);
 end;
 
 procedure TExternalGrid.GridInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
