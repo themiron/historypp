@@ -566,6 +566,9 @@ end;
 
 procedure TfmGlobalSearch.tbAdvancedClick(Sender: TObject);
 begin
+  // when called from menu item handler
+  if Sender <> tbAdvanced then
+    tbAdvanced.Down := not tbAdvanced.Down;
   ToggleAdvancedPanel(tbAdvanced.Down);
 end;
 
@@ -583,11 +586,15 @@ end;
 
 procedure TfmGlobalSearch.tbPasswordClick(Sender: TObject);
 begin
+  if Sender <> tbRange then
+    tbPassword.Down := not tbPassword.Down;
   TogglePasswordPanel(tbPassword.Down);
 end;
 
 procedure TfmGlobalSearch.tbRangeClick(Sender: TObject);
 begin
+  if Sender <> tbRange then
+    tbRange.Down := not tbRange.Down;
   ToggleRangePanel(tbRange.Down);
 end;
 

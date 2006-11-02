@@ -742,8 +742,6 @@ object fmGlobalSearch: TfmGlobalSearch
     end
   end
   object mmAcc: TTntMainMenu
-    BiDiMode = bdLeftToRight
-    ParentBiDiMode = False
     Left = 338
     Top = 2
     object mmToolbar: TTntMenuItem
