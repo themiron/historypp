@@ -177,7 +177,7 @@ begin
   wHistory := OpenContactHistory(oep.hContact,sel);
 
   if wHistory.PasswordMode then
-    if CheckPassword(String(oep.pPassword)) then
+    if (oep.pPassword <> nil) and CheckPassword(String(oep.pPassword)) then
       wHistory.PasswordMode := False;
 
   Result := DWord(not wHistory.PasswordMode);

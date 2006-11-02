@@ -3650,41 +3650,47 @@ end;
 
 procedure THistoryGrid.DeleteItem(Item: Integer);
 var
-i: Integer;
-SelIdx: Integer;
+  i: Integer;
+  SelIdx: Integer;
 begin
-// find item pos in selected array if it is there
-// and fix other positions becouse we have
-// to decrease some after we delete the item
-// from main array
-SelIdx := -1;
-FRichCache.WorkOutItemDeleted(Item);
-//if IsSelected(Item) then begin
+  // find item pos in selected array if it is there
+  // and fix other positions becouse we have
+  // to decrease some after we delete the item
+  // from main array
+  SelIdx := -1;
+  FRichCache.WorkOutItemDeleted(Item);
+  //if IsSelected(Item) then begin
   for i := 0 to SelCount-1 do begin
     if FSelItems[i] = Item then
       SelIdx := i
-    else if FSelItems[i] > Item then
+    else
+    if FSelItems[i] > Item then
       Dec(FSelItems[i]);
-    end;
-//  end;
-
-// delete item from mail array
-for i := Item to Length(FItems)-2 do begin
-  FItems[i] := FItems[i+1];
   end;
-SetLength(FItems,Count-1);
+  //end;
 
-// if it was in selected array delete there also
-if SelIdx <> -1 then begin
-  for i := SelIdx to SelCount-2 do begin
-    FSelItems[i] := FSelItems[i+1];
-    end;
-  SetLength(FSelItems,Length(FSelItems)-1);
+  // delete item from main array
+  //for i := Item to Length(FItems)-2 do
+  //  FItems[i] := FItems[i+1];
+  if Item <> High(FItems) then begin
+    Finalize(FItems[Item]);
+    Move(FItems[Item+1],FItems[Item],(High(FItems)-Item)*SizeOf(FItems[0]));
+    FillChar(FItems[High(FItems)],SizeOf(FItems[0]),0);
+  end;
+  SetLength(FItems,High(FItems));
+
+  // if it was in selected array delete there also
+  if SelIdx <> -1 then begin
+    //for i := SelIdx to SelCount-2 do
+    //  FSelItems[i] := FSelItems[i+1];
+    if SelIdx <> High(FSelItems) then
+      Move(FSelItems[SelIdx+1],FSelItems[SelIdx],(High(FSelItems)-SelIdx)*SizeOf(FSelItems[0]));
+    SetLength(FSelItems,High(FSelItems));
   end;
 
-// tell others they should clear up that item too
-if Assigned(FItemDelete) then
-  FItemDelete(Self,Item);
+  // tell others they should clear up that item too
+  if Assigned(FItemDelete) then
+    FItemDelete(Self,Item);
 end;
 
 procedure THistoryGrid.SaveAll(FileName: String; SaveFormat: TSaveFormat);

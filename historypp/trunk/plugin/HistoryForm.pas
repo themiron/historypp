@@ -1411,12 +1411,14 @@ end;
 
 procedure THistoryFrm.DeleteHistoryItem(ItemIdx: Integer);
 //history[itemidx] löschen (also row-1)
-var
-  p: integer;
+//var
+//  p: integer;
 begin
-  for p:=ItemIdx to HistoryLength-2 do
-    History[p]:=history[p+1];
+  //for p:=ItemIdx to HistoryLength-2 do
+  //  History[p]:=history[p+1];
   Dec(HistoryLength);
+  if ItemIdx <> HistoryLength then
+    Move(History[ItemIdx+1],History[ItemIdx],(HistoryLength-ItemIdx)*SizeOf(History[0]));
   SetLength(history,HistoryLength);
 end;
 
