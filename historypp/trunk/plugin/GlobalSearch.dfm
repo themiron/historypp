@@ -1,9 +1,9 @@
 object fmGlobalSearch: TfmGlobalSearch
-  Left = 271
-  Top = 113
+  Left = 350
+  Top = 129
+  Width = 559
+  Height = 551
   Caption = 'Global History Search'
-  ClientHeight = 524
-  ClientWidth = 551
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -35,7 +35,6 @@ object fmGlobalSearch: TfmGlobalSearch
       Top = 202
       Height = 247
       Visible = False
-      ExplicitHeight = 254
     end
     object paSearch: TTntPanel
       Left = 2
@@ -325,6 +324,8 @@ object fmGlobalSearch: TfmGlobalSearch
       Height = 30
       AutoSize = True
       BorderWidth = 2
+      EdgeBorders = []
+      Flat = True
       Images = ilToolbar
       ParentShowHint = False
       ShowHint = True
@@ -755,10 +756,10 @@ object fmGlobalSearch: TfmGlobalSearch
         OnClick = mmHideMenuClick
       end
     end
-    object N5: TTntMenuItem
-      Caption = '>>'
+    object mmShortcuts: TTntMenuItem
+      Caption = '--'
       Visible = False
-      object N6: TTntMenuItem
+      object mmBookmark: TTntMenuItem
         Caption = '--'
         ShortCut = 16450
         OnClick = Bookmark1Click

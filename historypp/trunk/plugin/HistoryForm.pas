@@ -190,8 +190,8 @@ type
     mmToolbar: TTntMenuItem;
     mmService: TTntMenuItem;
     mmHideMenu: TTntMenuItem;
-    N9: TTntMenuItem;
-    N10: TTntMenuItem;
+    mmShortcuts: TTntMenuItem;
+    mmBookmark: TTntMenuItem;
     SelectAll1: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
@@ -626,8 +626,12 @@ begin
 
   Icon.ReleaseHandle;
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
+
   // delphi 2006 doesn't save toolbar's flat property in dfm if it is True
+  // delphi 2006 doesn't save toolbar's edgeborder property in dfm
   Toolbar.Flat := True;
+  Toolbar.EdgeBorders := [];
+
   LoadToolbarIcons;
   LoadButtonIcons;
   LoadSessionIcons;
@@ -1193,12 +1197,11 @@ begin
     if Toolbar.Buttons[i].Style = tbsSeparator then begin
       menuitem := TTntMenuItem.Create(mmToolbar);
       menuitem.Caption := '-';
-      mmToolbar.Insert(0,menuitem);
     end else begin
+      menuitem := TTntMenuItem.Create(Toolbar.Buttons[i]);
       wstr := Toolbar.Buttons[i].Caption;
       if wstr = '' then wstr := Toolbar.Buttons[i].Hint;
       if wstr <> '' then begin
-        menuitem := TTntMenuItem.Create(mmToolbar);
         pm := TTntPopupMenu(Toolbar.Buttons[i].PopupMenu);
         if pm = nil then
           menuitem.OnClick := Toolbar.Buttons[i].OnClick
@@ -1207,11 +1210,11 @@ begin
         end;
         menuitem.Caption := wstr;
         menuitem.ShortCut := WideTextToShortCut(Toolbar.Buttons[i].HelpKeyword);
+        menuitem.Enabled := Toolbar.Buttons[i].Enabled;
         menuitem.Visible := Toolbar.Buttons[i].Visible;
-        //menuitem.Enabled := Toolbar.Buttons[i].Enabled;
-        mmToolbar.Insert(0,menuitem);
       end;
     end;
+    mmToolbar.Insert(0,menuitem);
   end;
   mmToolbar.RethinkHotkeys;
 end;
@@ -2592,8 +2595,18 @@ var
   i,n: Integer;
   pm: TTntPopupMenu;
   mi: TTntMenuItem;
+  flag: Boolean;
 begin
   for i := 0 to mmToolbar.Count - 1 do begin
+    if mmToolbar.Items[i].Owner is TTntToolButton then begin
+      flag := TToolButton(mmToolbar.Items[i].Owner).Enabled
+    end else
+    if mmToolbar.Items[i].Owner is TTntSpeedButton then begin
+      TTntMenuItem(mmToolbar.Items[i]).Caption := TTntSpeedButton(mmToolbar.Items[i].Owner).Hint;
+      flag := TTntSpeedButton(mmToolbar.Items[i].Owner).Enabled
+    end else
+      flag := true;
+    mmToolbar.Items[i].Enabled := flag;
     if mmToolbar.Items[i].Tag = 0 then continue;
     pm := TTntPopupMenu(Pointer(mmToolbar.Items[i].Tag));
     for n := pm.Items.Count-1 downto 0 do begin
