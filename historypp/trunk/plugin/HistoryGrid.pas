@@ -58,7 +58,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, ComCtrls, CommCtrl,
-  TntSysUtils,TntWindows, TntControls,TntGraphics, {TntComCtrls,} Menus, TntMenus, StdCtrls,
+  TntSysUtils, TntWindows, TntControls,TntGraphics, {TntComCtrls,} Menus, TntMenus, StdCtrls,
   Math, mmsystem,
   hpp_global, hpp_contacts, hpp_itemprocess, hpp_events, m_api, hpp_eventfilters,
   hpp_richedit, hpp_richedit_ole,
@@ -1000,6 +1000,8 @@ var
   TextRect: TRect;
   ch,cw,idx,SumHeight: Integer;
 begin
+  if csDesigning in ComponentState then exit;
+
   if not Allocated then begin
     DrawMessage(TxtStartup);
     exit;
@@ -2213,7 +2215,7 @@ begin
   // make multiline support
   //DrawText(Canvas.Handle,PChar(Text),Length(Text),
   //r,DT_CENTER or DT_NOPREFIX	or DT_VCENTER or DT_SINGLELINE);
-  Tnt_DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text),r, DT_NOPREFIX or DT_CENTER or DT_CALCRECT);
+  Tnt_DrawTextW(Canvas.Handle,PWideChar(Text),Length(Text),r,DT_NOPREFIX or DT_CENTER or DT_CALCRECT);
   OffsetRect(r,
     ((cr.Right - cr.Left) - (r.right - r.left)) div 2,
     ((cr.Bottom - cr.Top) - (r.bottom - r.top)) div 2);
