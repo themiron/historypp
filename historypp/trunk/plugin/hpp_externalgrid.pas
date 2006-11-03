@@ -126,9 +126,7 @@ begin
   end;
   // comment or we'll get rerendering the whole grid
   //if Grid.Codepage <> Codepage then Grid.Codepage := Codepage;
-  // wtf!!! last message doesn't scrolls to down.
-  //Grid.Allocate(Length(Items),False);
-  Grid.Allocate(Length(Items));
+  Grid.Allocate(Length(Items),False);
 end;
 
 constructor TExternalGrid.Create(AParentWindow: HWND; ControlID: Cardinal = 0);
