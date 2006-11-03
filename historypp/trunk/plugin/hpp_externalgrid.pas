@@ -82,12 +82,6 @@ type
     procedure EndUpdate;
   end;
 
-var
-  ExternalGrids: array of TExternalGrid;
-
-function FindExtGridByHandle(var Handle: HWND): TExternalGrid;
-function DeleteExtGridByHandle(var Handle: HWND): Boolean;
-
 implementation
 
 uses hpp_options;
@@ -586,40 +580,6 @@ begin
   if FUseHistoryRTLMode = Value then exit;
   FUseHistoryRTLMode := Value;
   WriteDBBool(Grid.Contact,Grid.Protocol,'UseHistoryRTLMode',Value);
-end;
-
-function FindExtGridByHandle(var Handle: HWND): TExternalGrid;
-var
-  i: Integer;
-begin
-  Result := nil;
-  for i := 0 to Length(ExternalGrids) - 1 do begin
-    if ExternalGrids[i].Grid.Handle = Handle then begin
-      Result := ExternalGrids[i];
-      break;
-    end;
-  end;
-end;
-
-function DeleteExtGridByHandle(var Handle: HWND): Boolean;
-var
-  i,n: Integer;
-begin
-  Result := False;
-  n := -1;
-  for i := 0 to Length(ExternalGrids) - 1 do begin
-    if ExternalGrids[i].Grid.Handle = Handle then begin
-      n := i;
-      break;
-    end;
-  end;
-  if n = -1 then exit;
-  ExternalGrids[n].Free;
-  for i := n to Length(ExternalGrids) - 2 do begin
-    ExternalGrids[i] := ExternalGrids[i+1];
-  end;
-  SetLength(ExternalGrids,Length(ExternalGrids)-1);
-  Result := True;
 end;
 
 end.

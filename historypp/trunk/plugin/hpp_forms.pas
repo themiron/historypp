@@ -45,7 +45,7 @@ implementation
 
 uses hpp_global, hpp_services, hpp_opt_dialog, hpp_database,
   HistoryForm, GlobalSearch,
-  {$IFNDEF NO_EXTERNALGRID}hpp_externalgrid,{$ENDIF}
+  {$IFNDEF NO_EXTERNALGRID}hpp_external,{$ENDIF}
   CustomizeFiltersForm,
   CustomizeToolbar;
 
@@ -205,7 +205,7 @@ begin
 
   {$IFNDEF NO_EXTERNALGRID}
   for i := 0 to Length(ExternalGrids)-1 do
-    TExternalGrid(ExternalGrids[i]).Perform(Msg,wParam,lParam);
+    ExternalGrids[i].Perform(Msg,wParam,lParam);
   {$ENDIF}
 
   if Assigned(fmGlobalSearch) then
