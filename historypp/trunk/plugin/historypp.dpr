@@ -30,7 +30,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 {$R 'hpp_res_ver.res' 'hpp_res_ver.rc'}
 {$R 'hpp_opt_dialog.res' 'hpp_opt_dialog.rc'}
 
+{$I compilers.inc}
+
 uses
+  {$IFDEF REPORT_LEAKS}
+  {$IFNDEF DELPHI_10_UP}
+  FastMM4,
+  {$ENDIF}
+  {$ENDIF}
   {$IFDEF EUREKALOG}
   ExceptionLog,
   {$ENDIF}
@@ -102,7 +109,8 @@ var
   HookContactDelete,
   HookFSChanged,
   HookTTBLoaded,
-  HookBuildMenu: THandle;
+  HookBuildMenu,
+  HookPreshutdown: THandle;
 
 function OnModulesLoad(wParam,lParam:DWord):integer;cdecl; forward;
 function OnSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
@@ -115,6 +123,7 @@ function OnContactDelete(wParam: wParam; lParam: LPARAM): Integer; cdecl; forwar
 function OnFSChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnTTBLoaded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnBuildContactMenu(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
+function OnPreshutdown(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 
 //Tell Miranda about this plugin
 function MirandaPluginInfo(mirandaVersion:DWord):PPLUGININFO;cdecl;
@@ -150,6 +159,7 @@ begin
   SetLength(hppProfileDir,StrLen(@hppProfileDir[1]));
   //init history functions later
   HookModulesLoad := PluginLink.HookEvent(ME_SYSTEM_MODULESLOADED,OnModulesLoad);
+  HookPreshutdown := PluginLink.HookEvent(ME_SYSTEM_PRESHUTDOWN,OnPreshutdown);
   hookOptInit := PluginLink.HookEvent(ME_OPT_INITIALISE,OnOptInit);
   InitMMI;
   hppRegisterServices;
@@ -162,35 +172,8 @@ end;
 //unload
 function Unload:Integer;cdecl;
 begin
+  // why unload is never called????
   Result:=0;
-  try
-    // unhook events
-    PluginLink.UnhookEvent(HookModulesLoad);
-    PluginLink.UnhookEvent(hookOptInit);
-    PluginLink.UnhookEvent(HookSettingsChanged);
-    PluginLink.UnhookEvent(HookIconChanged);
-    PluginLink.UnhookEvent(HookContactDelete);
-    PluginLink.UnhookEvent(HookBuildMenu);
-
-    if SmileyAddEnabled then
-      PluginLink.UnhookEvent(HookSmAddChanged);
-    if IcoLibEnabled then
-      PluginLink.UnhookEvent(HookIcon2Changed);
-    if FontServiceEnabled then
-      PluginLink.UnhookEvent(HookFSChanged);
-
-    // unregistering events
-    hppUnregisterServices;
-    {$IFNDEF NO_EXTERNALGRID}
-    UnregisterExtGridServices;
-    {$ENDIF}
-    // unregister bookmarks
-    hppDeinitBookmarkServer;
-
-  except
-    on E: Exception do
-      HppMessageBox(0,'Error while closing '+hppName+':'+#10#13+E.Message,hppName+' Error',MB_OK or MB_ICONERROR);
-  end;
 end;
 
 //init plugin
@@ -444,6 +427,40 @@ begin
     menuitem.pszName := PChar(Format('%s [%u]',[MenuHandles[0].Name,count]));
     if PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0].Handle, DWord(@menuItem)) = 0 then
       MenuHandles[0].Count := count;
+  end;
+end;
+
+function OnPreshutdown(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
+begin
+  Result := 0;
+  try
+    // unhook events
+    PluginLink.UnhookEvent(HookPreshutdown);
+    PluginLink.UnhookEvent(HookModulesLoad);
+    PluginLink.UnhookEvent(hookOptInit);
+    PluginLink.UnhookEvent(HookSettingsChanged);
+    PluginLink.UnhookEvent(HookIconChanged);
+    PluginLink.UnhookEvent(HookContactDelete);
+    PluginLink.UnhookEvent(HookBuildMenu);
+
+    if SmileyAddEnabled then
+      PluginLink.UnhookEvent(HookSmAddChanged);
+    if IcoLibEnabled then
+      PluginLink.UnhookEvent(HookIcon2Changed);
+    if FontServiceEnabled then
+      PluginLink.UnhookEvent(HookFSChanged);
+
+    // unregistering events
+    hppUnregisterServices;
+    {$IFNDEF NO_EXTERNALGRID}
+    UnregisterExtGridServices;
+    {$ENDIF}
+    // unregister bookmarks
+    hppDeinitBookmarkServer;
+
+  except
+    on E: Exception do
+      HppMessageBox(0,'Error while closing '+hppName+':'+#10#13+E.Message,hppName+' Error',MB_OK or MB_ICONERROR);
   end;
 end;
 
