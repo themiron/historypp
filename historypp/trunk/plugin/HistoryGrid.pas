@@ -3346,6 +3346,7 @@ end;
 
 procedure THistoryGrid.ScrollToBottom;
 begin
+  if not BarAdjusted then AdjustScrollBar;
   SetSBPos(Count);
 end;
 
