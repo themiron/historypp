@@ -3,8 +3,9 @@ unit CustomizeFiltersForm;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs,TntForms, StdCtrls, TntStdCtrls, CheckLst, TntCheckLst, TntGraphics, TntWindows,
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,Dialogs,
+  PasswordEditControl,
+  TntForms, StdCtrls, TntStdCtrls, CheckLst, TntCheckLst, TntGraphics, TntWindows,
   hpp_global, hpp_eventfilters;
 
 type
@@ -12,7 +13,7 @@ type
     bnOK: TTntButton;
     bnCancel: TTntButton;
     gbFilter: TTntGroupBox;
-    edFilterName: TTntEdit;
+    edFilterName: THppEdit;
     clEvents: TTntCheckListBox;
     bnReset: TTntButton;
     rbExclude: TTntRadioButton;

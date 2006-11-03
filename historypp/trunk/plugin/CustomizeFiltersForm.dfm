@@ -64,7 +64,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Caption = '&Name:'
       FocusControl = edFilterName
     end
-    object edFilterName: TTntEdit
+    object edFilterName: THppEdit
       Left = 60
       Top = 20
       Width = 284

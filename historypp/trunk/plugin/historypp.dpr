@@ -41,7 +41,7 @@ uses
   {$IFDEF REPORT_LEAKS} Themes, {$ENDIF}
   m_globaldefs,
   m_api,
-  tntSystem,
+  TntSystem,
   Forms,
   TntControls,
   hpp_global in 'hpp_global.pas',

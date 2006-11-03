@@ -226,7 +226,7 @@ object HistoryFrm: THistoryFrm
           Height = 16
           OnPaint = pbFilterPaint
         end
-        object edSearch: TTntEdit
+        object edSearch: THppEdit
           Left = 47
           Top = 4
           Width = 447
