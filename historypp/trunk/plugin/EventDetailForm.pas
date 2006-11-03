@@ -39,7 +39,7 @@ uses
   m_globaldefs, m_api, hpp_messages,
   hpp_global, hpp_contacts, hpp_events, hpp_forms, hpp_richedit,
   TntExtCtrls, ComCtrls,
-  Menus, TntMenus, RichEdit, Buttons, TntButtons;
+  Menus, TntMenus, RichEdit, Buttons, TntButtons, PasswordEditControl;
 
 type
 
@@ -50,13 +50,13 @@ type
     GroupBox: TTntGroupBox;
     laType: TTntLabel;
     laDateTime: TTntLabel;
-    EMsgType: TTntEdit;
+    EMsgType: THppEdit;
     bnReply: TTntButton;
     CloseBtn: TTntButton;
     laFrom: TTntLabel;
     laTo: TTntLabel;
-    EFrom: TTntEdit;
-    ETo: TTntEdit;
+    EFrom: THppEdit;
+    ETo: THppEdit;
     EText: THPPRichedit;
     pmEText: TTntPopupMenu;
     CopyText: TTntMenuItem;
@@ -69,7 +69,7 @@ type
     N2: TTntMenuItem;
     ToogleItemProcessing: TTntMenuItem;
     EFromMore: TTntSpeedButton;
-    EDateTime: TTntEdit;
+    EDateTime: THppEdit;
     EToMore: TTntSpeedButton;
     PrevBtn: TTntSpeedButton;
     NextBtn: TTntSpeedButton;

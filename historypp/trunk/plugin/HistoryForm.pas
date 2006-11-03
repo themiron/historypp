@@ -46,14 +46,13 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, RichEdit,
   Graphics, Controls, Forms, Dialogs, Buttons, StdCtrls, Menus, ComCtrls, ExtCtrls,
-  TntWindows, TntGraphics, TntSysUtils, TntForms, TntDialogs, TntComCtrls, {WFindDialog,}
+  TntWindows, TntSysUtils,
+  TntGraphics, TntForms, TntDialogs, TntButtons, TntStdCtrls, TntMenus, TntComCtrls, TntExtCtrls,
   m_globaldefs, m_api,
   hpp_global, hpp_database, hpp_messages, hpp_events, hpp_contacts, hpp_itemprocess,
-  hpp_bookmarks, hpp_forms, hpp_richedit,
-  clipbrd, {FileCtrl,} shellapi,
-  HistoryGrid, Checksum, TntExtCtrls, hpp_sessionsthread, DateUtils,
-  ImgList, PasswordEditControl, TntStdCtrls, TntButtons, TntMenus,
-  CommCtrl, ToolWin, Themes;
+  hpp_bookmarks, hpp_forms, hpp_richedit, hpp_sessionsthread,
+  HistoryGrid, Checksum, DateUtils,
+  ImgList, PasswordEditControl, CommCtrl, ToolWin, Themes;
 
 const
   HM_HIST_EVENTADDED   = HM_HIST_BASE + 1;
@@ -131,7 +130,7 @@ type
     paSearchPanel: TTntPanel;
     sbSearchNext: TTntSpeedButton;
     sbSearchPrev: TTntSpeedButton;
-    edSearch: TTntEdit;
+    edSearch: THppEdit;
     pbSearch: TPaintBox;
     tvSess: TTntTreeView;
     tbSave: TTntToolButton;

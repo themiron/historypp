@@ -71,7 +71,7 @@ type
     paClient: TTntPanel;
     paSearch: TtntPanel;
     laSearch: TTntLabel;
-    edSearch: TtntEdit;
+    edSearch: THppEdit;
     bnSearch: TtntButton;
     sb: TtntStatusBar;
     paProgress: TtntPanel;
@@ -99,7 +99,7 @@ type
     hg: THistoryGrid;
     paFilter: TtntPanel;
     sbClearFilter: TTntSpeedButton;
-    edFilter: TTntEdit;
+    edFilter: THppEdit;
     pbFilter: TPaintBox;
     Delete1: TTntMenuItem;
     N3: TTntMenuItem;

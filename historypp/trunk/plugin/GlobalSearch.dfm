@@ -1,9 +1,9 @@
 object fmGlobalSearch: TfmGlobalSearch
-  Left = 350
-  Top = 129
+  Left = 259
+  Top = 118
+  Width = 559
+  Height = 544
   Caption = 'Global History Search'
-  ClientHeight = 517
-  ClientWidth = 551
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -35,7 +35,6 @@ object fmGlobalSearch: TfmGlobalSearch
       Top = 202
       Height = 240
       Visible = False
-      ExplicitHeight = 247
     end
     object paSearch: TTntPanel
       Left = 2
@@ -56,7 +55,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Caption = 'Search for'
         FocusControl = edSearch
       end
-      object edSearch: TTntEdit
+      object edSearch: THppEdit
         Left = 70
         Top = 6
         Width = 378
@@ -305,7 +304,7 @@ object fmGlobalSearch: TfmGlobalSearch
           Height = 16
           OnPaint = pbFilterPaint
         end
-        object edFilter: TTntEdit
+        object edFilter: THppEdit
           Left = 52
           Top = 4
           Width = 323
@@ -325,6 +324,8 @@ object fmGlobalSearch: TfmGlobalSearch
       Height = 30
       AutoSize = True
       BorderWidth = 2
+      EdgeBorders = []
+      Flat = True
       Images = ilToolbar
       ParentShowHint = False
       ShowHint = True

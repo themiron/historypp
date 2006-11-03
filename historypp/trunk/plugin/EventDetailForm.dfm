@@ -1,10 +1,10 @@
 object EventDetailsFrm: TEventDetailsFrm
   Left = 269
   Top = 168
+  Width = 466
+  Height = 389
   BorderWidth = 4
   Caption = 'Event Details'
-  ClientHeight = 354
-  ClientWidth = 450
   Color = clBtnFace
   Constraints.MinHeight = 340
   Constraints.MinWidth = 466
@@ -151,7 +151,7 @@ object EventDetailsFrm: TEventDetailsFrm
         ShowHint = True
         OnClick = EToMoreClick
       end
-      object EMsgType: TTntEdit
+      object EMsgType: THppEdit
         Left = 80
         Top = 16
         Width = 361
@@ -162,7 +162,7 @@ object EventDetailsFrm: TEventDetailsFrm
         ReadOnly = True
         TabOrder = 0
       end
-      object EFrom: TTntEdit
+      object EFrom: THppEdit
         Left = 80
         Top = 56
         Width = 341
@@ -173,7 +173,7 @@ object EventDetailsFrm: TEventDetailsFrm
         ReadOnly = True
         TabOrder = 1
       end
-      object ETo: TTntEdit
+      object ETo: THppEdit
         Left = 80
         Top = 76
         Width = 341
@@ -184,7 +184,7 @@ object EventDetailsFrm: TEventDetailsFrm
         ReadOnly = True
         TabOrder = 2
       end
-      object EDateTime: TTntEdit
+      object EDateTime: THppEdit
         Left = 80
         Top = 36
         Width = 341
