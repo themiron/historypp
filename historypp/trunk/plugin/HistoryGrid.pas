@@ -4826,7 +4826,6 @@ begin
   FFontOutgoingTimestamp.Free;
   FFontSessHeader.Free;
   FFontMessage.Free;
-  //FItemFont.Free;
   FIconUrl.Free;
   FIconMessage.Free;
   FIconFile.Free;

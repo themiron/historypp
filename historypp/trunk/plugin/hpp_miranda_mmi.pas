@@ -18,7 +18,7 @@ implementation
 procedure InitMMI;
 begin
   mmi.cbSize := SizeOf(mmi);
-  PluginLink.CallService(MS_SYSTEM_GET_MMI,0,Integer(@mmi));
+  PluginLink.CallService(MS_SYSTEM_GET_MMI,0,LPARAM(@mmi));
 end;
 
 procedure MirandaFree(pb: Pointer);
