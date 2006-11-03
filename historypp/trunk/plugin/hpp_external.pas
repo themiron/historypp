@@ -3,7 +3,7 @@ unit hpp_external;
 interface
 
 uses
-  Windows, HistoryGrid, m_globaldefs, m_api, hpp_global, hpp_database;
+  Windows, HistoryGrid, m_globaldefs, m_api, hpp_global, hpp_database, hpp_externalgrid;
 
 type
 
@@ -87,13 +87,16 @@ var
   hExtWindow, hExtEvent, hExtUtils: THandle;
   hExtOptChanged, hExtNotification: THandle;
   ImitateIEView: boolean;
+  ExternalGrids: array of TExternalGrid;
+
+function FindExtGridByHandle(var Handle: HWND): TExternalGrid;
+function DeleteExtGridByHandle(var Handle: HWND): Boolean;
+function DeleteExtGrids: Boolean;
 
 procedure RegisterExtGridServices;
 procedure UnregisterExtGridServices;
 
 implementation
-
-uses hpp_externalgrid;
 
 function _ExtWindow(wParam, lParam: DWord; GridMode: TExGridMode): Integer;
 var
@@ -261,6 +264,53 @@ begin
   PluginLink.DestroyServiceFunction(hExtUtils);
   PluginLink.DestroyHookableEvent(hExtOptChanged);
   PluginLink.DestroyHookableEvent(hExtNotification);
+  DeleteExtGrids;
 end;
+
+function FindExtGridByHandle(var Handle: HWND): TExternalGrid;
+var
+  i: Integer;
+begin
+  Result := nil;
+  for i := 0 to Length(ExternalGrids) - 1 do begin
+    if ExternalGrids[i].GridHandle = Handle then begin
+      Result := ExternalGrids[i];
+      break;
+    end;
+  end;
+end;
+
+function DeleteExtGridByHandle(var Handle: HWND): Boolean;
+var
+  i,n: Integer;
+begin
+  Result := False;
+  n := -1;
+  for i := 0 to Length(ExternalGrids) - 1 do begin
+    if ExternalGrids[i].GridHandle = Handle then begin
+      n := i;
+      break;
+    end;
+  end;
+  if n = -1 then exit;
+  ExternalGrids[n].Free;
+  for i := n to Length(ExternalGrids) - 2 do begin
+    ExternalGrids[i] := ExternalGrids[i+1];
+  end;
+  SetLength(ExternalGrids,Length(ExternalGrids)-1);
+  Result := True;
+end;
+
+function DeleteExtGrids: Boolean;
+var
+  i: Integer;
+begin
+  try
+    for i := 0 to Length(ExternalGrids) - 1 do
+      ExternalGrids[i].Free;
+  except
+  end;
+end;
+
 
 end.
