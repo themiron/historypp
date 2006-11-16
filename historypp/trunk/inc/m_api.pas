@@ -71,6 +71,7 @@ uses
     {$include m_toptoolbar.inc}
     {$include m_MagneticWindows.inc}
     {$include m_avatars.inc}
+    {$include m_music.inc}
     {$define M_API_UNIT}
     {$include m_helpers.inc}
 
