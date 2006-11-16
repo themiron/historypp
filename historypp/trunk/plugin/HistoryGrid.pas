@@ -1162,7 +1162,9 @@ begin
     for i := 0 to Length(FItems) - 1 do
       if not IsUnknown(i) then begin
         DoChanges := true;
-        LoadItem(i,false,true);
+        // cose it's faster :)
+        //LoadItem(i,false,true);
+        FItems[i].MessageType := [mtUnknown];
       end;
     if DoChanges then DoOptionsChanged;
   end;
@@ -3777,13 +3779,7 @@ xml =
 '<!ELEMENT URL (#PCDATA)>'+#13#10+
 '<!ELEMENT MESSAGE (#PCDATA)>'+#13#10+
 '<!ENTITY ME "%s">'+#13#10+
-'<!ENTITY MSG "MESSAGE">'+#13#10+
-'<!ENTITY FILE "FILETRANSFER">'+#13#10+
-'<!ENTITY AUT "AUTHORIZATION REQUEST">'+#13#10+
-'<!ENTITY ADD "ADDED">'+#13#10+
-'<!ENTITY ICQEEX "ICQ EMAILEXPRESS">'+#13#10+
-'<!ENTITY URL "URL">'+#13#10+
-'<!ENTITY SMS "SMS">'+#13#10+
+'%s'+
 '<!ENTITY UNK "UNKNOWN">'+#13#10+
 ']>'+#13#10+
 '<IMHISTORY>'+#13#10;
@@ -3865,11 +3861,19 @@ var
 
   procedure SaveXML;
   var
-    enc: string;
+    mt: TMessageType;
+    messages,enc: string;
   begin
     //enc := 'windows-'+IntToStr(GetACP);
     enc := 'utf-8';
-    WriteString(Stream,Format(xml,[enc,UTF8Encode(ProfileName)]));
+    messages := '';
+    for mt := Low(EventRecords) to High(EventRecords) do begin
+      if not (mt in [mtIncoming,mtOutgoing,mtUnknown]) then
+        messages := messages + Format('<!ENTITY %s "%s">'+#13#10,
+          [EventRecords[mt].XML,
+          UTF8Encode(TranslateWideW(EventRecords[mt].Name))]{TRANSLATE-IGNORE});
+    end;
+    WriteString(Stream,Format(xml,[enc,UTF8Encode(ProfileName),messages]));
   end;
 
   procedure SaveUnicode;
@@ -3999,7 +4003,7 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     WriteString(Stream,'<div class=mes id='+mes_id+'>'+#13#10);
     WriteString(Stream,#9+'<div class=nick id='+type_id+'>'+cnt+'</div>'+#13#10);
     WriteString(Stream,#9+'<div class=date id='+type_id+'>'+GetTime(FItems[Item].Time)+'</div>'+#13#10);
-    WriteString(Stream,#9+'<div class=text>'+#13#10#9+txt+#13#10#9+'</div>'+#13#10);
+    WriteString(Stream,#9+'<div class=text>'+txt+'</div>'+#13#10);
     WriteString(Stream,'</div>'+#13#10);
   end;
 

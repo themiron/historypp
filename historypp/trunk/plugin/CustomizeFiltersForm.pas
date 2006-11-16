@@ -279,9 +279,7 @@ begin
     //    pretty_name := FilterNames[i].Name;
     //    break;
     //  end;
-    pretty_name := EventNames[mt];
-
-    pretty_name := TranslateWideW(pretty_name{TRANSLATE-IGNORE});
+    pretty_name := TranslateWideW(EventRecords[mt].Name{TRANSLATE-IGNORE});
     clEvents.Items.AddObject(pretty_name,Pointer(Ord(mt)));
   end;
 
@@ -295,9 +293,7 @@ begin
   //    pretty_name := FilterNames[i].Name;
   //    break;
   //  end;
-  pretty_name := EventNames[mt];
-
-  pretty_name := TranslateWideW(pretty_name{TRANSLATE-IGNORE});
+  pretty_name := TranslateWideW(EventRecords[mt].Name{TRANSLATE-IGNORE});
   clEvents.Items.AddObject(pretty_name,Pointer(Ord(mt)));
 end;
 

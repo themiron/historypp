@@ -430,8 +430,8 @@ const
   DEF_HISTORY_TOOLBAR='[SESS][BOOK] [SEARCH][FILTER] [EVENTS] [COPY][DELETE] [HISTORY]';
 
 procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
-function ParseUrlItem(Item: THistoryItem; out Url,Mes: WideString): Boolean;
-function ParseFileItem(Item: THistoryItem; out FileName,Mes: WideString): Boolean;
+//function ParseUrlItem(Item: THistoryItem; out Url,Mes: WideString): Boolean;
+//function ParseFileItem(Item: THistoryItem; out FileName,Mes: WideString): Boolean;
 
 implementation
 
@@ -450,7 +450,7 @@ begin if b>a then Result:=b else Result:=a end;
 function NotZero(x:dword):dword;//used that array doesn't store 0 for already loaded data
 begin if x=0 then Result:=1 else Result:=x end;
 
-function ParseUrlItem(Item: THistoryItem; out Url,Mes: WideString): Boolean;
+{function ParseUrlItem(Item: THistoryItem; out Url,Mes: WideString): Boolean;
 var
   tmp1,tmp2: WideString;
   n: Integer;
@@ -483,9 +483,9 @@ begin
   end;
 
   url := tmp2;
-end;
+end;}
 
-function ParseFileItem(Item: THistoryItem; out FileName,Mes: WideString): Boolean;
+{function ParseFileItem(Item: THistoryItem; out FileName,Mes: WideString): Boolean;
 var
   tmp1,tmp2: string;
   n: Integer;
@@ -513,7 +513,7 @@ begin
 
   Mes := tmp2;
   FileName := tmp1;
-end;
+end;}
 
 function GetEventInfo(hDBEvent: DWord): TDBEVENTINFO;
 var
@@ -547,26 +547,6 @@ begin
   Result := StringReplace(Result,'<',']',[rfReplaceAll]);
   Result := StringReplace(Result,'>','[',[rfReplaceAll]);
   Result := StringReplace(Result,'|','',[rfReplaceAll]);
-end;
-
-function MakeTextXMLed(Text: String): String;
-begin;
-  Result := Text;
-  Result := StringReplace(Result,'&','&amp;',[rfReplaceAll]);
-  Result := StringReplace(Result,'>','&gt;',[rfReplaceAll]);
-  Result := StringReplace(Result,'<','&lt;',[rfReplaceAll]);
-  Result := StringReplace(Result,'“','&quot;',[rfReplaceAll]);
-  Result := StringReplace(Result,'‘','&apos;',[rfReplaceAll]);
-end;
-
-function MakeTextXMLedW(Text: WideString): WideString;
-begin;
-  Result := Text;
-  Result := Tnt_WideStringReplace(Result,'&','&amp;',[rfReplaceAll]);
-  Result := Tnt_WideStringReplace(Result,'>','&gt;',[rfReplaceAll]);
-  Result := Tnt_WideStringReplace(Result,'<','&lt;',[rfReplaceAll]);
-  Result := Tnt_WideStringReplace(Result,'“','&quot;',[rfReplaceAll]);
-  Result := Tnt_WideStringReplace(Result,'‘','&apos;',[rfReplaceAll]);
 end;
 
 procedure THistoryFrm.LoadHistory(Sender: TObject);
@@ -2193,41 +2173,13 @@ end;
 
 procedure THistoryFrm.hgXMLData(Sender: TObject; Index: Integer; var Item: TXMLItem);
 var
-//n: Integer;
-  tmp1,tmp2: WideString;
-  time,date: string;
-  DTime,DDate: TDateTime;
-  strdatetime:array [0..64] of Char;
-  dbtts:TDBTimeToString;
+  tmp: string;
+  dt: TDateTime;
+  er: TEventRecord;
 begin
-  dbtts.cbDest:=sizeof(strdatetime);
-  dbtts.szDest:=@strdatetime;
-  dbtts.szFormat:='s';
-  PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOSTRING,hg.Items[Index].Time,Integer(@dbtts));
-  time := string(strdatetime);
-  dbtts.szFormat:='d';
-  PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOSTRING,hg.Items[Index].Time,Integer(@dbtts));
-  date := string(strdatetime);
-
-  DTime := 0;
-  DDate := 0;
-
-  try
-    DTime := StrToTime(time);
-  except
-    Item.Time := '&UNK;';
-  end;
-
-  try
-    DDate := StrToDate(date);
-  except
-    Item.Date := '&UNK;';
-  end;
-
-  if Item.Time = '' then
-    Item.Time := MakeTextXMLed(FormatDateTime('hh:mm:ss',DTime));
-  if Item.Date = '' then
-    Item.Date := MakeTextXMLed(FormatDateTime('yyyy-mm-dd',DDate));
+  dt := TimestampToDateTime(hg.Items[Index].Time);
+  Item.Time := MakeTextXMLedA(FormatDateTime('hh:mm:ss',dt));
+  Item.Date := MakeTextXMLedA(FormatDateTime('yyyy-mm-dd',dt));
 
   Item.Contact := UTF8Encode(MakeTextXMLedW(hg.ContactName));
   if mtIncoming in hg.Items[Index].MessageType then
@@ -2235,40 +2187,27 @@ begin
   else
     Item.From := '&ME;';
 
-  if mtFile in hg.Items[Index].MessageType then
-    Item.EventType := '&FILE;'
-  else if mtUrl in hg.Items[Index].MessageType then
-    Item.EventType := '&URL;'
-{  else if mtAuthRequest in hg.Items[Index].MessageType then
-    Item.EventType := '&AUT;'
-  else if mtAdded in hg.Items[Index].MessageType then
-    Item.EventType := '&ADD;'}
-  else if mtSystem in hg.Items[Index].MessageType then
-    Item.EventType := '&SYS;'
-  else if mtSMS in hg.Items[Index].MessageType then
-    Item.EventType := '&SMS;'
-  else if mtWebPager in hg.Items[Index].MessageType then
-    Item.EventType := '&EEX;'
+  Item.EventType := '&'+GetMessageRecord(hg.Items[Index].MessageType).XML+';';
+
+  if hg.Options.BBCodesEnabled then
+    Item.Mes := UTF8Encode(MakeTextXMLedW(DoStripBBCodes(hg.Items[Index].Text)))
   else
-    Item.EventType := '&MSG;';
+    Item.Mes := UTF8Encode(MakeTextXMLedW(hg.Items[Index].Text));
 
   if mtFile in hg.Items[Index].MessageType then begin
-    ParseFileItem(hg.Items[Index],tmp1,tmp2);
-    Item.Mes := UTF8Encode(tmp2);
-    if tmp1 = '' then
-      tmp1 := '&UNK;';
-    Item.FileName := UTF8Encode(tmp1);
-  end else if mtUrl in hg.Items[Index].MessageType then begin
-    ParseUrlItem(hg.Items[Index],tmp1,tmp2);
-    Item.Mes := UTF8Encode(tmp2);
-    if tmp1 = '' then
-      tmp1 := '&UNK;';
-    Item.Url := UTF8Encode(tmp1);
-  end else begin
-    if hg.Options.BBCodesEnabled then
-      Item.Mes := UTF8Encode(MakeTextXMLedW(DoStripBBCodes(hg.Items[Index].Text)))
-    else
-      Item.Mes := UTF8Encode(MakeTextXMLedW(hg.Items[Index].Text));
+    tmp := hg.Items[Index].Extended;
+    if tmp = '' then Item.FileName := '&UNK;'
+                else Item.FileName := UTF8Encode(MakeTextXMLedA(tmp));
+  end else
+  if mtUrl in hg.Items[Index].MessageType then begin
+    tmp := hg.Items[Index].Extended;
+    if tmp = '' then Item.Url := '&UNK;'
+                else Item.Url := UTF8Encode(MakeTextXMLedA(tmp));
+  end else
+  if mtAvatarChange in hg.Items[Index].MessageType then begin
+    tmp := hg.Items[Index].Extended;
+    if tmp = '' then Item.FileName := '&UNK;'
+                else Item.FileName := UTF8Encode(MakeTextXMLedA(tmp));
   end;
 
   {2.8.2004 OXY: Change protocol guessing order. Now
@@ -2276,22 +2215,17 @@ begin
 
   Item.Protocol := hg.Items[Index].Proto;
   if Item.Protocol = '' then
-    Item.Protocol := hg.Items[Index].Module;
+    Item.Protocol := MakeTextXMLedA(hg.Items[Index].Module);
+  if Item.Protocol = '' then Item.Protocol := '&UNK;';
 
   if mtIncoming in hg.Items[Index].MessageType then
     Item.ID := GetContactID(hContact, Protocol, true)
   else
     Item.ID := GetContactID(0, Protocol);
-
-  if Item.Protocol = '' then
-    Item.Protocol := '&UNK;'
-  else
-    Item.Protocol := MakeTextXMLed(Item.Protocol);
-
   if Item.ID = '' then
     Item.ID := '&UNK;'
   else
-    Item.ID := MakeTextXMLed(Item.ID);
+    Item.ID := MakeTextXMLedA(Item.ID);
 end;
 
 procedure THistoryFrm.OpenLinkClick(Sender: TObject);

@@ -285,28 +285,11 @@ end;
 procedure TEventDetailsFrm.SetItem(const Value: Integer);
 var
   FromContact,ToContact : boolean;
-
-  function GetMsgType(MesType: TMessageTypes; EventInfo: Word): WideString;
-  var
-    mt: TMessageType;
-  begin
-    exclude(MesType,mtIncoming);
-    exclude(MesType,mtOutgoing);
-    exclude(MesType,mtOther);
-    for mt := Low(EventNames) to High(EventNames) do begin
-      if mt in MesType then begin
-        Result := TranslateWideW(EventNames[mt]{TRANSLATE-IGNORE});
-        exit;
-      end;
-    end;
-    Result := TranslateWideW(EventNames[mtOther])+' '+IntToStr(EventInfo{TRANSLATE-IGNORE});
-  end;
-
 begin
   Assert(Assigned(FParentForm));
   FItem := Value;
-
-  EMsgType.Text := GetMsgType(FParentForm.hg.Items[FItem].MessageType,FParentForm.hg.Items[FItem].EventType);
+  EMsgType.Text := TranslateWideW(GetMessageRecord(FParentForm.hg.Items[FItem].MessageType).Name{TRANSLATE-IGNORE});
+  EMsgType.Text := WideFormat('%s #%u',[EMsgType.Text,FParentForm.hg.Items[FItem].EventType]);
   EDateTime.Text := TimestampToString(FParentForm.hg.Items[FItem].Time);
   FromContact := false;
   ToContact := false;
