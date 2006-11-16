@@ -34,8 +34,11 @@ type
     FGridMode: TExGridMode;
     FUseHistoryRTLMode: Boolean;
     FExternalRTLMode: TRTLMode;
+    FUseHistoryCodepage: Boolean;
+    FExternalCodepage: Cardinal;
     function GetGridHandle: HWND;
     procedure SetUseHistoryRTLMode(const Value: Boolean);
+    procedure SetUseHistoryCodepage(const Value: Boolean);
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
     procedure GridTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
@@ -63,6 +66,8 @@ type
     procedure OnCopyLinkClick(Sender: TObject);
     procedure OnBidiModeLogClick(Sender: TObject);
     procedure OnBidiModeHistoryClick(Sender: TObject);
+    procedure OnCodepageLogClick(Sender: TObject);
+    procedure OnCodepageHistoryClick(Sender: TObject);
   public
     constructor Create(AParentWindow: HWND; ControlID: Cardinal = 0);
     destructor Destroy; override;
@@ -75,6 +80,7 @@ type
     property GridHandle: HWND read GetGridHandle;
     property GridMode: TExGridMode read FGridMode write FGridMode;
     property UseHistoryRTLMode: Boolean read FUseHistoryRTLMode write SetUseHistoryRTLMode;
+    property UseHistoryCodepage: Boolean read FUseHistoryCodepage write SetUseHistoryCodepage;
     function Perform(Msg: Cardinal; WParam, LParam: Longint): Longint;
     procedure HMBookmarkChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
@@ -114,9 +120,9 @@ begin
     Grid.Contact := hContact;
     Grid.Protocol := GetContactProto(hContact);
     FExternalRTLMode := RTLMode;
-    FUseHistoryRTLMode := GetDBBool(Grid.Contact,Grid.Protocol,'UseHistoryRTLMode',FUseHistoryRTLMode);
-    if FUseHistoryRTLMode then OnBidiModeHistoryClick(Self)
-                          else OnBidiModeLogClick(Self);
+    UseHistoryRTLMode := GetDBBool(Grid.Contact,Grid.Protocol,'UseHistoryRTLMode',FUseHistoryRTLMode);
+    FExternalCodepage := Codepage;
+    UseHistoryRTLMode := GetDBBool(Grid.Contact,Grid.Protocol,'UseHistoryCodepage',FUseHistoryCodepage);
   end;
   // comment or we'll get rerendering the whole grid
   //if Grid.Codepage <> Codepage then Grid.Codepage := Codepage;
@@ -138,6 +144,8 @@ begin
   FGridMode := gmNative;
   FUseHistoryRTLMode := False;
   FExternalRTLMode := hppRTLDefault;
+  FUseHistoryCodepage := False;
+  FExternalCodepage := CP_ACP;
 
   Grid := THistoryGrid.CreateParented(ParentWindow);
   Grid.ControlID := ControlID;
@@ -196,6 +204,10 @@ begin
     RadioItem(true,WideNewItem('Log default',0,true,true,OnBidiModeLogClick,0,'pmBidiModeLog',)),
     RadioItem(true,WideNewItem('History default',0,false,true,OnBidiModeHistoryClick,0,'pmBidiModeHistory'))
   ],true));
+  pmGrid.Items.Add(WideNewSubMenu('ANSI Encoding',0,'pmCodepage',[
+    RadioItem(true,WideNewItem('Log default',0,true,true,OnCodepageLogClick,0,'pmCodepageLog',)),
+    RadioItem(true,WideNewItem('History default',0,false,true,OnCodepageHistoryClick,0,'pmCodepageHistory'))
+  ],true));
 
   pmLink := TTntPopupMenu.Create(Grid);
   pmLink.ParentBiDiMode := False;
@@ -232,7 +244,10 @@ end;
 
 procedure TExternalGrid.GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
 begin
-  Item := ReadEvent(Items[Index].hDBEvent,Items[Index].Codepage);
+  if FUseHistoryCodepage then
+    Item := ReadEvent(Items[Index].hDBEvent,Grid.Codepage)
+  else
+    Item := ReadEvent(Items[Index].hDBEvent,Items[Index].Codepage);
   Item.Proto := Grid.Protocol;
   Item.Bookmarked := BookmarkServer[Items[Index].hContact].Bookmarked[Items[Index].hDBEvent];
   if (not FUseHistoryRTLMode) and (Item.RTLMode <> hppRTLEnable) then
@@ -449,6 +464,9 @@ begin
   pmGrid.Items[11].Visible := (Grid.State = gsIdle);
   pmGrid.Items[11].Items[0].Checked := not FUseHistoryRTLMode;
   pmGrid.Items[11].Items[1].Checked := FUseHistoryRTLMode;
+  pmGrid.Items[12].Visible := (Grid.State = gsIdle);
+  pmGrid.Items[12].Items[0].Checked := not FUseHistoryCodepage;
+  pmGrid.Items[12].Items[1].Checked := FUseHistoryCodepage;
   pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
 end;
 
@@ -566,20 +584,45 @@ end;
 procedure TExternalGrid.OnBidiModeLogClick(Sender: TObject);
 begin
   UseHistoryRTLMode := False;
-  Grid.RTLMode := FExternalRTLMode;
+  WriteDBBool(Grid.Contact,Grid.Protocol,'UseHistoryRTLMode',UseHistoryRTLMode);
 end;
 
 procedure TExternalGrid.OnBidiModeHistoryClick(Sender: TObject);
 begin
   UseHistoryRTLMode := True;
-  Grid.RTLMode := GetContactRTLModeTRTL(Grid.Contact,Grid.Protocol);
+  WriteDBBool(Grid.Contact,Grid.Protocol,'UseHistoryRTLMode',UseHistoryRTLMode);
 end;
 
 procedure TExternalGrid.SetUseHistoryRTLMode(const Value: Boolean);
 begin
   if FUseHistoryRTLMode = Value then exit;
   FUseHistoryRTLMode := Value;
-  WriteDBBool(Grid.Contact,Grid.Protocol,'UseHistoryRTLMode',Value);
+  if FUseHistoryRTLMode then
+    Grid.RTLMode := GetContactRTLModeTRTL(Grid.Contact,Grid.Protocol)
+  else
+    Grid.RTLMode := FExternalRTLMode;
+end;
+
+procedure TExternalGrid.OnCodepageLogClick(Sender: TObject);
+begin
+  UseHistoryCodepage := False;
+  WriteDBBool(Grid.Contact,Grid.Protocol,'UseHistoryCodepage',UseHistoryCodepage);
+end;
+
+procedure TExternalGrid.OnCodepageHistoryClick(Sender: TObject);
+begin
+  UseHistoryCodepage := True;
+  WriteDBBool(Grid.Contact,Grid.Protocol,'UseHistoryCodepage',UseHistoryCodepage);
+end;
+
+procedure TExternalGrid.SetUseHistoryCodepage(const Value: Boolean);
+begin
+  if FUseHistoryCodepage = Value then exit;
+  FUseHistoryCodepage := Value;
+  if FUseHistoryCodepage then
+    Grid.Codepage := GetContactCodePage(Grid.Contact,Grid.Protocol)
+  else
+    Grid.Codepage := FExternalCodepage;
 end;
 
 end.
