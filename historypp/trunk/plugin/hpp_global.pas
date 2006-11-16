@@ -45,7 +45,7 @@ type
                   mtMessage, mtUrl, mtFile, mtSystem,
                   mtContacts, mtSMS, mtWebPager, mtEmailExpress, mtStatus, mtSMTPSimple,
                   mtOther,
-                  mtNickChange,mtAvatarChange);
+                  mtNickChange,mtAvatarChange,mtWATrack);
   TMessageTypes = set of TMessageType;
   PMessageTypes = ^TMessageTypes;
 
@@ -139,7 +139,7 @@ var
     'Outgoing events',
     'Message',
     'Link',
-    'File Transfer',
+    'File transfer',
     'System message',
     'Contacts',
     'SMS message',
@@ -149,7 +149,8 @@ var
     'SMTP Simple Email',
     'Other events (unknown)',
     'Nick changes',
-    'Avatar changes');
+    'Avatar changes',
+    'WATrack notify');
 
 {$I m_historypp.inc}
 
