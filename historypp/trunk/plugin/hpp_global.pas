@@ -75,6 +75,10 @@ type
     name: WideString;
   end;
 
+  TEventRecord = record
+    Name: WideString;
+    XML: String;
+  end;
 
   TWideStrArray = array of WideString;
   TIntArray = array of Integer;
@@ -133,24 +137,24 @@ var
   hppIconPack: String;
   hppProfileDir: String;
 
-  EventNames: array[TMessageType] of WideString = (
-    'Unknown',
-    'Incoming events',
-    'Outgoing events',
-    'Message',
-    'Link',
-    'File transfer',
-    'System message',
-    'Contacts',
-    'SMS message',
-    'Webpager message',
-    'EMail Express message',
-    'Status changes',
-    'SMTP Simple Email',
-    'Other events (unknown)',
-    'Nick changes',
-    'Avatar changes',
-    'WATrack notify');
+  EventRecords: array[TMessageType] of TEventRecord = (
+    (Name:'Unknown';XML:''),
+    (Name:'Incoming events';XML:''),
+    (Name:'Outgoing events';XML:''),
+    (Name:'Message';XML:'MSG'),
+    (Name:'Link';XML:'URL'),
+    (Name:'File transfer';XML:'FILE'),
+    (Name:'System message';XML:'SYS'),
+    (Name:'Contacts';XML:'ICQCNT'),
+    (Name:'SMS message';XML:'SMS'),
+    (Name:'Webpager message';XML:'ICQWP'),
+    (Name:'EMail Express message';XML:'ICQEX'),
+    (Name:'Status changes';XML:'STATUSCNG'),
+    (Name:'SMTP Simple Email';XML:'SMTP'),
+    (Name:'Other events (unknown)';XML:'OTHER'),
+    (Name:'Nick changes';XML:'NICKCNG'),
+    (Name:'Avatar changes';XML:'AVACNG'),
+    (Name:'WATrack notify';XML:'WATRACK'));
 
 {$I m_historypp.inc}
 
@@ -163,6 +167,9 @@ function GetLCIDfromCodepage(Codepage: Cardinal): LCID;
 procedure CopyToClip(WideStr: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP; Clear: Boolean = True);
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
 function URLEncode(const ASrc: string): string;
+function GetMessageRecord(MesType: TMessageTypes): TEventRecord;
+function MakeTextXMLedA(Text: String): String;
+function MakeTextXMLedW(Text: WideString): WideString;
 
 implementation
 
@@ -335,6 +342,42 @@ begin
     // unicode ver
     Result := MessageBoxW(Handle,PWideChar(Text),PWideChar(Caption),Flags);
   end;
+end;
+
+function GetMessageRecord(MesType: TMessageTypes): TEventRecord;
+var
+  mt: TMessageType;
+begin
+  exclude(MesType,mtIncoming);
+  exclude(MesType,mtOutgoing);
+  exclude(MesType,mtOther);
+  for mt := Low(EventRecords) to High(EventRecords) do begin
+    if mt in MesType then begin
+      Result := EventRecords[mt];
+      exit;
+    end;
+  end;
+  Result := EventRecords[mtOther];
+end;
+
+function MakeTextXMLedA(Text: String): String;
+begin;
+  Result := Text;
+  Result := StringReplace(Result,'&','&amp;',[rfReplaceAll]);
+  Result := StringReplace(Result,'>','&gt;',[rfReplaceAll]);
+  Result := StringReplace(Result,'<','&lt;',[rfReplaceAll]);
+  Result := StringReplace(Result,'“','&quot;',[rfReplaceAll]);
+  Result := StringReplace(Result,'‘','&apos;',[rfReplaceAll]);
+end;
+
+function MakeTextXMLedW(Text: WideString): WideString;
+begin;
+  Result := Text;
+  Result := Tnt_WideStringReplace(Result,'&','&amp;',[rfReplaceAll]);
+  Result := Tnt_WideStringReplace(Result,'>','&gt;',[rfReplaceAll]);
+  Result := Tnt_WideStringReplace(Result,'<','&lt;',[rfReplaceAll]);
+  Result := Tnt_WideStringReplace(Result,'“','&quot;',[rfReplaceAll]);
+  Result := Tnt_WideStringReplace(Result,'‘','&apos;',[rfReplaceAll]);
 end;
 
 begin
