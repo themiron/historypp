@@ -476,6 +476,14 @@ User %s (%d) removed himself from your contact list: %s
 Authorization future request by %s (%d): %s
 [Broadcast message from %s (%s): %s]
 Broadcast message from %s (%s): %s
+[WATrack: information request]
+WATrack: information request
+[Artist: %s\nTitle: %s\nAlbum: %s]
+Artist: %s\nTitle: %s\nAlbum: %s
+[WATrack: %s]
+WATrack: %s
+[WATrack: request denied]
+WATrack: request denied
 
 ;; hpp_externalgrid.trans.txt file
 
