@@ -3761,7 +3761,8 @@ css =
 '.mes { border-top-width: 1px; border-right-width: 0px; border-bottom-width: 0px;'+
 'border-left-width: 0px; border-top-style: solid; border-right-style: solid; border-bottom-style: solid; '+
 'border-left-style: solid; border-top-color: #666666; border-bottom-color: #666666; '+
-'padding: 4px; }'+#13#10;
+'padding: 4px; }'+#13#10+
+'.text { clear: both; }'+#13#10;
 
 xml =
 '<?xml version="1.0" encoding="%s"?>'+#13#10+
@@ -3836,13 +3837,12 @@ var
   WriteString(Stream,'<title>'+MakeTextHtmled(title)+'</title>'+#13#10);
   WriteString(Stream,'<style type="text/css"><!--'+#13#10);
   WriteString(Stream,css);
+
   //if Options.RTLEnabled then begin
   if (RTLMode = hppRTLEnable) or ((RTLMode = hppRTLDefault) and Options.RTLEnabled) then begin
-    WriteString(Stream,'.text { clear: left; }'+#13#10);
     WriteString(Stream,'.nick { float: right; }'+#13#10);
     WriteString(Stream,'.date { float: left; clear: left; }'+#13#10);
   end else begin
-    WriteString(Stream,'.text { clear: right; }'+#13#10);
     WriteString(Stream,'.nick { float: left; }'+#13#10);
     WriteString(Stream,'.date { float: right; clear: right; }'+#13#10);
   end;
@@ -4003,7 +4003,7 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     WriteString(Stream,'<div class=mes id='+mes_id+'>'+#13#10);
     WriteString(Stream,#9+'<div class=nick id='+type_id+'>'+cnt+'</div>'+#13#10);
     WriteString(Stream,#9+'<div class=date id='+type_id+'>'+GetTime(FItems[Item].Time)+'</div>'+#13#10);
-    WriteString(Stream,#9+'<div class=text>'+txt+'</div>'+#13#10);
+    WriteString(Stream,#9+'<div class=text>'+#13#10#9+txt+#13#10#9+'</div>'+#13#10);
     WriteString(Stream,'</div>'+#13#10);
   end;
 
