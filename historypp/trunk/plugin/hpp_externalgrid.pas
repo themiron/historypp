@@ -243,6 +243,8 @@ begin
 end;
 
 procedure TExternalGrid.GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
+var
+  PrevTimestamp: DWord;
 begin
   if FUseHistoryCodepage then
     Item := ReadEvent(Items[Index].hDBEvent,Grid.Codepage)
@@ -250,6 +252,10 @@ begin
     Item := ReadEvent(Items[Index].hDBEvent,Items[Index].Codepage);
   Item.Proto := Grid.Protocol;
   Item.Bookmarked := BookmarkServer[Items[Index].hContact].Bookmarked[Items[Index].hDBEvent];
+  if (Index > 0) and (Item.MessageType = Grid.Items[Index-1].MessageType) then begin
+    PrevTimestamp := GetEventTimestamp(Items[Index-1].hDBEvent);
+    Item.LinkedToPrev := ((DWord(Item.Time) - PrevTimestamp) < 60);
+  end;
   if (not FUseHistoryRTLMode) and (Item.RTLMode <> hppRTLEnable) then
     Item.RTLMode := Items[Index].RTLMode;
   // tabSRMM still doesn't marks events read in case of hpp log is in use...
