@@ -414,6 +414,8 @@ type
     FOnBookmarkClick: TOnBookmarkClick;
     FShowBookmarks: Boolean;
 
+    FGroupLinked: Boolean;
+
     FShowBottomAligned: Boolean;
 
     FOnKillFocus: TOnKillFocus;
@@ -499,6 +501,7 @@ type
     procedure SetProcessInline(const Value: Boolean);
     function GetBookmarked(Index: Integer): Boolean;
     procedure SetBookmarked(Index: Integer; const Value: Boolean);
+    procedure SetGroupLinked(const Value: Boolean);
 
     // FRichInline events
     {procedure OnInlinePopup(Sender: TObject);
@@ -626,6 +629,7 @@ type
     property MultiSelect: Boolean read FMultiSelect write SetMultiSelect;
     property ShowHeaders: Boolean read FShowHeaders write SetShowHeaders;
     property ExpandHeaders: Boolean read FExpandHeaders write SetExpandHeaders default True;
+    property GroupLinked: Boolean read FGroupLinked write SetGroupLinked default False;
     property ProcessInline: Boolean read FProcessInline write SetProcessInline default True;
     property TxtStartup: WideString read FTxtStartup write FTxtStartup;
     property TxtNoItems: WideString read FTxtNoItems write FTxtNoItems;
@@ -1193,6 +1197,23 @@ begin
   Invalidate;
 end;
 
+procedure THistoryGrid.SetGroupLinked(const Value: Boolean);
+var
+  i: Integer;
+begin
+  if FGroupLinked = Value then exit;
+  FGroupLinked := Value;
+  for i := 0 to Length(FItems) - 1 do begin
+    if FItems[i].LinkedToPrev then begin
+      FItems[i].Height := -1;
+      FRichCache.ResetItem(i);
+    end;
+  end;
+  BarAdjusted := False;
+  AdjustScrollBar;
+  Invalidate;
+end;
+
 procedure THistoryGrid.SetProcessInline(const Value: Boolean);
 var
   cr: TCharRange;
@@ -1413,12 +1434,13 @@ procedure THistoryGrid.PaintItem(Index: Integer; ItemRect: TRect);
 var
   TimeStamp,HeaderName: WideString;
   OrgRect: TRect;
-  hh,TopIconOffset,IconOffset,NickOffset,TimeOffset: Integer;
+  TopIconOffset,IconOffset,NickOffset,TimeOffset: Integer;
   icon: TIcon;
   BackColor: TColor;
   nameFont,timestampFont,textFont: TFont;
   Sel: Boolean;
   RTL: Boolean;
+  FullHeader: Boolean;
   RichBMP: TBitmap;
   ic: HICON;
   HeadRect: TRect;
@@ -1433,6 +1455,7 @@ begin
 
   OrgRect := ItemRect;
 
+  FullHeader := not (FGroupLinked and FItems[Index].LinkedToPrev);
   Sel := IsSelected(Index);
   RTL := GetItemRTL(Index);
   Options.GetItemOptions(FItems[Index].MessageType,textFont,BackColor);
@@ -1447,25 +1470,27 @@ begin
   //BackColor := SendMessage(FRich.Handle,EM_SETBKGNDCOLOR,0,0);
   //SendMessage(FRich.Handle,EM_SETBKGNDCOLOR,0,ColorToRGB(BackColor));
 
-  HeadRect := ItemRect;
-  InflateRect(HeadRect,-Padding,-Padding);
-  Dec(HeadRect.Top,Padding);
-  Inc(HeadRect.Top,Padding div 2);
-  if mtIncoming in FItems[Index].MessageType then begin
-    nameFont := Options.FontContact;
-    timestampFont := Options.FontIncomingTimestamp;
-    HeaderName := ContactName;
-    HeadRect.Bottom := HeadRect.Top+CHeaderHeight;
-  end else begin
-    nameFont := Options.FontProfile;
-    timestampFont := Options.FontOutgoingTimestamp;
-    HeaderName := ProfileName;
-    HeadRect.Bottom := HeadRect.Top+PHeaderHeight;
+  if FullHeader then begin
+    HeadRect := ItemRect;
+    InflateRect(HeadRect,-Padding,-Padding);
+    Dec(HeadRect.Top,Padding);
+    Inc(HeadRect.Top,Padding div 2);
+    if mtIncoming in FItems[Index].MessageType then begin
+      nameFont := Options.FontContact;
+      timestampFont := Options.FontIncomingTimestamp;
+      HeaderName := ContactName;
+      HeadRect.Bottom := HeadRect.Top+CHeaderHeight;
+    end else begin
+      nameFont := Options.FontProfile;
+      timestampFont := Options.FontOutgoingTimestamp;
+      HeaderName := ProfileName;
+      HeadRect.Bottom := HeadRect.Top+PHeaderHeight;
+    end;
+    if Assigned(FGetNameData) then
+      FGetNameData(Self,Index,HeaderName);
+    HeaderName := HeaderName + ':';
+    TimeStamp := GetTime(FItems[Index].Time);
   end;
-  if Assigned(FGetNameData) then
-    FGetNameData(Self,Index,HeaderName);
-  HeaderName := HeaderName + ':';
-  TimeStamp := GetTime(FItems[Index].Time);
 
   if Sel then begin
     BackColor := Options.ColorSelected;
@@ -1477,85 +1502,82 @@ begin
   Canvas.FillRect(ItemRect);
 
   InflateRect(ItemRect,-Padding,-Padding);
-  Dec(ItemRect.Top,Padding);
 
-  IconOffset := 0;
-  TopIconOffset := ((HeadRect.Bottom-HeadRect.Top)-16) div 2;
-  if (FItems[Index].HasHeader) and (ShowHeaders) and (not ExpandHeaders) then begin
-    if RTL then begin
-      DrawIconEx(Canvas.Handle,HeadRect.Right-16,HeadRect.Top+TopIconOffset,
-        hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL);
-      Dec(HeadRect.Right,16+Padding);
-    end
-    else begin
-      DrawIconEx(Canvas.Handle,HeadRect.Left,HeadRect.Top+TopIconOffset,
-        hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL);
-      Inc(HeadRect.Left,16+Padding);
-    end;
-  end;
+  if FullHeader then begin
 
-  if Options.ShowIcons then begin
-    if (mtFile in FItems[Index].MessageType) then
-      Icon := Options.IconFile
-    else if (mtUrl in FItems[Index].MessageType) then
-      Icon := Options.IconUrl
-    else if (mtMessage in FItems[Index].MessageType) then
-      Icon := Options.IconMessage
-    else
-      Icon := Options.IconOther;
-    if Icon <> nil then begin
-      // canvas. draw here can sometimes draw 32x32 icon (sic!)
+    Dec(ItemRect.Top,Padding);
+    IconOffset := 0;
+    TopIconOffset := ((HeadRect.Bottom-HeadRect.Top)-16) div 2;
+    if (FItems[Index].HasHeader) and (ShowHeaders) and (not ExpandHeaders) then begin
       if RTL then begin
-        DrawIconEx(Canvas.Handle,HeadRect.Right-16,HeadRect.Top+TopIconOffset,Icon.Handle,16,16,0,0,DI_NORMAL);
+        DrawIconEx(Canvas.Handle,HeadRect.Right-16,HeadRect.Top+TopIconOffset,
+          hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL);
         Dec(HeadRect.Right,16+Padding);
       end
       else begin
-        DrawIconEx(Canvas.Handle,HeadRect.Left,HeadRect.Top+TopIconOffset,Icon.Handle,16,16,0,0,DI_NORMAL);
+        DrawIconEx(Canvas.Handle,HeadRect.Left,HeadRect.Top+TopIconOffset,
+          hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL);
         Inc(HeadRect.Left,16+Padding);
       end;
     end;
-  end;
 
-  //Canvas.Font := nameFont;
-  Canvas.Font.Assign(nameFont);
-  if sel then Canvas.Font.Color := Options.ColorSelectedText;
-  dtf := DT_NOPREFIX or DT_SINGLELINE or DT_VCENTER;
-  if RTL then
-    dtf := dtf or DT_RTLREADING or DT_RIGHT
-  else
-    dtf := dtf or DT_LEFT;
-  Tnt_DrawTextW(Canvas.Handle,PWideChar(HeaderName),Length(HeaderName),HeadRect,dtf);
+    if Options.ShowIcons then begin
+      if (mtFile in FItems[Index].MessageType) then
+        Icon := Options.IconFile
+      else if (mtUrl in FItems[Index].MessageType) then
+        Icon := Options.IconUrl
+      else if (mtMessage in FItems[Index].MessageType) then
+        Icon := Options.IconMessage
+      else
+        Icon := Options.IconOther;
+      if Icon <> nil then begin
+        // canvas. draw here can sometimes draw 32x32 icon (sic!)
+        if RTL then begin
+          DrawIconEx(Canvas.Handle,HeadRect.Right-16,HeadRect.Top+TopIconOffset,Icon.Handle,16,16,0,0,DI_NORMAL);
+          Dec(HeadRect.Right,16+Padding);
+        end
+        else begin
+          DrawIconEx(Canvas.Handle,HeadRect.Left,HeadRect.Top+TopIconOffset,Icon.Handle,16,16,0,0,DI_NORMAL);
+          Inc(HeadRect.Left,16+Padding);
+        end;
+      end;
+    end;
 
-  //Canvas.Font := timestampFont;
-  Canvas.Font.Assign(timestampFont);
-  if sel then Canvas.Font.Color := Options.ColorSelectedText;
-  TimeOffset := WideCanvasTextWidth(Canvas,TimeStamp);
-  dtf := DT_NOPREFIX or DT_SINGLELINE or DT_VCENTER;
-  if RTL then
-    dtf := dtf or DT_RTLREADING or DT_LEFT
-  else
-    dtf := dtf or DT_RIGHT;
-  Tnt_DrawTextW(Canvas.Handle,PWideChar(TimeStamp),Length(TimeStamp),HeadRect,dtf);
-
-  if ShowBookmarks and (Sel or FItems[Index].Bookmarked) then begin
-    IconOffset := TimeOffset + Padding;
-    if FItems[Index].Bookmarked then
-      ic := hppIcons[HPP_ICON_BOOKMARK_ON].handle
-    else
-      ic := hppIcons[HPP_ICON_BOOKMARK_OFF].handle;
+    //Canvas.Font := nameFont;
+    Canvas.Font.Assign(nameFont);
+    if sel then Canvas.Font.Color := Options.ColorSelectedText;
+    dtf := DT_NOPREFIX or DT_SINGLELINE or DT_VCENTER;
     if RTL then
-      DrawIconEx(Canvas.Handle,HeadRect.Left+IconOffset,HeadRect.Top+TopIconOffset,ic,16,16,0,0,DI_NORMAL)
+      dtf := dtf or DT_RTLREADING or DT_RIGHT
     else
-      DrawIconEx(Canvas.Handle,HeadRect.Right-IconOffset-16,HeadRect.Top+TopIconOffset,ic,16,16,0,0,DI_NORMAL);
+      dtf := dtf or DT_LEFT;
+    Tnt_DrawTextW(Canvas.Handle,PWideChar(HeaderName),Length(HeaderName),HeadRect,dtf);
+
+    //Canvas.Font := timestampFont;
+    Canvas.Font.Assign(timestampFont);
+    if sel then Canvas.Font.Color := Options.ColorSelectedText;
+    TimeOffset := WideCanvasTextWidth(Canvas,TimeStamp);
+    dtf := DT_NOPREFIX or DT_SINGLELINE or DT_VCENTER;
+    if RTL then
+      dtf := dtf or DT_RTLREADING or DT_LEFT
+    else
+      dtf := dtf or DT_RIGHT;
+    Tnt_DrawTextW(Canvas.Handle,PWideChar(TimeStamp),Length(TimeStamp),HeadRect,dtf);
+
+    if ShowBookmarks and (Sel or FItems[Index].Bookmarked) then begin
+      IconOffset := TimeOffset + Padding;
+      if FItems[Index].Bookmarked then
+        ic := hppIcons[HPP_ICON_BOOKMARK_ON].handle
+      else
+        ic := hppIcons[HPP_ICON_BOOKMARK_OFF].handle;
+      if RTL then
+        DrawIconEx(Canvas.Handle,HeadRect.Left+IconOffset,HeadRect.Top+TopIconOffset,ic,16,16,0,0,DI_NORMAL)
+      else
+        DrawIconEx(Canvas.Handle,HeadRect.Right-IconOffset-16,HeadRect.Top+TopIconOffset,ic,16,16,0,0,DI_NORMAL);
+    end;
+
+    ItemRect.Top := HeadRect.Bottom + Padding - (Padding div 2);
   end;
-
-  if mtIncoming in FItems[Index].MessageType then
-    hh := CHeaderHeight
-  else
-    hh := PHeaderHeight;
-
-  ItemRect.Top := HeadRect.Bottom + Padding - (Padding div 2);
-  //Inc(ItemRect.Top,hh+);
 
   ApplyItemToRich(Index);
   RichBMP := FRichCache.GetItemRichBitmap(Index);
@@ -2151,6 +2173,9 @@ begin
   if FRichHeight <= 0 then exit
                       else h := FRichHeight;
 
+  if FGroupLinked and FItems[Item].LinkedToPrev then
+    hh := 0
+  else
   if mtIncoming in FItems[Item].MessageType then
     hh := CHeaderHeight
   else
@@ -4449,6 +4474,8 @@ begin
   else
     exit;
 
+  //!!! grouping
+  //FullHeader := not (FGroupLinked and FItems[Index].LinkedToPrev);
   ItemRect := GetItemRect(Item);
   RTL := GetItemRTL(Item);
   Sel := IsSelected(Item);
@@ -4650,6 +4677,9 @@ begin
   Dec(Result.Right,Padding);
   /// avatars!!!
   //Dec(Result.Right,64+Padding);
+  if FGroupLinked and FItems[Item].LinkedToPrev then
+    hh := 0
+  else
   if mtIncoming in FItems[Item].MessageType then
     hh := CHeaderHeight
   else
