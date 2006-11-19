@@ -17,6 +17,7 @@ const
   IDC_OPENDETAILS     = 104; // "Open event details by Enter" checkbox
   IDC_IEVIEWAPI       = 105; // "Imitate IEView API" checkbox
   IDC_SHOWAVATARS     = 106; // "Show avatars" checkbox
+  IDC_GROUPLOGITEMS   = 107; // "Group log messages"
   ID_FORMATTING_GROUP = 200;
   IDC_BBCODE          = 201; // "Enable BBCodes" checkbox
   IDC_SMILEY          = 202; // "Enable SmileyAdd support" checkbox
@@ -87,6 +88,7 @@ begin
   if GetChecked(IDC_OPENDETAILS) <> GridOptions.OpenDetailsMode then exit;
   {$IFNDEF NO_EXTERNALGRID}
   if GetChecked(IDC_IEVIEWAPI) <> GetDBBool(hppDBName,'IEViewAPI',false) then exit;
+  if GetChecked(IDC_GROUPLOGITEMS) <> GetDBBool(hppDBName,'GroupLogItems',false) then exit;
   {$ENDIF}
   if GetChecked(IDC_SHOWAVATARS) <> GridOptions.ShowAvatars then exit;
 
@@ -138,6 +140,13 @@ begin
   end;
 
   {$IFNDEF NO_EXTERNALGRID}
+  Checked := GetChecked(IDC_GROUPLOGITEMS);
+  if Checked <> (GetDBBool(hppDBName,'GroupLogItems',false) <> false) then begin
+    WriteDBBool(hppDBName,'GroupLogItems',Checked);
+    for i := 0 to Length(ExternalGrids)-1 do
+      ExternalGrids[i].GroupLinked := Checked;
+  end;
+
   Checked := GetChecked(IDC_IEVIEWAPI);
   if Checked <> (GetDBBool(hppDBName,'IEViewAPI',false) <> false) then
     WriteDBBool(hppDBName,'IEViewAPI',Checked);
@@ -173,8 +182,10 @@ begin
   SetChecked(IDC_OPENDETAILS,GridOptions.OpenDetailsMode);
   {$IFNDEF NO_EXTERNALGRID}
   SetChecked(IDC_IEVIEWAPI,GetDBBool(hppDBName,'IEViewAPI',false));
+  SetChecked(IDC_GROUPLOGITEMS,GetDBBool(hppDBName,'GroupLogItems',false));
   {$ELSE}
   ShowWindow(GetDlgItem(hDlg,IDC_IEVIEWAPI),SW_HIDE);
+  ShowWindow(GetDlgItem(hDlg,IDC_GROUPLOGITEMS),SW_HIDE);
   {$ENDIF}
   //SetChecked(IDC_SHOWAVATARS,GridOptions.ShowAvatars);
   // temporary disable

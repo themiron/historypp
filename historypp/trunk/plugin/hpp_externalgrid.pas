@@ -39,6 +39,7 @@ type
     function GetGridHandle: HWND;
     procedure SetUseHistoryRTLMode(const Value: Boolean);
     procedure SetUseHistoryCodepage(const Value: Boolean);
+    procedure SetGroupLinked(const Value: Boolean);
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
     procedure GridTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
@@ -86,6 +87,7 @@ type
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
     procedure BeginUpdate;
     procedure EndUpdate;
+    property GroupLinked: Boolean write SetGroupLinked;
   end;
 
 implementation
@@ -186,6 +188,8 @@ begin
   Grid.TxtStartUp := TranslateWideW(Grid.TxtStartUp{TRANSLATE-IGNORE});
 
   Grid.Options := GridOptions;
+
+  Grid.GroupLinked := GetDBBool(hppDBName,'GroupLogItems',false);
 
   pmGrid := TTntPopupMenu.Create(Grid);
   pmGrid.ParentBiDiMode := False;
@@ -629,6 +633,12 @@ begin
     Grid.Codepage := GetContactCodePage(Grid.Contact,Grid.Protocol)
   else
     Grid.Codepage := FExternalCodepage;
+end;
+
+procedure TExternalGrid.SetGroupLinked(const Value: Boolean);
+begin
+  if Grid.GroupLinked = Value then exit;
+  Grid.GroupLinked := Value;
 end;
 
 end.
