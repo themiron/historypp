@@ -1945,6 +1945,7 @@ procedure THistoryGrid.ApplyItemToRich(Item: Integer; RichEdit: THPPRichEdit = n
 var
   textFont: TFont;
   textColor,backColor: TColor;
+  //tsColor: TColor;
   RichItem: PRichItem;
   RTF,Text: String;
   UseTextFormatting,
@@ -2005,12 +2006,44 @@ begin
        integer(fsStrikeOut in textFont.Style),
        integer(textFont.Size shl 1)]);
     Text := FormatString2RTF(FItems[Item].Text);
+    {if FGroupLinked and FItems[Item].LinkedToPrev then
+      Text := FormatString2RTF(GetTime(FItems[Item].Time)+': '+FItems[Item].Text)
+    else
+      Text := FormatString2RTF(FItems[Item].Text);}
     if Options.BBCodesEnabled and UseTextFormatting then
       Text := DoSupportBBCodesRTF(Text,2,NoDefaultColors);
     RTF := RTF + Text + '\par }'+#0;
   end;
 
   SetRichRTF(RichEdit.Handle,RTF,False,False,True);
+
+  (* smart date time in linked item
+  if FGroupLinked and FItems[Item].LinkedToPrev then begin
+    if mtIncoming in FItems[Item].MessageType then
+      textFont := Options.FontIncomingTimestamp
+    else
+      textFont := Options.FontOutgoingTimestamp;
+    if NoDefaultColors then
+      tsColor := textFont.Color
+    else
+      tsColor := Options.ColorSelectedText;
+    RTF := '{\rtf1\ansi\deff0{\fonttbl';
+    RTF := RTF + Format('{\f0\fnil\fcharset%u %s}',[textFont.Charset,textFont.Name]);
+    RTF := RTF + '}{\colortbl';
+    RTF := RTF + Format('\red%u\green%u\blue%u;',[tsColor and $FF,(tsColor shr 8) and $FF,(tsColor shr 16) and $FF]);
+    RTF := RTF + '}';
+    RTF := RTF + Format('\f0\b%d\i%d\ul%d\strike%d\fs%u',
+      [integer(fsBold in textFont.Style),
+       integer(fsItalic in textFont.Style),
+       integer(fsUnderline in textFont.Style),
+       integer(fsStrikeOut in textFont.Style),
+       integer(textFont.Size shl 1)]);
+    Text := FormatString2RTF(GetTime(
+    FItems[Item].Time));
+    RTF := RTF + Text + '\par }'+#0;
+    SetRichRTF(RichEdit.Handle,RTF,True,False,True);
+  end;
+  *)
 
   RichEdit.Perform(EM_SETBKGNDCOLOR,0,backColor);
 
@@ -4437,6 +4470,7 @@ var
   p: TPoint;
   RTL: Boolean;
   Sel: Boolean;
+  FullHeader: Boolean;
   TimestampOffset: Integer;
 
   function IsLinkAtPoint(RichEditRect: TRect): Boolean;
@@ -4474,14 +4508,13 @@ begin
   else
     exit;
 
-  //!!! grouping
-  //FullHeader := not (FGroupLinked and FItems[Index].LinkedToPrev);
+  FullHeader := not (FGroupLinked and FItems[Item].LinkedToPrev);
   ItemRect := GetItemRect(Item);
   RTL := GetItemRTL(Item);
   Sel := IsSelected(Item);
   p := Point(x,y);
 
-  if (ShowHeaders) and (ExpandHeaders) and (FItems[Item].HasHeader) then begin
+  if FullHeader and (ShowHeaders) and (ExpandHeaders) and (FItems[Item].HasHeader) then begin
     if Reversed then begin
       SessRect := Rect(ItemRect.Left,ItemRect.Top,ItemRect.Right,ItemRect.Top+SessHeaderHeight);
       Inc(ItemRect.Top,SessHeaderHeight);
@@ -4506,46 +4539,49 @@ begin
 
   Dec(ItemRect.Bottom); // divider
   InflateRect(ItemRect,-Padding,-Padding); // paddings
-  Dec(ItemRect.Top,Padding);
-  Inc(ItemRect.Top,Padding div 2);
 
-  if mtIncoming in FItems[Item].MessageType then
-    HeaderHeight := CHeaderHeight
-  else
-    HeaderHeight := PHeaderHeight;
+  if FullHeader then begin
+    Dec(ItemRect.Top,Padding);
+    Inc(ItemRect.Top,Padding div 2);
 
-  HeaderRect := Rect(ItemRect.Left,ItemRect.Top,ItemRect.Right,ItemRect.Top + HeaderHeight);
-  Inc(ItemRect.Top,HeaderHeight+(Padding - (Padding div 2)));
-  if PtInRect(HeaderRect,p) then begin
-    Include(Result,ghtHeader);
-    if (ShowHeaders) and (not ExpandHeaders) and (FItems[Item].HasHeader) then begin
-      if RTL then
-        ButtonRect := Rect(HeaderRect.Right-16,HeaderRect.Top,HeaderRect.Right,HeaderRect.Bottom)
-      else
-        ButtonRect := Rect(HeaderRect.Left,HeaderRect.Top,HeaderRect.Left+16,HeaderRect.Bottom);
-      if PtInRect(ButtonRect,p) then begin
-        Include(Result,ghtSessShowButton);
-        Include(Result,ghtButton);
+    if mtIncoming in FItems[Item].MessageType then
+      HeaderHeight := CHeaderHeight
+    else
+      HeaderHeight := PHeaderHeight;
+
+    HeaderRect := Rect(ItemRect.Left,ItemRect.Top,ItemRect.Right,ItemRect.Top + HeaderHeight);
+    Inc(ItemRect.Top,HeaderHeight+(Padding - (Padding div 2)));
+    if PtInRect(HeaderRect,p) then begin
+     Include(Result,ghtHeader);
+     if (ShowHeaders) and (not ExpandHeaders) and (FItems[Item].HasHeader) then begin
+       if RTL then
+         ButtonRect := Rect(HeaderRect.Right-16,HeaderRect.Top,HeaderRect.Right,HeaderRect.Bottom)
+       else
+         ButtonRect := Rect(HeaderRect.Left,HeaderRect.Top,HeaderRect.Left+16,HeaderRect.Bottom);
+       if PtInRect(ButtonRect,p) then begin
+         Include(Result,ghtSessShowButton);
+         Include(Result,ghtButton);
+       end;
+     end;
+     if ShowBookmarks and (Sel or FItems[Item].Bookmarked) then begin
+       //TimeStamp := GetTime(FItems[Item].Time);
+       //Canvas.Font.Assign(Options.FontTimeStamp);
+       if mtIncoming in FItems[Item].MessageType then
+         Canvas.Font.Assign(Options.FontIncomingTimestamp)
+       else
+         Canvas.Font.Assign(Options.FontOutgoingTimestamp);
+       TimestampOffset := WideCanvasTextWidth(Canvas,GetTime(FItems[Item].Time)) + Padding;
+        if RTL then
+         ButtonRect := Rect(HeaderRect.Left+TimestampOffset,HeaderRect.Top,HeaderRect.Left+TimestampOffset+16,HeaderRect.Bottom)
+       else
+         ButtonRect := Rect(HeaderRect.Right-16-TimestampOffset,HeaderRect.Top,HeaderRect.Right-TimestampOffset,HeaderRect.Bottom);
+       if PtInRect(ButtonRect,p) then begin
+         Include(Result,ghtBookmark);
+         Include(Result,ghtButton);
+       end;
       end;
     end;
-    if ShowBookmarks and (Sel or FItems[Item].Bookmarked) then begin
-      //TimeStamp := GetTime(FItems[Item].Time);
-      //Canvas.Font.Assign(Options.FontTimeStamp);
-      if mtIncoming in FItems[Item].MessageType then
-        Canvas.Font.Assign(Options.FontIncomingTimestamp)
-      else
-        Canvas.Font.Assign(Options.FontOutgoingTimestamp);
-      TimestampOffset := WideCanvasTextWidth(Canvas,GetTime(FItems[Item].Time)) + Padding;
-      if RTL then
-        ButtonRect := Rect(HeaderRect.Left+TimestampOffset,HeaderRect.Top,HeaderRect.Left+TimestampOffset+16,HeaderRect.Bottom)
-      else
-        ButtonRect := Rect(HeaderRect.Right-16-TimestampOffset,HeaderRect.Top,HeaderRect.Right-TimestampOffset,HeaderRect.Bottom);
-      if PtInRect(ButtonRect,p) then begin
-        Include(Result,ghtBookmark);
-        Include(Result,ghtButton);
-      end;
-    end;
-  end;
+   end;
 
   if PtInRect(ItemRect,p) then begin
     Include(Result,ghtText);
