@@ -25,7 +25,7 @@ type
     Items: array of TExtItem;
     Grid: THistoryGrid;
     FParentWindow: HWND;
-    FSelection: AnsiString;
+    FSelection: Pointer;
     SavedLinkUrl: AnsiString;
     pmGrid: TTntPopupMenu;
     pmLink: TTntPopupMenu;
@@ -148,6 +148,7 @@ begin
   FExternalRTLMode := hppRTLDefault;
   FUseHistoryCodepage := False;
   FExternalCodepage := CP_ACP;
+  FSelection := nil;
 
   Grid := THistoryGrid.CreateParented(ParentWindow);
   Grid.ControlID := ControlID;
@@ -226,6 +227,7 @@ end;
 
 destructor TExternalGrid.Destroy;
 begin
+  if FSelection <> nil then FreeMem(FSelection);
   Grid.Free;
   Finalize(Items);
   inherited;
@@ -334,27 +336,32 @@ end;
 
 function TExternalGrid.GetSelection(NoUnicode: Boolean): PChar;
 var
-  Text: WideString;
-  Source: PChar;
-  Len: integer;
+  TextW: WideString;
+  TextA: AnsiString;
+  Source: Pointer;
+  Size: integer;
 begin
   if Grid.Count = 0 then exit;
   if Grid.State = gsInline then
-    Text := GetRichString(Grid.InlineRichEdit.Handle,True)
+    TextW := GetRichString(Grid.InlineRichEdit.Handle,True)
   else
   if Grid.Selected <> -1 then
-    Text := Grid.FormatSelected(Grid.Options.ClipCopyFormat)
+    TextW := Grid.FormatSelected(Grid.Options.ClipCopyFormat)
   else
-    Text := '';
-  if Length(Text) > 0 then begin
+    TextW := '';
+  if Length(TextW) > 0 then begin
+    TextW := TextW+#0;
     if NoUnicode then begin
-      FSelection := WideToAnsiString(Text,CP_ACP)+#0;
+      TextA := WideToAnsiString(TextW,CP_ACP);
+      Source := @TextA[1];
+      Size := Length(TextA);
     end else begin
-      Text := Text+#0;
-      SetLength(FSelection,Length(Text)*SizeOf(WideChar));
-      Move(Pointer(@Text[1])^,Pointer(@FSelection[1])^,Length(FSelection));
+      Source := @TextW[1];
+      Size := Length(TextW)*SizeOf(WideChar);
     end;
-    Result := @FSelection[1];
+    ReallocMem(FSelection,Size);
+    Move(Source^,FSelection^,Size);
+    Result := FSelection;
   end else
     Result := nil;
 end;
