@@ -92,6 +92,7 @@ type
     procedure ReplyQuoted1Click(Sender: TObject);
     procedure ToogleItemProcessingClick(Sender: TObject);
     procedure ETextResizeRequest(Sender: TObject; Rect: TRect);
+    procedure FormResize(Sender: TObject);
   private
     //FRowIdx: integer;
     FParentForm: THistoryFrm;
@@ -111,6 +112,7 @@ type
     procedure LoadButtonIcons;
     { Private declarations }
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
+    procedure HMEventDeleted(var Message: TMessage); message HM_MIEV_EVENTDELETED;
   public
     TOhContact:THandle;
     FROMhContact:THandle;
@@ -486,6 +488,20 @@ end;
 procedure TEventDetailsFrm.ETextResizeRequest(Sender: TObject; Rect: TRect);
 begin
   FRichHeight := Rect.Bottom - Rect.Top;
+end;
+
+procedure TEventDetailsFrm.FormResize(Sender: TObject);
+begin
+  // workaround for bug with richedit wasn't visually
+  // resized to new size... Maybe that's complitelly
+  // wrong and there's another right way.
+  if Active then EText.Invalidate;
+end;
+
+procedure TEventDetailsFrm.HMEventDeleted(var Message: TMessage);
+begin
+  if Message.WParam = ParentForm.History[ParentForm.GridIndexToHistory(FItem)] then
+    Close;
 end;
 
 end.

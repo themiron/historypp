@@ -112,8 +112,7 @@ type
   TOnProcessInlineChange = procedure(Sender: TObject; Enabled: boolean) of object;
   TOnProcessRichText = procedure(Sender: TObject; Handle: THandle; Item: Integer) of object;
   TOnSearchItem = procedure(Sender: TObject; Item: Integer; ID: Integer; var Found: Boolean) of object;
-  TOnKillFocus = TNotifyEvent;
-  TOnGainFocus = TNotifyEvent;
+  TOnSelectRequest = TNotifyEvent;
 
   THPPRichEdit = class(TRichEdit)
   private
@@ -182,7 +181,6 @@ type
     FMathModuleEnabled: Boolean;
     FRawRTFEnabled: Boolean;
     FAvatarsHistoryEnabled: Boolean;
-
 
     FClipCopyTextFormat: WideString;
     FClipCopyFormat: WideString;
@@ -360,6 +358,8 @@ type
     FItemDelete: TOnItemDelete;
     FState: TGridState;
     FControlID: Cardinal;
+    FHideSelection: Boolean;
+    FGridNotFocused: Boolean;
 
     FTxtNoItems: WideString;
     FTxtStartup: WideString;
@@ -418,8 +418,7 @@ type
 
     FShowBottomAligned: Boolean;
 
-    FOnKillFocus: TOnKillFocus;
-    FOnGainFocus: TOnGainFocus;
+    FOnSelectRequest: TOnSelectRequest;
 
     FSavedKeyMessage: TWMKey;
 
@@ -502,6 +501,7 @@ type
     function GetBookmarked(Index: Integer): Boolean;
     procedure SetBookmarked(Index: Integer; const Value: Boolean);
     procedure SetGroupLinked(const Value: Boolean);
+    procedure SetHideSelection(const Value: Boolean);
 
     // FRichInline events
     {procedure OnInlinePopup(Sender: TObject);
@@ -668,11 +668,11 @@ type
     property OnItemFilter: TOnItemFilter read FOnItemFilter write FOnItemFilter;
     property OnProcessRichText: TOnProcessRichText read FOnProcessRichText write FOnProcessRichText;
     property OnSearchItem: TOnSearchItem read FOnSearchItem write FOnSearchItem;
-    property OnKillFocus: TOnKillFocus read FOnKillFocus write FOnKillFocus;
-    property OnGainFocus: TOnGainFocus read FOnGainFocus write FOnGainFocus;
+    property OnSelectRequest: TOnSelectRequest read FOnSelectRequest write FOnSelectRequest;
     property Reversed: Boolean read FReversed write SetReversed;
     property TopItem: integer read GetTopItem;
     property BottomItem: integer read GetBottomItem;
+    property HideSelection: Boolean read FHideSelection write SetHideSelection default False;
     property Align;
     property Anchors;
     property TabStop;
@@ -917,6 +917,9 @@ begin
   VLineScrollSize := MulDiv(LogY,13*5,96);
 
   FBorderStyle := bsSingle;
+
+  FHideSelection := False;
+  FGridNotFocused := True;
 
   ControlID := 0;
 end;
@@ -1661,7 +1664,7 @@ end;
 procedure THistoryGrid.WMLButtonDown(var Message: TWMLButtonDown);
 begin
   inherited;
-  Windows.SetFocus(Handle);
+  if FGridNotFocused then Windows.SetFocus(Handle);
   DoLButtonDown(Message.XPos,Message.YPos,TranslateKeys(Message.Keys));
 end;
 
@@ -1925,6 +1928,7 @@ end;
 function THistoryGrid.IsSelected(Item: Integer): Boolean;
 begin
   Result := False;
+  if FHideSelection and FGridNotFocused then exit;
   if Item = -1 then exit;
   Result := IntSortedArray_Find(TIntArray(FSelItems),Item) <> -1;
 end;
@@ -2542,8 +2546,7 @@ end;
 
 procedure THistoryGrid.EMSetSel(var Message: TMessage);
 begin
-  if Assigned(FOnGainFocus) then
-    FOnGainFocus(Self);
+  if Assigned(FOnSelectRequest) then FOnSelectRequest(Self);
 end;
 
 procedure THistoryGrid.MakeRangeSelected(FromItem, ToItem: Integer);
@@ -2657,6 +2660,7 @@ end;
 procedure THistoryGrid.WMRButtonDown(var Message: TWMRButtonDown);
 begin
   inherited;
+  if FGridNotFocused then Windows.SetFocus(Handle);
   DoRButtonDown(Message.XPos,Message.YPos,TranslateKeys(Message.Keys));
 end;
 
@@ -3251,7 +3255,7 @@ var
 begin
   inherited;
   if State <> gsIdle then exit;  
-  if Message.HitTest = HTERROR then exit;
+  if Message.HitTest = Word(HTERROR) then exit;
   p := ScreenToClient(Mouse.CursorPos);
   ht := GetHitTests(p.X,p.Y);
   if (ghtButton in ht) or (ghtLink in ht) then
@@ -3286,13 +3290,20 @@ procedure THistoryGrid.WMSetFocus(var Message: TWMSetFocus);
 var
   r: TRect;
 begin
-  if (FRichInline = nil) or (Message.FocusedWnd <> FRichInline.Handle) then begin
+  if not IsChild(Handle,Message.FocusedWnd) then begin
     CheckBusy;
-    if (Selected <> -1) and IsVisible(Selected) then begin
+    if FHideSelection and FGridNotFocused then begin
+      if SelCount > 0 then begin
+        FRichCache.ResetItems(FSelItems);
+        Invalidate;
+      end;
+    end else
+    if (FSelected <> -1) and IsVisible(FSelected) then begin
       r := GetItemRect(Selected);
       InvalidateRect(Handle,@r,False);
     end;
   end;
+  FGridNotFocused := False;
   inherited;
 end;
 
@@ -3300,13 +3311,18 @@ procedure THistoryGrid.WMKillFocus(var Message: TWMKillFocus);
 var
   r: TRect;
 begin
-  if (FRichInline = nil) or (Message.FocusedWnd <> FRichInline.Handle) then begin
-    if (Selected <> -1) and IsVisible(Selected) then begin
+  if not IsChild(Handle,Message.FocusedWnd) then begin
+    if FHideSelection and not FGridNotFocused then begin
+      if SelCount > 0 then begin
+        FRichCache.ResetItems(FSelItems);
+        Invalidate;
+      end;
+    end else
+    if (FSelected <> -1) and IsVisible(FSelected) then begin
       r := GetItemRect(Selected);
       InvalidateRect(Handle,@r,False);
     end;
-    // look at WMCommand for details
-    if (not Focused) and (Assigned(FOnKillFocus)) then FOnKillFocus(Self);
+    FGridNotFocused := True;
   end;
   inherited;
 end;
@@ -3315,17 +3331,25 @@ procedure THistoryGrid.WMCommand(var Message: TWMCommand);
 begin
   inherited;
   {$IFDEF RENDER_RICH}
-  if Message.NotifyCode = EN_KILLFOCUS then
-    if Message.Ctl = FRichInline.Handle then begin
-      if State = gsInline then begin
-        CancelInline(False);
-        // post message to self to get WM_KILLFOCUS after WM_SETFOCUS,
-        // if grid is backfocused from inline mode. This allows us
-        // to control grid actually looses focus to external controls
-        PostMessage(Handle,WM_KILLFOCUS,Handle,0);
+  if Message.Ctl = FRichInline.Handle then begin
+    case Message.NotifyCode of
+      EN_SETFOCUS: begin
+        if State <> gsInline then begin
+          FGridNotFocused := False;
+          Windows.SetFocus(Handle);
+          FGridNotFocused := True;
+          PostMessage(Handle,WM_SETFOCUS,Handle,0);
+        end;
       end;
-      Message.Result := 0;
+      EN_KILLFOCUS: begin
+        if State = gsInline then begin
+          CancelInline(False);
+          PostMessage(Handle,WM_KILLFOCUS,Handle,0);
+        end;
+        Message.Result := 0;
+      end;
     end;
+  end;
   {$ENDIF}
 end;
 
@@ -4809,6 +4833,16 @@ begin
     end;
     SetWindowLong(Handle, GWL_STYLE, Style);
     SetWindowLong(Handle, GWL_EXSTYLE, ExStyle);
+  end;
+end;
+
+procedure THistoryGrid.SetHideSelection(const Value: Boolean);
+begin
+  if FHideSelection = Value then exit;
+  FHideSelection := Value;
+  if FGridNotFocused and (SelCount > 0) then begin
+    FRichCache.ResetItems(FSelItems);
+    Invalidate;
   end;
 end;
 

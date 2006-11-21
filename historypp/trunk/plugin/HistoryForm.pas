@@ -54,11 +54,6 @@ uses
   HistoryGrid, Checksum, DateUtils,
   ImgList, PasswordEditControl, CommCtrl, ToolWin, Themes;
 
-const
-  HM_HIST_EVENTADDED   = HM_HIST_BASE + 1;
-  HM_HIST_EVENTDELETED = HM_HIST_BASE + 2;
-  HM_HIST_PRESHUTDOWN  = HM_HIST_BASE + 3;
-
 type
 
   TLastSearch = (lsNone,lsHotSearch,lsSearch);
@@ -314,7 +309,6 @@ type
     StartTimestamp: DWord;
     EndTimestamp: DWord;
     FhContact: THandle;
-    hHookEventAdded,hHookEventDeleted,hHookEventPreShutdown: THandle;
     FPasswordMode: Boolean;
     SavedLinkUrl: String;
     HotFilterString: WideString;
@@ -326,18 +320,16 @@ type
 
     procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo); message WM_GetMinMaxInfo;
     procedure CMShowingChanged(var Message: TMessage); message CM_SHOWINGCHANGED;
-    //procedure WMSize(var Message: TWMSize); message WM_SIZE;
     procedure LoadPosition;
     procedure SavePosition;
 
-    procedure HMEventAdded(var Message: TMessage); message HM_HIST_EVENTADDED;
-    procedure HMEventDeleted(var Message: TMessage); message HM_HIST_EVENTDELETED;
-    procedure HMPreShutdown(var Message: TMessage); message HM_HIST_PRESHUTDOWN;
+    procedure HMEventAdded(var Message: TMessage); message HM_MIEV_EVENTADDED;
+    procedure HMEventDeleted(var Message: TMessage); message HM_MIEV_EVENTDELETED;
+    procedure HMPreShutdown(var Message: TMessage); message HM_MIEV_PRESHUTDOWN;
+    procedure HMContactDeleted(var Message: TMessage); message HM_MIEV_CONTACTDELETED;
+
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
     procedure HMAccChanged(var M: TMessage); message HM_NOTF_ACCCHANGED;
-
-    procedure HookEvents;
-    procedure UnhookEvents;
 
     procedure OpenDetails(Item: Integer);
     procedure SetPasswordMode(const Value: Boolean);
@@ -1000,6 +992,12 @@ begin
   Close;
 end;
 
+procedure THistoryFrm.HMContactDeleted(var Message: TMessage);
+begin
+  if hContact <> Message.wParam then exit;
+  Close;
+end;
+
 procedure THistoryFrm.HMToolbarChanged(var M: TMessage);
 begin
   LoadToolbar;
@@ -1131,7 +1129,6 @@ begin
       //Windows.ShowCursor(True);
     end;
     SavePosition;
-    UnhookEvents;
   except
   end;
 end;
@@ -1479,20 +1476,6 @@ begin
       Panel := hpSessions;
 end;
 
-procedure THistoryFrm.HookEvents;
-begin
-  hHookEventAdded:=PluginLink.HookEventMessage(ME_DB_EVENT_ADDED,Self.Handle,HM_HIST_EVENTADDED);
-  hHookEventDeleted := PluginLink.HookEventMessage(ME_DB_EVENT_DELETED,Self.Handle,HM_HIST_EVENTDELETED);
-  hHookEventPreShutdown := PluginLink.HookEventMessage(ME_SYSTEM_PRESHUTDOWN,Self.Handle,HM_HIST_PRESHUTDOWN);
-end;
-
-procedure THistoryFrm.UnhookEvents;
-begin
-  PluginLink.UnhookEvent(hHookEventAdded);
-  PluginLink.UnhookEvent(hHookEventDeleted);
-  PluginLink.UnhookEvent(hHookEventPreShutdown);
-end;
-
 procedure THistoryFrm.hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
 var
   PrevTimestamp: DWord;
@@ -1662,11 +1645,6 @@ begin
     if (FormState = gsDelete) and (History[idx] <> 0) then
       PluginLink.CallService(MS_DB_EVENT_DELETE,hContact,History[idx]);
     DeleteEventFromSessions(idx);
-    if History[idx] <> 0 then begin
-      if Assigned(EventDetailFrom) then
-        if TEventDetailsFrm(EventDetailFrom).Item=Index then
-          EventDetailFrom.Release;
-    end;
     DeleteHistoryItem(idx);
   end;
   hgState(hg,hg.State);
@@ -2485,7 +2463,6 @@ begin
   paSess.Width := GetDBInt(hppDBName,'PanelWidth',150);
   paBook.Width := paSess.Width;
 
-  HookEvents;
   CreateEventsFilterMenu;
   if hContact <> 0 then
     SetEventFilter(0,true)                  // delay event filter applying till showing form

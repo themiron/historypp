@@ -3,7 +3,7 @@ unit hpp_externalgrid;
 interface
 
 uses
-  Windows, Classes, Controls, Forms, Graphics, Messages,
+  Windows, Classes, Controls, Forms, Graphics, Messages, SysUtils,
   m_api, m_globaldefs,
   hpp_global, hpp_events, hpp_contacts, hpp_services, hpp_forms, hpp_bookmarks,
   hpp_richedit, hpp_messages, hpp_eventfilters, hpp_database,
@@ -30,12 +30,13 @@ type
     pmGrid: TTntPopupMenu;
     pmLink: TTntPopupMenu;
     WasKeyPressed: Boolean;
-    FSelected: integer;
     FGridMode: TExGridMode;
     FUseHistoryRTLMode: Boolean;
     FExternalRTLMode: TRTLMode;
     FUseHistoryCodepage: Boolean;
     FExternalCodepage: Cardinal;
+    FGridState: TGridState;
+
     function GetGridHandle: HWND;
     procedure SetUseHistoryRTLMode(const Value: Boolean);
     procedure SetUseHistoryCodepage(const Value: Boolean);
@@ -47,14 +48,14 @@ type
     procedure GridProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
     procedure GridUrlClick(Sender: TObject; Item: Integer; Url: String);
     procedure GridBookmarkClick(Sender: TObject; Item: Integer);
-    procedure GridKillFocus(Sender: TObject);
-    procedure GridGainFocus(Sender: TObject);
+    procedure GridSelectRequest(Sender: TObject);
     procedure GridDblClick(Sender: TObject);
     procedure GridKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure GridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure GridPopup(Sender: TObject);
     procedure GridUrlPopup(Sender: TObject; Item: Integer; Url: String);
     procedure GridInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure GridItemDelete(Sender: TObject; Index: Integer);
     procedure OnCopyClick(Sender: TObject);
     procedure OnCopyTextClick(Sender: TObject);
     procedure OnSelectAllClick(Sender: TObject);
@@ -65,6 +66,7 @@ type
     procedure OnOpenLinkClick(Sender: TObject);
     procedure OnOpenLinkNWClick(Sender: TObject);
     procedure OnCopyLinkClick(Sender: TObject);
+    procedure OnDeleteClick(Sender: TObject);
     procedure OnBidiModeLogClick(Sender: TObject);
     procedure OnBidiModeHistoryClick(Sender: TObject);
     procedure OnCodepageLogClick(Sender: TObject);
@@ -72,7 +74,7 @@ type
   public
     constructor Create(AParentWindow: HWND; ControlID: Cardinal = 0);
     destructor Destroy; override;
-    procedure AddEvent(hContact, hDBEvent: THandle; Codepage: Integer; RTL: boolean);
+    procedure AddEvent(hContact, hDBEvent: Cardinal; Codepage: Integer; RTL: boolean);
     procedure SetPosition(x,y,cx,cy: Integer);
     procedure ScrollToBottom;
     function GetSelection(NoUnicode: Boolean): PChar;
@@ -85,6 +87,7 @@ type
     function Perform(Msg: Cardinal; WParam, LParam: Longint): Longint;
     procedure HMBookmarkChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
+    procedure HMEventDeleted(var M: TMessage); message HM_MIEV_EVENTDELETED;
     procedure BeginUpdate;
     procedure EndUpdate;
     property GroupLinked: Boolean write SetGroupLinked;
@@ -107,7 +110,7 @@ begin
   Result := M.Result;
 end;
 
-procedure TExternalGrid.AddEvent(hContact, hDBEvent: THandle; Codepage: Integer; RTL: boolean);
+procedure TExternalGrid.AddEvent(hContact, hDBEvent: Cardinal; Codepage: Integer; RTL: boolean);
 var
   RTLMode: TRTLMode;
 begin
@@ -142,16 +145,17 @@ constructor TExternalGrid.Create(AParentWindow: HWND; ControlID: Cardinal = 0);
 begin
   FParentWindow := AParentWindow;
   WasKeyPressed := False;
-  FSelected := -1;
   FGridMode := gmNative;
   FUseHistoryRTLMode := False;
   FExternalRTLMode := hppRTLDefault;
   FUseHistoryCodepage := False;
   FExternalCodepage := CP_ACP;
   FSelection := nil;
+  FGridState := gsIdle;
 
   Grid := THistoryGrid.CreateParented(ParentWindow);
   Grid.ControlID := ControlID;
+  Grid.HideSelection := True;
   Grid.ParentCtl3D := False;
   Grid.Ctl3D := True;
   Grid.ParentColor := False;
@@ -169,8 +173,7 @@ begin
   Grid.OnProcessRichText := GridProcessRichText;
   Grid.OnUrlClick := GridUrlClick;
   Grid.OnBookmarkClick := GridBookmarkClick;
-  Grid.OnKillFocus := GridKillFocus;
-  Grid.OnGainFocus := GridGainFocus;
+  Grid.OnSelectRequest := GridSelectRequest;
   Grid.OnDblClick := GridDblClick;
   Grid.OnKeyDown := GridKeyDown;
   Grid.OnKeyUp := GridKeyUp;
@@ -178,6 +181,7 @@ begin
   Grid.OnInlinePopup := GridPopup;
   Grid.OnUrlPopup := GridUrlPopup;
   Grid.OnInlineKeyDown := GridInlineKeyDown;
+  Grid.OnItemDelete := GridItemDelete;
 
   Grid.TxtFullLog := TranslateWideW(Grid.TxtFullLog{TRANSLATE-IGNORE});
   Grid.TxtGenHist1 := TranslateWideW(Grid.TxtGenHist1{TRANSLATE-IGNORE});
@@ -194,11 +198,12 @@ begin
 
   pmGrid := TTntPopupMenu.Create(Grid);
   pmGrid.ParentBiDiMode := False;
-  pmGrid.Items.Add(WideNewItem('Sh&ow in context',0,false,true,OnOpenClick,0,'pmOpen'));
+  pmGrid.Items.Add(WideNewItem('Sh&ow in history',0,false,true,OnOpenClick,0,'pmOpen'));
   pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN1'));
   pmGrid.Items.Add(WideNewItem('&Copy',TextToShortCut('Ctrl+C'),false,true,OnCopyClick,0,'pmCopy'));
   pmGrid.Items.Add(WideNewItem('Copy &Text',TextToShortCut('Ctrl+T'),false,true,OnCopyTextClick,0,'pmCopyText'));
   pmGrid.Items.Add(WideNewItem('Select &All',TextToShortCut('Ctrl+A'),false,true,OnSelectAllClick,0,'pmSelectAll'));
+  pmGrid.Items.Add(WideNewItem('&Delete',TextToShortCut('Del'),false,true,OnDeleteClick,0,'pmDelete'));
   pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN2'));
   pmGrid.Items.Add(WideNewItem('Text Formatting',TextToShortCut('Ctrl+P'),false,true,OnTextFormattingClick,0,'pmTextFormatting'));
   pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN3'));
@@ -410,19 +415,10 @@ begin
   Grid.Repaint;
 end;
 
-procedure TExternalGrid.GridKillFocus(Sender: TObject);
+procedure TExternalGrid.GridSelectRequest(Sender: TObject);
 begin
-  if Grid.Selected <> -1 then begin
-    FSelected := Grid.Selected;
-    Grid.Selected := -1;
-  end;
-end;
-
-procedure TExternalGrid.GridGainFocus(Sender: TObject);
-begin
-  if (FSelected <> -1) and Grid.IsVisible(FSelected) then
-    Grid.Selected := FSelected
-  else
+  if (Grid.Selected <> -1) and Grid.IsVisible(Grid.Selected) then
+    exit;
   if Grid.Count > 0 then
     Grid.Selected := Grid.BottomItem;
 end;
@@ -465,8 +461,8 @@ procedure TExternalGrid.GridPopup(Sender: TObject);
 begin
   pmGrid.Items[0].Visible := (Grid.State = gsIdle);
   pmGrid.Items[4].Visible := (Grid.State = gsInline);
-  pmGrid.Items[6].Visible := (Grid.State = gsInline);
-  pmGrid.Items[6].Checked := Grid.ProcessInline;
+  pmGrid.Items[7].Visible := (Grid.State = gsInline);
+  pmGrid.Items[7].Checked := Grid.ProcessInline;
   if Grid.State = gsInline then
     pmGrid.Items[2].Enabled := Grid.InlineRichEdit.SelLength > 0
   else
@@ -474,16 +470,16 @@ begin
   pmGrid.Items[8].Enabled := pmGrid.Items[2].Enabled;
   if Grid.Selected <> -1 then begin
     if Grid.Items[Grid.Selected].Bookmarked then
-      pmGrid.Items[9].Caption := TranslateWideW('Remove &Bookmark')
+      pmGrid.Items[10].Caption := TranslateWideW('Remove &Bookmark')
     else
-      pmGrid.Items[9].Caption := TranslateWideW('Set &Bookmark');
+      pmGrid.Items[10].Caption := TranslateWideW('Set &Bookmark');
   end;
-  pmGrid.Items[11].Visible := (Grid.State = gsIdle);
-  pmGrid.Items[11].Items[0].Checked := not FUseHistoryRTLMode;
-  pmGrid.Items[11].Items[1].Checked := FUseHistoryRTLMode;
   pmGrid.Items[12].Visible := (Grid.State = gsIdle);
-  pmGrid.Items[12].Items[0].Checked := not FUseHistoryCodepage;
-  pmGrid.Items[12].Items[1].Checked := FUseHistoryCodepage;
+  pmGrid.Items[12].Items[0].Checked := not FUseHistoryRTLMode;
+  pmGrid.Items[12].Items[1].Checked := FUseHistoryRTLMode;
+  pmGrid.Items[13].Visible := (Grid.State = gsIdle);
+  pmGrid.Items[13].Items[0].Checked := not FUseHistoryCodepage;
+  pmGrid.Items[13].Items[1].Checked := FUseHistoryCodepage;
   pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
 end;
 
@@ -518,6 +514,30 @@ procedure TExternalGrid.OnSelectAllClick(Sender: TObject);
 begin
   if (Grid.Selected = -1) or (Grid.State <> gsInline) then exit;
   Grid.InlineRichEdit.SelectAll;
+end;
+
+procedure TExternalGrid.OnDeleteClick(Sender: TObject);
+var
+  OldSelMode: Boolean;
+begin
+  if Grid.SelCount = 0 then exit;
+  if Grid.SelCount > 1 then begin
+    if HppMessageBox(FParentWindow,
+      WideFormat(TranslateWideW('Do you really want to delete selected items (%.0f)?'),
+      [Grid.SelCount/1]), TranslateWideW('Delete Selected'),
+      MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = IDNO then exit;
+  end else begin
+    if HppMessageBox(FParentWindow, TranslateWideW('Do you really want to delete selected item?'),
+    TranslateWideW('Delete'), MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = IDNO then exit;
+  end;
+  SetSafetyMode(False);
+  try
+    FGridState := gsDelete;
+    Grid.DeleteSelected;
+  finally
+    FGridState := gsIdle;
+    SetSafetyMode(True);
+  end;
 end;
 
 procedure TExternalGrid.OnTextFormattingClick(Sender: TObject);
@@ -584,6 +604,19 @@ begin
   SavedLinkUrl := '';
 end;
 
+procedure TExternalGrid.GridItemDelete(Sender: TObject; Index: Integer);
+var
+  idx: Integer;
+  hDBEvent: DWord;
+begin
+  if (FGridState = gsDelete) and (Items[Index].hDBEvent <> 0) then
+    PluginLink.CallService(MS_DB_EVENT_DELETE,Items[Index].hContact,Items[Index].hDBEvent);
+  if Index < Length(Items) then
+    Move(Items[Index+1],Items[Index],(Length(Items)-Index-1)*SizeOf(Items[0]));
+  SetLength(Items,Length(Items)-1);
+  //Application.ProcessMessages;
+end;
+
 procedure TExternalGrid.OnOpenLinkNWClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
@@ -646,6 +679,20 @@ procedure TExternalGrid.SetGroupLinked(const Value: Boolean);
 begin
   if Grid.GroupLinked = Value then exit;
   Grid.GroupLinked := Value;
+end;
+
+procedure TExternalGrid.HMEventDeleted(var M: TMessage);
+var
+  i: integer;
+begin
+  if Grid.State = gsDelete then exit;
+  if Grid.Contact <> Cardinal(M.WParam) then exit;
+  for i := 0 to Grid.Count - 1 do begin
+    if (Items[i].hDBEvent = M.LParam) then begin
+      Grid.Delete(i);
+      exit;
+    end;
+  end;
 end;
 
 end.
