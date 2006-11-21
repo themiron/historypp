@@ -46,10 +46,7 @@ uses
   Contnrs, TntMenus, hpp_forms, ToolWin;
 
 const
-  HM_SRCH_EVENTDELETED       = HM_SRCH_BASE + 1;
-  HM_SRCH_CONTACTDELETED     = HM_SRCH_BASE + 2;
   HM_SRCH_CONTACTICONCHANGED = HM_SRCH_BASE + 3;
-  HM_SRCH_PRESHUTDOWN        = HM_SRCH_BASE + 4;
 
 type
   TContactInfo = class(TObject)
@@ -238,8 +235,7 @@ type
     WasReturnPressed: Boolean;
     LastUpdateTime: Cardinal;
     HotString: WideString;
-    hHookContactIconChanged, hHookContactDeleted, hHookEventDeleted,
-      hHookEventPreShutdown: THandle;
+    hHookContactIconChanged: THandle;
     FContactFilter: Integer;
     FFiltered: Boolean;
     IsSearching: Boolean;
@@ -261,12 +257,13 @@ type
     procedure SMNextContact(var M: TMessage); message HM_STRD_NEXTCONTACT;
     procedure SMFinished(var M: TMessage); message HM_STRD_FINISHED;
 
-    procedure HMEventDeleted(var M: TMessage); message HM_SRCH_EVENTDELETED;
     function FindHistoryItemByHandle(hDBEvent: THandle): Integer;
     procedure DeleteEventFromLists(Item: Integer);
-    procedure HMContactDeleted(var M: TMessage); message HM_SRCH_CONTACTDELETED;
+
+    procedure HMEventDeleted(var M: TMessage); message HM_MIEV_EVENTDELETED;
+    procedure HMPreShutdown(var M: TMessage); message HM_MIEV_PRESHUTDOWN;
+    procedure HMContactDeleted(var M: TMessage); message HM_MIEV_CONTACTDELETED;
     procedure HMContactIconChanged(var M: TMessage); message HM_SRCH_CONTACTICONCHANGED;
-    procedure HMPreShutdown(var M: TMessage); message HM_SRCH_PRESHUTDOWN;
 
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
     procedure HMBookmarksChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
@@ -1491,18 +1488,12 @@ end;
 
 procedure TfmGlobalSearch.HookEvents;
 begin
-  hHookEventDeleted := PluginLink.HookEventMessage(ME_DB_EVENT_DELETED,Self.Handle,HM_SRCH_EVENTDELETED);
-  hHookContactDeleted := PluginLink.HookEventMessage(ME_DB_CONTACT_DELETED,Self.Handle,HM_SRCH_CONTACTDELETED);
   hHookContactIconChanged :=PluginLink.HookEventMessage(ME_CLIST_CONTACTICONCHANGED,Self.Handle,HM_SRCH_CONTACTICONCHANGED);
-  hHookEventPreShutdown :=PluginLink.HookEventMessage(ME_SYSTEM_PRESHUTDOWN,Self.Handle,HM_SRCH_PRESHUTDOWN);
 end;
 
 procedure TfmGlobalSearch.UnhookEvents;
 begin
-  PluginLink.UnhookEvent(hHookEventDeleted);
-  PluginLink.UnhookEvent(hHookContactDeleted);
   PluginLink.UnhookEvent(hHookContactIconChanged);
-  PluginLink.UnhookEvent(hHookEventPreShutdown);
 end;
 
 procedure TfmGlobalSearch.WndProc(var Message: TMessage);

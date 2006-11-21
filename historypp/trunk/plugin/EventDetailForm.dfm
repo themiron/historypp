@@ -19,6 +19,7 @@ object EventDetailsFrm: TEventDetailsFrm
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
+  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
   object paBottom: TTntPanel

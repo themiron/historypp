@@ -110,6 +110,8 @@ var
   HookFSChanged,
   HookTTBLoaded,
   HookBuildMenu,
+  HookEventAdded,
+  HookEventDeleted,
   HookPreshutdown: THandle;
 
 function OnModulesLoad(wParam,lParam:DWord):integer;cdecl; forward;
@@ -123,6 +125,8 @@ function OnContactDelete(wParam: wParam; lParam: LPARAM): Integer; cdecl; forwar
 function OnFSChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnTTBLoaded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnBuildContactMenu(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
+function OnEventAdded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
+function OnEventDeleted(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnPreshutdown(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 
 //Tell Miranda about this plugin
@@ -159,7 +163,6 @@ begin
   SetLength(hppProfileDir,StrLen(@hppProfileDir[1]));
   //init history functions later
   HookModulesLoad := PluginLink.HookEvent(ME_SYSTEM_MODULESLOADED,OnModulesLoad);
-  HookPreshutdown := PluginLink.HookEvent(ME_SYSTEM_PRESHUTDOWN,OnPreshutdown);
   hookOptInit := PluginLink.HookEvent(ME_OPT_INITIALISE,OnOptInit);
   InitMMI;
   hppRegisterServices;
@@ -257,6 +260,10 @@ begin
   HookContactDelete := PluginLink.HookEvent(ME_DB_CONTACT_DELETED,OnContactDelete);
   HookBuildMenu := PluginLink.HookEvent(ME_CLIST_PREBUILDCONTACTMENU,OnBuildContactMenu);
 
+  HookEventAdded := PluginLink.HookEvent(ME_DB_EVENT_ADDED,OnEventAdded);
+  HookEventDeleted := PluginLink.HookEvent(ME_DB_EVENT_DELETED,OnEventDeleted);
+  HookPreshutdown := PluginLink.HookEvent(ME_SYSTEM_PRESHUTDOWN,OnPreshutdown);
+
   if SmileyAddEnabled then
     HookSmAddChanged := PluginLink.HookEvent(ME_SMILEYADD_OPTIONSCHANGED,OnSmAddSettingsChanged);
   if IcoLibEnabled then
@@ -344,19 +351,9 @@ end;
 // Called when contact is deleted
 // wParam - hContact
 function OnContactDelete(wParam: wParam; lParam: LPARAM): Integer; cdecl;
-var
-  i: Integer;
-  w: THistoryFrm;
 begin
-  w := nil;
-  for i:=0 to HstWindowList.Count-1 do
-    if THistoryFrm(HstWindowList[i]).hcontact=wParam then
-      w := THistoryFrm(HstWindowList[i]);
-  try
-    if Assigned(w) then w.Close;
-  except
-  end;
   Result := 0;
+  NotifyAllForms(HM_MIEV_CONTACTDELETED,wParam,lParam);
 end;
 
 function OnOptInit(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
@@ -430,11 +427,40 @@ begin
   end;
 end;
 
+//wParam : HCONTACT
+//lParam : HDBCONTACT
+//Called when a new event has been added to the event chain
+//for a contact, HCONTACT contains the contact who added the event,
+//HDBCONTACT a handle to what was added.
+function OnEventAdded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
+begin
+  Result := 0;
+  NotifyAllForms(HM_MIEV_EVENTADDED,wParam,lParam);
+end;
+
+//wParam : HCONTACT
+//lParam : HDBEVENT
+//Affect : Called when an event is about to be deleted from the event chain
+//for a contact, see notes
+function OnEventDeleted(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
+begin
+  Result := 0;
+  NotifyAllForms(HM_MIEV_EVENTDELETED,wParam,lParam);
+end;
+
+//wParam=0
+//lParam=0
+//This hook is fired just before the thread unwind stack is used,
+//it allows MT plugins to shutdown threads if they have any special
+//processing to do, etc.
 function OnPreshutdown(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
 begin
   Result := 0;
   try
+    NotifyAllForms(HM_MIEV_PRESHUTDOWN,0,0);
     // unhook events
+    PluginLink.UnhookEvent(HookEventAdded);
+    PluginLink.UnhookEvent(HookEventDeleted);
     PluginLink.UnhookEvent(HookPreshutdown);
     PluginLink.UnhookEvent(HookModulesLoad);
     PluginLink.UnhookEvent(hookOptInit);
