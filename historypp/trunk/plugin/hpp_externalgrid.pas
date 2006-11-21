@@ -350,7 +350,7 @@ begin
   if Grid.State = gsInline then
     TextW := GetRichString(Grid.InlineRichEdit.Handle,True)
   else
-  if Grid.Selected <> -1 then
+  if Grid.Focused and (Grid.Selected <> -1) then
     TextW := Grid.FormatSelected(Grid.Options.ClipCopyFormat)
   else
     TextW := '';
