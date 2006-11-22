@@ -55,6 +55,7 @@ type
       true:  (w:PWideChar); // Unicode
     end;
 
+    PCOLORREF               = ^COLORREF;
 
     // strcpy()
 
