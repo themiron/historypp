@@ -72,6 +72,7 @@ uses
     {$include m_MagneticWindows.inc}
     {$include m_avatars.inc}
     {$include m_music.inc}
+    {$include m_ieview.inc}
     {$define M_API_UNIT}
     {$include m_helpers.inc}
 
