@@ -271,11 +271,17 @@ begin
     Item.RTLMode := Items[Index].RTLMode;
   // tabSRMM still doesn't marks events read in case of hpp log is in use...
   //if (FGridMode = gmIEView) and
-  if (not Item.IsRead) and (mtIncoming in Item.MessageType) and
+  if (mtIncoming in Item.MessageType) and
      (MessageTypesToDWord(Item.MessageType) and
-      MessageTypesToDWord([mtMessage,mtUrl,mtStatus,mtNickChange,mtAvatarChange]) > 0) then begin
-    PluginLink.CallService(MS_DB_EVENT_MARKREAD,Items[Index].hContact,Items[Index].hDBEvent);
+      MessageTypesToDWord([mtMessage,mtUrl]) > 0) then begin
+    if (not Item.IsRead) then
+      PluginLink.CallService(MS_DB_EVENT_MARKREAD,Items[Index].hContact,Items[Index].hDBEvent);
     PluginLink.CallService(MS_CLIST_REMOVEEVENT,Items[Index].hContact,Items[Index].hDBEvent);
+  end else
+  if (not Item.IsRead) and
+     (MessageTypesToDWord(Item.MessageType) and
+      MessageTypesToDWord([mtStatus,mtNickChange,mtAvatarChange]) > 0) then begin
+    PluginLink.CallService(MS_DB_EVENT_MARKREAD,Items[Index].hContact,Items[Index].hDBEvent);
   end;
 end;
 
