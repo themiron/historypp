@@ -417,6 +417,7 @@ type
     FShowBookmarks: Boolean;
 
     FGroupLinked: Boolean;
+    FZoomFactor: integer;
 
     FShowBottomAligned: Boolean;
 
@@ -465,6 +466,7 @@ type
     procedure WMCommand(var Message: TWMCommand); message WM_COMMAND;
     procedure EMSetSel(var Message: TMessage); message EM_SETSEL;
     procedure SetContolID(const Value: Cardinal);
+    procedure SetZoomFactor(const Value: Integer);
     function SendMsgFilterMessage(var Message: TMessage): Longint;
     function GetCount: Integer;
     procedure SetContact(const Value: THandle);
@@ -614,6 +616,7 @@ type
     property Filter: TMessageTypes read FFilter write SetFilter;
 
     property ControlID: Cardinal read FControlID write SetContolID;
+    property ZoomFactor: integer read FZoomFactor write SetZoomFactor;
   published
     procedure SetRichRTL(RTL: Boolean; RichEdit: THPPRichEdit; ProcessTag: Boolean = true);
     function GetItemRTL(Item: Integer): Boolean;
@@ -709,6 +712,7 @@ uses
 
 const
   HtmlStop = [#0,#10,#13,'<','>',' '];
+  EM_SETZOOM = WM_USER + 225;
 
 function UrlHighlightHtml(Text: String): String;
 var
@@ -923,7 +927,8 @@ begin
   FHideSelection := False;
   FGridNotFocused := True;
 
-  ControlID := 0;
+  FControlID := 0;
+  FZoomFactor := 3200;
 end;
 
 destructor THistoryGrid.Destroy;
@@ -2149,9 +2154,9 @@ end;
 procedure THistoryGrid.DoMouseMove(X, Y: Integer; Keys: TMouseMoveKeys);
 var
   Item: Integer;
-  ht: TGridHitTests;
-  NewCursor: TCursor;
-  NewHint: WideString;
+  //ht: TGridHitTests;
+  //NewCursor: TCursor;
+  //NewHint: WideString;
   SelectMove: Boolean;
 begin
   CheckBusy;
@@ -2291,6 +2296,18 @@ end;
 procedure THistoryGrid.SetContolID(const Value: Cardinal);
 begin
   FControlID := Value;
+end;
+
+procedure THistoryGrid.SetZoomFactor(const Value: Integer);
+begin
+  if FZoomFactor = Value then exit;
+  FZoomFactor := Value;
+  {if State = gsInline then begin
+    FRichInline.ReadOnly := False;
+    SendMessage(FRichInline.Handle,EM_SETZOOM,FZoomFactor,100);
+    SendMessage(FRichInline.Handle,EM_REQUESTRESIZE,0,0);
+    FRichInline.ReadOnly := True;
+  end;}
 end;
 
 function THistoryGrid.SendMsgFilterMessage(var Message: TMessage): Longint;
@@ -2779,7 +2796,7 @@ begin
   Result := '';
 
   Item := FindItemAt(x,y);
-  if Item = -1 then exit;  
+  if Item = -1 then exit;
   RichEditRect := GetRichEditRect(Item,True);
   p := Point(x - RichEditRect.Left,y - RichEditRect.Top);
 
@@ -3258,19 +3275,22 @@ var
   Item: Integer;
 begin
   inherited;
-  if State <> gsIdle then exit;  
+  if State <> gsIdle then exit;
   if Message.HitTest = Word(HTERROR) then exit;
+
+  NewHint := '';
+
   p := ScreenToClient(Mouse.CursorPos);
   ht := GetHitTests(p.X,p.Y);
-  if (ghtButton in ht) or (ghtLink in ht) then
+  if (ghtButton in ht) or (ghtLink in ht) then begin
+    NewHint := TranslateWideW('Open Link');
     NewCursor := crHandPoint
-  else
+  end else
     NewCursor := crDefault;
 
   if Windows.GetCursor <> Screen.Cursors[NewCursor] then
     Windows.SetCursor(Screen.Cursors[NewCursor]);
 
-  NewHint := '';
   if (ghtButton in ht) then begin
     if ghtBookmark in ht then begin
       Item := FindItemAt(p);
@@ -3733,13 +3753,16 @@ var
   code: DWord;
 begin
   off := -(Message.WheelDelta div WHEEL_DELTA);
-  //code := MakeLong(SB_THUMBPOSITION,VertScrollBar.Position + off);
-  if off > 0 then code := SB_LINEDOWN
-             else code := SB_LINEUP;
-  if FState = gsInline then
-    FRichInline.Perform(EM_SCROLL,code,0)
-  else
-    Perform(WM_VSCROLL,code,0);
+  if (Message.Keys and MK_CONTROL) = 0 then begin
+    //code := MakeLong(SB_THUMBPOSITION,VertScrollBar.Position + off);
+    if off > 0 then code := SB_LINEDOWN
+               else code := SB_LINEUP;
+    if FState = gsInline then
+      FRichInline.Perform(EM_SCROLL,code,0)
+    else
+      Perform(WM_VSCROLL,code,0);
+  end else
+    ZoomFactor := ZoomFactor + ZoomFactor*16;
 end;
 
 procedure THistoryGrid.DeleteItem(Item: Integer);

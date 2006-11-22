@@ -377,6 +377,8 @@ All files (*.*)|*.*
 ;; Text found in ..\plugin\HistoryGrid.pas:
 [Conversation started at %s]
 Conversation started at %s
+[Open Link]
+Open Link
 [Remove Bookmark]
 Remove Bookmark
 [Set Bookmark]
