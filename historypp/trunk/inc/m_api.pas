@@ -73,6 +73,10 @@ uses
     {$include m_avatars.inc}
     {$include m_music.inc}
     {$include m_ieview.inc}
+    {$include m_chat.inc}
+    {$include m_flash.inc}
+    {$include m_dataasmessage.inc}
+
     {$define M_API_UNIT}
     {$include m_helpers.inc}
 
