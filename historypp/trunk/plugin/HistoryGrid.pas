@@ -288,6 +288,7 @@ type
     LogX,LogY: Integer;
     RichEventMasks: DWord;
     Grid: THistoryGrid;
+    FRichWidth: Integer;
     FRichHeight: Integer;
 
     function FindGridItem(GridItem: Integer): Integer;
@@ -298,6 +299,7 @@ type
   protected
     Items: array of PRichItem;
     procedure MoveToTop(Index: Integer);
+    procedure SetWidth(const Value: Integer);
   public
     constructor Create(AGrid: THistoryGrid); overload;
     destructor Destroy; override;
@@ -305,7 +307,7 @@ type
     procedure ResetAllItems;
     procedure ResetItems(GridItems: array of Integer);
     procedure ResetItem(GridItem: Integer);
-    procedure SetWidth(NewWidth: Integer);
+    property Width: Integer read FRichWidth write SetWidth;
     procedure SetHandles;
 
     procedure WorkOutItemAdded(GridItem: Integer);
@@ -2714,13 +2716,13 @@ procedure THistoryGrid.GridUpdateSize;
 var
   w,h: Integer;
   NewClient: TBitmap;
-  i: Integer;
+  i,OldClientWidth: Integer;
 begin
   if State = gsInline then CancelInline;
 
   // avatars!!!
-  //FRichCache.SetWidth(ClientWidth - 3*FPadding - 64);
-  FRichCache.SetWidth(ClientWidth - 2*FPadding);
+  //FRichCache.Width := ClientWidth - 3*FPadding - 64;
+  FRichCache.Width := ClientWidth - 2*FPadding;
 
   w := ClientWidth;
   h := ClientHeight;
@@ -2731,6 +2733,7 @@ begin
     NewClient.Canvas.Font.Assign(Canvas.Font);
     NewClient.Canvas.TextFlags := Canvas.TextFlags;
 
+    OldClientWidth := FClient.Width;
     FClient.Free;
     FClient := NewClient;
     FCanvas := FClient.Canvas;
@@ -2738,8 +2741,9 @@ begin
 
   IsCanvasClean := False;
 
-  for i := 0 to Count-1 do
-    FItems[i].Height := -1;
+  if OldClientWidth <> FClient.Width then
+    for i := 0 to Count-1 do
+      FItems[i].Height := -1;
 
   BarAdjusted := False;
   if Allocated then AdjustScrollBar;
@@ -3290,7 +3294,8 @@ procedure THistoryGrid.WMSetFocus(var Message: TWMSetFocus);
 var
   r: TRect;
 begin
-  if not IsChild(Handle,Message.FocusedWnd) then begin
+  if not ((csDestroying in ComponentState) or
+    IsChild(Handle,Message.FocusedWnd)) then begin
     CheckBusy;
     if FHideSelection and FGridNotFocused then begin
       if SelCount > 0 then begin
@@ -3311,7 +3316,8 @@ procedure THistoryGrid.WMKillFocus(var Message: TWMKillFocus);
 var
   r: TRect;
 begin
-  if not IsChild(Handle,Message.FocusedWnd) then begin
+  if not ((csDestroying in ComponentState) or
+    IsChild(Handle,Message.FocusedWnd)) then begin
     if FHideSelection and not FGridNotFocused then begin
       if SelCount > 0 then begin
         FRichCache.ResetItems(FSelItems);
@@ -3331,7 +3337,8 @@ procedure THistoryGrid.WMCommand(var Message: TWMCommand);
 begin
   inherited;
   {$IFDEF RENDER_RICH}
-  if Message.Ctl = FRichInline.Handle then begin
+  if not (csDestroying in ComponentState) and
+    (Message.Ctl = FRichInline.Handle) then begin
     case Message.NotifyCode of
       EN_SETFOCUS: begin
         if State <> gsInline then begin
@@ -5251,6 +5258,7 @@ var
 begin
   inherited Create;
 
+  FRichWidth := -1;
   FRichHeight := -1;
   Grid := AGrid;
   // cache size:
@@ -5474,12 +5482,14 @@ begin
   end;
 end;
 
-procedure TRichCache.SetWidth(NewWidth: Integer);
+procedure TRichCache.SetWidth(const Value: Integer);
 var
   i: Integer;
 begin
+  if FRichWidth = Value then exit;
+  FRichWidth := Value;
   for i := 0 to Length(Items) - 1 do begin
-    Items[i].Rich.Width := NewWidth;
+    Items[i].Rich.Width := Value;
     Items[i].Rich.Height := -1;
     Items[i].Height := -1;
   end;
