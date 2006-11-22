@@ -43,11 +43,18 @@ type
 
     PByte                   = ^Byte;
     int                     = Integer;
-    pint                    = ^int;
+    PInt                    = ^int;
     WPARAM                  = Integer;
     LPARAM                  = Integer;
     DWORD                   = Integer;
     THandle                 = Integer;
+    
+    TChar                   = Record
+      case boolean of
+      false: (a:PChar);     // ANSI
+      true:  (w:PWideChar); // Unicode
+    end;
+
 
     // strcpy()
 
