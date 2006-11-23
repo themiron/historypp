@@ -163,7 +163,6 @@ type
     FFontSessHeader: TFont;
     FFontMessage: TFont;
 
-    //FItemFont: TFont;
     FItemOptions: TItemOptions;
 
     FIconMessage: TIcon;
@@ -172,7 +171,7 @@ type
     FIconOther: TIcon;
 
     FRTLEnabled: Boolean;
-    FShowAvatars: Boolean;
+    //FShowAvatars: Boolean;
     FShowIcons: Boolean;
     FOnShowIcons: TOnShowIcons;
 
@@ -208,7 +207,7 @@ type
 
     procedure SetRTLEnabled(const Value: Boolean);
     procedure SetShowIcons(const Value: Boolean);
-    procedure SetShowAvatars(const Value: Boolean);
+    //procedure SetShowAvatars(const Value: Boolean);
 
     procedure SetBBCodesEnabled(const Value: Boolean);
     procedure SetSmileysEnabled(const Value: Boolean);
@@ -262,7 +261,7 @@ type
 
     property RTLEnabled: Boolean read FRTLEnabled write SetRTLEnabled;
     property ShowIcons: Boolean read FShowIcons write SetShowIcons;
-    property ShowAvatars: Boolean read FShowAvatars write SetShowAvatars;
+    //property ShowAvatars: Boolean read FShowAvatars write SetShowAvatars;
 
     property BBCodesEnabled: Boolean read FBBCodesEnabled write SetBBCodesEnabled;
     property SmileysEnabled: Boolean read FSmileysEnabled write SetSmileysEnabled;
@@ -417,7 +416,6 @@ type
     FShowBookmarks: Boolean;
 
     FGroupLinked: Boolean;
-    FZoomFactor: integer;
 
     FShowBottomAligned: Boolean;
 
@@ -466,7 +464,6 @@ type
     procedure WMCommand(var Message: TWMCommand); message WM_COMMAND;
     procedure EMSetSel(var Message: TMessage); message EM_SETSEL;
     procedure SetContolID(const Value: Cardinal);
-    procedure SetZoomFactor(const Value: Integer);
     function SendMsgFilterMessage(var Message: TMessage): Longint;
     function GetCount: Integer;
     procedure SetContact(const Value: THandle);
@@ -616,7 +613,6 @@ type
     property Filter: TMessageTypes read FFilter write SetFilter;
 
     property ControlID: Cardinal read FControlID write SetContolID;
-    property ZoomFactor: integer read FZoomFactor write SetZoomFactor;
   published
     procedure SetRichRTL(RTL: Boolean; RichEdit: THPPRichEdit; ProcessTag: Boolean = true);
     function GetItemRTL(Item: Integer): Boolean;
@@ -928,7 +924,6 @@ begin
   FGridNotFocused := True;
 
   FControlID := 0;
-  FZoomFactor := 3200;
 end;
 
 destructor THistoryGrid.Destroy;
@@ -2296,18 +2291,6 @@ end;
 procedure THistoryGrid.SetContolID(const Value: Cardinal);
 begin
   FControlID := Value;
-end;
-
-procedure THistoryGrid.SetZoomFactor(const Value: Integer);
-begin
-  if FZoomFactor = Value then exit;
-  FZoomFactor := Value;
-  {if State = gsInline then begin
-    FRichInline.ReadOnly := False;
-    SendMessage(FRichInline.Handle,EM_SETZOOM,FZoomFactor,100);
-    SendMessage(FRichInline.Handle,EM_REQUESTRESIZE,0,0);
-    FRichInline.ReadOnly := True;
-  end;}
 end;
 
 function THistoryGrid.SendMsgFilterMessage(var Message: TMessage): Longint;
@@ -3753,16 +3736,12 @@ var
   code: DWord;
 begin
   off := -(Message.WheelDelta div WHEEL_DELTA);
-  if (Message.Keys and MK_CONTROL) = 0 then begin
-    //code := MakeLong(SB_THUMBPOSITION,VertScrollBar.Position + off);
-    if off > 0 then code := SB_LINEDOWN
-               else code := SB_LINEUP;
-    if FState = gsInline then
-      FRichInline.Perform(EM_SCROLL,code,0)
-    else
-      Perform(WM_VSCROLL,code,0);
-  end else
-    ZoomFactor := ZoomFactor + ZoomFactor*16;
+  if off > 0 then code := SB_LINEDOWN
+             else code := SB_LINEUP;
+  if FState = gsInline then
+    FRichInline.Perform(EM_SCROLL,code,0)
+  else
+    Perform(WM_VSCROLL,code,0);
 end;
 
 procedure THistoryGrid.DeleteItem(Item: Integer);
@@ -4894,7 +4873,7 @@ begin
 
   FRTLEnabled := False;
   FShowIcons := False;
-  FShowAvatars := False;
+  //FShowAvatars := False;
 
   FSmileysEnabled := False;
   FBBCodesEnabled := False;
@@ -5124,7 +5103,7 @@ begin
   end;
 end;
 
-procedure TGridOptions.SetShowAvatars(const Value: Boolean);
+{procedure TGridOptions.SetShowAvatars(const Value: Boolean);
 begin
   if FShowAvatars = Value then exit;
   FShowAvatars := Value;
@@ -5134,7 +5113,7 @@ begin
   finally
     Self.EndChange;
   end;
-end;
+end;}
 
 procedure TGridOptions.SetBBCodesEnabled(const Value: Boolean);
 begin
