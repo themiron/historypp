@@ -9,6 +9,42 @@ Changelog
 
 SVN Changelog: https://opensvn.csie.org/traccgi/historypp/log/?verbose=on
 
+1.5.0.110
+
++ Added ability to use plugin as log renderer with tabSRMM
++ Added ability to imitate IEView API
++ Added accessibility menu accessed with F10 key
++ Added RTF messages support (for possible future use with official icq clients)
++ Added support for WATrack's events with filtering and customization
++ Added ability to change radio buttons	by keyboard
++ Added ability to change grid's messages font and background color
++ Added ability to highlight urls, buttons when window is unfocused
++ Added font settings for incoming and outgoing timestamps
++ Added ability to display avatar changes as pictures
++ Added ability to single word delete with Ctrl+Backspace combo in edit controls
++ Added fast BBCodes parsing directly in rtf stream
++ Added working MathModule support
++ Added ability to turn off text formatting in event details and pseudo-edit mode
++ Append View History item with count of events in contact menu
++ Made context menu popup with Shift+F10 combo and applications key
++ Made event info form icons changeable via IcoLib
++ Fasted up to 40x times Empty History for large histories
++ Fixes and huge optimizations in XML export
++ Fixed RTLed events was always read from profile as LTRed
++ Fixed keyboard language switching in pseudo-edit and event details form
++ Fixed forms close while in pseudo-edit state
++ Fixed history and global search windows could be closed while grid is busy
++ Fixed using unicode part of message in case of double-byte char sets
++ Fixed with wrong locale was used with ansi text in clipboard
++ Fixed text corruption while getting it from richedit with objects inserted (like smileys)
++ Fixed selected item didn't always become visible while scrolling down with key_down
++ Finally fixed double url-opening issues
++ Fixed global search timer showing wrong time on multicore (and multiprocessor?) systems
++ Reworked plugin shortcuts
++ Redesigned event details form
++ Redesigned global search UI and added history search within date range
++ Other minor fixed and internal changes
+
 1.5.0.109
 
 + Added possibility to rename bookmarks from context menu
