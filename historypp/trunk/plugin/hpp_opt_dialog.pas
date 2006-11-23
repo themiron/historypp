@@ -16,8 +16,8 @@ const
   IDC_RTLDEFAULT      = 103; // "RTL by default" checkbox
   IDC_OPENDETAILS     = 104; // "Open event details by Enter" checkbox
   IDC_IEVIEWAPI       = 105; // "Imitate IEView API" checkbox
-  IDC_SHOWAVATARS     = 106; // "Show avatars" checkbox
-  IDC_GROUPLOGITEMS   = 107; // "Group log messages"
+  IDC_GROUPLOGITEMS   = 106; // "Group log messages"
+  //IDC_SHOWAVATARS     = 107; // "Show avatars" checkbox
   ID_FORMATTING_GROUP = 200;
   IDC_BBCODE          = 201; // "Enable BBCodes" checkbox
   IDC_SMILEY          = 202; // "Enable SmileyAdd support" checkbox
@@ -90,7 +90,7 @@ begin
   if GetChecked(IDC_IEVIEWAPI) <> GetDBBool(hppDBName,'IEViewAPI',false) then exit;
   if GetChecked(IDC_GROUPLOGITEMS) <> GetDBBool(hppDBName,'GroupLogItems',false) then exit;
   {$ENDIF}
-  if GetChecked(IDC_SHOWAVATARS) <> GridOptions.ShowAvatars then exit;
+  //if GetChecked(IDC_SHOWAVATARS) <> GridOptions.ShowAvatars then exit;
 
   if GetChecked(IDC_BBCODE) <> GridOptions.BBCodesEnabled then exit;
   if SmileyAddEnabled then
@@ -114,7 +114,7 @@ begin
     //GridOptions.RecentOnTop := GetChecked(IDC_RECENTONTOP);
     GridOptions.RTLEnabled := GetChecked(IDC_RTLDEFAULT);
     GridOptions.OpenDetailsMode := GetChecked(IDC_OPENDETAILS);
-    GridOptions.ShowAvatars := GetChecked(IDC_SHOWAVATARS);
+    //GridOptions.ShowAvatars := GetChecked(IDC_SHOWAVATARS);
 
     GridOptions.BBCodesEnabled := GetChecked(IDC_BBCODE);
     if SmileyAddEnabled then
@@ -188,9 +188,6 @@ begin
   ShowWindow(GetDlgItem(hDlg,IDC_GROUPLOGITEMS),SW_HIDE);
   {$ENDIF}
   //SetChecked(IDC_SHOWAVATARS,GridOptions.ShowAvatars);
-  // temporary disable
-  SetChecked(IDC_SHOWAVATARS,false);
-  EnableWindow(GetDlgItem(hDlg,IDC_SHOWAVATARS),false);
 
   SetChecked(IDC_BBCODE,GridOptions.BBCodesEnabled);
   EnableWindow(GetDlgItem(hDlg,IDC_SMILEY),SmileyAddEnabled);
