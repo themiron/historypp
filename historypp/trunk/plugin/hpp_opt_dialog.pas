@@ -24,6 +24,7 @@ const
   IDC_MATH            = 203; // "Enable MathModule support" checkbox
   IDC_RAWRTF          = 204; // "Enable raw RTF support" checkbox
   IDC_AVATARSHISTORY  = 205; // "Display chanage avatars" checkbox
+  ID_NEEDOPTIONS_LINK = 250; // "Need more options?" hyperlink
   ID_LOOK_GROUP       = 300;
   ID_LOOK_FONT1       = 301; // "To change fonts ..."
   ID_LOOK_FONT2       = 302;
@@ -40,7 +41,8 @@ const
   URL_FONTSERVICE = 'http://addons.miranda-im.org/details.php?action=viewfile&id=2065';
   URL_ICOLIB      = 'http://addons.miranda-im.org/details.php?action=viewfile&id=2700';
   URL_EXPLAIN     = 'https://opensvn.csie.org/traccgi/historypp/trac.cgi/wiki/CustomizationSupport';
-
+  URL_NEEDOPTIONS = 'https://opensvn.csie.org/traccgi/historypp/trac.cgi/wiki/AdditionalOptions';
+  
 function OptDialogProc(hwndDlg: HWND; uMsg: Integer;
   wParam: WPARAM; lParam: LPARAM): Integer; stdcall;
 
@@ -221,6 +223,7 @@ begin
     ID_LOOK_FONT_LINK: PluginLink.CallService(MS_UTILS_OPENURL,Integer(True),Integer(@URL_FONTSERVICE[1]));
     ID_LOOK_ICO_LINK: PluginLink.CallService(MS_UTILS_OPENURL,Integer(True),Integer(@URL_ICOLIB[1]));
     ID_LOOK_INFO_LINK: PluginLink.CallService(MS_UTILS_OPENURL,Integer(True),Integer(@URL_EXPLAIN[1]));
+    ID_NEEDOPTIONS_LINK: PluginLink.CallService(MS_UTILS_OPENURL,Integer(True),Integer(@URL_NEEDOPTIONS[1]));
   else
     Result := 0;
   end;
