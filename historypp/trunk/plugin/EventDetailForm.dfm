@@ -6,8 +6,6 @@ object EventDetailsFrm: TEventDetailsFrm
   BorderWidth = 4
   Caption = 'Event Details'
   Color = clBtnFace
-  Constraints.MinHeight = 340
-  Constraints.MinWidth = 466
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -65,7 +63,7 @@ object EventDetailsFrm: TEventDetailsFrm
         OnClick = bnReplyClick
       end
       object CloseBtn: TTntButton
-        Left = 126
+        Left = 125
         Top = 4
         Width = 75
         Height = 25

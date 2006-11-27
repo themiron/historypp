@@ -17,7 +17,7 @@ object fmGlobalSearch: TfmGlobalSearch
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
-  OnMouseWheel = TntFormMouseWheel
+  OnMouseWheel = FormMouseWheel
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
