@@ -42,7 +42,6 @@ procedure TranslateMenu(mi: TMenuItem);
 procedure TranslateToolbar(const tb: TTntToolBar);
 
 function ShiftStateToKeyData(ShiftState :TShiftState):Longint;
-//function IsFormShortCut(Form: TForm; Key: DWord; ShiftState: TShiftState): Boolean;
 function IsFormShortCut(List: Array of TComponent; Key: DWord; ShiftState: TShiftState): Boolean;
 
 function Utils_RestoreFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
@@ -55,38 +54,6 @@ uses hpp_global, hpp_services, hpp_opt_dialog, hpp_database,
   {$IFNDEF NO_EXTERNALGRID}hpp_external,{$ENDIF}
   CustomizeFiltersForm,
   CustomizeToolbar;
-
-{function IsFormShortCut(Form: TComponent; Key: DWord; ShiftState: TShiftState): Boolean;
-var
-  mes: TWMKey;
-
-  function DispatchShortcut: Boolean;
-  var
-    i: Integer;
-    Comp: TComponent;
-  begin
-    for i := 0 to Form.ComponentCount - 1 do begin
-      Comp := Form.Components[i];
-      if Comp is TMenu then begin
-        Result := TMenu(Comp).IsShortCut(mes);
-        if Result then break;
-      end;
-    end;
-  end;
-
-begin
-  Result := False;
-  mes.CharCode := Key;
-  mes.KeyData := ShiftStateToKeyData(ShiftState);
-  if Form is TMenu then
-    Result := TMenu(Form).IsShortCut(mes)
-  else
-  if Form is TForm then
-    Result := (TForm(Form).Menu <> nil) and
-              (TForm(Form).Menu.WindowHandle <> 0) and
-              (TForm(Form).Menu.IsShortCut(mes));
-  Result := Result or DispatchShortcut;
-end;}
 
 function IsFormShortCut(List: Array of TComponent; Key: DWord; ShiftState: TShiftState): Boolean;
 var

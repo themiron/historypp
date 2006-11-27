@@ -187,6 +187,7 @@ type
     mmShortcuts: TTntMenuItem;
     mmBookmark: TTntMenuItem;
     SelectAll1: TTntMenuItem;
+    pmHistoryDD: TPopupMenu;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -304,6 +305,7 @@ type
     procedure SelectAll1Click(Sender: TObject);
     procedure lvBookKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tvSessKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure pmHistoryDDPopup(Sender: TObject);
   private
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
@@ -1510,7 +1512,7 @@ begin
   end;
   if hg.Selected <> -1 then begin
     Delete1.Visible := True;
-    if hg.Options.OpenDetailsMode then
+    if GridOptions.OpenDetailsMode then
       Details1.Caption := TranslateWideW('&Edit')
     else
       Details1.Caption := TranslateWideW('&Open');
@@ -1573,7 +1575,7 @@ end;
 procedure THistoryFrm.hgDblClick(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  if hg.Options.OpenDetailsMode then
+  if GridOptions.OpenDetailsMode then
     OpenDetails(hg.Selected)
   else
     hg.EditInline(hg.Selected);
@@ -1721,13 +1723,13 @@ end;
 procedure THistoryFrm.Copy1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  CopyToClip(hg.FormatSelected(hg.Options.ClipCopyFormat),Handle,UserCodePage);
+  CopyToClip(hg.FormatSelected(GridOptions.ClipCopyFormat),Handle,UserCodePage);
 end;
 
 procedure THistoryFrm.Details1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  if hg.Options.OpenDetailsMode then
+  if GridOptions.OpenDetailsMode then
     hg.EditInline(hg.Selected)
   else
     OpenDetails(hg.Selected);
@@ -2064,7 +2066,7 @@ end;
 procedure THistoryFrm.ReplyQuoted(Item: Integer);
 begin
   if (hContact = 0) or (hg.SelCount = 0) then exit;
-  SendMessageTo(hContact,hg.FormatSelected(hg.Options.ReplyQuotedFormat));
+  SendMessageTo(hContact,hg.FormatSelected(GridOptions.ReplyQuotedFormat));
 end;
 
 var
@@ -2167,7 +2169,7 @@ begin
 
   Item.EventType := '&'+GetMessageRecord(hg.Items[Index].MessageType).XML+';';
 
-  if hg.Options.BBCodesEnabled then
+  if GridOptions.BBCodesEnabled then
     Item.Mes := UTF8Encode(MakeTextXMLedW(DoStripBBCodes(hg.Items[Index].Text)))
   else
     Item.Mes := UTF8Encode(MakeTextXMLedW(hg.Items[Index].Text));
@@ -2720,7 +2722,7 @@ end;
 procedure THistoryFrm.CopyText1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  CopyToClip(hg.FormatSelected(hg.Options.ClipCopyTextFormat),Handle,UserCodePage);
+  CopyToClip(hg.FormatSelected(GridOptions.ClipCopyTextFormat),Handle,UserCodePage);
   // rtf copy works only if not more then one selected
   //hg.ApplyItemToRich(hg.Selected,hg.RichEdit,False);
   //hg.RichEdit.SelectAll;
@@ -3234,7 +3236,6 @@ begin
     tbHistory.ClientToScreen(p);
     Application.CancelHint;
     tbHistory.ShowHint := false;
-    //tbHistory.CheckMenuDropdown;
     pmHistory.Popup(p.X,p.Y+tbHistory.Height);
     tbHistory.ShowHint := true;
   //end;
@@ -3421,6 +3422,7 @@ begin
   LoadInOptions();
   SaveSelected2.Visible := (hg.SelCount > 1);
   AddMenuArray(pmHistory,[ContactRTLmode1,ANSICodepage1],7);
+  Application.CancelHint;
 end;
 
 procedure THistoryFrm.WndProc(var Message: TMessage);
@@ -3653,6 +3655,11 @@ begin
     Toolbar.EdgeBorders := [];
     Menu := nil;
   end;
+end;
+
+procedure THistoryFrm.pmHistoryDDPopup(Sender: TObject);
+begin
+  tbHistory.Click;
 end;
 
 end.

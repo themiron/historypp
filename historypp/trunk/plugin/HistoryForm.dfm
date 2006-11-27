@@ -463,11 +463,13 @@ object HistoryFrm: THistoryFrm
           Top = 0
           Hint = 'History Actions'
           Caption = 'History Actions'
+          DropdownMenu = pmHistoryDD
           PopupMenu = pmHistory
+          Style = tbsDropDown
           OnClick = tbHistoryClick
         end
         object tbHistorySearch: TTntToolButton
-          Left = 377
+          Left = 390
           Top = 0
           Hint = 'History Search'
           Caption = 'History Search'
@@ -951,5 +953,10 @@ object HistoryFrm: THistoryFrm
         OnClick = Bookmark1Click
       end
     end
+  end
+  object pmHistoryDD: TPopupMenu
+    OnPopup = pmHistoryDDPopup
+    Left = 365
+    Top = 36
   end
 end

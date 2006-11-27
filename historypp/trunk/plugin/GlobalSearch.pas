@@ -1340,7 +1340,7 @@ end;
 procedure TfmGlobalSearch.ReplyQuoted(Item: Integer);
 begin
   if (GetSearchItem(Item).Contact.Handle = 0) or (hg.SelCount = 0) then exit;
-  SendMessageTo(GetSearchItem(Item).Contact.Handle,hg.FormatSelected(hg.Options.ReplyQuotedFormat));
+  SendMessageTo(GetSearchItem(Item).Contact.Handle,hg.FormatSelected(GridOptions.ReplyQuotedFormat));
 end;
 
 procedure TfmGlobalSearch.ReplyQuoted1Click(Sender: TObject);
@@ -1533,7 +1533,6 @@ begin
 
   hg.Codepage := hppCodepage;
   hg.RTLMode := hppRTLDefault;
-  //hg.Options := GridOptions;
 
   hg.TxtStartup := TranslateWideW('Ready to search')+
     #10#13#10#13+TranslateWideW('Click Search button to start');
@@ -1688,17 +1687,18 @@ procedure TfmGlobalSearch.hgNameData(Sender: TObject; Index: Integer; var Name: 
 var
   si: TSearchItem;
 begin
- si := GetSearchItem(Index);
- if FFiltered then begin
-   if mtIncoming in hg.Items[Index].MessageType then
-     Name := si.Contact.Name
-   else
-     Name := si.Contact.ProfileName;
- end else begin
-   if mtIncoming in hg.Items[Index].MessageType then
-     Name := WideFormat(TranslateWideW('From %s'),[si.Contact.Name])
-   else
-     Name := WideFormat(TranslateWideW('To %s'),[si.Contact.Name]);
+  si := GetSearchItem(Index);
+  if FFiltered then begin
+    if mtIncoming in hg.Items[Index].MessageType then
+      Name := si.Contact.Name
+    else
+    if not GridOptions.ForceProfileName then
+      Name := si.Contact.ProfileName;
+  end else begin
+    if mtIncoming in hg.Items[Index].MessageType then
+      Name := WideFormat(TranslateWideW('From %s'),[si.Contact.Name])
+    else
+      Name := WideFormat(TranslateWideW('To %s'),[si.Contact.Name]);
  end;
 end;
 
@@ -1926,13 +1926,13 @@ end;
 procedure TfmGlobalSearch.Copy1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  CopyToClip(hg.FormatSelected(hg.Options.ClipCopyFormat),Handle,GetSearchItem(hg.Selected).Contact.Codepage);
+  CopyToClip(hg.FormatSelected(GridOptions.ClipCopyFormat),Handle,GetSearchItem(hg.Selected).Contact.Codepage);
 end;
 
 procedure TfmGlobalSearch.CopyText1Click(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
-  CopyToClip(hg.FormatSelected(hg.Options.ClipCopyTextFormat),Handle,GetSearchItem(hg.Selected).Contact.Codepage);
+  CopyToClip(hg.FormatSelected(GridOptions.ClipCopyTextFormat),Handle,GetSearchItem(hg.Selected).Contact.Codepage);
 end;
 
 procedure TfmGlobalSearch.CreateEventsFilterMenu;
