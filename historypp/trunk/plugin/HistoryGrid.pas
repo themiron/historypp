@@ -2110,8 +2110,11 @@ begin
 
   ht := GetHitTests(x,y);
   if (ghtLink in ht) then begin
-    Cursor := crDefault;
-    if Assigned(FOnUrlPopup) then FOnUrlPopup(Self,Item,GetLinkAtPoint(x,y));
+    if Assigned(FOnUrlPopup) then begin
+      Cursor := crDefault;
+      Application.CancelHint;
+      FOnUrlPopup(Self,Item,GetLinkAtPoint(x,y));
+    end;
     exit;
   end;
 
@@ -2155,6 +2158,7 @@ begin
   if (ghtLink in ht) then begin
     if Assigned(FOnUrlClick) then begin
       Item := FindItemAt(x,y);
+      Application.CancelHint;
       FOnUrlClick(Self,Item,GetLinkAtPoint(x,y));
     end;
     exit;
@@ -2533,6 +2537,7 @@ begin
         p := ScreenToClient(p);
         if Assigned(FOnUrlClick) then begin
           Item := FindItemAt(p.x,p.y);
+          Application.CancelHint;
           FOnUrlClick(Self,Item, AnsiToWideString(AnsiUrl,Codepage));
         end;
       end;
