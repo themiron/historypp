@@ -43,14 +43,10 @@ uses
   {$ENDIF}
   Windows,
   SysUtils,
-  Graphics,
-  Classes,
   {$IFDEF REPORT_LEAKS} Themes, {$ENDIF}
   m_globaldefs,
   m_api,
   TntSystem,
-  Forms,
-  TntControls,
   hpp_global in 'hpp_global.pas',
   hpp_contacts in 'hpp_contacts.pas',
   hpp_database in 'hpp_database.pas',
@@ -157,6 +153,14 @@ begin
   // Getting langpack codepage for ansi translation
   hppCodepage := PluginLink.CallService(MS_LANGPACK_GETCODEPAGE,0,0);
   if hppCodepage = CALLSERVICE_NOTFOUND then hppCodepage := CP_ACP;
+  // Checking if richedit 2.0 or 3.0 availible
+  if not IsRichEdit20Available and (IDYES <> hppMessagebox(0,
+    // single line to translation script
+    TranslateWideW('History++ module could not be loaded, riched20.dll is missing. Press Yes to continue loading Miranda.'),
+    TranslateWideW('Information'), MB_YESNO or MB_ICONINFORMATION)) then begin
+    Result := 1;
+    exit;
+  end;
   // Get profile dir
   SetLength(hppProfileDir,MAX_PATH);
   PluginLink.CallService(MS_DB_GETPROFILEPATH,MAX_PATH,integer(@hppProfileDir[1]));
@@ -203,7 +207,7 @@ begin
   ReadEventFilters;
 
   for i := 0 to High(MenuHandles) do
-    MenuHandles[i].Name := TranslateString(MenuHandles[i].Name);
+    MenuHandles[i].Name := TranslateString(MenuHandles[i].Name{TRANSLATE-IGNORE});
 
   ZeroMemory(@menuitem,SizeOf(menuItem));
 
@@ -312,11 +316,19 @@ begin
   // place our db settings reading here
   //
   if (PDBContactWriteSetting(lParam).szSetting = 'FormatCopy') then
-    GridOptions.ClipCopyFormat := GetDBWideStr(hppDBName,'FormatCopy',DEFFORMAT_CLIPCOPY);
+    GridOptions.ClipCopyFormat := GetDBWideStr(hppDBName,'FormatCopy',DEFFORMAT_CLIPCOPY)
+  else
   if (PDBContactWriteSetting(lParam).szSetting = 'FormatCopyText') then
-    GridOptions.ClipCopyTextFormat := GetDBWideStr(hppDBName,'FormatCopyText',DEFFORMAT_CLIPCOPYTEXT);
+    GridOptions.ClipCopyTextFormat := GetDBWideStr(hppDBName,'FormatCopyText',DEFFORMAT_CLIPCOPYTEXT)
+  else
   if (PDBContactWriteSetting(lParam).szSetting = 'FormatReplyQuoted') then
-    GridOptions.ReplyQuotedFormat := GetDBWideStr(hppDBName,'FormatReplyQuoted',DEFFORMAT_REPLYQUOTED);
+    GridOptions.ReplyQuotedFormat := GetDBWideStr(hppDBName,'FormatReplyQuoted',DEFFORMAT_REPLYQUOTED)
+  else
+  if (PDBContactWriteSetting(lParam).szSetting = 'ProfileName') then
+    GridOptions.ProfileName := GetDBWideStr(hppDBName,'ProfileName','')
+  else
+  if (PDBContactWriteSetting(lParam).szSetting = 'ShowHistoryCount') then
+    ShowHistoryCount := GetDBBool(hppDBName,'ShowHistoryCount',false);
   //LoadDefaultGridOptions;
 end;
 
@@ -365,10 +377,8 @@ begin
   odp.Position := 0;
   odp.hInstance := hInstance;
   odp.pszTemplate := MakeIntResource(IDD_OPT_HISTORYPP);
-  //odp.pszTitle := Translate(PChar('History'));
-  //odp.pszGroup := nil;
-  odp.pszTitle := Translate(PChar(hppName));
-  odp.pszGroup := Translate(PChar('History'));
+  odp.pszTitle := Translate(hppName{TRANSLATE-IGNORE});
+  odp.pszGroup := Translate('History');
   odp.pfnDlgProc := @OptDialogProc;
   odp.flags := ODPF_BOLDGROUPS;
   PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp));
@@ -419,9 +429,12 @@ begin
   if count <> MenuHandles[0].Count then begin
     ZeroMemory(@menuitem,SizeOf(menuItem));
     menuitem.cbSize := SizeOf(menuItem);
-    menuitem.flags := CMIM_NAME or CMIM_FLAGS;
+    menuitem.flags := CMIM_FLAGS;
     if count = 0 then menuitem.flags := menuitem.flags or CMIF_GRAYED;
-    menuitem.pszName := PChar(Format('%s [%u]',[MenuHandles[0].Name,count]));
+    if ShowHistoryCount then begin
+      menuitem.flags := menuitem.flags or CMIM_NAME;
+      menuitem.pszName := PChar(Format('%s [%u]',[MenuHandles[0].Name,count]))
+    end;
     if PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0].Handle, DWord(@menuItem)) = 0 then
       MenuHandles[0].Count := count;
   end;
