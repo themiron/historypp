@@ -1,7 +1,7 @@
 History++ plugin for Miranda IM
 Easy, fast and feature complete history viewer
 
-Project: http://slav.pp.ru/miranda
+Project: http://themiron.mirandaim.ru/
 SVN: http://opensvn.csie.org/historypp/
 Trac: https://opensvn.csie.org/traccgi/historypp/trac.cgi/
 

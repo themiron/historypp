@@ -98,12 +98,12 @@ const
   hppFLUpdateURL    = 'http://addons.miranda-im.org/feed.php?dlfile=2995';
   hppFLVersionURL   = 'http://addons.miranda-im.org/details.php?action=viewfile&id=2995';
   hppFLVersionPrefix= '<span class="fileNameHeader">'+hppShortHame+' ';
-  hppUpdateURL      = 'http://slav.pp.ru/miranda/historypp';
-  hppVersionURL     = 'http://slav.pp.ru/miranda/version';
+  hppUpdateURL      = 'http://themiron.mirandaim.ru/historypp';
+  hppVersionURL     = 'http://themiron.mirandaim.ru/version';
   hppVersionPrefix  = hppName+' version ';
 
-  hppHomePageURL  = 'http://slav.pp.ru/miranda/';
-  hppChangelogURL = 'http://slav.pp.ru/miranda/changelog';
+  hppHomePageURL  = 'http://themiron.mirandaim.ru/';
+  hppChangelogURL = 'http://themiron.mirandaim.ru/changelog';
 
   hppIPName     = 'historypp_icons.dll';
 
