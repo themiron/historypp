@@ -54,7 +54,7 @@ function GetRichString(RichEditHandle: THandle; SelectionOnly: Boolean = false):
 
 implementation
 
-Uses SysUtils, TntSysUtils;
+Uses SysUtils{, TntSysUtils};
 
 const
   SF_UNICODE = 16;
@@ -126,12 +126,12 @@ var
 begin
   Result := _GetRichRTF(RichEditHandle,Buffer,SelectionOnly,PlainText,NoObjects,PlainRTF,True);
   SetString(RTFStream,PWideChar(@Buffer[1]),Length(Buffer) div SizeOf(WideChar));
-  if PlainText then begin
+  {if PlainText then begin
     len := Length(RTFStream);
     if (len > 0) and (RTFStream[len] = #13) then
       SetLength(RTFStream,len-1);
     RTFStream := TntAdjustLineBreaks(RTFStream);
-  end;
+  end;}
 end;
 
 function GetRichRTF(RichEditHandle: THandle; var RTFStream: AnsiString;
@@ -140,12 +140,12 @@ var
   len: integer;
 begin
   Result := _GetRichRTF(RichEditHandle,RTFStream,SelectionOnly,PlainText,NoObjects,PlainRTF,False);
-  if PlainText then begin
+  {if PlainText then begin
     len := Length(RTFStream);
     if (len > 0) and (RTFStream[len] = #13) then
       SetLength(RTFStream,len-1);
     RTFStream := AdjustLineBreaks(RTFStream);
-  end;
+  end;}
 end;
 
 function _SetRichRTF(RichEditHandle: THandle; Buffer: PByte; Length: integer;

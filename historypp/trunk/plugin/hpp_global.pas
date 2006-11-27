@@ -173,7 +173,7 @@ function MakeTextXMLedW(Text: WideString): WideString;
 
 implementation
 
-uses TntSysUtils;
+uses TntSystem,TntSysUtils;
 
 function URLEncode(const ASrc: string): string;
 const
@@ -259,14 +259,20 @@ end;
 function GetLCIDfromCodepage(Codepage: Cardinal): LCID;
 var
   i: integer;
+  lcid: Cardinal;
 begin
   if CodePage = CP_ACP then CodePage := GetACP;
-  Result := 0;
   for i := 0 to High(cpTable) do
-    if cpTable[i].cp = CodePage then begin
+    if cpTable[i].cp = Codepage then begin
       Result := cpTable[i].lid;
-      break;
+      exit;
     end;
+  for i := 0 to Languages.Count-1 do
+    if LCIDToCodePage(Languages.LocaleID[i]) = Codepage then begin
+      Result := Languages.LocaleID[i];
+      exit;
+    end;
+  Result := 0;
 end;
 
 procedure CopyToClip(WideStr: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP; Clear: Boolean = True);

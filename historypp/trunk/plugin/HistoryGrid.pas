@@ -116,6 +116,7 @@ type
 
   THPPRichEdit = class(TRichEdit)
   private
+    FCodepage: Cardinal;
     procedure SetAutoKeyboard(Enabled: Boolean);
     procedure WMSetFocus(var Message: TWMSetFocus); message WM_SETFOCUS;
     procedure WMLangChange(var Message: TMessage); message WM_INPUTLANGCHANGE;
@@ -124,6 +125,8 @@ type
   protected
     procedure CreateHandle; override;
     procedure CreateParams(var Params: TCreateParams); override;
+  public
+    property Codepage: Cardinal read FCodepage write FCodepage default CP_ACP;
   end;
 
   THistoryGrid = class;
@@ -1244,7 +1247,7 @@ end;
 
 procedure THistoryGrid.SetProcessInline(const Value: Boolean);
 var
-  cr: TCharRange;
+  cr: CHARRANGE;
 begin
   if FProcessInline = Value then exit;
   FProcessInline := Value;
@@ -2010,6 +2013,8 @@ begin
   //RichEdit.Clear;
   RichEdit.Perform(WM_SETTEXT,0,0);
   SetRichRTL(GetItemRTL(Item),RichEdit);
+  // for use with WM_COPY
+  RichEdit.Codepage := FItems[Item].Codepage;
 
   if Options.RawRTFEnabled and UseTextFormatting and isRTF(FItems[Item].Text) then begin
     // stored text seems to be RTF
@@ -4654,7 +4659,7 @@ end;
 procedure THistoryGrid.EditInline(Item: Integer);
 var
   r: TRect;
-  cr: TCharRange;
+  cr: CHARRANGE;
 begin
   if State = gsInline then CancelInline(False);
   MakeVisible(Item);
@@ -5649,24 +5654,22 @@ begin
   inherited;
   //EmptyClipboard();
   Text := GetRichString(Handle,True);
-  CopyToClip(Text,Handle,CP_ACP,False);
+  CopyToClip(Text,Handle,FCodepage,False);
 end;
 
 procedure THPPRichedit.WMKeyDown(var Message: TWMKey);
 begin
-  if (KeyDataToShiftState(Message.KeyData) = [ssCtrl]) then begin
+  if (KeyDataToShiftState(Message.KeyData) = [ssCtrl]) then
     case Message.CharCode of
+      Ord('E'),Ord('J'):
+        Message.Result := 1;
       Ord('C'),VK_INSERT: begin
         PostMessage(Handle,WM_COPY,0,0);
         Message.Result := 1;
       end;
-      Ord('E'),Ord('J'):
-        Message.Result := 1;
-    else
-      inherited;
     end;
-  end else
-    inherited;
+  if Message.Result = 1 then exit;
+  inherited;
 end;
 
 initialization
