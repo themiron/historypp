@@ -180,6 +180,7 @@ var
   FontServiceEnabled: Boolean;
   SmileyAddEnabled: Boolean;
   MathModuleEnabled: Boolean;
+  ShowHistoryCount: Boolean;
 
 procedure LoadGridOptions;
 procedure SaveGridOptions;
@@ -374,6 +375,8 @@ begin
   GridOptions.ClipCopyFormat := GetDBWideStr(hppDBName,'FormatCopy',DEFFORMAT_CLIPCOPY);
   GridOptions.ClipCopyTextFormat := GetDBWideStr(hppDBName,'FormatCopyText',DEFFORMAT_CLIPCOPYTEXT);
   GridOptions.ReplyQuotedFormat := GetDBWideStr(hppDBName,'FormatReplyQuoted',DEFFORMAT_REPLYQUOTED);
+  GridOptions.ProfileName := GetDBWideStr(hppDBName,'ProfileName','');
+  ShowHistoryCount := GetDBBool(hppDBName,'ShowHistoryCount',false);
 
   finally
   GridOptions.EndChange;
