@@ -2903,8 +2903,10 @@ begin
     end
     else begin
       mes := FItems[Item].Text;
-      if Options.RawRTFEnabled and IsRTF(mes) then
-        mes := FormatRTF2String(FRich.Handle,mes);
+      if Options.RawRTFEnabled and IsRTF(mes) then begin
+        ApplyItemToRich(Item);
+        mes := GetRichString(FRich.Handle,False);
+      end;
       if State = gsInline then
         selmes := GetRichString(FRichInline.Handle,True)
       else selmes := mes;
