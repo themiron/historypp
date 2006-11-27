@@ -1,0 +1,7 @@
+;; Text found in ..\plugin\HistoryGrid.pas:
+Conversation started at %s
+Open Link
+Remove Bookmark
+Set Bookmark
+Hide headers
+Show headers
