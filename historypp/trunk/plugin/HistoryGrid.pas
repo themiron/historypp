@@ -123,6 +123,7 @@ type
     procedure WMKeyDown(var Message: TWMKey); message WM_KEYDOWN;
   protected
     procedure CreateHandle; override;
+    procedure CreateParams(var Params: TCreateParams); override;
   end;
 
   THistoryGrid = class;
@@ -187,6 +188,9 @@ type
 
     FOpenDetailsMode: Boolean;
 
+    FForceProfileName: Boolean;
+    FProfileName: WideString;
+
     procedure SetColorDivider(const Value: TColor);
     procedure SetColorSelectedText(const Value: TColor);
     procedure SetColorSelected(const Value: TColor);
@@ -214,6 +218,7 @@ type
     procedure SetMathModuleEnabled(const Value: Boolean);
     procedure SetRawRTFEnabled(const Value: Boolean);
     procedure SetAvatarsHistoryEnabled(const Value: Boolean);
+    procedure SetProfileName(const Value: WideString);
 
     function GetLocked: Boolean;
   protected
@@ -270,6 +275,8 @@ type
     property AvatarsHistoryEnabled: Boolean read FAvatarsHistoryEnabled write SetAvatarsHistoryEnabled;
 
     property OpenDetailsMode: Boolean read FOpenDetailsMode write FOpenDetailsMode;
+    property ForceProfileName: Boolean read FForceProfileName;
+    property ProfileName: WideString read FProfileName write SetProfileName;
   end;
 
 
@@ -518,6 +525,8 @@ type
     procedure OnInlineOnMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure OnInlineOnMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 
+    function GetProfileName: WideString;
+
   protected
     DownHitTests: TGridHitTests;
     procedure CreateWindowHandle(const Params: TCreateParams); override;
@@ -641,7 +650,7 @@ type
     property TxtGenHist1: WideString read FTxtGenHist1 write FTxtGenHist1;
     property TxtGenHist2: WideString read FTxtGenHist2 write FTxtGenHist2;
     //property Filter: TMessageTypes read FFilter write SetFilter;
-    property ProfileName: WideString read FProfileName write FProfileName;
+    property ProfileName: WideString read GetProfileName write FProfileName;
     property ContactName: WideString read FContactName write FContactName;
     property OnDblClick: TNotifyEvent read FDblClick write FDblClick;
     property OnItemData: TGetItemData read FGetItemData write FGetItemData;
@@ -698,6 +707,7 @@ type
   end;
 
 procedure Register;
+function IsRichEdit20Available: Boolean;
 
 implementation
 
@@ -709,6 +719,19 @@ uses
 const
   HtmlStop = [#0,#10,#13,'<','>',' '];
   EM_SETZOOM = WM_USER + 225;
+
+var
+  FRichEdit10Module: THandle = 0;
+  FRichEdit20Module: THandle = 0;
+
+function IsRichEdit20Available: Boolean;
+const
+  RICHED20_DLL = 'RICHED20.DLL';
+begin
+  if FRichEdit20Module = 0 then
+    FRichEdit20Module := Tnt_LoadLibraryW(RICHED20_DLL);
+  Result := FRichEdit20Module <> 0;
+end;
 
 function UrlHighlightHtml(Text: String): String;
 var
@@ -4855,6 +4878,14 @@ begin
   end;
 end;
 
+function THistoryGrid.GetProfileName: WideString;
+begin
+  if Assigned(Options) and Options.ForceProfileName then
+    Result := Options.ProfileName
+  else
+    Result := FProfileName;
+end;
+
 { TGridOptions }
 
 procedure TGridOptions.AddGrid(Grid: THistoryGrid);
@@ -4882,6 +4913,9 @@ begin
   FAvatarsHistoryEnabled := False;
 
   FOpenDetailsMode := False;
+
+  FProfileName := '';
+  FForceProfileName := False;
 
   FLocks := 0;
   Changed := 0;
@@ -5222,6 +5256,14 @@ begin
   Inc(FLocks);
 end;
 
+procedure TGridOptions.SetProfileName(const Value: WideString);
+begin
+  if Value = FProfileName then exit;
+  FProfileName := Value;
+  FForceProfileName := (Value <> '');
+  DoChange;
+end;
+
 { TRichCache }
 
 procedure TRichCache.ApplyItemToRich(Item: PRichItem);
@@ -5557,6 +5599,43 @@ begin
   SendMessage(Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
 end;
 
+// Fix for VCL TRichEdit uses RichEdit 1.0 class, incompatible
+// with EM_REQUESTRESIZE message for some reasons
+procedure THPPRichedit.CreateParams(var Params: TCreateParams);
+
+  procedure CallInherited(Obj: TObject; var Params: TCreateParams; AClass: TClass); register;
+  asm
+    { ->    EAX     Pointer to our object   }
+    {       EDX     Pointer to Params       }
+    {       ECX     Pointer to AClass       }
+    CALL    DWORD PTR [ECX + VMTOFFSET AClass.CreateParams]
+  end;
+
+const
+  RICHED10_DLL = 'RICHED32.DLL';
+  aHideScrollBars: array[Boolean] of DWORD = (ES_DISABLENOSCROLL, 0);
+  aHideSelections: array[Boolean] of DWORD = (ES_NOHIDESEL, 0);
+begin
+  if (not IsRichEdit20Available) and (FRichEdit10Module = 0) then begin
+    FRichEdit10Module := LoadLibrary(RICHED10_DLL);
+    if FRichEdit10Module <= HINSTANCE_ERROR then FRichEdit10Module := 0;
+  end;
+  CallInherited(Self,Params,TCustomMemo);
+  if IsRichEdit20Available then
+    CreateSubClass(Params, RICHEDIT_CLASSA)
+  else
+    CreateSubClass(Params, RICHEDIT_CLASS10A);
+  with Params do begin
+    Style := Style or
+             aHideScrollBars[HideScrollBars] or
+             aHideSelections[HideSelection];
+    if WordWrap then
+      Style := Params.Style and not WS_HSCROLL; // more compatible with RichEdit 1.0
+    // Fix for updating rich in event details form
+    //WindowClass.style := WindowClass.style and not (CS_HREDRAW or CS_VREDRAW);
+  end;
+end;
+
 procedure THPPRichedit.WMCopy(var Message: TWMCopy);
 var
   Text: WideString;
@@ -5589,4 +5668,11 @@ initialization
   Screen.Cursors[crHandPoint] := LoadCursor(0,IDC_HAND);
   if Screen.Cursors[crHandPoint] = 0 then
     Screen.Cursors[crHandPoint] := LoadCursor(hInstance,'CR_HAND');
+
+finalization
+  if FRichEdit10Module <> 0 then
+    FreeLibrary(FRichEdit10Module);
+  if FRichEdit20Module <> 0 then
+    FreeLibrary(FRichEdit20Module);
+
 end.
