@@ -71,7 +71,7 @@ var
 
 implementation
 
-uses StrUtils, TntSysUtils;
+uses StrUtils, TntSysUtils, RichEdit;
 
 const
 
@@ -253,12 +253,13 @@ end;
 
 function DoSupportAvatarHistory(wParam, lParam: DWord): Integer;
 const
-  crlf: String = '{\line }';
+  crlf: String = '{\rtf1{\line }}';
 var
   ird: PItemRenderDetails;
   Link: String;
   msglen: integer;
   hBmp: hBitmap;
+  cr: CHARRANGE;
 begin
   Result := 0;
   ird := Pointer(lParam);
@@ -267,8 +268,9 @@ begin
   Link := hppProfileDir+'\'+ird.pExtended;
   hBmp := PluginLink.CallService(MS_UTILS_LOADBITMAP,0,Cardinal(@Link[1]));
   if hBmp <> 0 then begin
-    msglen := SendMessage(wParam,WM_GETTEXTLENGTH,0,0);
-    SendMessage(wParam,EM_SETSEL,msglen,msglen);
+    cr.cpMin := SendMessage(wParam,WM_GETTEXTLENGTH,0,0);
+    cr.cpMax := cr.cpMin;
+    SendMessage(wParam,EM_EXSETSEL,0,integer(@cr));
     SetRichRTF(wParam,crlf,True,False,True);
     InsertBitmapToRichEdit(wParam,hBmp);
   end;
