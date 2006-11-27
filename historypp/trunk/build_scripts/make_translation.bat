@@ -34,6 +34,9 @@ rem FOR %%A IN (..\plugin\*.dfm) DO (
 FOR %%A IN (..\plugin\*.pas) DO (
   %PHPBIN% -q -d html_errors=false trans.php %%A
 )
+FOR %%A IN (..\plugin\*.dpr) DO (
+  %PHPBIN% -q -d html_errors=false trans.php %%A
+)
 
 cd ..\plugin
 

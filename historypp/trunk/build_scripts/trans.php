@@ -5,58 +5,11 @@
  *
  */
 
-ini_set("register_globals","1");
-ini_set("register_argc_argv","1");
-
-$detailed_file = false;
-$ignore_menuitems = true;
-$ignore_tbitems = true;
-
-
-// empty captions and captions consiting from
-// whitespace, -, /, <, >, _ are skipped
-$skip_empty_captions = '/^[\s\-\<\>\/\_]*$/';
-
-if (count($argv) < 2) {
-  print "Wrong params\r\n";
-  exit;
-}
-
-$file_to_parse = $argv[1];
-//$file_to_parse = '..\plugin\HistoryForm.pas';
-
-if (preg_match('/(.*)\.dfm$/',$file_to_parse,$matches)) {
-  $file_to_parse = $matches[1];
-  }
-if (preg_match('/(.*)\.pas$/',$file_to_parse,$matches)) {
-  $file_to_parse = $matches[1];
-  }
-
 function file_put($filename, $text) {
   $f = fopen($filename,'w',false);
   fwrite($f,$text);
   fclose($f);
 }
-
-if (file_exists("$file_to_parse.trans.txt")) { unlink("$file_to_parse.trans.txt"); }
-if (file_exists("$file_to_parse.trans-err.txt")) { unlink("$file_to_parse.trans-err.txt"); }
-if (file_exists("$file_to_parse.trans-details.txt")) { unlink("$file_to_parse.trans-details.txt"); }
-
-/*$files = array();
-$d = dir('..\plugin');
-while(false !== ($entry = $d->read())) {
-	if (is_dir($entry)) continue;
-	$pattern='/.*\.dfm$/';
-	if (preg_match($pattern,$entry))
-		$files[] = $entry;
-}*/
-
-$lines = @file($file_to_parse.'.dfm');
-$lineid = 0;
-$no_add = false;
-$dfm_str = array();
-$dfm_prop = array();
-$dfm_noadd = array();
 
 function parse_object() {
   global $ignore_menuitems, $ignore_tbitems, $lines, $lineid, $dfm_str, $dfm_prop, $dfm_noadd, $no_add;
@@ -115,21 +68,6 @@ function parse_object() {
   }
 }
 
-// parse form file
-parse_object();
-
-// parse .pas :
-
-$lines = file($file_to_parse.'.pas');
-
-$pas_str = array();
-$pas_prop = array();
-$pas_str_line = array();
-$pas_prop_line = array();
-$pas_var = array();
-$pas_var_line = array();
-$pas_var_str = array();
-
 function add_str($str,$line){
   global $pas_str,$pas_str_line;
   $pas_str[] = $str;
@@ -151,26 +89,79 @@ function add_prop($prop,$line){
   $pas_prop_line[] = $line;
 }
 
-foreach($lines as $i => $line) {
-  $line = rtrim($line);
-  $cur_match = '';
-  // here we capture Translate('...') text
-  // it's buggy, because we can capture:
-  // "...'),Translate('..."
-  // from such string:
-  // "Translate('...'),Translate('...')"
-  if (preg_match_all('/Translate(W|WideW|AnsiW|String|WideString)?\(\'(.*)\'\)/i',$line,$matches)) {
-    foreach($matches[2] as $match) { add_str($match,$i); }
-  } else
-  // capture Translate(var)
-  if (preg_match_all('/Translate(W|WideW|AnsiW|String|WideString)?\((.*)\)/i',$line,$matches)) {
-    foreach($matches[2] as $match) { add_prop($match,$i); }
-  }
-  $pattern = "/([\w\d]+)\s*\:\s*[\w\d]+\s*\=\s*\'(.*)\';$/is";
-  if (preg_match($pattern,$line,$matches)) {
-    add_var($matches[1],$matches[2],$line);
-  }
+ini_set("register_globals","1");
+ini_set("register_argc_argv","1");
 
+$detailed_file = false;
+$ignore_menuitems = true;
+$ignore_tbitems = true;
+
+
+// empty captions and captions consiting from
+// whitespace, -, /, <, >, _ are skipped
+$skip_empty_captions = '/^[\s\-\<\>\/\_]*$/';
+
+if (count($argv) < 2) {
+  print "Wrong params\r\n";
+  exit;
+}
+
+$file_to_parse = $argv[1];
+$file_ext      = '';
+
+if (preg_match('/(.*)\.(dfm|pas|dpr)$/',$file_to_parse,$matches)) {
+  $file_to_parse = @$matches[1];
+  $file_ext      = @$matches[2];
+}
+
+if (file_exists("$file_to_parse.trans.txt")) { unlink("$file_to_parse.trans.txt"); }
+if (file_exists("$file_to_parse.trans-err.txt")) { unlink("$file_to_parse.trans-err.txt"); }
+if (file_exists("$file_to_parse.trans-details.txt")) { unlink("$file_to_parse.trans-details.txt"); }
+
+$lines = array();
+
+// parse form file
+$lineid = 0;
+$no_add = false;
+$dfm_str = array();
+$dfm_prop = array();
+$dfm_noadd = array();
+if ($file_ext == 'dfm' || $file_ext == 'pas') {
+  $lines = @file($file_to_parse.'.dfm');
+  parse_object();
+}
+
+// parse .pas or .dpr
+$pas_str = array();
+$pas_prop = array();
+$pas_str_line = array();
+$pas_prop_line = array();
+$pas_var = array();
+$pas_var_line = array();
+$pas_var_str = array();
+if ($file_ext == 'pas' || $file_ext == 'dpr') {
+  $lines = @file($file_to_parse.'.'.$file_ext);
+
+  foreach($lines as $i => $line) {
+    $line = rtrim($line);
+    $cur_match = '';
+    // here we capture Translate('...') text
+    // it's buggy, because we can capture:
+    // "...'),Translate('..."
+    // from such string:
+    // "Translate('...'),Translate('...')"
+    if (preg_match_all('/Translate(W|WideW|AnsiW|String|WideString)?\s*\(\'(.*)\'\)/i',$line,$matches)) {
+      foreach($matches[2] as $match) { add_str($match,$i); }
+    } else
+    // capture Translate(var)
+    if (preg_match_all('/Translate(W|WideW|AnsiW|String|WideString)?\s*\((.*)\)/i',$line,$matches)) {
+      foreach($matches[2] as $match) { add_prop($match,$i); }
+    }
+    $pattern = "/([\w\d]+)\s*\:\s*[\w\d]+\s*\=\s*\'(.*)\';$/is";
+    if (preg_match($pattern,$line,$matches)) {
+      add_var($matches[1],$matches[2],$line);
+    }
+  }
 }
 
 // delete properties which are actually vars
