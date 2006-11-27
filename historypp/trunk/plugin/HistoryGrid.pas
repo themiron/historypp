@@ -999,6 +999,7 @@ begin
   for i := PrevCount to ItemsCount-1 do begin
     FItems[i].Height := -1;
     FItems[i].MessageType := [mtUnknown];
+    FRichCache.ResetItem(i);
     end;
   {$IFDEF CUST_SB}
     {$IFDEF PAGE_SIZE}
@@ -2749,16 +2750,19 @@ procedure THistoryGrid.GridUpdateSize;
 var
   w,h: Integer;
   NewClient: TBitmap;
-  i,OldClientWidth: Integer;
+  i: Integer;
+  WidthWasUpdated: Boolean;
 begin
   if State = gsInline then CancelInline;
+
+  w := ClientWidth;
+  h := ClientHeight;
+  WidthWasUpdated := (FClient.Width <> w);
 
   // avatars!!!
   //FRichCache.Width := ClientWidth - 3*FPadding - 64;
   FRichCache.Width := ClientWidth - 2*FPadding;
 
-  w := ClientWidth;
-  h := ClientHeight;
   if (w <> 0) and (h <> 0) then begin
     NewClient := TBitmap.Create;
     NewClient.Width := w;
@@ -2766,7 +2770,6 @@ begin
     NewClient.Canvas.Font.Assign(Canvas.Font);
     NewClient.Canvas.TextFlags := Canvas.TextFlags;
 
-    OldClientWidth := FClient.Width;
     FClient.Free;
     FClient := NewClient;
     FCanvas := FClient.Canvas;
@@ -2774,7 +2777,7 @@ begin
 
   IsCanvasClean := False;
 
-  if OldClientWidth <> FClient.Width then
+  if WidthWasUpdated then
     for i := 0 to Count-1 do
       FItems[i].Height := -1;
 
@@ -5544,7 +5547,6 @@ begin
   FRichWidth := Value;
   for i := 0 to Length(Items) - 1 do begin
     Items[i].Rich.Width := Value;
-    Items[i].Rich.Height := -1;
     Items[i].Height := -1;
   end;
 end;
