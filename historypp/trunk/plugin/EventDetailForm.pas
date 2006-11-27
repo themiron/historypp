@@ -92,7 +92,6 @@ type
     procedure ReplyQuoted1Click(Sender: TObject);
     procedure ToogleItemProcessingClick(Sender: TObject);
     procedure ETextResizeRequest(Sender: TObject; Rect: TRect);
-    procedure FormResize(Sender: TObject);
   private
     //FRowIdx: integer;
     FParentForm: THistoryFrm;
@@ -488,14 +487,6 @@ end;
 procedure TEventDetailsFrm.ETextResizeRequest(Sender: TObject; Rect: TRect);
 begin
   FRichHeight := Rect.Bottom - Rect.Top;
-end;
-
-procedure TEventDetailsFrm.FormResize(Sender: TObject);
-begin
-  // workaround for bug with richedit wasn't visually
-  // resized to new size... Maybe that's complitelly
-  // wrong and there's another right way.
-  if Active then EText.Invalidate;
 end;
 
 procedure TEventDetailsFrm.HMEventDeleted(var Message: TMessage);
