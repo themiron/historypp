@@ -9,6 +9,20 @@ Changelog
 
 SVN Changelog: https://opensvn.csie.org/traccgi/historypp/log/?verbose=on
 
+1.5.0.111
+
++ Richedit 2.0 is required and used instead of richedit 1.0
++ Added ability to turn on history count in contact context menu
++ Added ability to force profile name
++ Added down arrow icon on history actions toolbutton
++ Fixed hint cancel to avoid shadow glitches on WinXP
++ Fixed wrong locale id in clipboard on unsupported system codepage
++ Fixed change avatar event handling due richedit 2.0 changes
++ Fixed grid repainting on reallocate (mainly in History Search)
++ Fixed minimal size set of history search window
++ Fixed RTF messages couldn't be copied
++ Changed project download site to http://themiron.mirandaim.ru
+
 1.5.0.110
 
 + Added ability to use plugin as log renderer with tabSRMM
