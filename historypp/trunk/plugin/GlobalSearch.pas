@@ -177,7 +177,7 @@ type
     procedure hgSearchItem(Sender: TObject; Item, ID: Integer;
       var Found: Boolean);
     //procedure TntFormHide(Sender: TObject);
-    procedure TntFormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+    procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure lvContactsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure hgNameData(Sender: TObject; Index: Integer; var Name: WideString);
     procedure hgTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
@@ -250,6 +250,8 @@ type
     HotFilterString: WideString;
     FormState: TGridState;
     SavedLinkUrl: String;
+
+    procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
 
     procedure SMPrepare(var M: TMessage); message HM_STRD_PREPARE;
     procedure SMProgress(var M: TMessage); message HM_STRD_PROGRESS;
@@ -637,7 +639,16 @@ begin
   ContactList.Free;
 end;
 
-procedure TfmGlobalSearch.TntFormMouseWheel(Sender: TObject; Shift: TShiftState;
+procedure TfmGlobalSearch.WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo);
+begin
+  inherited;
+  with Message.MinMaxInfo^ do begin
+    ptMinTrackSize.x:= 320;
+    ptMinTrackSize.y:= 240;
+  end
+end;
+
+procedure TfmGlobalSearch.FormMouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 var
   Ctrl: TControl;
@@ -812,12 +823,13 @@ begin
     end;
   end;
   hg.Allocate(0);
-  hg.Allocate(Length(FilterHistory));
-  if hg.Count > 0 then begin
-    // dirty hack: readjust scrollbars
-    hg.Perform(WM_SIZE,SIZE_RESTORED,MakeLParam(hg.ClientWidth,hg.ClientHeight));
+  if Length(FilterHistory) > 0 then begin
+    hg.Allocate(Length(FilterHistory));
     hg.Selected := 0;
-  end;
+  end else
+    hg.Selected := -1;
+  // dirty hack: readjust scrollbars
+  hg.Perform(WM_SIZE,SIZE_RESTORED,MakeLParam(hg.ClientWidth,hg.ClientHeight));
 end;
 
 {function TfmGlobalSearch.FindContact(hContact: Integer): TContactInfo;

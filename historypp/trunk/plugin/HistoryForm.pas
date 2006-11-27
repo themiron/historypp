@@ -218,8 +218,7 @@ type
     procedure LoadHistory(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
-    procedure WMSysCommand(var Message: TWMSysCommand); message WM_SYSCOMMAND;
-    //procedure FormHide(Sender: TObject);
+
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -227,7 +226,7 @@ type
     procedure hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
     procedure hgTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
     procedure hgPopup(Sender: TObject);
-    //procedure cbFilterChange(Sender: TObject);
+
     procedure hgSearchFinished(Sender: TObject; Text: WideString; Found: Boolean);
     procedure hgDblClick(Sender: TObject);
     procedure SaveSelected1Click(Sender: TObject);
@@ -237,7 +236,7 @@ type
     procedure Details1Click(Sender: TObject);
     procedure hgKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure hgState(Sender: TObject; State: TGridState);
-    //procedure cbSortChange(Sender: TObject);
+    
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure hgSelect(Sender: TObject; Item, OldItem: Integer);
     procedure hgXMLData(Sender: TObject; Index: Integer; var Item: TXMLItem);
@@ -320,7 +319,7 @@ type
     UserMenu: hMenu;
     FPanel: THistoryPanel;
 
-    procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo); message WM_GetMinMaxInfo;
+    procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
     procedure CMShowingChanged(var Message: TMessage); message CM_SHOWINGCHANGED;
     procedure LoadPosition;
     procedure SavePosition;
@@ -372,7 +371,7 @@ type
     function GridIndexToHistory(Index: Integer): Integer;
     function HistoryIndexToGrid(Index: Integer): Integer;
     function GetItemData(Index: Integer): THistoryItem;
-    //procedure ApplyFilter(DoApply: boolean = true);
+
     procedure ReplyQuoted(Item: Integer);
     procedure OpenPassword;
     procedure EmptyHistory;
@@ -641,17 +640,6 @@ begin
   //hg.InlineRichEdit.PopupMenu := pmGridInline;
   //for i := 0 to pmOptions.Items.Count-1 do
   //  pmOptions.Items.Remove(pmOptions.Items[0]);
-end;
-
-procedure THistoryFrm.WMSysCommand(var Message: TWMSysCommand);
-//show infodialog or font options
-begin
-  inherited;
-  //if Message.CmdType and $FFF0 = $F200 then
-  //  ;
-  //if Message.CmdType and $FFF0 = $F220 then begin
-  //  OpenOptions;
-  //  end;
 end;
 
 procedure THistoryFrm.LoadPosition;
@@ -1909,35 +1897,14 @@ begin
   WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
 end;
 
-procedure THistoryFrm.WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo);
+procedure THistoryFrm.WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo);
 begin
   inherited;
-  with Msg.MinMaxInfo^ do begin
-    ptMinTrackSize.x:= 300;
+  with Message.MinMaxInfo^ do begin
+    ptMinTrackSize.x:= 320;
     ptMinTrackSize.y:= 240;
-    end
+  end
 end;
-
-{procedure THistoryFrm.WMSize(var Message: TWMSize);
-begin
-  inherited;
-end;}
-
-{procedure THistoryFrm.ApplyFilter(DoApply: boolean = true);
-begin
-  cbSortChange(cbSort);
-  if not DoApply then cbFilter.ItemIndex := 0;
-  cbFilterChange(cbFilter);
-end;}
-
-{procedure THistoryFrm.cbSortChange(Sender: TObject);
-begin
-  if hg.Reversed = (cbSort.ItemIndex = 0) then exit;
-  hg.Reversed := (cbSort.ItemIndex = 0);
-  LastSearch := lsNone;
-  LastHotIdx := -1;
-  HotString := '';
-end;}
 
 procedure THistoryFrm.FormMouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);

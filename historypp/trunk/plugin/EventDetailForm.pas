@@ -101,7 +101,7 @@ type
 
 //    procedure SetRowIdx(const Value: integer);
     procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
-    procedure WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo); message wm_GetMinMaxInfo;
+    procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
     procedure WMNotify(var Message: TWMNotify); message WM_NOTIFY;
     procedure WMSetCursor(var Message: TWMSetCursor); message WM_SETCURSOR;
     procedure LoadPosition;
@@ -132,14 +132,13 @@ uses hpp_database, hpp_options, hpp_services;
 
 { TForm1 }
 
-procedure TEventDetailsFrm.WMGetMinMaxInfo(var Msg: TWMGetMinMaxInfo);
+procedure TEventDetailsFrm.WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo);
 begin
   inherited;
-  with Msg.MinMaxInfo^ do
-    begin
-    ptMinTrackSize.x:= 466;
-    ptMinTrackSize.y:= 340;
-    end
+  with Message.MinMaxInfo^ do begin
+    ptMinTrackSize.x:= 376;
+    ptMinTrackSize.y:= 240;
+  end
 end;
 
 procedure TEventDetailsFrm.PrevBtnClick(Sender: TObject);
