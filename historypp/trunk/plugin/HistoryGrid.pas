@@ -398,6 +398,7 @@ type
     FRich: THPPRichEdit;
     FRichInline: THPPRichEdit;
     FRichSave: THPPRichEdit;
+    FRichSaveItem: THPPRichEdit;
     FRichSaveOLECB: TRichEditOleCallback;
 
     FOnInlineKeyDown: TKeyEvent;
@@ -4029,6 +4030,7 @@ var
 
   procedure SaveRTF;
   begin
+    FRichSaveItem := THPPRichEdit.CreateParented(Handle);
     FRichSave := THPPRichEdit.CreateParented(Handle);
     FRichSaveOLECB := TRichEditOleCallback.Create;
     FRichSave.Perform(EM_SETOLECALLBACK, 0, DWord(TRichEditOleCallback(FRichSaveOLECB) as IRichEditOleCallback));
@@ -4076,6 +4078,7 @@ procedure THistoryGrid.SaveEnd(Stream: TFileStream; SaveFormat: TSaveFormat);
     FRichSave.Lines.SaveToStream(Stream);
     FRichSave.Perform(EM_SETOLECALLBACK, 0, 0);
     FRichSave.Destroy;
+    FRichSaveItem.Destroy;
     FRichSaveOLECB.Free;
   end;
 
@@ -4112,12 +4115,18 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
   var
     cnt: String;
     mes_id,type_id: String;
+    mes: WideString;
     txt: String;
   begin
     if mtIncoming in FItems[Item].MessageType then cnt := UTF8Encode(ContactName)
                                               else cnt := UTF8Encode(ProfileName);
     cnt := MakeTextHtmled(cnt+':');
-    txt := MakeTextHtmled(UTF8Encode(FItems[Item].Text));
+    mes := FItems[Item].Text;
+    if Options.RawRTFEnabled and IsRTF(FItems[Item].Text) then begin
+      ApplyItemToRich(Item);
+      mes := GetRichString(FRich.Handle,False);
+    end;
+    txt := MakeTextHtmled(UTF8Encode(mes));
     try
       txt := UrlHighlightHtml(txt);
     except
@@ -4141,7 +4150,7 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     XmlItem: TXMLItem;
   begin
     if not Assigned(FGetXMLData) then exit;
-     FGetXMLData(Self,Item,XMlItem);
+    FGetXMLData(Self,Item,XMlItem);
     WriteString(Stream,'<EVENT>'+#13#10);
     WriteString(Stream,#9+'<CONTACT>'+XmlItem.Contact+'</CONTACT>'+#13#10);
     WriteString(Stream,#9+'<FROM>'+XmlItem.From+'</FROM>'+#13#10);
@@ -4165,8 +4174,13 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
   begin
     if mtIncoming in FItems[Item].MessageType then cnt := ContactName
                                               else cnt := ProfileName;
-    if Options.BBCodesEnabled then mes := DoStripBBCodes(FItems[Item].Text)
-                              else mes := FItems[Item].Text;
+    mes := FItems[Item].Text;
+    if Options.RawRTFEnabled and IsRTF(mes) then begin
+      ApplyItemToRich(Item);
+      mes := GetRichString(FRich.Handle,False);
+    end;
+    if Options.BBCodesEnabled then
+      mes := DoStripBBCodes(mes);
     date := GetTime(FItems[Item].Time);
     WriteWideString(Stream,WideFormat('[%s] %s:'#13#10,[date,cnt]));
     WriteWideString(Stream,mes+#13#10+#13#10);
@@ -4179,8 +4193,13 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
   begin
     if mtIncoming in FItems[Item].MessageType then cnt := WideToAnsiString(ContactName,Codepage)
                                               else cnt := WideToAnsiString(ProfileName,Codepage);
-    if Options.BBCodesEnabled then mes := DoStripBBCodes(FItems[Item].Text)
-                              else mes := FItems[Item].Text;
+    mes := FItems[Item].Text;
+    if Options.RawRTFEnabled and IsRTF(mes) then begin
+      ApplyItemToRich(Item);
+      mes := GetRichString(FRich.Handle,False);
+    end;
+    if Options.BBCodesEnabled then
+      mes := DoStripBBCodes(mes);
     date := WideToAnsiString(GetTime(FItems[Item].Time),Codepage);
     WriteString(Stream,Format('[%s] %s:'#13#10,[date,cnt]));
     WriteString(Stream,WideToAnsiString(mes,Codepage)+#13#10+#13#10);
@@ -4191,13 +4210,13 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     RTFStream: String;
     Text: WideString;
   begin
-    ApplyItemToRich(Item,FRich,false,false);
     if mtIncoming in FItems[Item].MessageType then Text := ContactName
                                               else Text := ProfileName;
     Text := Text + ' ['+GetTime(FItems[Item].Time)+']:';
     RTFStream := '{\rtf1\par\b1 '+FormatString2RTF(Text)+'\b0\par}';
     SetRichRTF(FRichSave.Handle,RTFStream,true,false,false);
-    GetRichRTF(FRich.Handle,RTFStream,false,false,false,false);
+    ApplyItemToRich(Item,FRichSaveItem,false,false);
+    GetRichRTF(FRichSaveItem.Handle,RTFStream,false,false,false,false);
     SetRichRTF(FRichSave.Handle,RTFStream,true,false,false);
   end;
 
