@@ -2123,6 +2123,7 @@ var
   tmp: string;
   dt: TDateTime;
   er: TEventRecord;
+  mes: WideString;
 begin
   dt := TimestampToDateTime(hg.Items[Index].Time);
   Item.Time := MakeTextXMLedA(FormatDateTime('hh:mm:ss',dt));
@@ -2136,10 +2137,14 @@ begin
 
   Item.EventType := '&'+GetMessageRecord(hg.Items[Index].MessageType).XML+';';
 
+  mes := hg.Items[Index].Text;
+  if GridOptions.RawRTFEnabled and IsRTF(mes) then begin
+    hg.ApplyItemToRich(Index);
+    mes := GetRichString(hg.RichEdit.Handle,False);
+  end;
   if GridOptions.BBCodesEnabled then
-    Item.Mes := UTF8Encode(MakeTextXMLedW(DoStripBBCodes(hg.Items[Index].Text)))
-  else
-    Item.Mes := UTF8Encode(MakeTextXMLedW(hg.Items[Index].Text));
+    mes := DoStripBBCodes(mes);
+  Item.Mes := UTF8Encode(MakeTextXMLedW(mes));
 
   if mtFile in hg.Items[Index].MessageType then begin
     tmp := hg.Items[Index].Extended;
