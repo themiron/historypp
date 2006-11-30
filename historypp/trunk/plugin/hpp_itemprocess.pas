@@ -105,7 +105,7 @@ function GetColorRTF(code: String; colcount: integer): integer;
 var
   i: integer;
 begin
-  Result := 1;
+  Result := 0;
   if colcount >= 0 then
     for i := 0 to High(rtf_ctable) do
       if code = rtf_ctable[i].sz then begin
