@@ -425,16 +425,17 @@ type
 
     FOnBookmarkClick: TOnBookmarkClick;
     FShowBookmarks: Boolean;
-
     FGroupLinked: Boolean;
-
     FShowBottomAligned: Boolean;
-
     FOnSelectRequest: TOnSelectRequest;
-
     FSavedKeyMessage: TWMKey;
-
     FBorderStyle: TBorderStyle;
+
+    function GetHint: WideString;
+    procedure SetHint(const Value: WideString);
+    function IsHintStored: Boolean;
+    procedure CMHintShow(var Message: TMessage); message CM_HINTSHOW;
+
     procedure SetBorderStyle(Value: TBorderStyle);
 
     procedure SetCodepage(const Value: Cardinal);
@@ -708,6 +709,7 @@ type
     {$IFDEF CUST_SB}
     property VertScrollBar: TVertScrollBar read FVertScrollBar write SetVertScrollBar;
     {$ENDIF}
+    property Hint: WideString read GetHint write SetHint stored IsHintStored;
   end;
 
 procedure Register;
@@ -969,6 +971,27 @@ begin
     Options.DeleteGrid(Self);
   FClient.Free;
   Finalize(FItems);
+  inherited;
+end;
+
+function THistoryGrid.IsHintStored: Boolean;
+begin
+  Result := TntControl_IsHintStored(Self)
+end;
+
+function THistoryGrid.GetHint: WideString;
+begin
+  Result := TntControl_GetHint(Self)
+end;
+
+procedure THistoryGrid.SetHint(const Value: WideString);
+begin
+  TntControl_SetHint(Self, Value);
+end;
+
+procedure THistoryGrid.CMHintShow(var Message: TMessage);
+begin
+  ProcessCMHintShowMsg(Message);
   inherited;
 end;
 
