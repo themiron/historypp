@@ -1824,7 +1824,7 @@ begin
 
   // start processing all items
 
-  if Self.Reversed then begin
+  if Reversed then begin
     ifrom := High(ItemList);
     ito := 0;
   end else begin
@@ -4343,10 +4343,10 @@ end;
 (* Index to Position *)
 function THistoryGrid.GetIdx(Index: Integer): Integer;
 begin
-if Reversed then
-  Result := Count-1-Index
-else
-  Result := Index;
+  if Reversed then
+    Result := Count-1-Index
+  else
+    Result := Index;
 end;
 
 function THistoryGrid.GetFirstVisible: Integer;

@@ -132,7 +132,7 @@ begin
   end;
 
   Checked := GetChecked(IDC_RECENTONTOP);
-  if Checked <> (GetDBBool(hppDBName,'SortOrder',false) <> false) then begin
+  if Checked <> GetDBBool(hppDBName,'SortOrder',false) then begin
     WriteDBBool(hppDBName,'SortOrder',Checked);
     for i := 0 to HstWindowList.Count - 1 do begin
       THistoryFrm(HstWindowList[i]).SetRecentEventsPosition(Checked);
@@ -143,14 +143,14 @@ begin
 
   {$IFNDEF NO_EXTERNALGRID}
   Checked := GetChecked(IDC_GROUPLOGITEMS);
-  if Checked <> (GetDBBool(hppDBName,'GroupLogItems',false) <> false) then begin
+  if Checked <> GetDBBool(hppDBName,'GroupLogItems',false) then begin
     WriteDBBool(hppDBName,'GroupLogItems',Checked);
     for i := 0 to Length(ExternalGrids)-1 do
       ExternalGrids[i].GroupLinked := Checked;
   end;
 
   Checked := GetChecked(IDC_IEVIEWAPI);
-  if Checked <> (GetDBBool(hppDBName,'IEViewAPI',false) <> false) then
+  if Checked <> GetDBBool(hppDBName,'IEViewAPI',false) then
     WriteDBBool(hppDBName,'IEViewAPI',Checked);
   if Checked <> ImitateIEView then
     ShowWindow(GetDlgItem(hDlg,ID_NEED_RESTART),SW_SHOW)
