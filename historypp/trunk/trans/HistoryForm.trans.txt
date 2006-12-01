@@ -88,7 +88,7 @@ Hide Menu
 System History
 Error
 Please wait while closing the window...
-&Edit
+&Pseudo-edit
 &Open
 HotSearch: %s (F3 to find next)
 Partial History [%s] - [%s]

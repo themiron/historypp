@@ -1501,7 +1501,7 @@ begin
   if hg.Selected <> -1 then begin
     Delete1.Visible := True;
     if GridOptions.OpenDetailsMode then
-      Details1.Caption := TranslateWideW('&Edit')
+      Details1.Caption := TranslateWideW('&Pseudo-edit')
     else
       Details1.Caption := TranslateWideW('&Open');
     if hg.SelCount > 1 then
