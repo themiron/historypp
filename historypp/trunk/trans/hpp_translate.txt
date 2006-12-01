@@ -324,8 +324,8 @@ Rename &Bookmark
 ;; Text found in ..\plugin\HistoryForm.pas:
 [Error]
 Error
-[&Edit]
-&Edit
+[&Pseudo-edit]
+&Pseudo-edit
 [%.0n items in history]
 %.0n items in history
 [Pseudo-edit mode...]
