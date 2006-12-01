@@ -95,7 +95,7 @@ type
 
 implementation
 
-uses hpp_options;
+uses hpp_options,hpp_sessionsthread;
 
 { TExternalGrid }
 
@@ -154,8 +154,14 @@ begin
   FGridState := gsIdle;
 
   Grid := THistoryGrid.CreateParented(ParentWindow);
-  Grid.ControlID := ControlID;
+
+  Grid.Reversed := False;
+  Grid.ShowHeaders := True;
+  Grid.ReversedHeader := True;
+  Grid.ExpandHeaders := GetDBBool(hppDBName,'ExpandLogHeaders',False);
   Grid.HideSelection := True;
+  Grid.ControlID := ControlID;
+
   Grid.ParentCtl3D := False;
   Grid.Ctl3D := True;
   Grid.ParentColor := False;
@@ -232,6 +238,7 @@ end;
 
 destructor TExternalGrid.Destroy;
 begin
+  WriteDBBool(hppDBName,'ExpandLogHeaders',Grid.ExpandHeaders);
   if FSelection <> nil then FreeMem(FSelection);
   Grid.Free;
   Finalize(Items);
@@ -263,9 +270,14 @@ begin
     Item := ReadEvent(Items[Index].hDBEvent,Items[Index].Codepage);
   Item.Proto := Grid.Protocol;
   Item.Bookmarked := BookmarkServer[Items[Index].hContact].Bookmarked[Items[Index].hDBEvent];
-  if (Index > 0) and (Item.MessageType = Grid.Items[Index-1].MessageType) then begin
+  if Index = 0 then begin
+    Item.HasHeader := True;
+  end else begin
     PrevTimestamp := GetEventTimestamp(Items[Index-1].hDBEvent);
-    Item.LinkedToPrev := ((DWord(Item.Time) - PrevTimestamp) < 60);
+    if IsEventInSession(Item.EventType) then
+      Item.HasHeader := ((DWord(Item.Time) - PrevTimestamp) > SESSION_TIMEDIFF);
+    if (Item.MessageType = Grid.Items[Index-1].MessageType) then
+      Item.LinkedToPrev := ((DWord(Item.Time) - PrevTimestamp) < 60);
   end;
   if (not FUseHistoryRTLMode) and (Item.RTLMode <> hppRTLEnable) then
     Item.RTLMode := Items[Index].RTLMode;
@@ -298,7 +310,7 @@ begin
       else Grid.Protocol := GetContactProto(Items[Index].hContact);
     end;
     if mtIncoming in Grid.Items[Index].MessageType then begin
-      Grid.ContactName := GetContactDisplayName(Items[Index].hContact, Grid.Protocol, true);
+      Grid.ContactName := GetContactDisplayName(Items[Index].hContact,Grid.Protocol,true);
       Name := Grid.ContactName;
     end else begin
       Grid.ProfileName := GetContactDisplayName(0, Grid.Protocol);
@@ -496,7 +508,8 @@ begin
     if Grid.InlineRichEdit.SelLength = 0 then exit;
     Grid.InlineRichEdit.CopyToClipboard;
   end else begin
-    CopyToClip(Grid.FormatSelected(Grid.Options.ClipCopyFormat),Grid.Handle,Items[Grid.Selected].Codepage);
+    CopyToClip(Grid.FormatSelected(Grid.Options.ClipCopyFormat),
+      Grid.Handle,Items[Grid.Selected].Codepage);
   end;
 end;
 
@@ -513,7 +526,8 @@ begin
     Grid.InlineRichEdit.Perform(EM_EXSETSEL,0,LPARAM(@cr));
     Grid.InlineRichEdit.Lines.EndUpdate;
   end else
-    CopyToClip(Grid.FormatSelected(Grid.Options.ClipCopyTextFormat),Grid.Handle,Items[Grid.Selected].Codepage);
+    CopyToClip(Grid.FormatSelected(Grid.Options.ClipCopyTextFormat),
+      Grid.Handle,Items[Grid.Selected].Codepage);
 end;
 
 procedure TExternalGrid.OnSelectAllClick(Sender: TObject);
@@ -557,10 +571,12 @@ begin
   if Grid.Selected = -1 then exit;
   if Grid.State = gsInline then begin
     if Grid.InlineRichEdit.SelLength = 0 then exit;
-    SendMessageTo(Items[Grid.Selected].hContact,Grid.FormatSelected(DEFFORMAT_REPLYQUOTEDTEXT));
+    SendMessageTo(Items[Grid.Selected].hContact,
+      Grid.FormatSelected(DEFFORMAT_REPLYQUOTEDTEXT));
   end else begin
     //if (hContact = 0) or (hg.SelCount = 0) then exit;
-    SendMessageTo(Items[Grid.Selected].hContact,Grid.FormatSelected(Grid.Options.ReplyQuotedFormat));
+    SendMessageTo(Items[Grid.Selected].hContact,
+      Grid.FormatSelected(Grid.Options.ReplyQuotedFormat));
   end;
 end;
 
