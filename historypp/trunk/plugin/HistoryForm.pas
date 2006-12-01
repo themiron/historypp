@@ -550,14 +550,14 @@ procedure THistoryFrm.LoadHistory(Sender: TObject);
     LineIdx: integer;
     ToRead: integer;
   begin
-    HistoryLength:=PluginLink.CallService(MS_DB_EVENT_GETCOUNT,hContact,0);
+    HistoryLength := PluginLink.CallService(MS_DB_EVENT_GETCOUNT,hContact,0);
     if HistoryLength = -1 then begin
       // contact is missing
       // or other error ?
       HistoryLength := 0;
     end;
     SetLength(History,HistoryLength);
-    if HistoryLength=0 then Exit;
+    if HistoryLength = 0 then Exit;
     hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDLAST,hContact,0);
     History[HistoryLength-1] := NotZero(hDbEvent);
     {if NeedhDBEvent = 0 then toRead := Max(0,HistoryLength-hppLoadBlock-1)
@@ -587,7 +587,7 @@ begin
   hg.RTLMode := GetContactRTLModeTRTL(hContact, Protocol);
   if hContact = 0 then Caption := TranslateWideW('System History')
                   else Caption := WideFormat(Caption,[hg.ContactName]);
-  hg.Allocate(Length(History));
+  hg.Allocate(HistoryLength);
 end;
 
 procedure THistoryFrm.FormCreate(Sender: TObject);
@@ -1088,9 +1088,10 @@ begin
         txt := Copy(hi.Text,1,100);
         txt := Tnt_WideStringReplace(txt,#13#10,' ',[rfReplaceAll]);
         // without freeing Module string mem manager complains about memory leak! WTF???
-        hi.Module := '';
-        hi.Proto := '';
-        hi.Text := '';
+        Finalize(hi);
+        //hi.Module := '';
+        //hi.Proto := '';
+        //hi.Text := '';
       end;
       // compress spaces here!
       li.Caption := txt;
@@ -1694,18 +1695,18 @@ end;
 
 function THistoryFrm.GridIndexToHistory(Index: Integer): Integer;
 begin
-  Result := Length(History)-1-Index;
+  Result := HistoryLength-1-Index;
+end;
+
+function THistoryFrm.HistoryIndexToGrid(Index: Integer): Integer;
+begin
+  Result := HistoryLength-1-Index;
 end;
 
 procedure THistoryFrm.mmHideMenuClick(Sender: TObject);
 begin
   WriteDBBool(hppDBName,'Accessability', False);
   NotifyAllForms(HM_NOTF_ACCCHANGED,DWord(False),0);
-end;
-
-function THistoryFrm.HistoryIndexToGrid(Index: Integer): Integer;
-begin
-  Result := Length(History)-1-Index;
 end;
 
 procedure THistoryFrm.Copy1Click(Sender: TObject);
@@ -2423,7 +2424,7 @@ begin
   //if hContact = 0 then paTop.Visible := False;
   // set reversed here, after Allocate, because of some scrollbar
   // "features", we'll load end of the list if put before Allocate
-  SetRecentEventsPosition(GetDBInt(hppDBName,'SortOrder',0) <> 0);
+  SetRecentEventsPosition(GetDBBool(hppDBName,'SortOrder',false));
   // set ShowSessions here because we check for empty history
   if hContact = 0 then begin
     if GetDBBool(hppDBName,'ShowBookmarksSystem',False) then
@@ -2603,7 +2604,7 @@ begin
   Index := -1;
   // looks like history starts to load from end?
   // well, of course, we load from the last event!
-  for i := Length(History) - 1 downto 0 do begin
+  for i := HistoryLength - 1 downto 0 do begin
     if History[i] = 0 then
       LoadPendingHeaders(i,HistoryLength);
     if History[i] = Event then begin
@@ -3089,8 +3090,9 @@ begin
   if Assigned(EventDetailFrom) then
     EventDetailFrom.Release;
 
-  SetLength(History,0);
   HistoryLength := 0;
+  SetLength(History,HistoryLength);
+
   SetLength(Sessions,0);
   BookmarkServer.Contacts[hContact].DeleteBookmarks;
   tvSess.Items.Clear;
@@ -3297,7 +3299,7 @@ begin
     Last:= Sessions[DWord(Node.Data)].hDBEventLast;
     fFirst := -1;
     fLast := -1;
-    for i := Length(History) - 1 downto 0 do begin
+    for i := HistoryLength - 1 downto 0 do begin
       if History[i] = 0 then LoadPendingHeaders(i,HistoryLength);
       if History[i] = First then fFirst := i;
       if History[i] = Last then fLast := i;
@@ -3486,7 +3488,7 @@ begin
   Index := -1;
   // looks like history starts to load from end?
   // well, of course, we load from the last event!
-  for i := Length(History) - 1 downto 0 do begin
+  for i := HistoryLength - 1 downto 0 do begin
     if History[i] = 0 then
       LoadPendingHeaders(i,HistoryLength);
     if History[i] = Event then begin

@@ -171,16 +171,17 @@ begin
 
   // we are going backwards here because history forms way want to
   // close themselves on the message, so we would have AVs if go from 0 to Count
+
+  {$IFNDEF NO_EXTERNALGRID}
+  for i := Length(ExternalGrids)-1 downto 0 do
+    ExternalGrids[i].Perform(Msg,wParam,lParam);
+  {$ENDIF}
+
   for i := HstWindowList.Count - 1 downto 0 do begin
     if Assigned(THistoryFrm(HstWindowList[i]).EventDetailFrom) then
       THistoryFrm(HstWindowList[i]).EventDetailFrom.Perform(Msg,wParam,lParam);
     THistoryFrm(HstWindowList[i]).Perform(Msg,wParam,lParam);
   end;
-
-  {$IFNDEF NO_EXTERNALGRID}
-  for i := 0 to Length(ExternalGrids)-1 do
-    ExternalGrids[i].Perform(Msg,wParam,lParam);
-  {$ENDIF}
 
   if Assigned(fmGlobalSearch) then
     fmGlobalSearch.Perform(Msg,wParam,lParam);
