@@ -327,6 +327,9 @@ begin
   if (PDBContactWriteSetting(lParam).szSetting = 'ProfileName') then
     GridOptions.ProfileName := GetDBWideStr(hppDBName,'ProfileName','')
   else
+  if (PDBContactWriteSetting(lParam).szSetting = 'DateTimeFormat') then
+    GridOptions.DateTimeFormat := GetDBStr(hppDBName,'DateTimeFormat',DEFFORMAT_DATETIME)
+  else
   if (PDBContactWriteSetting(lParam).szSetting = 'ShowHistoryCount') then
     ShowHistoryCount := GetDBBool(hppDBName,'ShowHistoryCount',false);
   //LoadDefaultGridOptions;

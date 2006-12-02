@@ -193,6 +193,7 @@ type
 
     FForceProfileName: Boolean;
     FProfileName: WideString;
+    FDateTimeFormat: String;
 
     procedure SetColorDivider(const Value: TColor);
     procedure SetColorSelectedText(const Value: TColor);
@@ -224,6 +225,7 @@ type
     procedure SetProfileName(const Value: WideString);
 
     function GetLocked: Boolean;
+    procedure SetDateTimeFormat(const Value: String);
   protected
     procedure DoChange;
     procedure AddGrid(Grid: THistoryGrid);
@@ -280,6 +282,8 @@ type
     property OpenDetailsMode: Boolean read FOpenDetailsMode write FOpenDetailsMode;
     property ForceProfileName: Boolean read FForceProfileName;
     property ProfileName: WideString read FProfileName write SetProfileName;
+
+    property DateTimeFormat: String read FDateTimeFormat write SetDateTimeFormat;
   end;
 
 
@@ -5148,6 +5152,21 @@ procedure TGridOptions.SetColorSessHeader(const Value: TColor);
 begin
   if FColorSessHeader = Value then exit;
   FColorSessHeader := Value;
+  DoChange;
+end;
+
+procedure TGridOptions.SetDateTimeFormat(const Value: String);
+var
+  NewValue: String;
+begin
+  NewValue := Value;
+  try
+    FormatDateTime(NewValue,Now);
+  except
+    NewValue := DEFFORMAT_DATETIME;
+  end;
+  if FDateTimeFormat = NewValue then exit;
+  FDateTimeFormat := NewValue;
   DoChange;
 end;
 

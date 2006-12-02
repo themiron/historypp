@@ -65,6 +65,7 @@ const
   DEFFORMAT_CLIPCOPYTEXT    = '%mes%\n';
   DEFFORMAT_REPLYQUOTED     = '%nick%, %smart_datetime%:\n%quot_mes%\n';
   DEFFORMAT_REPLYQUOTEDTEXT = '%quot_selmes%\n';
+  DEFFORMAT_DATETIME        = 'c'; // ShortDateFormat + LongTimeFormat
 
 const
 
@@ -376,8 +377,8 @@ begin
   GridOptions.ClipCopyTextFormat := GetDBWideStr(hppDBName,'FormatCopyText',DEFFORMAT_CLIPCOPYTEXT);
   GridOptions.ReplyQuotedFormat := GetDBWideStr(hppDBName,'FormatReplyQuoted',DEFFORMAT_REPLYQUOTED);
   GridOptions.ProfileName := GetDBWideStr(hppDBName,'ProfileName','');
+  GridOptions.DateTimeFormat := GetDBStr(hppDBName,'DateTimeFormat',DEFFORMAT_DATETIME);
   ShowHistoryCount := GetDBBool(hppDBName,'ShowHistoryCount',false);
-
   finally
   GridOptions.EndChange;
   end;
