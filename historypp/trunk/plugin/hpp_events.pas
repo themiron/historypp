@@ -57,6 +57,9 @@ const
   EVENTTYPE_AVATARCHANGE    = 9003;     // from prescuma
   EVENTTYPE_CONTACTLEFTCHANNEL = 9004;  // from tabSRMM
 
+// General timstamp function
+function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;
+function DateTimeToUnixTime(DateTime: TDateTime): DWord;
 // Miranda timestamp to TDateTime
 function TimestampToDateTime(Timestamp: DWord): TDateTime;
 function TimestampToString(Timestamp: DWord): WideString;
@@ -94,8 +97,12 @@ procedure ShrinkTextBuffer;
 
 implementation
 
+uses
+  hpp_options;
+  
 // OXY:
-// This routine UnixTimeToDate is taken from JclDateTime.pas
+// Routines UnixTimeToDate and DateTimeToUnixTime are taken
+// from JclDateTime.pas
 // See JclDateTime.pas for copyright and license information
 // JclDateTime.pas is part of Project JEDI Code Library (JCL)
 // [http://www.delphi-jedi.org], [http://jcl.sourceforge.net]
@@ -141,6 +148,11 @@ begin
   Result:= UnixTimeStart + (UnixTime / SecondsPerDay);
 end;
 
+function DateTimeToUnixTime(DateTime: TDateTime): DWord;
+begin
+  Result := Trunc((DateTime-UnixTimeStart) * SecondsPerDay);
+end;
+
 // Miranda timestamp to TDateTime
 function TimestampToDateTime(Timestamp: DWord): TDateTime;
 begin
@@ -164,17 +176,11 @@ begin
   Result := Event.timestamp;
 end;
 
+// should probably add function param to use
+// custom grid options object and not the global one
 function TimestampToString(Timestamp: DWord): WideString;
-{var
-  strdatetime: array [0..64] of Char;
-  dbtts: TDBTimeToString;}
 begin
-  {dbtts.cbDest := sizeof(strdatetime);
-  dbtts.szDest := @strdatetime;
-  dbtts.szFormat := 'd s';
-  PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOSTRING,timestamp,Integer(@dbtts));
-  Result := strdatetime;}
-  Result := DateTimeToStr(TimestampToDateTime(Timestamp));
+  Result := FormatDateTime(GridOptions.DateTimeFormat,TimestampToDateTime(Timestamp));
 end;
 
 var
