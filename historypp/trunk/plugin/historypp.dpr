@@ -154,17 +154,23 @@ begin
   hppCodepage := PluginLink.CallService(MS_LANGPACK_GETCODEPAGE,0,0);
   if hppCodepage = CALLSERVICE_NOTFOUND then hppCodepage := CP_ACP;
   // Checking if richedit 2.0 or 3.0 availible
-  if not IsRichEdit20Available and (IDYES <> hppMessagebox(0,
+  if not IsRichEdit20Available and (IDYES <>
     // single line to translation script
-    TranslateWideW('History++ module could not be loaded, riched20.dll is missing. Press Yes to continue loading Miranda.'),
-    TranslateWideW('Information'), MB_YESNO or MB_ICONINFORMATION)) then begin
+    hppMessagebox(0,
+      TranslateWideW('History++ module could not be loaded, riched20.dll is missing. Press Yes to continue loading Miranda.'),
+      TranslateWideW('Information'), MB_YESNO or MB_ICONINFORMATION)) then begin
     Result := 1;
     exit;
   end;
   // Get profile dir
   SetLength(hppProfileDir,MAX_PATH);
-  PluginLink.CallService(MS_DB_GETPROFILEPATH,MAX_PATH,integer(@hppProfileDir[1]));
+  PluginLink.CallService(MS_DB_GETPROFILEPATH,MAX_PATH,LParam(@hppProfileDir[1]));
   SetLength(hppProfileDir,StrLen(@hppProfileDir[1]));
+  // Get plugins dir
+  SetLength(hppPluginsDir,MAX_PATH);
+  SetLength(hppPluginsDir,GetModuleFileName(hInstance,@hppPluginsDir[1],MAX_PATH));
+  hppDllName := ExtractFileName(hppPluginsDir);
+  hppPluginsDir := ExtractFilePath(hppPluginsDir);
   //init history functions later
   HookModulesLoad := PluginLink.HookEvent(ME_SYSTEM_MODULESLOADED,OnModulesLoad);
   hookOptInit := PluginLink.HookEvent(ME_OPT_INITIALISE,OnOptInit);

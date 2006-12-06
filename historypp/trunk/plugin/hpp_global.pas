@@ -136,6 +136,8 @@ var
   hppCodepage: Cardinal;
   hppIconPack: String;
   hppProfileDir: String;
+  hppPluginsDir: String;
+  hppDllName: String;
 
   EventRecords: array[TMessageType] of TEventRecord = (
     (Name:'Unknown';XML:''),
