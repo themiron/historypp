@@ -197,6 +197,7 @@ begin
   Grid.TxtNoSuch := TranslateWideW(Grid.TxtNoSuch{TRANSLATE-IGNORE});
   Grid.TxtPartLog := TranslateWideW(Grid.TxtPartLog{TRANSLATE-IGNORE});
   Grid.TxtStartUp := TranslateWideW(Grid.TxtStartUp{TRANSLATE-IGNORE});
+  Grid.TxtSessions := TranslateWideW(Grid.TxtSessions{TRANSLATE-IGNORE});
 
   Grid.Options := GridOptions;
 

@@ -801,6 +801,7 @@ begin
   hg.TxtNoSuch := TranslateWideW(hg.TxtNoSuch);
   hg.TxtPartLog := TranslateWideW(hg.TxtPartLog);
   hg.TxtStartUp := TranslateWideW(hg.TxtStartUp);
+  hg.TxtSessions := TranslateWideW(hg.TxtSessions);
 
   edSearch.Left := laSearch.Left + laSearch.Width + 5;
   edSearch.Width := bnSearch.Left - edSearch.Left - 5;
