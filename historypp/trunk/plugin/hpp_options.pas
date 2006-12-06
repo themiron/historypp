@@ -410,24 +410,22 @@ function FindIconsDll: string;
 var
   dir: string;
   str: WideString;
-  //hIcons: Cardinal;
 begin
-  SetLength(dir,MAX_PATH);
-  SetLength(dir,GetModuleFileName(hInstance,PAnsiChar(dir),Length(dir)));
-  Result := dir;
-  dir := ExtractFilePath(dir);
-  if FileExists(dir+hppIPName) then
-    Result := dir+hppIPName
-  else if FileExists(dir+'..\Icons\'+hppIPName) then
-    Result := ExpandFileName(dir+'..\Icons\'+hppIPName)
-  else if FileExists(dir+'..\'+hppIPName) then
-    Result := ExpandFileName(dir+'..\'+hppIPName)
+  if FileExists(hppProfileDir+'\Icons\'+hppIPName) then
+    Result := hppProfileDir+'\Icons\'+hppIPName
+  else
+  if FileExists(hppPluginsDir+hppIPName) then
+    Result := hppPluginsDir+hppIPName
+  else
+  if FileExists(hppPluginsDir+'..\'+hppIPName) then
+    Result := ExpandFileName(hppPluginsDir+'..\'+hppIPName)
   else begin
+    Result := hppPluginsDir+hppDllName;
     str :=  'Cannot load icon pack '+hppIPName+' from:'+#13#10+
             #13#10+
-            dir+#13#10+
-            ExpandFileName(dir+'..\Icons\')+#13#10+
-            ExpandFileName(dir+'..\')+#13#10+
+            hppProfileDir+'\Icons\'+#13#10+
+            hppPluginsDir+#13#10+
+            ExpandFileName(hppPluginsDir+'..\')+#13#10+
             #13#10+
             'No icons will be shown.';
     hppMessageBox(0,str,hppName+' Error',MB_ICONERROR or MB_OK);
