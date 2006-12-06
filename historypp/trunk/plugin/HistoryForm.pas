@@ -2552,6 +2552,7 @@ begin
   hg.TxtNoSuch := TranslateWideW(hg.TxtNoSuch);
   hg.TxtPartLog := TranslateWideW(hg.TxtPartLog);
   hg.TxtStartUp := TranslateWideW(hg.TxtStartUp);
+  hg.TxtSessions := TranslateWideW(hg.TxtSessions);
 
   SearchUpHint := TranslateWideW(SearchUpHint);
   SearchDownHint := TranslateWideW(SearchDownHint);
