@@ -3,7 +3,7 @@ unit hpp_forms;
 interface
 
 uses Graphics, Windows, Messages, Forms, Controls, StdCtrls, Menus, ComCtrls,
-  TntControls, TntMenus, TntComCtrls, TntStdCtrls, Classes;
+  TntControls, TntForms, TntMenus, TntComCtrls, TntStdCtrls, Classes;
 
 type
   THppHintWindow = class (TTntHintWindow)
@@ -27,7 +27,7 @@ const
   HM_NOTF_TOOLBARCHANGED  = HM_NOTF_BASE + 4; // Toolbar has changed
   HM_NOTF_BOOKMARKCHANGED = HM_NOTF_BASE + 5; // Toolbar has changed
   HM_NOTF_ACCCHANGED      = HM_NOTF_BASE + 6; // Accessability prefs changed (menu toggle)
-  
+
   // miranda events
   HM_MIEV_EVENTADDED      = HM_MIEV_BASE + 1; // ME_DB_EVENT_ADDED
   HM_MIEV_EVENTDELETED    = HM_MIEV_BASE + 2; // ME_DB_EVENT_DELETED
@@ -44,8 +44,8 @@ procedure TranslateToolbar(const tb: TTntToolBar);
 function ShiftStateToKeyData(ShiftState :TShiftState):Longint;
 function IsFormShortCut(List: Array of TComponent; Key: DWord; ShiftState: TShiftState): Boolean;
 
-function Utils_RestoreFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
-function Utils_SaveFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
+function Utils_RestoreFormPosition(Form: TTntForm; hContact: THandle; Module,Prefix: String): Boolean;
+function Utils_SaveFormPosition(Form: TTntForm; hContact: THandle; Module,Prefix: String): Boolean;
 
 implementation
 
@@ -97,60 +97,67 @@ begin
     Result := Result or AltMask;
 end;
 
-function Utils_RestoreFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
+function Utils_RestoreFormPosition(Form: TTntForm; hContact: THandle; Module,Prefix: String): Boolean;
 var
   w,h,l,t,mon: Integer;
-  max: Boolean;
+  wp: TWindowPlacement;
+  maximized: Boolean;
 begin
   Result := True;
-  max := GetDBBool(Module,Prefix+'maximized',False);
-  w := GetDBInt(Module,Prefix+'width',Form.Width);
-  h := GetDBInt(Module,Prefix+'height',Form.Height);
-  mon := GetDBInt(Module,Prefix+'monitor',Form.Monitor.MonitorNum);
+  mon := GetDBWord(Module,Prefix+'monitor',Form.Monitor.MonitorNum);
   if mon >= Screen.MonitorCount then mon := Form.Monitor.MonitorNum;
-  l := Screen.Monitors[mon].Left+((Screen.Monitors[mon].Width-w) div 2);
-  t := Screen.Monitors[mon].Top+((Screen.Monitors[mon].Height-h) div 2);
-  l := GetDBInt(Module,Prefix+'x',l);
-  t := GetDBInt(Module,Prefix+'y',t);
+  w := GetDBWord(Module,Prefix+'width',Form.Width);
+  h := GetDBWord(Module,Prefix+'height',Form.Height);
+  l := GetDBWord(Module,Prefix+'x',Screen.Monitors[mon].Left+((Screen.Monitors[mon].Width-w) div 2));
+  t := GetDBWord(Module,Prefix+'y',Screen.Monitors[mon].Top+((Screen.Monitors[mon].Height-h) div 2));
+  maximized := GetDBBool(Module,Prefix+'maximized',False);
   // just to be safe, don't let window jump out of the screen
   // at least 50 px from each side should be visible
   if l+50 > Screen.DesktopWidth then l := Screen.DesktopWidth-50;
   if t+50 > Screen.DesktopHeight then t := Screen.DesktopHeight-50;
   if l+w < 50 then l := 50-w;
   if t+h < 50 then t := 50-h;
-  Form.SetBounds(l,t,w,h);
-  if max then Form.WindowState := wsMaximized;
+  if Form.HandleAllocated then begin
+    wp.length := SizeOf(TWindowPlacement);
+    GetWindowPlacement(Form.Handle,@wp);
+    wp.rcNormalPosition := Rect(l,t,l+w,t+h);
+    if Form.Visible then
+      wp.showCmd := SW_SHOWNA
+    else
+      wp.showCmd := SW_HIDE;
+    SetWindowPlacement(Form.Handle,@wp);
+  end else
+    Form.SetBounds(l,t,w,h);
+  if maximized then Form.WindowState := wsMaximized;
 end;
 
-function Utils_SaveFormPosition(Form: TForm; hContact: THandle; Module,Prefix: String): Boolean;
+function Utils_SaveFormPosition(Form: TTntForm; hContact: THandle; Module,Prefix: String): Boolean;
 var
   w,h,l,t: Integer;
   wp: TWindowPlacement;
-  max: Boolean;
+  maximized: Boolean;
 begin
   Result := True;
-  if Form.WindowState = wsMaximized then begin
+  maximized := (Form.WindowState = wsMaximized);
+  if maximized then begin
     wp.length := SizeOf(TWindowPlacement);
     GetWindowPlacement(Form.Handle,@wp);
     l := wp.rcNormalPosition.Left;
     t := wp.rcNormalPosition.Top;
-    h := wp.rcNormalPosition.Bottom - wp.rcNormalPosition.Top;
     w := wp.rcNormalPosition.Right - wp.rcNormalPosition.Left;
-    max := True;
-  end
-  else begin
-    w := Form.Width;
-    h := Form.Height;
+    h := wp.rcNormalPosition.Bottom - wp.rcNormalPosition.Top;
+  end else begin
     l := Form.Left;
     t := Form.Top;
-    max := False;
+    w := Form.Width;
+    h := Form.Height;
   end;
-  WriteDBInt(Module,Prefix+'width',w);
-  WriteDBInt(Module,Prefix+'height',h);
-  WriteDBInt(Module,Prefix+'x',l);
-  WriteDBInt(Module,Prefix+'y',t);
-  WriteDBBool(Module,Prefix+'maximized',max);
-  WriteDBInt(Module,Prefix+'monitor',Form.Monitor.MonitorNum);
+  WriteDBWord(Module,Prefix+'x',l);
+  WriteDBWord(Module,Prefix+'y',t);
+  WriteDBWord(Module,Prefix+'width',w);
+  WriteDBWord(Module,Prefix+'height',h);
+  WriteDBWord(Module,Prefix+'monitor',Form.Monitor.MonitorNum);
+  WriteDBBool(Module,Prefix+'maximized',maximized);
 end;
 
 procedure BringFormToFront(Form: TForm);
