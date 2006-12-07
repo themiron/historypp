@@ -1017,7 +1017,10 @@ var
   Mask: Integer;
 begin
   if (Key = VK_ESCAPE) or ((Key = VK_F4) and (ssAlt in Shift)) then begin
-    close;
+    if (Key = VK_ESCAPE) and edSearch.Focused then
+      SearchMode := smNone
+    else
+      close;
     Key := 0;
     exit;
   end;
@@ -2407,11 +2410,10 @@ end;
 procedure THistoryFrm.edPassKeyPress(Sender: TObject; var Key: Char);
 begin
   // to prevent ** BLING ** when press Enter
-  if Key = Chr(VK_RETURN) then key := #0;
   // to prevent ** BLING ** when press Tab
-  if Key = Chr(VK_TAB) then key := #0;
   // to prevent ** BLING ** when press Esc
-  if Key = Chr(VK_ESCAPE) then key := #0;
+  if Ord(Key) in [VK_RETURN,VK_TAB,VK_ESCAPE] then
+    Key := #0;
 end;
 
 procedure THistoryFrm.PostLoadHistory;

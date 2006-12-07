@@ -1424,8 +1424,11 @@ end;
 
 procedure TfmGlobalSearch.edSearchKeyPress(Sender: TObject; var Key: Char);
 begin
-if (key = Chr(VK_RETURN)) or (key = Chr(VK_TAB)) or (key = Chr(VK_ESCAPE)) then
-  key := #0;
+  // to prevent ** BLING ** when press Enter
+  // to prevent ** BLING ** when press Tab
+  // to prevent ** BLING ** when press Esc
+  if Ord(Key) in [VK_RETURN,VK_TAB,VK_ESCAPE] then
+    Key := #0;
 end;
 
 procedure TfmGlobalSearch.edSearchKeyUp(Sender: TObject; var Key: Word;
@@ -1726,8 +1729,11 @@ end;
 
 procedure TfmGlobalSearch.edPassKeyPress(Sender: TObject; var Key: Char);
 begin
-  if (key = Chr(VK_RETURN)) or (key = Chr(VK_TAB)) or (key = Chr(VK_ESCAPE)) then
-    key := #0;
+  // to prevent ** BLING ** when press Enter
+  // to prevent ** BLING ** when press Tab
+  // to prevent ** BLING ** when press Esc
+  if Ord(Key) in [VK_RETURN,VK_TAB,VK_ESCAPE] then
+    Key := #0;
 end;
 
 procedure TfmGlobalSearch.edPassKeyUp(Sender: TObject; var Key: Word;
