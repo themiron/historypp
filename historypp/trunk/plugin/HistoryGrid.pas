@@ -5738,7 +5738,7 @@ begin
     if WordWrap then
       Style := Params.Style and not WS_HSCROLL; // more compatible with RichEdit 1.0
     // Fix for updating rich in event details form
-    //WindowClass.style := WindowClass.style and not (CS_HREDRAW or CS_VREDRAW);
+    WindowClass.style := WindowClass.style and not (CS_HREDRAW or CS_VREDRAW);
   end;
 end;
 
