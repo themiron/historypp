@@ -2409,7 +2409,7 @@ var
   r: TRect;
 begin
   if Count = 0 then exit;
-  if (ssAlt in ShiftState) or (ssCtrl in ShiftState) then exit;
+  if ssAlt in ShiftState then exit;
   CheckBusy;
 
   Item := Selected;
@@ -2418,7 +2418,7 @@ begin
                 else Item := GetNext(-1);
   end;
 
-  if Key = VK_HOME then begin
+  if (Key = VK_HOME) or ((ssCtrl in ShiftState) and (Key = VK_PRIOR)) then begin
     SearchPattern := '';
     NextItem := GetNext(GetIdx(-1));
     if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
@@ -2431,9 +2431,9 @@ begin
     end;
     AdjustScrollBar;
     Key := 0;
-  end;
+  end else
 
-  if Key = VK_END then begin
+  if (Key = VK_END) or ((ssCtrl in ShiftState) and (Key = VK_NEXT)) then begin
     SearchPattern := '';
     NextItem := GetPrev(GetIdx(Count));
     if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
@@ -2447,6 +2447,8 @@ begin
     AdjustScrollBar;
     Key := 0;
   end;
+
+  if ssCtrl in ShiftState then exit;
 
   if Key = VK_NEXT then begin //PAGE DOWN
     SearchPattern := '';
@@ -2471,7 +2473,7 @@ begin
     end;
     AdjustScrollBar;
     Key := 0;
-  end;
+  end else
 
   if Key = VK_PRIOR then begin //PAGE UP
     SearchPattern := '';
@@ -2499,7 +2501,7 @@ begin
     end;
     AdjustScrollBar;
     Key := 0;
-  end;
+  end else
 
   if Key = VK_UP then begin
     SearchPattern := '';
@@ -2514,7 +2516,7 @@ begin
       Selected := Item;
     AdjustScrollBar;
     Key := 0;
-  end;
+  end else
 
   if Key = VK_DOWN then begin
     SearchPattern := '';
