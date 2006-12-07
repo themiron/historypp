@@ -48,7 +48,11 @@ type
     function GetActionLinkClass: TControlActionLinkClass; override;
     procedure ActionChange(Sender: TObject; CheckDefaults: Boolean); override;
     // theMIROn hack to avoid speed buttons always hovered in Deplhi 7 {
-    {$IFDEF COMPILER_7}procedure WndProc(var Message: TMessage); override;{$ENDIF}
+    {$IFDEF COMPILER_7}
+    procedure WndProc(var Message: TMessage); override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState;
+      X, Y: Integer); override;
+    {$ENDIF}
     // } theMIROn
   published
     property Caption: TWideCaption read GetCaption write SetCaption stored IsCaptionStored;
@@ -735,14 +739,37 @@ begin
     P := Point(Message.LParamLo, Message.LParamHi);
     mic := PtInRect(ClientRect,P);
     if mic then begin
-      if not MouseCapture then Perform(CM_MOUSEENTER,0,0);
-      MouseCapture := true;
+      if not MouseCapture and
+         not THackSpeedButton(Self).FMouseInControl then
+         Perform(CM_MOUSEENTER,0,0);
+      MouseCapture := True;
     end else begin
       MouseCapture := THackSpeedButton(Self).FDragging;
-      THackSpeedButton(Self).FMouseInControl := false;
+      if Flat then
+        THackSpeedButton(Self).FMouseInControl := False
+      else
+      if not MouseCapture
+        then Perform(CM_MOUSELEAVE,0,0);
     end;
   end;
   inherited;
+end;
+
+procedure TTntSpeedButton.MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  P : TPoint;
+  OldDragging: Boolean;
+begin
+  OldDragging := THackSpeedButton(Self).FDragging;
+  inherited MouseUp(Button, Shift, X, Y);
+  if OldDragging and
+    not Flat and
+    ThemeServices.ThemesEnabled then begin
+      if THackSpeedButton(Self).FMouseInControl then
+        Perform(CM_MOUSEENTER, 0, 0)
+      else
+        Perform(CM_MOUSELEAVE, 0, 0);
+    end;
 end;
 {$ENDIF}
 // } theMIROn
