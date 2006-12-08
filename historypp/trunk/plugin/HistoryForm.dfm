@@ -460,14 +460,17 @@ object HistoryFrm: THistoryFrm
           Width = 8
           Style = tbsSeparator
         end
-        object tbHistory: TTntToolButton
+        object tbHistory: TTntSpeedButton
           Left = 354
           Top = 0
+          Width = 36
+          Height = 22
           Hint = 'History Actions'
-          Caption = 'History Actions'
-          DropdownMenu = pmHistoryDD
+          Flat = True
+          Layout = blGlyphTop
           PopupMenu = pmHistory
-          Style = tbsDropDown
+          Spacing = -5
+          Transparent = False
           OnClick = tbHistoryClick
         end
         object tbHistorySearch: TTntToolButton
@@ -955,10 +958,5 @@ object HistoryFrm: THistoryFrm
         OnClick = Bookmark1Click
       end
     end
-  end
-  object pmHistoryDD: TPopupMenu
-    OnPopup = pmHistoryDDPopup
-    Left = 365
-    Top = 36
   end
 end

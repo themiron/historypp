@@ -252,6 +252,7 @@ type
     SavedLinkUrl: String;
 
     procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
+    procedure WMSysColorChange(var Message: TMessage); message WM_SYSCOLORCHANGE;
 
     procedure SMPrepare(var M: TMessage); message HM_STRD_PREPARE;
     procedure SMProgress(var M: TMessage); message HM_STRD_PROGRESS;
@@ -1152,9 +1153,12 @@ begin
   tbEventsFilter.Glyph.Canvas.Brush.Color := Toolbar.Color;
   tbEventsFilter.Glyph.Canvas.FillRect(tbEventsFilter.Glyph.Canvas.ClipRect);
   DrawIconEx(tbEventsFilter.Glyph.Canvas.Handle,sz.cx+tbEventsFilter.Spacing,((GlyphHeight-16) div 2),
-             hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,16,16,0,tbEventsFilter.Glyph.Canvas.Brush.Handle,DI_NORMAL);
-  DrawState(tbEventsFilter.Glyph.Canvas.Handle,0,nil,Integer(hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle),
-            0,sz.cx+tbEventsFilter.Spacing+GlyphWidth,((GlyphHeight-16) div 2),0,0,DST_ICON or DSS_DISABLED);
+            hppIcons[HPP_ICON_DROPDOWNARROW].Handle,16,16,
+            0,tbEventsFilter.Glyph.Canvas.Brush.Handle,DI_NORMAL);
+  DrawState(tbEventsFilter.Glyph.Canvas.Handle,0,nil,
+            Integer(hppIcons[HPP_ICON_DROPDOWNARROW].Handle),0,
+            sz.cx+tbEventsFilter.Spacing+GlyphWidth,((GlyphHeight-16) div 2),0,0,
+            DST_ICON or DSS_DISABLED);
   PaintRect := Rect(0,((GlyphHeight-sz.cy) div 2),GlyphWidth-16-tbEventsFilter.Spacing,tbEventsFilter.Glyph.Height);
   DrawTextFlags := DT_END_ELLIPSIS or DT_NOPREFIX or DT_CENTER;
   tbEventsFilter.Glyph.Canvas.Font.Color := clWindowText;
@@ -2141,6 +2145,14 @@ begin
     Toolbar.EdgeBorders := [];
     Menu := nil;
   end;
+end;
+
+procedure TfmGlobalSearch.WMSysColorChange(var Message: TMessage);
+begin
+  inherited;
+  LoadToolbarIcons;
+  LoadButtonIcons;
+  Repaint;
 end;
 
 initialization

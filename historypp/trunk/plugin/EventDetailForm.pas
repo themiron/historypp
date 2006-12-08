@@ -104,6 +104,7 @@ type
     procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
     procedure WMNotify(var Message: TWMNotify); message WM_NOTIFY;
     procedure WMSetCursor(var Message: TWMSetCursor); message WM_SETCURSOR;
+    procedure WMSysColorChange(var Message: TMessage); message WM_SYSCOLORCHANGE;
     procedure LoadPosition;
     procedure SavePosition;
     procedure SetItem(const Value: Integer);
@@ -492,6 +493,13 @@ procedure TEventDetailsFrm.HMEventDeleted(var Message: TMessage);
 begin
   if Message.WParam = ParentForm.History[ParentForm.GridIndexToHistory(FItem)] then
     Close;
+end;
+
+procedure TEventDetailsFrm.WMSysColorChange(var Message: TMessage);
+begin
+  inherited;
+  LoadButtonIcons;
+  Repaint;
 end;
 
 end.

@@ -94,7 +94,7 @@ const
   HPP_ICON_SEARCH_NOTFOUND   = 22;
   HPP_ICON_HOTFILTERCLEAR    = 23;
   HPP_ICON_SESS_HIDE         = 24;
-  HPP_ICON_TOOL_EVENTSFILTER = 25;
+  HPP_ICON_DROPDOWNARROW     = 25;
   HPP_ICON_CONTACDETAILS     = 26;
   HPP_ICON_CONTACTMENU       = 27;
   HPP_ICON_BOOKMARK          = 28;
@@ -130,7 +130,7 @@ const
     (name:'historypp_23'; desc:'Phrase not found'; group: 'Search panel'; i:HPP_ICON_SEARCH_NOTFOUND; handle:0),
     (name:'historypp_24'; desc:'Clear in-place filter'; group: 'Search panel'; i:HPP_ICON_HOTFILTERCLEAR; handle:0),
     (name:'historypp_25'; desc:'Conversation hide'; group: 'Conversations'; i:HPP_ICON_SESS_HIDE; handle:0),
-    (name:'historypp_26'; desc:'Events filter'; group: 'Toolbar'; i:HPP_ICON_TOOL_EVENTSFILTER; handle:0),
+    (name:'historypp_26'; desc:'Drop down arrow'; group: 'Toolbar'; i:HPP_ICON_DROPDOWNARROW; handle:0),
     (name:'historypp_27'; desc:'User Details'; group: 'Toolbar'; i:HPP_ICON_CONTACDETAILS; handle:0),
     (name:'historypp_28'; desc:'User Menu'; group: 'Toolbar'; i:HPP_ICON_CONTACTMENU; handle:0),
     (name:'historypp_29'; desc:'Bookmarks'; group: 'Toolbar'; i:HPP_ICON_BOOKMARK; handle:0),
