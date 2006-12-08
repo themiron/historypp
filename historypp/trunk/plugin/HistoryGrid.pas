@@ -833,6 +833,8 @@ end;
 { THistoryGrid }
 
 constructor THistoryGrid.Create(AOwner: TComponent);
+const
+  GridStyle = [csCaptureMouse, csClickEvents, csDoubleClicks, csReflector, csOpaque, csNeedsBorderPaint];
 var
   dc: HDC;
   LogY: Integer;
@@ -925,10 +927,10 @@ begin
   ProgressPercent := 255;
   ShowProgress := False;
 
-  ControlStyle := [csCaptureMouse,csClickEvents,csReflector,csDoubleClicks];
-  ControlStyle := ControlStyle + [csOpaque];
-  ControlStyle := ControlStyle + [csFramed];
-  //ControlStyle := ControlStyle + [csNeedsBorderPaint];
+  if NewStyleControls then
+    ControlStyle := GridStyle
+  else
+    ControlStyle := GridStyle + [csFramed];
 
   LockCount := 0;
 
