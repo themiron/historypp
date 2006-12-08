@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, CheckLst, TntCheckLst, TntComCtrls, ComCtrls, CommCtrl,
-  TntStdCtrls, TntWindows, ExtCtrls, TntExtCtrls, m_api, hpp_forms;
+  TntStdCtrls, TntWindows, TntButtons, ExtCtrls, TntExtCtrls, m_api, hpp_forms;
 
 type
   TfmCustomizeToolbar = class(TForm)
@@ -199,9 +199,13 @@ begin
       but := TTntToolButton(lb.Items.Objects[Index]);
       ImageList_Draw(fm.ilToolbar.Handle,but.ImageIndex,can.Handle,
       r2.Left+2,r2.Top+2,ILD_NORMAL);
-    end
-    else if lb.Items.Objects[Index] = fm.tbEventsFilter then begin
-      DrawIconEx(can.Handle,r2.Left+2,r2.Top+2,hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,
+    end else
+    if lb.Items.Objects[Index] = fm.tbEventsFilter then begin
+      DrawIconEx(can.Handle,r2.Left+2,r2.Top+2,hppIcons[HPP_ICON_DROPDOWNARROW].Handle,
+        16,16,0,0,DI_NORMAL);
+    end else
+    if lb.Items.Objects[Index] = fm.tbHistory then begin
+      DrawIconEx(can.Handle,r2.Left+2,r2.Top+2,hppIcons[HPP_ICON_CONTACTHISTORY].Handle,
         16,16,0,0,DI_NORMAL);
     end;
   end
@@ -299,8 +303,6 @@ begin
 end;
 
 procedure TfmCustomizeToolbar.tiScrollTimer(Sender: TObject);
-var
-  idx: Integer;
 begin
   case TimerScrollDirection of
     1: lbAdded.Perform(WM_VSCROLL,SB_LINEDOWN,0);
@@ -356,9 +358,13 @@ begin
       else
         txt := TTntToolButton(but).Hint
     end
-    else if but = fm.tbEventsFilter then
-      txt := TranslateWideW('Event Filters');
-      
+    else
+    if but = fm.tbEventsFilter then
+      txt := TranslateWideW('Event Filters')
+    else
+    if but is TTntSpeedButton then
+      txt := TTntSpeedButton(but).Hint;
+
     if txt <> '' then begin
       if but.Visible then begin
         if txt = '-' then

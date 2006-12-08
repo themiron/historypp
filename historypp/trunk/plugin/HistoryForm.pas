@@ -100,7 +100,6 @@ type
     tiFilter: TTimer;
     ilToolbar: TImageList;
     Toolbar: TTntToolBar;
-    tbHistory: TTntToolButton;
     paPassHolder: TTntPanel;
     paPassword: TTntPanel;
     laPass: TTntLabel;
@@ -187,7 +186,7 @@ type
     mmShortcuts: TTntMenuItem;
     mmBookmark: TTntMenuItem;
     SelectAll1: TTntMenuItem;
-    pmHistoryDD: TPopupMenu;
+    tbHistory: TTntSpeedButton;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -304,7 +303,6 @@ type
     procedure SelectAll1Click(Sender: TObject);
     procedure lvBookKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tvSessKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure pmHistoryDDPopup(Sender: TObject);
   private
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
@@ -321,6 +319,7 @@ type
 
     procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
     procedure CMShowingChanged(var Message: TMessage); message CM_SHOWINGCHANGED;
+    procedure WMSysColorChange(var Message: TMessage); message WM_SYSCOLORCHANGE;
     procedure LoadPosition;
     procedure SavePosition;
 
@@ -387,6 +386,7 @@ type
     procedure LoadBookIcons;
     procedure LoadToolbarIcons;
     procedure LoadEventFilterButton;
+    procedure LoadHistoryActionButton;
     procedure LoadButtonIcons;
 
     procedure CustomizeToolbar;
@@ -726,7 +726,6 @@ begin
     Inc(i);
   end;
 
-
   try
     while True do begin
       if str = '' then break;
@@ -829,10 +828,7 @@ procedure THistoryFrm.LoadToolbarIcons;
 var
   il: HIMAGELIST;
   ii: Integer;
-  //ic: HICON;
-  //icInfo: _IconInfo;
 begin
-  //tvSess.Items.BeginUpdate;
   try
     ImageList_Remove(ilToolbar.Handle,-1); // clears image list
     il := ImageList_Create(16,16,ILC_COLOR32 or ILC_MASK,10,2);
@@ -847,8 +843,6 @@ begin
     tbUserDetails.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_CONTACTMENU].Handle);
     tbUserMenu.ImageIndex := ii;
-    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_CONTACTHISTORY].Handle);
-    tbHistory.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_HOTFILTER].Handle);
     tbFilter.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_HOTSEARCH].Handle);
@@ -866,19 +860,9 @@ begin
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_BOOKMARK].Handle);
     tbBookmarks.ImageIndex := ii;
 
-    //ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle);
-    //tbEventsFilter.ImageIndex := ii;
-
-    {with tbEventsFilter.Glyph do begin
-      if Width < 16 then Width := 16;
-      if Height < 16 then Height := 16;
-      Canvas.Brush.Color := clBtnFace;
-      Canvas.FillRect(Rect(0,0,16,16));
-      DrawiconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
-    end;}
+    LoadHistoryActionButton;
     LoadEventFilterButton;
   finally
-    //Toolbar.Be
   end;
 end;
 
@@ -1290,9 +1274,12 @@ begin
   tbEventsFilter.Glyph.Canvas.Brush.Color := Toolbar.Color;
   tbEventsFilter.Glyph.Canvas.FillRect(tbEventsFilter.Glyph.Canvas.ClipRect);
   DrawIconEx(tbEventsFilter.Glyph.Canvas.Handle,sz.cx+tbEventsFilter.Spacing,((GlyphHeight-16) div 2),
-             hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle,16,16,0,tbEventsFilter.Glyph.Canvas.Brush.Handle,DI_NORMAL);
-  DrawState(tbEventsFilter.Glyph.Canvas.Handle,0,nil,Integer(hppIcons[HPP_ICON_TOOL_EVENTSFILTER].Handle),
-            0,sz.cx+tbEventsFilter.Spacing+GlyphWidth,((GlyphHeight-16) div 2),0,0,DST_ICON or DSS_DISABLED);
+            hppIcons[HPP_ICON_DROPDOWNARROW].Handle,16,16,
+            0,tbEventsFilter.Glyph.Canvas.Brush.Handle,DI_NORMAL);
+  DrawState(tbEventsFilter.Glyph.Canvas.Handle,0,nil,
+            Integer(hppIcons[HPP_ICON_DROPDOWNARROW].Handle),0,
+            sz.cx+tbEventsFilter.Spacing+GlyphWidth,((GlyphHeight-16) div 2),0,0,
+            DST_ICON or DSS_DISABLED);
   PaintRect := Rect(0,((GlyphHeight-sz.cy) div 2),GlyphWidth-16-tbEventsFilter.Spacing,tbEventsFilter.Glyph.Height);
   DrawTextFlags := DT_END_ELLIPSIS or DT_NOPREFIX or DT_CENTER;
   tbEventsFilter.Glyph.Canvas.Font.Color := clWindowText;
@@ -1302,6 +1289,35 @@ begin
   Tnt_DrawTextW(tbEventsFilter.Glyph.Canvas.Handle,@Name[1],Length(Name),PaintRect,DrawTextFlags);
   tbEventsFilter.Width := GlyphWidth+2*PadH;
   tbEventsFilter.NumGlyphs := 2;
+end;
+
+procedure THistoryFrm.LoadHistoryActionButton;
+var
+  PadH: Integer;
+  GlyphWidth: Integer;
+begin
+  PadH := LoWord(SendMessage(Toolbar.Handle,TB_GETPADDING,0,0));
+  GlyphWidth := 16+16+tbHistory.Spacing;
+  tbHistory.Glyph.Height := 16;
+  tbHistory.Glyph.Width := GlyphWidth*2;
+  tbHistory.Glyph.Canvas.Brush.Color := Toolbar.Color;
+  tbHistory.Glyph.Canvas.FillRect(tbHistory.Glyph.Canvas.ClipRect);
+  DrawIconEx(tbHistory.Glyph.Canvas.Handle,16+tbHistory.Spacing,0,
+            hppIcons[HPP_ICON_DROPDOWNARROW].Handle,16,16,
+            0,tbHistory.Glyph.Canvas.Brush.Handle,DI_NORMAL);
+  DrawState(tbHistory.Glyph.Canvas.Handle,0,nil,
+            Integer(hppIcons[HPP_ICON_DROPDOWNARROW].Handle),0,
+            16+tbHistory.Spacing+GlyphWidth,0,0,0,
+            DST_ICON or DSS_DISABLED);
+  DrawIconEx(tbHistory.Glyph.Canvas.Handle,0,0,
+            hppIcons[HPP_ICON_CONTACTHISTORY].Handle,16,16,
+            0,tbHistory.Glyph.Canvas.Brush.Handle,DI_NORMAL);
+  DrawState(tbHistory.Glyph.Canvas.Handle,0,nil,
+            Integer(hppIcons[HPP_ICON_CONTACTHISTORY].Handle),0,
+            GlyphWidth,0,0,0,
+            DST_ICON or DSS_DISABLED);
+  tbHistory.Width := GlyphWidth+2*PadH;
+  tbHistory.NumGlyphs := 2;
 end;
 
 procedure THistoryFrm.LoadPendingHeaders(rowidx: integer; count: integer);
@@ -3634,9 +3650,14 @@ begin
   end;
 end;
 
-procedure THistoryFrm.pmHistoryDDPopup(Sender: TObject);
+procedure THistoryFrm.WMSysColorChange(var Message: TMessage);
 begin
-  tbHistory.Click;
+  inherited;
+  LoadToolbarIcons;
+  LoadButtonIcons;
+  LoadSessionIcons;
+  LoadBookIcons;
+  Repaint;
 end;
 
 end.
