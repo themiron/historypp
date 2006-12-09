@@ -453,28 +453,28 @@ begin
     Height := 16;
     Canvas.Brush.Color := paInfo.Color;
     Canvas.FillRect(Canvas.ClipRect);
-    DrawiconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_CONTACDETAILS].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+    DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_CONTACDETAILS].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
   with EToMore.Glyph do begin
     Width := 16;
     Height := 16;
     Canvas.Brush.Color := paInfo.Color;
     Canvas.FillRect(Canvas.ClipRect);
-    DrawiconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_CONTACDETAILS].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+    DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_CONTACDETAILS].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
   with PrevBtn.Glyph do begin
     Width := 16;
     Height := 16;
     Canvas.Brush.Color := paInfo.Color;
     Canvas.FillRect(Canvas.ClipRect);
-    DrawiconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_SEARCHUP].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+    DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_SEARCHUP].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
   with NextBtn.Glyph do begin
     Width := 16;
     Height := 16;
     Canvas.Brush.Color := paInfo.Color;
     Canvas.FillRect(Canvas.ClipRect);
-    DrawiconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_SEARCHDOWN].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+    DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_SEARCHDOWN].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
 end;
 
