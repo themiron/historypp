@@ -72,6 +72,7 @@ uses
   hpp_forms in 'hpp_forms.pas',
   hpp_opt_dialog in 'hpp_opt_dialog.pas',
   hpp_eventfilters in 'hpp_eventfilters.pas',
+  hpp_mescatcher in 'hpp_mescatcher.pas',
   CustomizeFiltersForm in 'CustomizeFiltersForm.pas' {fmCustomizeFilters},
   CustomizeToolbar in 'CustomizeToolbar.pas' {fmCustomizeToolbar},
   {$IFNDEF NO_EXTERNALGRID}
@@ -179,6 +180,7 @@ begin
   {$IFNDEF NO_EXTERNALGRID}
   RegisterExtGridServices;
   {$ENDIF}
+  hppRegisterMessagesCatcher;
   Result := 0;
 end;
 
@@ -498,6 +500,8 @@ begin
     if FontServiceEnabled then
       PluginLink.UnhookEvent(HookFSChanged);
 
+    // destroy messages chatcher
+    hppUnregisterMessagesCatcher;
     // unregistering events
     hppUnregisterServices;
     {$IFNDEF NO_EXTERNALGRID}
