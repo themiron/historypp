@@ -2306,6 +2306,7 @@ begin
     if SearchMode = smNone then begin
       edSearch.Text := '';
       edSearch.Color := clWindow;
+      hg.SetFocus;
       exit;
     end;
     SaveStr := edSearch.Text;
