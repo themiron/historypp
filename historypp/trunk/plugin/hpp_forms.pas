@@ -100,14 +100,16 @@ end;
 function Utils_RestoreFormPosition(Form: TTntForm; hContact: THandle; Module,Prefix: String): Boolean;
 var
   w,h,l,t,mon: Integer;
-  wp: TWindowPlacement;
   maximized: Boolean;
+  deltaW, deltaH: integer;
 begin
   Result := True;
+  deltaW := Form.Width - Form.ClientWidth;
+  deltaH := Form.Height - Form.ClientHeight;
   mon := GetDBWord(Module,Prefix+'monitor',Form.Monitor.MonitorNum);
   if mon >= Screen.MonitorCount then mon := Form.Monitor.MonitorNum;
-  w := GetDBWord(Module,Prefix+'width',Form.Width);
-  h := GetDBWord(Module,Prefix+'height',Form.Height);
+  w := GetDBWord(Module,Prefix+'width',Form.Width - deltaW) + deltaW;
+  h := GetDBWord(Module,Prefix+'height',Form.Height - deltaH) + deltaH;
   l := GetDBWord(Module,Prefix+'x',Screen.Monitors[mon].Left+((Screen.Monitors[mon].Width-w) div 2));
   t := GetDBWord(Module,Prefix+'y',Screen.Monitors[mon].Top+((Screen.Monitors[mon].Height-h) div 2));
   maximized := GetDBBool(Module,Prefix+'maximized',False);
@@ -117,17 +119,7 @@ begin
   if t+50 > Screen.DesktopHeight then t := Screen.DesktopHeight-50;
   if l+w < 50 then l := 50-w;
   if t+h < 50 then t := 50-h;
-  if Form.HandleAllocated then begin
-    wp.length := SizeOf(TWindowPlacement);
-    GetWindowPlacement(Form.Handle,@wp);
-    wp.rcNormalPosition := Rect(l,t,l+w,t+h);
-    if Form.Visible then
-      wp.showCmd := SW_SHOWNA
-    else
-      wp.showCmd := SW_HIDE;
-    SetWindowPlacement(Form.Handle,@wp);
-  end else
-    Form.SetBounds(l,t,w,h);
+  Form.SetBounds(l,t,w,h);
   if maximized then Form.WindowState := wsMaximized;
 end;
 
@@ -144,13 +136,13 @@ begin
     GetWindowPlacement(Form.Handle,@wp);
     l := wp.rcNormalPosition.Left;
     t := wp.rcNormalPosition.Top;
-    w := wp.rcNormalPosition.Right - wp.rcNormalPosition.Left;
-    h := wp.rcNormalPosition.Bottom - wp.rcNormalPosition.Top;
+    w := wp.rcNormalPosition.Right - wp.rcNormalPosition.Left - (Form.Width - Form.ClientWidth);
+    h := wp.rcNormalPosition.Bottom - wp.rcNormalPosition.Top - (Form.Height - Form.ClientHeight);
   end else begin
     l := Form.Left;
     t := Form.Top;
-    w := Form.Width;
-    h := Form.Height;
+    w := Form.ClientWidth;
+    h := Form.ClientHeight;
   end;
   WriteDBWord(Module,Prefix+'x',l);
   WriteDBWord(Module,Prefix+'y',t);
