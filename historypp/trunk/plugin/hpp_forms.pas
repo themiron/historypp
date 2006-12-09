@@ -3,7 +3,7 @@ unit hpp_forms;
 interface
 
 uses Graphics, Windows, Messages, Forms, Controls, StdCtrls, Menus, ComCtrls,
-  TntControls, TntForms, TntMenus, TntComCtrls, TntStdCtrls, Classes;
+  TntControls, TntForms, TntMenus, TntComCtrls, TntStdCtrls, Classes, Themes;
 
 type
   THppHintWindow = class (TTntHintWindow)
@@ -262,5 +262,9 @@ begin
       TTntToolBar(tb.Buttons[i]).Caption := TranslateWideW(tb.Buttons[i].Caption{TRANSLATE-IGNORE});
     end;
 end;
+
+initialization
+  // init ThemeServices before widows open
+  ThemeServices;
 
 end.

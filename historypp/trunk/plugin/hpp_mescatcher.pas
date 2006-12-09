@@ -56,11 +56,10 @@ begin
       Mouse.SettingChanged(wParam);
     WM_FONTCHANGE:
       Screen.ResetFonts;
-    WM_THEMECHANGED:
-      if ThemeServices.ThemesEnabled then begin
-        ThemeServices.ApplyThemeChange;
-        Result := 0;
-      end;
+    WM_THEMECHANGED: begin
+      ThemeServices.ApplyThemeChange;
+      Result := 0;
+    end;
   end;
 end;
 
