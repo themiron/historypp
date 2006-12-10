@@ -189,6 +189,7 @@ procedure LoadIcons;
 procedure LoadIcons2;
 procedure LoadIntIcons;
 procedure OnShowIcons;
+procedure OnTextFormatting(Value: Boolean);
 procedure hppRegisterGridOptions;
 
 implementation
@@ -232,6 +233,11 @@ end;
 procedure OnShowIcons;
 begin
   if GridOptions.ShowIcons then LoadIcons;
+end;
+
+procedure OnTextFormatting(Value: Boolean);
+begin
+  WriteDBBool(hppDBName,'InlineTextFormatting',Value);
 end;
 
 function LoadIconFromDB(ID: Integer; Icon: TIcon): Boolean;
@@ -378,6 +384,8 @@ begin
   GridOptions.ReplyQuotedFormat := GetDBWideStr(hppDBName,'FormatReplyQuoted',DEFFORMAT_REPLYQUOTED);
   GridOptions.ProfileName := GetDBWideStr(hppDBName,'ProfileName','');
   GridOptions.DateTimeFormat := GetDBStr(hppDBName,'DateTimeFormat',DEFFORMAT_DATETIME);
+  GridOptions.TextFormatting := GetDBBool(hppDBName,'InlineTextFormatting',True);
+
   ShowHistoryCount := GetDBBool(hppDBName,'ShowHistoryCount',false);
   finally
   GridOptions.EndChange;
@@ -408,24 +416,21 @@ end;
 
 function FindIconsDll: string;
 var
-  dir: string;
+  hppIconsDir: string;
   str: WideString;
 begin
-  if FileExists(hppProfileDir+'\Icons\'+hppIPName) then
-    Result := hppProfileDir+'\Icons\'+hppIPName
+  hppIconsDir := ExpandFileName(hppPluginsDir+'..\Icons\');
+  if FileExists(hppIconsDir+hppIPName) then
+    Result := hppIconsDir+hppIPName
   else
   if FileExists(hppPluginsDir+hppIPName) then
     Result := hppPluginsDir+hppIPName
-  else
-  if FileExists(hppPluginsDir+'..\'+hppIPName) then
-    Result := ExpandFileName(hppPluginsDir+'..\'+hppIPName)
   else begin
     Result := hppPluginsDir+hppDllName;
     str :=  'Cannot load icon pack '+hppIPName+' from:'+#13#10+
             #13#10+
-            hppProfileDir+'\Icons\'+#13#10+
+            hppIconsDir+#13#10+
             hppPluginsDir+#13#10+
-            ExpandFileName(hppPluginsDir+'..\')+#13#10+
             #13#10+
             'No icons will be shown.';
     hppMessageBox(0,str,hppName+' Error',MB_ICONERROR or MB_OK);
@@ -482,6 +487,7 @@ initialization
 
   GridOptions := TGridOptions.Create;
   GridOptions.OnShowIcons := OnShowIcons;
+  GridOptions.OnTextFormatting := OnTextFormatting;
 
 finalization
 

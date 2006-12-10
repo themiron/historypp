@@ -481,7 +481,7 @@ begin
   pmGrid.Items[0].Visible := (Grid.State = gsIdle);
   pmGrid.Items[4].Visible := (Grid.State = gsInline);
   pmGrid.Items[7].Visible := (Grid.State = gsInline);
-  pmGrid.Items[7].Checked := Grid.ProcessInline;
+  pmGrid.Items[7].Checked := GridOptions.TextFormatting;
   if Grid.State = gsInline then
     pmGrid.Items[2].Enabled := Grid.InlineRichEdit.SelLength > 0
   else
@@ -564,7 +564,7 @@ end;
 procedure TExternalGrid.OnTextFormattingClick(Sender: TObject);
 begin
   if (Grid.Selected = -1) or (Grid.State <> gsInline) then exit;
-  Grid.ProcessInline := not Grid.ProcessInline;
+  GridOptions.TextFormatting := not GridOptions.TextFormatting;
 end;
 
 procedure TExternalGrid.OnReplyQuotedClick(Sender: TObject);

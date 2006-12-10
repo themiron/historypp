@@ -3573,7 +3573,7 @@ procedure THistoryFrm.hgInlinePopup(Sender: TObject);
 begin
   InlineCopy.Enabled := hg.InlineRichEdit.SelLength > 0;
   InlineReplyQuoted.Enabled := InlineCopy.Enabled;
-  InlineTextFormatting.Checked := hg.ProcessInline;
+  InlineTextFormatting.Checked := GridOptions.TextFormatting;
   InlineSendMessage.Visible := (hContact <> 0);
   InlineReplyQuoted.Visible := (hContact <> 0);
   pmInline.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
@@ -3604,7 +3604,7 @@ end;
 
 procedure THistoryFrm.InlineTextFormattingClick(Sender: TObject);
 begin
-  hg.ProcessInline := not hg.ProcessInline;
+  GridOptions.TextFormatting := not GridOptions.TextFormatting;
 end;
 
 procedure THistoryFrm.InlineReplyQuotedClick(Sender: TObject);

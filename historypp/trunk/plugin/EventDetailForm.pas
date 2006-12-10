@@ -364,7 +364,7 @@ begin
   CopyText.Enabled := (EText.SelLength > 0);
   SendMessage1.Enabled := (ParentForm.hContact <> 0);
   ReplyQuoted1.Enabled := (ParentForm.hContact <> 0);
-  ToogleItemProcessing.Checked := ParentForm.hg.ProcessInline;
+  ToogleItemProcessing.Checked := GridOptions.TextFormatting;
 end;
 
 procedure TEventDetailsFrm.SelectAllClick(Sender: TObject);
@@ -443,7 +443,7 @@ end;
 
 procedure TEventDetailsFrm.ToogleItemProcessingClick(Sender: TObject);
 begin
-  ParentForm.hg.ProcessInline := not ParentForm.hg.ProcessInline;
+  GridOptions.TextFormatting := not GridOptions.TextFormatting;
 end;
 
 procedure TEventDetailsFrm.LoadButtonIcons;
