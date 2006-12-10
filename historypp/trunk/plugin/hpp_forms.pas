@@ -108,8 +108,8 @@ begin
   deltaH := Form.Height - Form.ClientHeight;
   mon := GetDBWord(Module,Prefix+'monitor',Form.Monitor.MonitorNum);
   if mon >= Screen.MonitorCount then mon := Form.Monitor.MonitorNum;
-  w := GetDBWord(Module,Prefix+'width',Form.Width - deltaW) + deltaW;
-  h := GetDBWord(Module,Prefix+'height',Form.Height - deltaH) + deltaH;
+  w := GetDBWord(Module,Prefix+'width',Form.ClientWidth) + deltaW;
+  h := GetDBWord(Module,Prefix+'height',Form.ClientHeight) + deltaH;
   l := GetDBWord(Module,Prefix+'x',Screen.Monitors[mon].Left+((Screen.Monitors[mon].Width-w) div 2));
   t := GetDBWord(Module,Prefix+'y',Screen.Monitors[mon].Top+((Screen.Monitors[mon].Height-h) div 2));
   maximized := GetDBBool(Module,Prefix+'maximized',False);
