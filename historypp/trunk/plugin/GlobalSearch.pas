@@ -2038,7 +2038,7 @@ procedure TfmGlobalSearch.hgInlinePopup(Sender: TObject);
 begin
   InlineCopy.Enabled := hg.InlineRichEdit.SelLength > 0;
   InlineReplyQuoted.Enabled := InlineCopy.Enabled;
-  InlineTextFormatting.Checked := hg.ProcessInline;
+  InlineTextFormatting.Checked := GridOptions.TextFormatting;
   if hg.Selected <> -1 then begin
     InlineSendMessage.Visible := (GetSearchItem(hg.Selected).Contact.Handle <> 0);
     InlineReplyQuoted.Visible := (GetSearchItem(hg.Selected).Contact.Handle <> 0);
@@ -2071,7 +2071,7 @@ end;
 
 procedure TfmGlobalSearch.InlineTextFormattingClick(Sender: TObject);
 begin
-  hg.ProcessInline := not hg.ProcessInline;
+  GridOptions.TextFormatting := not GridOptions.TextFormatting;
 end;
 
 procedure TfmGlobalSearch.InlineReplyQuotedClick(Sender: TObject);

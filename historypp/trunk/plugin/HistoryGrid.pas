@@ -134,9 +134,8 @@ type
   {IFDEF RENDER_RICH}
   TUrlEvent = procedure(Sender: TObject; Item: Integer; Url: String) of object;
   {ENDIF}
-
-  TOnEvent = procedure;
-  TOnShowIcons = TOnEvent;
+  TOnShowIcons = procedure;
+  TOnTextFormatting = procedure(Value: Boolean);
 
   TGridHitTest = (ghtItem, ghtHeader, ghtText, ghtLink, ghtButton, ghtSession, ghtSessHideButton, ghtSessShowButton, ghtBookmark);
   TGridHitTests = set of TGridHitTest;
@@ -185,6 +184,9 @@ type
     FRawRTFEnabled: Boolean;
     FAvatarsHistoryEnabled: Boolean;
 
+    FTextFormatting: Boolean;
+    FOnTextFormatting: TOnTextFormatting;
+
     FClipCopyTextFormat: WideString;
     FClipCopyFormat: WideString;
     FReplyQuotedFormat: WideString;
@@ -223,6 +225,7 @@ type
     procedure SetRawRTFEnabled(const Value: Boolean);
     procedure SetAvatarsHistoryEnabled(const Value: Boolean);
     procedure SetProfileName(const Value: WideString);
+    procedure SetTextFormatting(const Value: Boolean);
 
     function GetLocked: Boolean;
     procedure SetDateTimeFormat(const Value: String);
@@ -239,6 +242,7 @@ type
     function AddItemOptions: integer;
     function GetItemOptions(Mes: TMessageTypes; out textFont: TFont; out textColor: TColor): integer;
     property OnShowIcons: TOnShowIcons read FOnShowIcons write FOnShowIcons;
+    property OnTextFormatting: TOnTextFormatting read FOnTextFormatting write FOnTextFormatting;
   published
     property ClipCopyFormat: WideString read FClipCopyFormat write FClipCopyFormat;
     property ClipCopyTextFormat: WideString read FClipCopyTextFormat write FClipCopyTextFormat;
@@ -284,6 +288,7 @@ type
     property ProfileName: WideString read FProfileName write SetProfileName;
 
     property DateTimeFormat: String read FDateTimeFormat write SetDateTimeFormat;
+    property TextFormatting: Boolean read FTextFormatting write SetTextFormatting;
   end;
 
 
@@ -427,7 +432,6 @@ type
     WindowPrePainting: Boolean;
     WindowPrePainted: Boolean;
     FExpandHeaders: Boolean;
-    FProcessInline: Boolean;
     FOnProcessInlineChange: TOnProcessInlineChange;
 
     FOnBookmarkClick: TOnBookmarkClick;
@@ -653,7 +657,7 @@ type
     property ShowHeaders: Boolean read FShowHeaders write SetShowHeaders;
     property ExpandHeaders: Boolean read FExpandHeaders write SetExpandHeaders default True;
     property GroupLinked: Boolean read FGroupLinked write SetGroupLinked default False;
-    property ProcessInline: Boolean read FProcessInline write SetProcessInline default True;
+    property ProcessInline: Boolean write SetProcessInline;
     property TxtStartup: WideString read FTxtStartup write FTxtStartup;
     property TxtNoItems: WideString read FTxtNoItems write FTxtNoItems;
     property TxtNoSuch: WideString read FTxtNoSuch write FTxtNoSuch;
@@ -897,7 +901,6 @@ begin
   CHeaderHeight := -1;
   PHeaderHeight := -1;
   FExpandHeaders := False;
-  FProcessInline := True;
 
   TabStop := True;
   MultiSelect := True;
@@ -1288,8 +1291,6 @@ procedure THistoryGrid.SetProcessInline(const Value: Boolean);
 var
   cr: CHARRANGE;
 begin
-  if FProcessInline = Value then exit;
-  FProcessInline := Value;
   if State = gsInline then begin
     FRichInline.Lines.BeginUpdate;
     FRichInline.Perform(EM_EXGETSEL,0,LPARAM(@cr));
@@ -1814,7 +1815,7 @@ end;
 function THistoryGrid.FormatItems(ItemList: array of Integer;
   Format: WideString): WideString;
 var
-  ifrom,ito,i,n: Integer;
+  ifrom,ito,step,i,n: Integer;
   linebreak: WideString;
   tok2,tok: TWideStrArray;
   toksp,tok_smartdt: TIntArray;
@@ -1838,16 +1839,19 @@ begin
 
   // start processing all items
 
-  if Reversed then begin
+  //if Reversed then begin
+  // from older to newer, excluding external grid
+  if not ReversedHeader then begin
     ifrom := High(ItemList);
     ito := 0;
+    step := -1;
   end else begin
     ifrom := 0;
     ito := High(ItemList);
+    step := 1;
   end;
   i := ifrom;
   while (i >= 0) and (i <= High(ItemList)) do begin
-  //for i := Length(ItemList)-1 downto 0 do begin
     LoadItem(ItemList[i],False);
     if i = ito then linebreak := ''; // do not put linebr after last item
     tok2 := Copy(tok,0,Length(tok));
@@ -1866,7 +1870,7 @@ begin
       Result := Result + tok2[n];
     Result := Result + linebreak;
     prevdt := dt;
-    if Reversed then Dec(i) else Inc(i);
+    Inc(i,step);
   end;
 end;
 
@@ -2047,7 +2051,7 @@ begin
     NoDefaultColors := true;
   end;
 
-  UseTextFormatting := not (((State = gsInline) or ForceInline) and not ProcessInline);
+  UseTextFormatting := not (((State = gsInline) or ForceInline) and not Options.TextFormatting);
 
   //RichEdit.Clear;
   RichEdit.Perform(WM_SETTEXT,0,0);
@@ -5013,6 +5017,8 @@ begin
   FProfileName := '';
   FForceProfileName := False;
 
+  FTextFormatting := True;
+
   FLocks := 0;
   Changed := 0;
 
@@ -5186,6 +5192,21 @@ begin
   if FDateTimeFormat = NewValue then exit;
   FDateTimeFormat := NewValue;
   DoChange;
+end;
+
+procedure TGridOptions.SetTextFormatting(const Value: Boolean);
+var
+  i: integer;
+begin
+  if FTextFormatting = Value then exit;
+  FTextFormatting := Value;
+  if FLocks > 0 then exit;
+  try
+    for i := 0 to Length(Grids)-1 do
+      Grids[i].ProcessInline := Value;
+  finally
+    if Assigned(FOnTextFormatting) then FOnTextFormatting(Value);
+  end;
 end;
 
 procedure TGridOptions.SetColorBackground(const Value: TColor);
