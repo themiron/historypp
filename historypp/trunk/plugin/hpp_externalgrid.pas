@@ -398,12 +398,12 @@ begin
 end;
 
 procedure TExternalGrid.GridUrlClick(Sender: TObject; Item: Integer; Url: String);
-var
-  bNewWindow: Integer;
 begin
   if Url= '' then exit;
-  bNewWindow := 0; // no, use existing window
-  PluginLink.CallService(MS_UTILS_OPENURL,bNewWindow,Longint(Pointer(@Url[1])));
+  Application.CancelHint;
+  Grid.ShowHint := False;
+  PluginLink.CallService(MS_UTILS_OPENURL,0,LPARAM(Pointer(@Url[1])));
+  Grid.ShowHint := True;
 end;
 
 procedure TExternalGrid.GridBookmarkClick(Sender: TObject; Item: Integer);
@@ -617,13 +617,16 @@ end;
 procedure TExternalGrid.GridUrlPopup(Sender: TObject; Item: Integer; Url: String);
 begin
   SavedLinkUrl := Url;
+  Application.CancelHint;
+  Grid.ShowHint := False;
   pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
+  Grid.ShowHint := True;
 end;
 
 procedure TExternalGrid.OnOpenLinkClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,0,Integer(Pointer(@SavedLinkUrl[1])));
+  PluginLink.CallService(MS_UTILS_OPENURL,0,LPARAM(@SavedLinkUrl[1]));
   SavedLinkUrl := '';
 end;
 
@@ -643,7 +646,7 @@ end;
 procedure TExternalGrid.OnOpenLinkNWClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,1,Integer(Pointer(@SavedLinkUrl[1])));
+  PluginLink.CallService(MS_UTILS_OPENURL,1,LPARAM(@SavedLinkUrl[1]));
   SavedLinkUrl := '';
 end;
 
