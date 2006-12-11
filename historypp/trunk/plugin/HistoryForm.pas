@@ -2203,14 +2203,14 @@ end;
 procedure THistoryFrm.OpenLinkClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,0,Integer(Pointer(@SavedLinkUrl[1])));
+  PluginLink.CallService(MS_UTILS_OPENURL,0,LPARAM(@SavedLinkUrl[1]));
   SavedLinkUrl := '';
 end;
 
 procedure THistoryFrm.OpenLinkNWClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,1,Integer(Pointer(@SavedLinkUrl[1])));
+  PluginLink.CallService(MS_UTILS_OPENURL,1,LPARAM(@SavedLinkUrl[1]));
   SavedLinkUrl := '';
 end;
 
@@ -2777,13 +2777,19 @@ end;
 procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
 begin
   if Url= '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,0,Integer(Pointer(@Url[1])));
+  Application.CancelHint;
+  hg.ShowHint := False;
+  PluginLink.CallService(MS_UTILS_OPENURL,0,LPARAM(@Url[1]));
+  hg.ShowHint := True;
 end;
 
 procedure THistoryFrm.hgUrlPopup(Sender: TObject; Item: Integer; Url: String);
 begin
   SavedLinkUrl := Url;
+  Application.CancelHint;
+  hg.ShowHint := False;
   pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
+  hg.ShowHint := True;
 end;
 
 procedure THistoryFrm.hgProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
