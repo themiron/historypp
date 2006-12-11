@@ -29,6 +29,7 @@ function parse_object() {
     $lines[$lineid] = rtrim($lines[$lineid]);
     if (preg_match('/^(\s)*object (.*): (.*)$/',$lines[$lineid],$matches)) {
       if (($ignore_menuitems && (($matches[3] == "TMenuItem")||($matches[3] == "TTntMenuItem"))) ||
+          ($ignore_menuitems && (($matches[3] == "TSpeedButton")||($matches[3] == "TTntSpeedButton"))) ||
           ($ignore_tbitems && (($matches[3] == "TTntToolButton")||($matches[3] == "TToolButton")))) {
         $no_add = true;
         parse_object();
@@ -101,12 +102,12 @@ $ignore_tbitems = true;
 // whitespace, -, /, <, >, _ are skipped
 $skip_empty_captions = '/^[\s\-\<\>\/\_]*$/';
 
-if (count($argv) < 2) {
+if ($_SERVER["argc"] < 2) {
   print "Wrong params\r\n";
   exit;
 }
 
-$file_to_parse = $argv[1];
+$file_to_parse = $_SERVER["argv"][1];
 $file_ext      = '';
 
 if (preg_match('/(.*)\.(dfm|pas|dpr)$/',$file_to_parse,$matches)) {
