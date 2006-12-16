@@ -271,9 +271,9 @@ begin
     Item := ReadEvent(Items[Index].hDBEvent,Items[Index].Codepage);
   Item.Proto := Grid.Protocol;
   Item.Bookmarked := BookmarkServer[Items[Index].hContact].Bookmarked[Items[Index].hDBEvent];
-  if Index = 0 then begin
-    Item.HasHeader := True;
-  end else begin
+  if Index = 0 then
+    Item.HasHeader := IsEventInSession(Item.EventType)
+  else begin
     PrevTimestamp := GetEventTimestamp(Items[Index-1].hDBEvent);
     if IsEventInSession(Item.EventType) then
       Item.HasHeader := ((DWord(Item.Time) - PrevTimestamp) > SESSION_TIMEDIFF);
