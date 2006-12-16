@@ -2306,7 +2306,10 @@ begin
     if SearchMode = smNone then begin
       edSearch.Text := '';
       edSearch.Color := clWindow;
-      hg.SetFocus;
+      if Self.Visible then
+        hg.SetFocus
+      else
+        Self.ActiveControl := hg;
       exit;
     end;
     SaveStr := edSearch.Text;
@@ -2777,19 +2780,13 @@ end;
 procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
 begin
   if Url= '' then exit;
-  Application.CancelHint;
-  hg.ShowHint := False;
   PluginLink.CallService(MS_UTILS_OPENURL,0,LPARAM(@Url[1]));
-  hg.ShowHint := True;
 end;
 
 procedure THistoryFrm.hgUrlPopup(Sender: TObject; Item: Integer; Url: String);
 begin
   SavedLinkUrl := Url;
-  Application.CancelHint;
-  hg.ShowHint := False;
   pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
-  hg.ShowHint := True;
 end;
 
 procedure THistoryFrm.hgProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
@@ -3061,7 +3058,10 @@ begin
   if SearchMode = smFilter then EndHotFilterTimer;
   edSearch.Text := '';
   edSearch.Color := clWindow;
-  hg.SetFocus;
+  if Self.Visible then
+    hg.SetFocus
+  else
+    Self.ActiveControl := hg;
 end;
 
 procedure THistoryFrm.pbFilterPaint(Sender: TObject);
@@ -3394,6 +3394,7 @@ begin
       pmEventsFilter.Items.Insert(0,mi);
     end;
   end;
+  //Application.CancelHint;
 end;
 
 procedure THistoryFrm.pmGridPopup(Sender: TObject);
@@ -3422,7 +3423,7 @@ begin
   LoadInOptions();
   SaveSelected2.Visible := (hg.SelCount > 1);
   AddMenuArray(pmHistory,[ContactRTLmode1,ANSICodepage1],7);
-  Application.CancelHint;
+  //Application.CancelHint;
 end;
 
 procedure THistoryFrm.WndProc(var Message: TMessage);

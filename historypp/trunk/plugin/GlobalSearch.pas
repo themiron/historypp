@@ -1727,10 +1727,7 @@ var
   bNewWindow: Integer;
 begin
   if Url = '' then exit;
-  Application.CancelHint;
-  hg.ShowHint := False;
   PluginLink.CallService(MS_UTILS_OPENURL,0,LPARAM(@Url[1]));
-  hg.ShowHint := True;
 end;
 
 procedure TfmGlobalSearch.edPassKeyPress(Sender: TObject; var Key: Char);
@@ -2114,10 +2111,7 @@ end;
 procedure TfmGlobalSearch.hgUrlPopup(Sender: TObject; Item: Integer; Url: String);
 begin
   SavedLinkUrl := Url;
-  Application.CancelHint;
-  hg.ShowHint := False;
   pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
-  hg.ShowHint := True;
 end;
 
 procedure TfmGlobalSearch.OpenLinkClick(Sender: TObject);

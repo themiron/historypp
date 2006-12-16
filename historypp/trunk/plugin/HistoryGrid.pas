@@ -442,6 +442,7 @@ type
     FSavedKeyMessage: TWMKey;
     FBorderStyle: TBorderStyle;
 
+    FHintRect: TRect;
     function GetHint: WideString;
     procedure SetHint(const Value: WideString);
     function IsHintStored: Boolean;
@@ -546,6 +547,7 @@ type
 
   protected
     DownHitTests: TGridHitTests;
+    HintHitTests: TGridHitTests;
     procedure CreateWindowHandle(const Params: TCreateParams); override;
     procedure CreateParams(var Params: TCreateParams); override;
     //procedure WndProc(var Message: TMessage); override;
@@ -846,9 +848,11 @@ var
 begin
   inherited;
   ShowHint := True;
+  HintHitTests := [];
+
   {$IFDEF RENDER_RICH}
   FRichCache := TRichCache.Create(Self);
-  
+
   {tmp
   FRich := TRichEdit.Create(Self);
   FRich.Name := 'OrgFRich';
@@ -1008,7 +1012,28 @@ begin
 end;
 
 procedure THistoryGrid.CMHintShow(var Message: TMessage);
+var
+  //ht: TGridHitTests;
+  Item: Integer;
 begin
+  With TCMHintShow(Message).HintInfo^ do begin
+    if ghtButton in HintHitTests then begin
+      CursorRect := FHintRect;
+      if ghtBookmark in HintHitTests then begin
+        Item := FindItemAt(CursorPos);
+        if FItems[Item].Bookmarked then
+          Hint := TranslateWideW('Remove Bookmark')
+        else
+          Hint := TranslateWideW('Set Bookmark')
+      end
+      else if ghtSessHideButton in HintHitTests then
+        Hint := TranslateWideW('Hide headers')
+      else if ghtSessShowButton in HintHitTests then
+        Hint := TranslateWideW('Show headers');
+      Message.Result := 0
+    end else
+      Message.Result := 1;
+  end;
   ProcessCMHintShowMsg(Message);
   inherited;
 end;
@@ -3328,49 +3353,23 @@ begin
 end;
 
 procedure THistoryGrid.WMSetCursor(var Message: TWMSetCursor);
-{var
-  FocusWnd: THandle;}
 var
   p: TPoint;
   NewCursor: TCursor;
-  ht: TGridHitTests;
-  NewHint: WideString;
-  Item: Integer;
 begin
   inherited;
   if State <> gsIdle then exit;
   if Message.HitTest = Word(HTERROR) then exit;
-
-  NewHint := '';
-
+  NewCursor := crDefault;
   p := ScreenToClient(Mouse.CursorPos);
-  ht := GetHitTests(p.X,p.Y);
-  if (ghtButton in ht) or (ghtLink in ht) then begin
-    NewHint := TranslateWideW('Open Link');
-    NewCursor := crHandPoint
-  end else
-    NewCursor := crDefault;
-
-  if Windows.GetCursor <> Screen.Cursors[NewCursor] then
+  HintHitTests := GetHitTests(p.X,p.Y);
+  if HintHitTests * [ghtButton,ghtLink] <> [] then
+    NewCursor := crHandPoint;
+  if Windows.GetCursor <> Screen.Cursors[NewCursor] then begin
     Windows.SetCursor(Screen.Cursors[NewCursor]);
-
-  if (ghtButton in ht) then begin
-    if ghtBookmark in ht then begin
-      Item := FindItemAt(p);
-      if FItems[Item].Bookmarked then
-        NewHint := TranslateWideW('Remove Bookmark')
-      else
-        NewHint := TranslateWideW('Set Bookmark')
-    end
-    else if ghtSessHideButton in ht then
-      NewHint := TranslateWideW('Hide headers')
-    else if ghtSessShowButton in ht then
-      NewHint := TranslateWideW('Show headers');
-  end;
-  Hint := NewHint;
-  if Hint = '' then Application.CancelHint;
-
-  Message.Result := 1;
+    Message.Result := 1;
+  end else
+    Message.Result := 0;
 end;
 
 procedure THistoryGrid.WMSetFocus(var Message: TWMSetFocus);
@@ -4654,6 +4653,7 @@ var
 
 begin
   Result := [];
+  FHintRect := Rect(0,0,0,0);
   Item := FindItemAt(X,Y);
   if Item <> -1 then
     Include(Result,ghtItem)
@@ -4685,6 +4685,7 @@ begin
       if PtInRect(ButtonRect,p) then begin
         Include(Result,ghtSessHideButton);
         Include(Result,ghtButton);
+        FHintRect := ButtonRect;
       end;
     end;
   end;
@@ -4713,6 +4714,7 @@ begin
        if PtInRect(ButtonRect,p) then begin
          Include(Result,ghtSessShowButton);
          Include(Result,ghtButton);
+         FHintRect := ButtonRect;
        end;
      end;
      if ShowBookmarks and (Sel or FItems[Item].Bookmarked) then begin
@@ -4730,6 +4732,7 @@ begin
        if PtInRect(ButtonRect,p) then begin
          Include(Result,ghtBookmark);
          Include(Result,ghtButton);
+         FHintRect := ButtonRect;
        end;
       end;
     end;
@@ -4739,6 +4742,7 @@ begin
     Include(Result,ghtText);
     if IsLinkAtPoint(ItemRect) then
       Include(Result,ghtLink);
+      //FHintRect := Rect(0,0,0,0);
   end;
 end;
 
