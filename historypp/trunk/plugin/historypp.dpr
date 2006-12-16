@@ -47,6 +47,7 @@ uses
   m_globaldefs,
   m_api,
   TntSystem,
+  Forms,
   hpp_global in 'hpp_global.pas',
   hpp_contacts in 'hpp_contacts.pas',
   hpp_database in 'hpp_database.pas',
@@ -525,11 +526,12 @@ begin
   // decreasing ref count to oleaut32.dll as said
   // in plugins doc
   FreeLibrary(GetModuleHandle('oleaut32.dll'));
+  // to use RTL on LTR systems
+  SysLocale.MiddleEast := true;
 
   TntSystem.InstallTntSystemUpdates;
   // shadow is back again...
-  //Forms.HintWindowClass := THppHintWindow;
-  SysLocale.MiddleEast := true;
+  Forms.HintWindowClass := THppHintWindow;
 
   {$IFDEF REPORT_LEAKS}
   // TThemeServices leaks on exit, looks like it's ok
