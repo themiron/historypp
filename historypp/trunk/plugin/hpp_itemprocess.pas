@@ -201,10 +201,8 @@ begin
 end;
 
 function DoSupportSmileys(wParam{hRichEdit}, lParam{PItemRenderDetails}: DWord): Integer;
-//const
-  //TABSRMM_SMILEYADD_BKGCOLORMODE = $10000000;
 var
-  sare: TSmAddRichEdit3;
+  sare: SMADD_RICHEDIT3;
   ird: PItemRenderDetails;
 begin
   ird := Pointer(lParam);
