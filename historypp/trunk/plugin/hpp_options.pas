@@ -441,10 +441,9 @@ procedure hppRegisterGridOptions;
 var
   sid: TSKINICONDESC;
   defFont : FontSettings;
+  //sarc: SMADD_REGCAT;
   i: integer;
 begin
-  SmileyAddEnabled := Boolean(PluginLink.ServiceExists(MS_SMILEYADD_REPLACESMILEYS));
-  MathModuleEnabled := Boolean(PluginLink.ServiceExists(MATH_RTF_REPLACE_FORMULAE));
   // Register in IcoLib
   IcoLibEnabled := Boolean(PluginLink.ServiceExists(MS_SKIN2_ADDICON));
   hppIconPack := FindIconsDll;
@@ -460,7 +459,7 @@ begin
       else
         sid.pszSection := PChar(hppName+'/'+translate(hppIcons[i].group){TRANSLATE-IGNORE});
       sid.iDefaultIndex := hppIcons[i].i;
-      PluginLink.CallService(MS_SKIN2_ADDICON,0,DWord(@sid));
+      PluginLink.CallService(MS_SKIN2_ADDICON,0,LPARAM(@sid));
     end;
   end;
   // Register in FontService
@@ -481,6 +480,17 @@ begin
       end;
     end;
   end;
+  // Register in SmileyAdd
+  SmileyAddEnabled := Boolean(PluginLink.ServiceExists(MS_SMILEYADD_REPLACESMILEYS));
+  {if SmileyAddEnabled then begin
+    ZeroMemory(@sarc,SizeOf(sarc));
+    sarc.cbSize := SizeOf(sarc);
+    sarc.name := hppName;
+    sarc.dispname := hppName;
+    PluginLink.CallService(MS_SMILEYADD_REGISTERCATEGORY,0,LPARAM(@sarc));
+  end;}
+  // Register in MathModule
+  MathModuleEnabled := Boolean(PluginLink.ServiceExists(MATH_RTF_REPLACE_FORMULAE));
 end;
 
 initialization

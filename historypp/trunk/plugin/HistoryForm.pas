@@ -1489,12 +1489,11 @@ end;
 procedure THistoryFrm.hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
 var
   PrevTimestamp: DWord;
-  //hDBEvent: THandle;
 begin
   Item := GetItemData(GridIndexToHistory(Index));
   Item.Proto := Protocol;
   if GridIndexToHistory(Index) = 0 then
-    Item.HasHeader := True
+    Item.HasHeader := IsEventInSession(Item.EventType)
   else begin
     if History[GridIndexToHistory(Index)-1] = 0 then
       LoadPendingHeaders(GridIndexToHistory(Index)-1,HistoryLength);
