@@ -318,7 +318,7 @@ begin
   EText.Lines.BeginUpdate;
   ParentForm.hg.ApplyItemToRich(FItem,EText,false,true);
   EText.SelStart := 0;
-  EText.SelLength := 0;
+  //EText.SelLength := 0;
   SendMessage(EText.Handle,EM_REQUESTRESIZE,0,0);
   EText.Lines.EndUpdate;
 

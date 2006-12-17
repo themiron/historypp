@@ -891,6 +891,7 @@ begin
   FRichInline.ReadOnly := True;
 
   FRichInline.ScrollBars := ssVertical;
+  FRichInline.HideScrollBars := True;
 
   FRichInline.OnExit := OnInlineOnExit;
   FRichInline.OnKeyDown := OnInlineOnKeyDown;
@@ -1314,15 +1315,16 @@ begin
 end;
 
 procedure THistoryGrid.SetProcessInline(const Value: Boolean);
-var
-  cr: CHARRANGE;
+//var
+//  cr: CHARRANGE;
 begin
   if State = gsInline then begin
     FRichInline.Lines.BeginUpdate;
-    FRichInline.Perform(EM_EXGETSEL,0,LPARAM(@cr));
+    //FRichInline.Perform(EM_EXGETSEL,0,LPARAM(@cr));
     ApplyItemToRich(Selected, FRichInline);
-    FRichInline.Perform(EM_EXSETSEL,0,LPARAM(@cr));
-    FRichInline.Perform(EM_SCROLLCARET, 0, 0);
+    //FRichInline.Perform(EM_EXSETSEL,0,LPARAM(@cr));
+    //FRichInline.Perform(EM_SCROLLCARET, 0, 0);
+    FRichInline.SelStart := 0;
     FRichInline.Lines.EndUpdate;
   end;
   if Assigned(FOnProcessInlineChange) then
@@ -4749,7 +4751,7 @@ end;
 procedure THistoryGrid.EditInline(Item: Integer);
 var
   r: TRect;
-  cr: CHARRANGE;
+  //cr: CHARRANGE;
 begin
   if State = gsInline then CancelInline(False);
   MakeVisible(Item);
@@ -4782,10 +4784,11 @@ begin
 
   State := gsInline;
   ApplyItemToRich(Item, FRichInline);
-  cr.cpMin := 0;
-  cr.cpMax := 0;
-  FRichInline.Perform(EM_EXSETSEL,0,LPARAM(@cr));
-  FRichInline.Perform(EM_SCROLLCARET, 0, 0);
+  FRichInline.SelStart := 0;
+  //cr.cpMin := 0;
+  //cr.cpMax := 0;
+  //FRichInline.Perform(EM_EXSETSEL,0,LPARAM(@cr));
+  //FRichInline.Perform(EM_SCROLLCARET, 0, 0);
   FRichInline.Show;
   FRichInline.SetFocus;
 end;
