@@ -377,8 +377,6 @@ All files (*.*)|*.*
 ;; HistoryGrid.trans.txt file
 
 ;; Text found in ..\plugin\HistoryGrid.pas:
-[Open Link]
-Open Link
 [Remove Bookmark]
 Remove Bookmark
 [Set Bookmark]
