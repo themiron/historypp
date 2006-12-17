@@ -1,5 +1,4 @@
 ;; Text found in ..\plugin\HistoryGrid.pas:
-Open Link
 Remove Bookmark
 Set Bookmark
 Hide headers
