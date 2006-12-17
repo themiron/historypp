@@ -2779,7 +2779,7 @@ end;
 procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
 begin
   if Url= '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,0,LPARAM(@Url[1]));
+  PluginLink.CallService(MS_UTILS_OPENURL,1,LPARAM(@Url[1]));
 end;
 
 procedure THistoryFrm.hgUrlPopup(Sender: TObject; Item: Integer; Url: String);

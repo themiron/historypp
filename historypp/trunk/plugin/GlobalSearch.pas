@@ -1727,7 +1727,7 @@ var
   bNewWindow: Integer;
 begin
   if Url = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,0,LPARAM(@Url[1]));
+  PluginLink.CallService(MS_UTILS_OPENURL,1,LPARAM(@Url[1]));
 end;
 
 procedure TfmGlobalSearch.edPassKeyPress(Sender: TObject; var Key: Char);
