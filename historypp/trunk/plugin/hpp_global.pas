@@ -45,7 +45,7 @@ type
                   mtMessage, mtUrl, mtFile, mtSystem,
                   mtContacts, mtSMS, mtWebPager, mtEmailExpress, mtStatus, mtSMTPSimple,
                   mtOther,
-                  mtNickChange,mtAvatarChange,mtWATrack);
+                  mtNickChange,mtAvatarChange,mtWATrack,mtStatusMessage);
   TMessageTypes = set of TMessageType;
   PMessageTypes = ^TMessageTypes;
 
@@ -156,7 +156,8 @@ var
     (Name:'Other events (unknown)';XML:'OTHER'),
     (Name:'Nick changes';XML:'NICKCNG'),
     (Name:'Avatar changes';XML:'AVACNG'),
-    (Name:'WATrack notify';XML:'WATRACK'));
+    (Name:'WATrack notify';XML:'WATRACK'),
+    (Name:'Status message changes';XML:'STATUSMSGCHG'));
 
 {$I m_historypp.inc}
 

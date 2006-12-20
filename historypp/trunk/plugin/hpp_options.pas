@@ -145,7 +145,7 @@ const
     (name:'z_password_protect'; handle: 0)
   );
 
-  hppFontItems: array[0..24] of ThppFontsRec = (
+  hppFontItems: array[0..25] of ThppFontsRec = (
     (_type:[hppFont,hppColor]; name: 'Incoming nick'; nameColor: 'Divider'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $6B3FC8; back: clGray),
     (_type:[hppFont,hppColor]; name: 'Outgoing nick'; nameColor: 'Selected text'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $BD6008; back: clHighlightText),
     (_type:[hppColor];         nameColor: 'Selected background'; Mes: []; back: clHighlight),
@@ -170,7 +170,8 @@ const
     (_type:[hppFont];          name: 'Outgoing timestamp'; Mes: []; style:0; size: -11; color: $000000),
     (_type:[hppFont,hppColor]; name: 'Grid messages'; nameColor: 'Grid background'; Mes: []; style:0; size: -11; color: $000000; back: $E9EAEB),
     (_type:[hppFont,hppColor]; name: 'Incoming WATrack notify'; Mes: [mtWATrack,mtIncoming]; style:0; size: -11; color: $C08000; back: $C8FFFF),
-    (_type:[hppFont,hppColor]; name: 'Outgoing WATrack notify'; Mes: [mtWATrack,mtOutgoing]; style:0; size: -11; color: $C08000; back: $C8FFFF)
+    (_type:[hppFont,hppColor]; name: 'Outgoing WATrack notify'; Mes: [mtWATrack,mtOutgoing]; style:0; size: -11; color: $C08000; back: $C8FFFF),
+    (_type:[hppFont,hppColor]; name: 'Status message changes'; Mes: [mtStatusMessage,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $F0F0F0)
     );
 
 var

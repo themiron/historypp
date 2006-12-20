@@ -50,12 +50,12 @@ type
 
 const
 
-  EVENTTYPE_STATUSCHANGE    = 25368;	  // from srmm's
-  EVENTTYPE_SMTPSIMPLE      = 2350;		  // from SMTP Simple
-  EVENTTYPE_NICKNAMECHANGE  = 9001;		  // from prescuma
-  EVENTTYPE_STATUSCHANGE2   = 9002;		  // from prescuma
-  EVENTTYPE_AVATARCHANGE    = 9003;     // from prescuma
-  EVENTTYPE_CONTACTLEFTCHANNEL = 9004;  // from tabSRMM
+  EVENTTYPE_STATUSCHANGE        = 25368;  // from srmm's
+  EVENTTYPE_SMTPSIMPLE          = 2350;   // from SMTP Simple
+  EVENTTYPE_NICKNAMECHANGE      = 9001;   // from prescuma
+  EVENTTYPE_STATUSMESSAGECHANGE = 9002;   // from prescuma
+  EVENTTYPE_AVATARCHANGE        = 9003;   // from prescuma
+  EVENTTYPE_CONTACTLEFTCHANNEL  = 9004;   // from tabSRMM
 
 // General timstamp function
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;
@@ -130,7 +130,7 @@ var
     (EventType: ICQEVENTTYPE_WEBPAGER; MessageType: mtOther; TextFunction: GetEventTextForWebPager),
     (EventType: ICQEVENTTYPE_EMAILEXPRESS; MessageType: mtOther; TextFunction: GetEventTextForEmailExpress),
     (EventType: EVENTTYPE_NICKNAMECHANGE; MessageType: mtNickChange; TextFunction: GetEventTextForMessage),
-    (EventType: EVENTTYPE_STATUSCHANGE2; MessageType: mtStatus; TextFunction: GetEventTextForMessage),
+    (EventType: EVENTTYPE_STATUSMESSAGECHANGE; MessageType: mtStatusMessage; TextFunction: GetEventTextForMessage),
     (EventType: EVENTTYPE_AVATARCHANGE; MessageType: mtAvatarChange; TextFunction: GetEventTextForAvatarChange),
     (EventType: ICQEVENTTYPE_AUTH_GRANTED; MessageType: mtSystem; TextFunction: GetEventTextForICQAuthGranted),
     (EventType: ICQEVENTTYPE_AUTH_DENIED; MessageType: mtSystem; TextFunction: GetEventTextForICQAuthDenied),
