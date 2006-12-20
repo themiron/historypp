@@ -61,17 +61,18 @@ var
   filterAll: TMessageTypes;
 
 const
-  hppIntDefEventFilters: array[0..10] of ThppEventFilter = (
+  hppIntDefEventFilters: array[0..11] of ThppEventFilter = (
     (Name: 'Show all events'; Events: []; filMode: FM_EXCLUDE; filEvents: []),
     (Name: 'Messages'; Events: []; filMode: FM_INCLUDE; filEvents: [mtMessage,mtIncoming,mtOutgoing]),
     (Name: 'Link URLs'; Events: []; filMode: FM_INCLUDE; filEvents: [mtUrl,mtIncoming,mtOutgoing]),
     (Name: 'Files'; Events: []; filMode: FM_INCLUDE; filEvents: [mtFile,mtIncoming,mtOutgoing]),
     (Name: 'Contacts'; Events: []; filMode: FM_INCLUDE; filEvents: [mtContacts,mtIncoming,mtOutgoing]),
     (Name: 'Status changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtStatus,mtIncoming,mtOutgoing]),
+    (Name: 'Status message changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtStatusMessage,mtIncoming,mtOutgoing]),
     (Name: 'Nick changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtNickChange,mtIncoming,mtOutgoing]),
     (Name: 'Avatar changes'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtAvatarChange,mtIncoming,mtOutgoing]),
     (Name: 'WATrack notify'; Events: [];  filMode: FM_INCLUDE; filEvents: [mtWATrack,mtIncoming,mtOutgoing]),
-    (Name: 'All except changes'; Events: []; filMode: FM_EXCLUDE; filEvents: [mtStatus,mtNickChange,mtAvatarChange]),
+    (Name: 'All except changes'; Events: []; filMode: FM_EXCLUDE; filEvents: [mtStatus,mtStatusMessage,mtNickChange,mtAvatarChange]),
     (Name: 'All except system'; Events: []; filMode: FM_EXCLUDE; filEvents: [mtSystem])
     );
 
