@@ -51,8 +51,8 @@ Copy &Text
 &Delete
 &Save Selected...
 Select &All
-Open &Link
-Open Link in New &Window
+Open in &new window
+&Open in existing window
 &Copy Link
 &Save Selected...
 Export as &HTML...
