@@ -105,6 +105,7 @@ object HistoryFrm: THistoryFrm
         BevelInner = bvNone
         BevelOuter = bvNone
         Padding = 4
+        ShowHint = True
       end
     end
     object paSess: TTntPanel
@@ -711,14 +712,14 @@ object HistoryFrm: THistoryFrm
     ParentBiDiMode = False
     Left = 368
     Top = 258
-    object OpenLink: TTntMenuItem
-      Caption = 'Open &Link'
-      Default = True
-      OnClick = OpenLinkClick
-    end
     object OpenLinkNW: TTntMenuItem
-      Caption = 'Open Link in New &Window'
+      Caption = 'Open in &new window'
+      Default = True
       OnClick = OpenLinkNWClick
+    end
+    object OpenLink: TTntMenuItem
+      Caption = '&Open in existing window'
+      OnClick = OpenLinkClick
     end
     object N1: TTntMenuItem
       Caption = '-'

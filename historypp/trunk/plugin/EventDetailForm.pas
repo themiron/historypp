@@ -73,6 +73,10 @@ type
     EToMore: TTntSpeedButton;
     PrevBtn: TTntSpeedButton;
     NextBtn: TTntSpeedButton;
+    OpenLinkNW: TTntMenuItem;
+    OpenLink: TTntMenuItem;
+    CopyLink: TTntMenuItem;
+    N4: TTntMenuItem;
     procedure PrevBtnClick(Sender: TObject);
     procedure NextBtnClick(Sender: TObject);
     procedure EFromMoreClick(Sender: TObject);
@@ -92,12 +96,19 @@ type
     procedure ReplyQuoted1Click(Sender: TObject);
     procedure ToogleItemProcessingClick(Sender: TObject);
     procedure ETextResizeRequest(Sender: TObject; Rect: TRect);
+    procedure OpenLinkNWClick(Sender: TObject);
+    procedure OpenLinkClick(Sender: TObject);
+    procedure CopyLinkClick(Sender: TObject);
+    procedure ETextMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
   private
     //FRowIdx: integer;
     FParentForm: THistoryFrm;
     FItem: Integer;
     Prev,Next: Integer;
     FRichHeight: Integer;
+    FOverURL: Boolean;
+    SavedLinkUrl: String;
 
 //    procedure SetRowIdx(const Value: integer);
     procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
@@ -365,6 +376,9 @@ begin
   SendMessage1.Enabled := (ParentForm.hContact <> 0);
   ReplyQuoted1.Enabled := (ParentForm.hContact <> 0);
   ToogleItemProcessing.Checked := GridOptions.TextFormatting;
+  OpenLinkNW.Visible := FOverURL;
+  OpenLink.Visible := FOverURL;
+  CopyLink.Visible := FOverURL;
 end;
 
 procedure TEventDetailsFrm.SelectAllClick(Sender: TObject);
@@ -409,17 +423,19 @@ var
   p: TPoint;
   link: TENLink;
   tr: TextRange;
-  Url: String;
 begin
   if Message.NMHdr^.code = EN_LINK then begin
     p := EText.ScreenToClient(Mouse.CursorPos);
-    link := TENLink(Pointer(Message.NMHdr)^);
-    if (link.msg = WM_LBUTTONUP) and (p.Y <= FRichHeight) then begin
+    if p.Y <= FRichHeight then begin
+      FOverURL := True;
+      link := TENLink(Pointer(Message.NMHdr)^);
       tr.chrg := link.chrg;
-      SetLength(Url,link.chrg.cpMax-link.chrg.cpMin);
-      tr.lpstrText := @Url[1];
+      SetLength(SavedLinkUrl,link.chrg.cpMax-link.chrg.cpMin);
+      tr.lpstrText := @SavedLinkUrl[1];
       EText.Perform(EM_GETTEXTRANGE,0,LongInt(@tr));
-      PluginLink.CallService(MS_UTILS_OPENURL,1,Integer(PChar(@Url[1])));
+      if link.msg = WM_LBUTTONUP then begin
+        OpenLinkNW.Click;
+      end;
     end;
   end;
   inherited;
@@ -500,6 +516,32 @@ begin
   inherited;
   LoadButtonIcons;
   Repaint;
+end;
+
+procedure TEventDetailsFrm.OpenLinkNWClick(Sender: TObject);
+begin
+  if SavedLinkUrl = '' then exit;
+  PluginLink.CallService(MS_UTILS_OPENURL,1,LPARAM(@SavedLinkUrl[1]));
+  SavedLinkUrl := '';
+end;
+
+procedure TEventDetailsFrm.OpenLinkClick(Sender: TObject);
+begin
+  if SavedLinkUrl = '' then exit;
+  PluginLink.CallService(MS_UTILS_OPENURL,0,LPARAM(@SavedLinkUrl[1]));
+  SavedLinkUrl := '';
+end;
+
+procedure TEventDetailsFrm.CopyLinkClick(Sender: TObject);
+begin
+  if SavedLinkUrl = '' then exit;
+  CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Handle,CP_ACP);
+  SavedLinkUrl := '';
+end;
+
+procedure TEventDetailsFrm.ETextMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+begin
+  FOverURL := False;
 end;
 
 end.

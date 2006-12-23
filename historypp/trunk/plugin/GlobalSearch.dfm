@@ -276,6 +276,7 @@ object fmGlobalSearch: TfmGlobalSearch
         BevelInner = bvNone
         BevelOuter = bvNone
         Padding = 4
+        ShowHint = True
       end
       object paFilter: TTntPanel
         Left = 0
@@ -726,14 +727,14 @@ object fmGlobalSearch: TfmGlobalSearch
     ParentBiDiMode = False
     Left = 244
     Top = 266
-    object OpenLink: TTntMenuItem
-      Caption = 'Open &Link'
-      Default = True
-      OnClick = OpenLinkClick
-    end
     object OpenLinkNW: TTntMenuItem
-      Caption = 'Open Link in New &Window'
+      Caption = 'Open in &new window'
+      Default = True
       OnClick = OpenLinkNWClick
+    end
+    object OpenLink: TTntMenuItem
+      Caption = '&Open in existing window'
+      OnClick = OpenLinkClick
     end
     object TntMenuItem2: TTntMenuItem
       Caption = '-'
