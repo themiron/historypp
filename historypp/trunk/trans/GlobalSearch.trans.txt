@@ -48,8 +48,8 @@ Select &All
 Text Formatting
 Send &Message
 &Reply Quoted
-Open &Link
-Open Link in New &Window
+Open in &new window
+&Open in existing window
 &Copy Link
 Toolbar
 Service

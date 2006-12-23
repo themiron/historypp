@@ -88,6 +88,12 @@ To:
 Show sender information
 [Show receiver information]
 Show receiver information
+[Open in &new window]
+Open in &new window
+[&Open in existing window]
+&Open in existing window
+[&Copy Link]
+&Copy Link
 [&Copy]
 &Copy
 [Copy All]
@@ -176,12 +182,6 @@ Copy &Text
 Save History
 [&Customize...]
 &Customize...
-[Open &Link]
-Open &Link
-[Open Link in New &Window]
-Open Link in New &Window
-[&Copy Link]
-&Copy Link
 [Toolbar]
 Toolbar
 [Service]

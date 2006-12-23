@@ -11,6 +11,9 @@ From:
 To:
 Show sender information
 Show receiver information
+Open in &new window
+&Open in existing window
+&Copy Link
 &Copy
 Copy All
 Select &All
