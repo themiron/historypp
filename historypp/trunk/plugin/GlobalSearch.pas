@@ -1417,11 +1417,14 @@ begin
     WriteDBInt(hppDBName,'GlobalSearchWindow.AdvancedOptions',2);
 
   WriteDBBool(hppDBName,'GlobalSearchWindow.ShowRange',paRange.Visible);
-  if Trunc(dtRange1.Date) <> Trunc(Now) then
+  if Trunc(dtRange1.Date) = Trunc(Now) then
+    DBDelete(hppDBName,'GlobalSearchWindow.RangeFrom')
+  else
     WriteDBDateTime(hppDBName,'GlobalSearchWindow.RangeFrom',Trunc(dtRange1.Date));
-  if Trunc(dtRange2.Date) <> Trunc(Now) then
+  if Trunc(dtRange2.Date) = Trunc(Now) then
+    DBDelete(hppDBName,'GlobalSearchWindow.RangeTo')
+  else
     WriteDBDateTime(hppDBName,'GlobalSearchWindow.RangeTo',Trunc(dtRange2.Date));
-
   LastSearch := WideToAnsiString(edSearch.Text,hppCodepage);
   WriteDBWideStr(hppDBName,'GlobalSearchWindow.LastSearch',LastSearch);
 end;
