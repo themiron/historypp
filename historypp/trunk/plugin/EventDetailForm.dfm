@@ -218,12 +218,29 @@ object EventDetailsFrm: TEventDetailsFrm
     ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 0
+    OnMouseMove = ETextMouseMove
     OnResizeRequest = ETextResizeRequest
   end
   object pmEText: TTntPopupMenu
     OnPopup = pmETextPopup
     Left = 68
     Top = 173
+    object OpenLinkNW: TTntMenuItem
+      Caption = 'Open in &new window'
+      Default = True
+      OnClick = OpenLinkNWClick
+    end
+    object OpenLink: TTntMenuItem
+      Caption = '&Open in existing window'
+      OnClick = OpenLinkClick
+    end
+    object CopyLink: TTntMenuItem
+      Caption = '&Copy Link'
+      OnClick = CopyLinkClick
+    end
+    object N4: TTntMenuItem
+      Caption = '-'
+    end
     object CopyText: TTntMenuItem
       Caption = '&Copy'
       ShortCut = 16451
