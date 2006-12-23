@@ -757,7 +757,6 @@ end;
 
 procedure TTntSpeedButton.MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  P : TPoint;
   OldDragging: Boolean;
 begin
   OldDragging := THackSpeedButton(Self).FDragging;
