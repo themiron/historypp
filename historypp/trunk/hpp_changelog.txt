@@ -9,6 +9,33 @@ Changelog
 
 SVN Changelog: https://opensvn.csie.org/traccgi/historypp/log/?verbose=on
 
+1.5.0.112 HappyNewYear build
+
++ Added session dividers to external grid
++ Added support for hidden DateTimeFormat db option
++ Added conversation divider to html export
++ Added Ctrl+PageUp and Ctrl+PageDown shortcuts scrolling
++ Added 32bit icon frames for MS Vista compability
++ Added url menu items to context menu of event detail form
++ Added own draw of history action button with dropdown icon
++ Forced ascending order of copying items
++ Fixed plaining RTF messages in html,xml and txt export
++ Fixed transparent text color if incorrect color bbcode was used
++ Fixed chars containing timestamps export
++ Fixed current day range saving in history search
++ Fixed hint showing/hiding
++ Finally fixed wrong window size restoring with WindowBlinds is in use
++ Finally fixed instant xp theme and system color change applying
++ Made unicode grid's hints
++ Made Grid single bordered
++ Made url open in new window on click
++ Made text formatting change on-the-fly in all open histories with state saving
++ Removed buggy open link hint
++ Escape key closes search/filter instead of form close
++ Separated status changes and status message changes events
++ Some code optimizations
++ Translation changes
+
 1.5.0.111
 
 + Richedit 2.0 is required and used instead of richedit 1.0
