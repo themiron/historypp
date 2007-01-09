@@ -121,12 +121,12 @@ type
     tbEventsFilter: TTntSpeedButton;
     tbAdvanced: TTntToolButton;
     tbRange: TTntToolButton;
-    TntToolButton3: TTntToolButton;
+    TntToolButton2: TTntToolButton;
     ilToolbar: TImageList;
     bePassword: TTntBevel;
     beRange: TTntBevel;
     beAdvanced: TTntBevel;
-    TntToolButton4: TTntToolButton;
+    TntToolButton3: TTntToolButton;
     tbSearch: TTntToolButton;
     tbFilter: TTntToolButton;
     laPassNote: TTntLabel;
@@ -153,6 +153,8 @@ type
     mmHideMenu: TTntMenuItem;
     mmShortcuts: TTntMenuItem;
     mmBookmark: TTntMenuItem;
+    tbBookmarks: TTntToolButton;
+    TntToolButton1: TTntToolButton;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -228,6 +230,7 @@ type
     procedure mmHideMenuClick(Sender: TObject);
     procedure mmToolbarClick(Sender: TObject);
     procedure pmEventsFilterPopup(Sender: TObject);
+    procedure tbBookmarksClick(Sender: TObject);
   private
     UsedPassword: String;
     UserMenu: hMenu;
@@ -239,6 +242,7 @@ type
     FContactFilter: Integer;
     FFiltered: Boolean;
     IsSearching: Boolean;
+    IsBookmarksMode: Boolean;
     History: array of TSearchItem;
     FilterHistory: array of Integer;
     CurContact: THandle;
@@ -679,7 +683,7 @@ begin
   if Visible then Lock := LockWindowUpdate(Handle);
   try
     tbAdvanced.Down := Show;
-    paAdvanced.Visible := Show;
+    paAdvanced.Visible := Show and tbAdvanced.Enabled;
     OrganizePanels;
   finally
     if Visible and Lock then LockWindowUpdate(0);
@@ -709,7 +713,7 @@ begin
   if Visible then Lock := LockWindowUpdate(Handle);
   try
     tbRange.Down := Show;
-    paRange.Visible := Show;
+    paRange.Visible := Show and tbRange.Enabled;
     edSearchChange(Self);
     OrganizePanels;
   finally
@@ -917,7 +921,9 @@ begin
   UsedPassword := edPass.Text;
   st := TSearchThread.Create(True);
 
-  if edSearch.text = '' then
+  if IsBookmarksMode then
+    st.SearchMethod := smBookmarks
+  else if edSearch.text = '' then
     st.SearchMethod := smNoText
   else if rbAny.Checked then
     st.SearchMethod := smAnyWord
@@ -931,8 +937,9 @@ begin
     st.SearchRangeFrom := dtRange1.Date;
     st.SearchRangeTo := dtRange2.Date;
   end;
+
   st.Priority := tpLower;
-  st.ParentHandle := Self.Handle;
+  st.ParentHandle := Handle;
   st.SearchText := edSearch.text;
   st.SearchProtectedContacts := SearchProtected;
   st.Resume;
@@ -1230,6 +1237,8 @@ begin
   tbRange.ImageIndex := ii;
   ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_SEARCHPROTECTED].Handle);
   tbPassword.ImageIndex := ii;
+  ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_BOOKMARK].Handle);
+  tbBookmarks.ImageIndex := ii;
 
   ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_HOTFILTER].Handle);
   tbFilter.ImageIndex := ii;
@@ -1723,6 +1732,9 @@ begin
     else
       Name := WideFormat(TranslateWideW('To %s'),[si.Contact.Name]);
  end;
+ // there should be anoter way to use bookmarks names
+ //if IsBookmarksMode then
+ // Name := Name + ' [' + BookmarkServer[si.Contact.Handle].BookmarkName[si.hDBEvent] + ']';
 end;
 
 procedure TfmGlobalSearch.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
@@ -1945,6 +1957,9 @@ begin
     // if change, change also in SMProgress
     sb.SimpleText := WideFormat(TranslateWideW('Searching... %.0n items in %d contacts found'),[Length(History)/1, ContactsFound])
   else
+  //if IsBookmarksMode then
+  //  sb.SimpleText := TranslateWideW('Bookmarks mode')
+  //else
     sb.SimpleText := t;
 end;
 
@@ -2155,6 +2170,25 @@ begin
   LoadToolbarIcons;
   LoadButtonIcons;
   Repaint;
+end;
+
+procedure TfmGlobalSearch.tbBookmarksClick(Sender: TObject);
+begin
+  if Sender <> tbBookmarks then
+    tbBookmarks.Down := not tbBookmarks.Down;
+  IsBookmarksMode := tbBookmarks.Down;
+
+  paSearch.Visible := not IsBookmarksMode;
+
+  tbAdvanced.Enabled := not IsBookmarksMode;
+  ToggleAdvancedPanel(tbAdvanced.Down);
+
+  tbRange.Enabled := not IsBookmarksMode;
+  ToggleRangePanel(tbRange.Down);
+
+  if IsSearching then StopSearching;
+
+  if IsBookmarksMode then bnSearch.Click;
 end;
 
 initialization
