@@ -358,19 +358,32 @@ object fmGlobalSearch: TfmGlobalSearch
         Hint = 'Search protected contacts'
         HelpKeyword = 'F6'
         Caption = 'Search protected contacts'
-        ImageIndex = 0
         Style = tbsCheck
         OnClick = tbPasswordClick
       end
-      object TntToolButton3: TTntToolButton
+      object TntToolButton1: TTntToolButton
         Left = 69
         Top = 0
         Width = 8
-        Enabled = False
+        Style = tbsSeparator
+      end
+      object tbBookmarks: TTntToolButton
+        Left = 77
+        Top = 0
+        Hint = 'Bookmarks'
+        HelpKeyword = 'F7'
+        Caption = 'Bookmarks'
+        Style = tbsCheck
+        OnClick = tbBookmarksClick
+      end
+      object TntToolButton2: TTntToolButton
+        Left = 100
+        Top = 0
+        Width = 8
         Style = tbsSeparator
       end
       object tbSearch: TTntToolButton
-        Left = 77
+        Left = 108
         Top = 0
         Caption = 'tbSearch'
         Grouped = True
@@ -378,22 +391,22 @@ object fmGlobalSearch: TfmGlobalSearch
         Visible = False
       end
       object tbFilter: TTntToolButton
-        Left = 100
+        Left = 131
         Top = 0
         Caption = 'tbFilter'
         Grouped = True
         Style = tbsCheck
         Visible = False
       end
-      object TntToolButton4: TTntToolButton
-        Left = 123
+      object TntToolButton3: TTntToolButton
+        Left = 154
         Top = 0
         Width = 8
         Style = tbsSeparator
         Visible = False
       end
       object tbEventsFilter: TTntSpeedButton
-        Left = 131
+        Left = 162
         Top = 0
         Width = 110
         Height = 22
@@ -670,7 +683,7 @@ object fmGlobalSearch: TfmGlobalSearch
   end
   object pmEventsFilter: TTntPopupMenu
     OnPopup = pmEventsFilterPopup
-    Left = 266
+    Left = 306
     Top = 2
     object N4: TTntMenuItem
       Caption = '-'

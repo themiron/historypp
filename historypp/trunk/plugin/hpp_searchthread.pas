@@ -37,8 +37,9 @@ unit hpp_searchthread;
 interface
 
 uses
-  Windows, SysUtils, Controls, Messages, HistoryGrid, Classes, m_GlobalDefs,
-  hpp_global, hpp_events, TntSysUtils, m_api, hpp_forms;
+  Windows, SysUtils, TntSysUtils, Controls, Messages, HistoryGrid, Classes,
+  m_GlobalDefs, m_api,
+  hpp_global, hpp_events, hpp_forms, hpp_bookmarks;
 
 
 const
@@ -49,7 +50,7 @@ type
   PDBArray = ^TDBArray;
   TDBArray = array[0..ST_BATCH-1] of Integer;
 
-  TSearchMethod = (smNoText, smExact, smAnyWord, smAllWords);
+  TSearchMethod = (smNoText, smExact, smAnyWord, smAllWords, smBookmarks);
 
   TContactRec = record
     hContact: THandle;
@@ -88,6 +89,7 @@ type
 
     function SearchEvent(DBEvent: THandle): Boolean;
     procedure SearchContact(Contact: THandle);
+    procedure SearchBookmarks(Contact: THandle);
     procedure SendItem(hDBEvent: Integer);
     procedure SendBatch;
     procedure Execute; override;
@@ -277,6 +279,7 @@ var
   {$ELSE}
   i: Integer;
   {$ENDIF}
+  BookmarksMode: Boolean;
 begin
   BufCount := 0;
   FirstBatch := True;
@@ -286,10 +289,15 @@ begin
     CalcMaxProgress;
     SetProgress(0);
 
-    // make it case-insensitive
-    SearchText := Tnt_WideUpperCase(SearchText);
-    if SearchMethod in [smAnyWord, smAllWords] then
-      GenerateSearchWords;
+    BookmarksMode := (SearchMethod = smBookmarks);
+
+    // search within contacts
+    if not BookmarksMode then begin
+      // make it case-insensitive
+      SearchText := Tnt_WideUpperCase(SearchText);
+      if SearchMethod in [smAnyWord, smAllWords] then
+        GenerateSearchWords;
+    end;
 
     {$IFNDEF SMARTSEARCH}
     hCont := PluginLink.CallService(MS_DB_CONTACT_FINDFIRST,0,0);
@@ -297,17 +305,22 @@ begin
       Inc(AllContacts);
       // I hope I haven't messed this up by
       // if yes, also fix the same in CalcMaxProgress
-      if SearchProtectedContacts or (not SearchProtectedContacts and (not IsUserProtected(hCont))) then
-        SearchContact(hCont);
-      hCont := PluginLink.CallService(MS_DB_CONTACT_FINDNEXT,hCont,0);
+      if SearchProtectedContacts or (not SearchProtectedContacts and (not IsUserProtected(hCont))) then begin
+        if BookmarksMode then SearchBookmarks(hCont)
+                         else SearchContact(hCont);
       end;
-    SearchContact(hCont);
+      hCont := PluginLink.CallService(MS_DB_CONTACT_FINDNEXT,hCont,0);
+    end;
+    if BookmarksMode then SearchBookmarks(hCont)
+                     else SearchContact(hCont);
     {$ELSE}
     BuildContactsList;
     for i := Length(Contacts) - 1 downto 0 do begin
-      SearchContact(Contacts[i].hContact);
+      if BookmarksMode then SearchBookmarks(Contacts[i].hContact)
+                       else SearchContact(Contacts[i].hContact);
     end;
     {$ENDIF}
+
   finally
     // only Post..., not Send... because we wait for this thread
     // to die in this message
@@ -365,6 +378,21 @@ begin
     if SearchEvent(hDBEvent) then
       SendItem(hDBEvent);
     hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDPREV,hDBEvent,0);
+  end;
+  SendBatch;
+end;
+
+procedure TSearchThread.SearchBookmarks(Contact: THandle);
+var
+  i: Integer;
+begin
+  DoMessage(HM_STRD_NEXTCONTACT, Contact, GetContactsCount);
+  for i := 0 to BookmarkServer[Contact].Count-1 do begin
+    Inc(AllEvents);
+    if Terminated then
+      raise EAbort.Create('Thread terminated');
+    SendItem(BookmarkServer[Contact].Items[i]);
+    IncProgress;
   end;
   SendBatch;
 end;
