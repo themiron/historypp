@@ -95,10 +95,13 @@ end;
 function ExtEvent(wParam, lParam: DWord): Integer; cdecl;
 var
   event: PIEVIEWEVENT;
+  customEvent: PIEVIEWEVENTDATA;
   UsedCodepage: Cardinal;
+  UnicodeEvent: Boolean;
   hDBNext: THandle;
-  i: Integer;
+  i,eventCount: Integer;
   ExtGrid: TExternalGrid;
+  CustomItem: TExtCustomItem;
 begin
   Result := 0;
   try
@@ -130,6 +133,35 @@ begin
             hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBNext,0);
           end;
         end;
+        ExtGrid.EndUpdate;
+      end;
+      IEE_LOG_MEM_EVENTS: begin
+        if event.cbSize >= IEVIEWEVENT_SIZE_V2 then
+          UsedCodepage := event.Codepage
+        else
+          UsedCodepage := CP_ACP;
+        if event.Count = -1 then
+          eventCount := MaxInt
+        else
+          eventCount := event.Count;
+        customEvent := event.data.eventData;
+        i := 1;
+        ExtGrid.BeginUpdate;
+        repeat
+          UnicodeEvent := boolean(customEvent.dwFlags xor IEEF_NO_UNICODE);
+          if UnicodeEvent then begin
+            CustomItem.Nick := WideString(customEvent.pszNick.w);
+            CustomItem.Text := WideString(customEvent.pszText.w);
+          end else begin
+            CustomItem.Nick := AnsiToWideString(AnsiString(customEvent.pszNick.a),UsedCodepage);
+            CustomItem.Text := AnsiToWideString(AnsiString(customEvent.pszText.a),UsedCodepage);
+          end;
+          CustomItem.Sent := boolean(customEvent.bIsMe);
+          CustomItem.Time := customEvent.time;
+          ExtGrid.AddCustomEvent(event.hContact, CustomItem, UsedCodepage, boolean(event.dwFlags and IEEF_RTL));
+          Inc(i);
+          customEvent := event.data.eventData.next;
+        Until (customEvent = nil) or (i > eventCount);
         ExtGrid.EndUpdate;
       end;
       IEE_CLEAR_LOG: begin
