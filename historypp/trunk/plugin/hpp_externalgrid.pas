@@ -13,16 +13,26 @@ uses
 type
   TExGridMode = (gmNative, gmIEView);
 
+  PExtCustomItem = ^TExtCustomItem;
+  TExtCustomItem = record
+    Nick: WideString;
+    Text: WideString;
+    Sent: Boolean;
+    Time: DWord;
+  end;
+
   TExtItem = record
     hDBEvent: THandle;
     hContact: THandle;
     Codepage: THandle;
     RTLMode: TRTLMode;
+    CustomLink: PExtCustomItem;
   end;
 
   TExternalGrid = class(TObject)
   private
     Items: array of TExtItem;
+    CustomItems: array of TExtCustomItem;
     Grid: THistoryGrid;
     FParentWindow: HWND;
     FSelection: Pointer;
@@ -75,6 +85,7 @@ type
     constructor Create(AParentWindow: HWND; ControlID: Cardinal = 0);
     destructor Destroy; override;
     procedure AddEvent(hContact, hDBEvent: Cardinal; Codepage: Integer; RTL: boolean);
+    procedure AddCustomEvent(hContact: Cardinal; CustomItem: TExtCustomItem; Codepage: Integer; RTL: boolean);
     procedure SetPosition(x,y,cx,cy: Integer);
     procedure ScrollToBottom;
     function GetSelection(NoUnicode: Boolean): PChar;
@@ -118,6 +129,34 @@ begin
   Items[High(Items)].hDBEvent := hDBEvent;
   Items[High(Items)].hContact := hContact;
   Items[High(Items)].Codepage := Codepage;
+  Items[High(Items)].CustomLink := nil;
+  if RTL then RTLMode := hppRTLEnable
+         else RTLMode := hppRTLDefault;
+  Items[High(Items)].RTLMode := RTLMode;
+  if Grid.Contact <> hContact then begin
+    Grid.Contact := hContact;
+    Grid.Protocol := GetContactProto(hContact);
+    FExternalRTLMode := RTLMode;
+    UseHistoryRTLMode := GetDBBool(Grid.Contact,Grid.Protocol,'UseHistoryRTLMode',FUseHistoryRTLMode);
+    FExternalCodepage := Codepage;
+    UseHistoryRTLMode := GetDBBool(Grid.Contact,Grid.Protocol,'UseHistoryCodepage',FUseHistoryCodepage);
+  end;
+  // comment or we'll get rerendering the whole grid
+  //if Grid.Codepage <> Codepage then Grid.Codepage := Codepage;
+  Grid.Allocate(Length(Items),False);
+end;
+
+procedure TExternalGrid.AddCustomEvent(hContact: Cardinal; CustomItem: TExtCustomItem; Codepage: Integer; RTL: boolean);
+var
+  RTLMode: TRTLMode;
+begin
+  SetLength(Items,Length(CustomItems)+1);
+  CustomItems[High(CustomItems)] := CustomItem;
+  SetLength(Items,Length(Items)+1);
+  Items[High(Items)].hDBEvent := 0;
+  Items[High(Items)].hContact := hContact;
+  Items[High(Items)].Codepage := Codepage;
+  Items[High(Items)].CustomLink := @CustomItems[High(CustomItems)];
   if RTL then RTLMode := hppRTLEnable
          else RTLMode := hppRTLDefault;
   Items[High(Items)].RTLMode := RTLMode;
@@ -242,6 +281,7 @@ begin
   WriteDBBool(hppDBName,'ExpandLogHeaders',Grid.ExpandHeaders);
   if FSelection <> nil then FreeMem(FSelection);
   Grid.Free;
+  Finalize(CustomItems);
   Finalize(Items);
   inherited;
 end;
@@ -262,19 +302,33 @@ begin
 end;
 
 procedure TExternalGrid.GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
+const
+  Direction: array[false..true] of TMessageTypes = ([mtIncoming],[mtOutgoing]);
 var
   PrevTimestamp: DWord;
+  Codepage: Cardinal;
 begin
   if FUseHistoryCodepage then
-    Item := ReadEvent(Items[Index].hDBEvent,Grid.Codepage)
+    Codepage := Grid.Codepage
   else
-    Item := ReadEvent(Items[Index].hDBEvent,Items[Index].Codepage);
+    Codepage := Items[Index].Codepage;
+  if Items[Index].CustomLink = nil then begin
+    Item := ReadEvent(Items[Index].hDBEvent,Codepage);
+    Item.Bookmarked := BookmarkServer[Items[Index].hContact].Bookmarked[Items[Index].hDBEvent];
+  end else begin
+    Item.Time := Items[Index].CustomLink.Time;
+    Item.MessageType := [mtOther] + Direction[Items[Index].CustomLink.Sent];
+    Item.Text := Items[Index].CustomLink.Text;
+    Item.IsRead := True;
+  end;
   Item.Proto := Grid.Protocol;
-  Item.Bookmarked := BookmarkServer[Items[Index].hContact].Bookmarked[Items[Index].hDBEvent];
   if Index = 0 then
     Item.HasHeader := IsEventInSession(Item.EventType)
   else begin
-    PrevTimestamp := GetEventTimestamp(Items[Index-1].hDBEvent);
+    if Items[Index-1].CustomLink = nil then
+      PrevTimestamp := GetEventTimestamp(Items[Index-1].hDBEvent)
+    else
+      PrevTimestamp := Items[Index-1].CustomLink.Time;
     if IsEventInSession(Item.EventType) then
       Item.HasHeader := ((DWord(Item.Time) - PrevTimestamp) > SESSION_TIMEDIFF);
     if (Item.MessageType = Grid.Items[Index-1].MessageType) then
@@ -310,6 +364,9 @@ begin
       if Items[Index].hContact = 0 then Grid.Protocol := 'ICQ'
       else Grid.Protocol := GetContactProto(Items[Index].hContact);
     end;
+    if Items[Index].CustomLink <> nil then
+      Name := Items[Index].CustomLink.Nick
+    else
     if mtIncoming in Grid.Items[Index].MessageType then begin
       Grid.ContactName := GetContactDisplayName(Items[Index].hContact,Grid.Protocol,true);
       Name := Grid.ContactName;
@@ -408,6 +465,7 @@ var
   val: boolean;
   hContact,hDBEvent: THandle;
 begin
+  if Items[Item].CustomLink <> nil then exit;
   hContact := Items[Item].hContact;
   hDBEvent := Items[Item].hDBEvent;
   val := not BookmarkServer[hContact].Bookmarked[hDBEvent];
@@ -584,6 +642,7 @@ var
   hContact,hDBEvent: THandle;
 begin
   if Grid.Selected = -1 then exit;
+  if Items[Grid.Selected].CustomLink <> nil then exit;
   hContact := Items[Grid.Selected].hContact;
   hDBEvent := Items[Grid.Selected].hDBEvent;
   val := not BookmarkServer[hContact].Bookmarked[hDBEvent];
@@ -596,6 +655,7 @@ var
   oep: TOpenEventParams;
 begin
   if Grid.Selected = -1 then exit;
+  if Items[Grid.Selected].CustomLink <> nil then exit;
   oep.cbSize := SizeOf(oep);
   oep.hContact := Items[Grid.Selected].hContact;
   oep.hDBEvent := Items[Grid.Selected].hDBEvent;
@@ -629,8 +689,11 @@ var
   idx: Integer;
   hDBEvent: DWord;
 begin
-  if (FGridState = gsDelete) and (Items[Index].hDBEvent <> 0) then
+  if (FGridState = gsDelete) and
+     (Items[Index].hDBEvent <> 0) and
+     (Items[Index].CustomLink = nil) then
     PluginLink.CallService(MS_DB_EVENT_DELETE,Items[Index].hContact,Items[Index].hDBEvent);
+  if Items[Index].CustomLink <> nil then Finalize(Items[Index].CustomLink^);
   if Index < Length(Items) then
     Move(Items[Index+1],Items[Index],(Length(Items)-Index-1)*SizeOf(Items[0]));
   SetLength(Items,Length(Items)-1);
