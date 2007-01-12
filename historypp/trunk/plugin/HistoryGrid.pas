@@ -1344,7 +1344,7 @@ var
   ps: TagPaintStruct;
   dc: HDC;
 begin
-  if LockCount > 0 then begin
+  if (LockCount > 0) or (csDestroying in ComponentState) then begin
     Message.Result := 1;
     exit;
   end;
@@ -2651,6 +2651,7 @@ end;
 
 procedure THistoryGrid.EMSetSel(var Message: TMessage);
 begin
+  if csDestroying in ComponentState then exit;
   if Assigned(FOnSelectRequest) then FOnSelectRequest(Self);
 end;
 
