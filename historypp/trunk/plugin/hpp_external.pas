@@ -43,7 +43,7 @@ begin
         {$ENDIF}
         case par.dwMode of
           IEWM_TABSRMM: ControlID := 1006;  // IDC_LOG from tabSRMM
-          IEWM_SCRIVER: ControlID := 1001;  // IDC_LOG from tabSRMM
+          IEWM_SCRIVER: ControlID := 1001;  // IDC_LOG from Scriver
           IEWM_MUCC:    ControlID := 0;
           IEWM_CHAT:    ControlID := 0;
           IEWM_HISTORY: ControlID := 0;
@@ -53,6 +53,13 @@ begin
         SetLength(ExternalGrids,n+1);
         ExternalGrids[n] := TExternalGrid.Create(par.Parent,ControlID);
         ExternalGrids[n].GridMode := GridMode;
+        case par.dwMode of
+          IEWM_MUCC,IEWM_CHAT: begin
+            ExternalGrids[n].ShowHeaders := False;
+            ExternalGrids[n].GroupLinked := False;
+            ExternalGrids[n].ShowBookmarks := False;
+          end;
+        end;
         par.Hwnd := ExternalGrids[n].GridHandle;
       end;
       IEW_DESTROY: begin
@@ -97,7 +104,6 @@ var
   event: PIEVIEWEVENT;
   customEvent: PIEVIEWEVENTDATA;
   UsedCodepage: Cardinal;
-  UnicodeEvent: Boolean;
   hDBNext: THandle;
   i,eventCount: Integer;
   ExtGrid: TExternalGrid;
@@ -148,14 +154,14 @@ begin
         i := 1;
         ExtGrid.BeginUpdate;
         repeat
-          UnicodeEvent := boolean(customEvent.dwFlags xor IEEF_NO_UNICODE);
-          if UnicodeEvent then begin
-            CustomItem.Nick := WideString(customEvent.pszNick.w);
-            CustomItem.Text := WideString(customEvent.pszText.w);
-          end else begin
-            CustomItem.Nick := AnsiToWideString(AnsiString(customEvent.pszNick.a),UsedCodepage);
+          if boolean(customEvent.dwFlags and IEEDF_UNICODE_TEXT) then
+            SetString(CustomItem.Text,customEvent.pszText.w,lstrlenW(customEvent.pszText.w))
+          else
             CustomItem.Text := AnsiToWideString(AnsiString(customEvent.pszText.a),UsedCodepage);
-          end;
+          if boolean(customEvent.dwFlags and IEEDF_UNICODE_NICK) then
+            SetString(CustomItem.Nick,customEvent.pszNick.w,lstrlenW(customEvent.pszNick.w))
+          else
+            CustomItem.Nick := AnsiToWideString(AnsiString(customEvent.pszNick.a),UsedCodepage);
           CustomItem.Sent := boolean(customEvent.bIsMe);
           CustomItem.Time := customEvent.time;
           ExtGrid.AddCustomEvent(event.hContact, CustomItem, UsedCodepage, boolean(event.dwFlags and IEEF_RTL));
