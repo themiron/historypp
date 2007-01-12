@@ -26,13 +26,13 @@ type
     hContact: THandle;
     Codepage: THandle;
     RTLMode: TRTLMode;
-    CustomLink: PExtCustomItem;
+    Custom: Boolean;
+    CustomEvent: TExtCustomItem;
   end;
 
   TExternalGrid = class(TObject)
   private
     Items: array of TExtItem;
-    CustomItems: array of TExtCustomItem;
     Grid: THistoryGrid;
     FParentWindow: HWND;
     FSelection: Pointer;
@@ -51,6 +51,8 @@ type
     procedure SetUseHistoryRTLMode(const Value: Boolean);
     procedure SetUseHistoryCodepage(const Value: Boolean);
     procedure SetGroupLinked(const Value: Boolean);
+    procedure SetShowHeaders(const Value: Boolean);
+    procedure SetShowBookmarks(const Value: Boolean);
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
     procedure GridTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
@@ -101,7 +103,9 @@ type
     procedure HMEventDeleted(var M: TMessage); message HM_MIEV_EVENTDELETED;
     procedure BeginUpdate;
     procedure EndUpdate;
+    property ShowHeaders: Boolean write SetShowHeaders;
     property GroupLinked: Boolean write SetGroupLinked;
+    property ShowBookmarks: Boolean write SetShowBookmarks;
   end;
 
 implementation
@@ -129,7 +133,7 @@ begin
   Items[High(Items)].hDBEvent := hDBEvent;
   Items[High(Items)].hContact := hContact;
   Items[High(Items)].Codepage := Codepage;
-  Items[High(Items)].CustomLink := nil;
+  Items[High(Items)].Custom := False;
   if RTL then RTLMode := hppRTLEnable
          else RTLMode := hppRTLDefault;
   Items[High(Items)].RTLMode := RTLMode;
@@ -150,13 +154,15 @@ procedure TExternalGrid.AddCustomEvent(hContact: Cardinal; CustomItem: TExtCusto
 var
   RTLMode: TRTLMode;
 begin
-  SetLength(Items,Length(CustomItems)+1);
-  CustomItems[High(CustomItems)] := CustomItem;
   SetLength(Items,Length(Items)+1);
   Items[High(Items)].hDBEvent := 0;
   Items[High(Items)].hContact := hContact;
   Items[High(Items)].Codepage := Codepage;
-  Items[High(Items)].CustomLink := @CustomItems[High(CustomItems)];
+  Items[High(Items)].Custom := True;
+  Items[High(Items)].CustomEvent.Nick := CustomItem.Nick;
+  Items[High(Items)].CustomEvent.Text := CustomItem.Text;
+  Items[High(Items)].CustomEvent.Sent := CustomItem.Sent;
+  Items[High(Items)].CustomEvent.Time := CustomItem.Time;
   if RTL then RTLMode := hppRTLEnable
          else RTLMode := hppRTLDefault;
   Items[High(Items)].RTLMode := RTLMode;
@@ -281,7 +287,6 @@ begin
   WriteDBBool(hppDBName,'ExpandLogHeaders',Grid.ExpandHeaders);
   if FSelection <> nil then FreeMem(FSelection);
   Grid.Free;
-  Finalize(CustomItems);
   Finalize(Items);
   inherited;
 end;
@@ -312,23 +317,24 @@ begin
     Codepage := Grid.Codepage
   else
     Codepage := Items[Index].Codepage;
-  if Items[Index].CustomLink = nil then begin
+  if Items[Index].Custom then begin
+    Item.Height := -1;
+    Item.Time := Items[Index].CustomEvent.Time;
+    Item.MessageType := [mtOther] + Direction[Items[Index].CustomEvent.Sent];
+    Item.Text := Items[Index].CustomEvent.Text;
+    Item.IsRead := True;
+  end else begin
     Item := ReadEvent(Items[Index].hDBEvent,Codepage);
     Item.Bookmarked := BookmarkServer[Items[Index].hContact].Bookmarked[Items[Index].hDBEvent];
-  end else begin
-    Item.Time := Items[Index].CustomLink.Time;
-    Item.MessageType := [mtOther] + Direction[Items[Index].CustomLink.Sent];
-    Item.Text := Items[Index].CustomLink.Text;
-    Item.IsRead := True;
   end;
   Item.Proto := Grid.Protocol;
   if Index = 0 then
     Item.HasHeader := IsEventInSession(Item.EventType)
   else begin
-    if Items[Index-1].CustomLink = nil then
-      PrevTimestamp := GetEventTimestamp(Items[Index-1].hDBEvent)
+    if Items[Index].Custom then
+      PrevTimestamp := Items[Index-1].CustomEvent.Time
     else
-      PrevTimestamp := Items[Index-1].CustomLink.Time;
+      PrevTimestamp := GetEventTimestamp(Items[Index-1].hDBEvent);
     if IsEventInSession(Item.EventType) then
       Item.HasHeader := ((DWord(Item.Time) - PrevTimestamp) > SESSION_TIMEDIFF);
     if (Item.MessageType = Grid.Items[Index-1].MessageType) then
@@ -364,8 +370,8 @@ begin
       if Items[Index].hContact = 0 then Grid.Protocol := 'ICQ'
       else Grid.Protocol := GetContactProto(Items[Index].hContact);
     end;
-    if Items[Index].CustomLink <> nil then
-      Name := Items[Index].CustomLink.Nick
+    if Items[Index].Custom then
+      Name := Items[Index].CustomEvent.Nick
     else
     if mtIncoming in Grid.Items[Index].MessageType then begin
       Grid.ContactName := GetContactDisplayName(Items[Index].hContact,Grid.Protocol,true);
@@ -465,7 +471,7 @@ var
   val: boolean;
   hContact,hDBEvent: THandle;
 begin
-  if Items[Item].CustomLink <> nil then exit;
+  if Items[Item].Custom then exit;
   hContact := Items[Item].hContact;
   hDBEvent := Items[Item].hDBEvent;
   val := not BookmarkServer[hContact].Bookmarked[hDBEvent];
@@ -533,7 +539,8 @@ end;
 
 procedure TExternalGrid.GridPopup(Sender: TObject);
 begin
-  pmGrid.Items[0].Visible := (Grid.State = gsIdle);
+  if Grid.Selected = -1 then exit;
+  pmGrid.Items[0].Visible := (Grid.State = gsIdle) and not Items[Grid.Selected].Custom;
   pmGrid.Items[4].Visible := (Grid.State = gsInline);
   pmGrid.Items[7].Visible := (Grid.State = gsInline);
   pmGrid.Items[7].Checked := GridOptions.TextFormatting;
@@ -542,7 +549,11 @@ begin
   else
     pmGrid.Items[2].Enabled := True;
   pmGrid.Items[8].Enabled := pmGrid.Items[2].Enabled;
+  pmGrid.Items[9].Visible := not Items[Grid.Selected].Custom;
   if Grid.Selected <> -1 then begin
+    if Items[Grid.Selected].Custom then
+      pmGrid.Items[10].Visible := False
+    else
     if Grid.Items[Grid.Selected].Bookmarked then
       pmGrid.Items[10].Caption := TranslateWideW('Remove &Bookmark')
     else
@@ -642,7 +653,7 @@ var
   hContact,hDBEvent: THandle;
 begin
   if Grid.Selected = -1 then exit;
-  if Items[Grid.Selected].CustomLink <> nil then exit;
+  if Items[Grid.Selected].Custom then exit;
   hContact := Items[Grid.Selected].hContact;
   hDBEvent := Items[Grid.Selected].hDBEvent;
   val := not BookmarkServer[hContact].Bookmarked[hDBEvent];
@@ -655,7 +666,7 @@ var
   oep: TOpenEventParams;
 begin
   if Grid.Selected = -1 then exit;
-  if Items[Grid.Selected].CustomLink <> nil then exit;
+  if Items[Grid.Selected].Custom then exit;
   oep.cbSize := SizeOf(oep);
   oep.hContact := Items[Grid.Selected].hContact;
   oep.hDBEvent := Items[Grid.Selected].hDBEvent;
@@ -691,9 +702,8 @@ var
 begin
   if (FGridState = gsDelete) and
      (Items[Index].hDBEvent <> 0) and
-     (Items[Index].CustomLink = nil) then
+     (not Items[Index].Custom) then
     PluginLink.CallService(MS_DB_EVENT_DELETE,Items[Index].hContact,Items[Index].hDBEvent);
-  if Items[Index].CustomLink <> nil then Finalize(Items[Index].CustomLink^);
   if Index < Length(Items) then
     Move(Items[Index+1],Items[Index],(Length(Items)-Index-1)*SizeOf(Items[0]));
   SetLength(Items,Length(Items)-1);
@@ -762,6 +772,18 @@ procedure TExternalGrid.SetGroupLinked(const Value: Boolean);
 begin
   if Grid.GroupLinked = Value then exit;
   Grid.GroupLinked := Value;
+end;
+
+procedure TExternalGrid.SetShowHeaders(const Value: Boolean);
+begin
+  if Grid.ShowHeaders = Value then exit;
+  Grid.ShowHeaders := Value;
+end;
+
+procedure TExternalGrid.SetShowBookmarks(const Value: Boolean);
+begin
+  if Grid.ShowBookmarks = Value then exit;
+  Grid.ShowBookmarks := Value;
 end;
 
 procedure TExternalGrid.HMEventDeleted(var M: TMessage);

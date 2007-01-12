@@ -113,7 +113,7 @@ type
   IEVIEWEVENTDATA = packed record
     cbSize: Integer;                //
     iType: Integer;                 // Event type, one of MUCC_EVENT_* values
-    dwFlags: DWord;                 // Event flags - IEEF_*
+    dwFlags: DWord;                 // Event flags - IEEDF_*
     fontName: PChar;                // Text font name
     fontSize: Integer;              // Text font size (in pixels)
     fontStyle: Integer;             // Text font style (combination of IE_FONT_* flags)
