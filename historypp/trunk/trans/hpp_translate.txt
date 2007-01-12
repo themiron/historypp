@@ -152,6 +152,10 @@ F5
 Search protected contacts
 [F6]
 F6
+[Bookmarks]
+Bookmarks
+[F7]
+F7
 [tbSearch]
 tbSearch
 [tbFilter]
@@ -243,6 +247,8 @@ Saving...
 Searching...
 [Deleting...]
 Deleting...
+[Bookmarks mode]
+Bookmarks mode
 [Do you really want to delete selected items (%.0f)?]
 Do you really want to delete selected items (%.0f)?
 [Delete Selected]
@@ -269,8 +275,6 @@ User Details
 Ctrl+I
 [User Menu]
 User Menu
-[Bookmarks]
-Bookmarks
 [Find]
 Find
 [Ctrl+F]

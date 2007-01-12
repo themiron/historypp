@@ -23,6 +23,9 @@ Limit search range
 Search protected contacts
 F6
 Search protected contacts
+Bookmarks
+F7
+Bookmarks
 tbSearch
 tbFilter
 Advanced Search Options
@@ -88,6 +91,7 @@ Saving...
 Searching...
 Deleting...
 Searching... %.0n items in %d contacts found
+Bookmarks mode
 Do you really want to delete selected items (%.0f)?
 Delete Selected
 Do you really want to delete selected item?
