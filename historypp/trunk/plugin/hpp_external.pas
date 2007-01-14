@@ -106,7 +106,7 @@ var
   customEvent: PIEVIEWEVENTDATA;
   UsedCodepage: Cardinal;
   hDBNext: THandle;
-  i,eventCount: Integer;
+  eventCount: Integer;
   ExtGrid: TExternalGrid;
   CustomItem: TExtCustomItem;
 begin
@@ -124,25 +124,16 @@ begin
           UsedCodepage := event.Codepage
         else
           UsedCodepage := CP_ACP;
+        eventCount := event.Count;
+        hDBNext := event.data.hDBEventFirst;
         ExtGrid.BeginUpdate;
-        if event.Count = -1 then begin
-          hDBNext := event.data.hDBEventFirst;
-          while hDBNext <> 0 do begin
-            ExtGrid.AddEvent(event.hContact, hDBNext, UsedCodepage,
-                             boolean(event.dwFlags and IEEF_RTL),
-                             not boolean(event.dwFlags and IEEF_NO_SCROLLING));
+        while (eventCount <> 0) and (hDBNext <> 0) do begin
+          ExtGrid.AddEvent(event.hContact, hDBNext, UsedCodepage,
+                           boolean(event.dwFlags and IEEF_RTL),
+                           not boolean(event.dwFlags and IEEF_NO_SCROLLING));
+          if eventCount > 0 then Dec(eventCount);
+          if eventCount <> 0 then
             hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBNext,0);
-          end
-        end else begin
-          hDBNext := event.data.hDBEventFirst;
-          for i := 0 to event.count - 1 do begin
-            if hDBNext = 0 then break;
-            ExtGrid.AddEvent(event.hContact, hDBNext, UsedCodepage,
-                             boolean(event.dwFlags and IEEF_RTL),
-                             not boolean(event.dwFlags and IEEF_NO_SCROLLING));
-            if i < event.count -1 then
-            hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBNext,0);
-          end;
         end;
         ExtGrid.EndUpdate;
       end;
@@ -151,14 +142,10 @@ begin
           UsedCodepage := event.Codepage
         else
           UsedCodepage := CP_ACP;
-        if event.Count = -1 then
-          eventCount := MaxInt
-        else
-          eventCount := event.Count;
+        eventCount := event.Count;
         customEvent := event.data.eventData;
-        i := 1;
         ExtGrid.BeginUpdate;
-        repeat
+        while (eventCount <> 0) and (customEvent <> nil) do begin
           if boolean(customEvent.dwFlags and IEEDF_UNICODE_TEXT) then
             SetString(CustomItem.Text,customEvent.pszText.w,lstrlenW(customEvent.pszText.w))
           else
@@ -172,9 +159,9 @@ begin
           ExtGrid.AddCustomEvent(event.hContact, CustomItem, UsedCodepage,
                              boolean(event.dwFlags and IEEF_RTL),
                              not boolean(event.dwFlags and IEEF_NO_SCROLLING));
-          Inc(i);
-          customEvent := event.data.eventData.next;
-        Until (customEvent = nil) or (i > eventCount);
+          if eventCount > 0 then Dec(eventCount);
+          customEvent := customEvent.next;
+        end;
         ExtGrid.EndUpdate;
       end;
       IEE_CLEAR_LOG: begin
