@@ -131,9 +131,9 @@ function OnPreshutdown(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function MirandaPluginInfo(mirandaVersion:DWord):PPLUGININFO;cdecl;
 begin
   PluginInfo.cbSize := sizeof(TPLUGININFO);
-  PluginInfo.shortName := hppShortHame;
+  PluginInfo.shortName := hppShortHame{$IFDEF ALPHA}+' [alpha '+{$I 'alpha.inc'}+']'{$ENDIF};
   PluginInfo.version := hppVersion;
-  PluginInfo.description := 'Easy, fast and feature complete history viewer.'{$IFDEF ALPHA}+' Alpha build.'{$ENDIF};
+  PluginInfo.description := 'Easy, fast and feature complete history viewer.';
   PluginInfo.author := 'theMIROn, Art Fedorov';
   PluginInfo.authorEmail := 'themiron@mail.ru, artemf@mail.ru';
   PluginInfo.copyright := '© 2006 theMIROn, 2003-2006 Art Fedorov. History+ parts © 2001 Christian Kastner';
@@ -248,7 +248,7 @@ begin
   //Register in updater
   ZeroMemory(@upd,SizeOf(upd));
   upd.cpbVersion := SizeOf(upd);
-  upd.szComponentName := PluginInfo.shortName;
+  upd.szComponentName := hppShortHame;
   upd.pbVersion := @hppVersionStr[1];
   upd.cpbVersion := Length(hppVersionStr);
 

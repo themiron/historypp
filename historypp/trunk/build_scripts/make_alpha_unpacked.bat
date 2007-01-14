@@ -2,7 +2,6 @@
 
 set UPXLONGPATH="c:\program files\upx\upx.exe"
 set ZIPLONGPATH="c:\program files\7-zip\7z.exe"
-set ALPHA=1
 
 rem #
 rem # Find UPX
@@ -29,9 +28,11 @@ goto misszip
 :havezip
 
 :start
-FOR /F "TOKENS=1" %%A IN ('date /t') DO SET VER_=alpha-%%A
-FOR /F "TOKENS=1,2 delims=:" %%A IN ('time /t') DO SET VER_=%VER_%-%%A.%%B
-if not exist relno.txt set VER_=nover
+FOR /F "TOKENS=1" %%A IN ('date /t') DO SET DATE_=%%A
+FOR /F "TOKENS=1,2 delims=:" %%A IN ('time /t') DO SET TIME_V=%%A.%%B
+FOR /F "TOKENS=1,2 delims=:" %%A IN ('time /t') DO SET TIME_A=%%A:%%B
+set ALPHA='%DATE_% %TIME_A%'
+set VER_=alpha-%DATE_%-%TIME_V%
 
 echo:
 echo --------- Make History++ Distribution ---------
