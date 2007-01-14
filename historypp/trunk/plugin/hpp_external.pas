@@ -59,6 +59,8 @@ begin
             ExternalGrids[n].GroupLinked := False;
             ExternalGrids[n].ShowBookmarks := False;
           end;
+          IEWM_HISTORY:
+            ExternalGrids[n].GroupLinked := False;
         end;
         ExternalGrids[n].SetPosition(par.x,par.y,par.cx,par.cy,False);
         par.Hwnd := ExternalGrids[n].GridHandle;
