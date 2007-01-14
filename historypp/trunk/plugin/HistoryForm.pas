@@ -58,7 +58,8 @@ type
 
   TLastSearch = (lsNone,lsHotSearch,lsSearch);
   TSearchMode = (smNone, smSearch, smFilter, smHotSearch); // smHotSearch for possible future use
-  THistoryPanel = (hpNone, hpSessions, hpBookmarks);
+  THistoryPanel = (hpSessions, hpBookmarks);
+  THistoryPanels = set of THistoryPanel;
 
   THistoryFrm = class(TTntForm)
     SaveDialog: TSaveDialog;
@@ -69,7 +70,7 @@ type
     sb: TTntStatusBar;
     pmLink: TTntPopupMenu;
     paSess: TTntPanel;
-    spSess: TTntSplitter;
+    spHolder: TTntSplitter;
     ilSessions: TImageList;
     paSessInt: TTntPanel;
     laSess: TTntLabel;
@@ -187,6 +188,8 @@ type
     mmBookmark: TTntMenuItem;
     SelectAll1: TTntMenuItem;
     tbHistory: TTntSpeedButton;
+    paHolder: TTntPanel;
+    spBook: TTntSplitter;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -303,6 +306,8 @@ type
     procedure SelectAll1Click(Sender: TObject);
     procedure lvBookKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tvSessKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure paHolderResize(Sender: TObject);
+    procedure spBookMoved(Sender: TObject);
   private
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
@@ -315,7 +320,7 @@ type
     PreHotSearchMode: TSearchMode;
     FSearchMode: TSearchMode;
     UserMenu: hMenu;
-    FPanel: THistoryPanel;
+    FPanel: THistoryPanels;
 
     procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
     procedure CMShowingChanged(var Message: TMessage); message CM_SHOWINGCHANGED;
@@ -342,7 +347,7 @@ type
     procedure PreLoadHistory;
     procedure PostLoadHistory;
     procedure SetSearchMode(const Value: TSearchMode);
-    procedure SetPanel(const Value: THistoryPanel);
+    procedure SetPanel(const Value: THistoryPanels);
     procedure ToggleMainMenu(Enabled: Boolean);
 
   public
@@ -380,8 +385,6 @@ type
     procedure AddEventToSessions(hDBEvent: THandle);
     procedure DeleteEventFromSessions(ItemIdx: Integer);
 
-    procedure ShowPanel(Panel: THistoryPanel);
-
     procedure LoadSessionIcons;
     procedure LoadBookIcons;
     procedure LoadToolbarIcons;
@@ -407,7 +410,7 @@ type
   protected
     procedure LoadPendingHeaders(rowidx: integer; count: integer);
     property SearchMode: TSearchMode read FSearchMode write SetSearchMode;
-    property Panel: THistoryPanel read FPanel write SetPanel;
+    property Panel: THistoryPanels read FPanel write SetPanel;
     procedure WndProc(var Message: TMessage); override;
   published
     procedure AlignControls(Control: TControl; var ARect: TRect); override;
@@ -883,10 +886,10 @@ begin
     end else begin
       WriteDBBool(hppDBName,'ShowSessions',paSess.Visible);
       WriteDBBool(hppDBName,'ShowBookmarks',paBook.Visible);
-      if paSess.Visible then
-        WriteDBInt(hppDBName,'PanelWidth',paSess.Width);
-      if paBook.Visible then
-        WriteDBInt(hppDBName,'PanelWidth',paBook.Width);
+      if paHolder.Visible then
+        WriteDBInt(hppDBName,'PanelWidth',paHolder.Width);
+      if spBook.Visible then
+        WriteDBByte(hppDBName,'PanelSplit',spBook.Tag);
     end;
   end;
 
@@ -1482,8 +1485,8 @@ begin
   History[HistoryLength-1] := hDBEvent;
   hg.AddItem;
   if HistoryLength = 1 then
-    if GetDBBool(hppDBName,'ShowSessions',False) and (Panel = hpNone) then
-      Panel := hpSessions;
+    if GetDBBool(hppDBName,'ShowSessions',False) and not (hpSessions in Panel) then
+      Panel := Panel + [hpSessions];
 end;
 
 procedure THistoryFrm.hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
@@ -1620,12 +1623,12 @@ end;
 
 procedure THistoryFrm.sbCloseBookClick(Sender: TObject);
 begin
-  Panel := hpNone;
+  Panel := Panel - [hpBookmarks]
 end;
 
 procedure THistoryFrm.sbCloseSessClick(Sender: TObject);
 begin
-  Panel := hpNone;
+  Panel := Panel - [hpSessions]
 end;
 
 procedure THistoryFrm.sbSearchNextClick(Sender: TObject);
@@ -2220,26 +2223,37 @@ begin
   SavedLinkUrl := '';
 end;
 
-procedure THistoryFrm.SetPanel(const Value: THistoryPanel);
+procedure THistoryFrm.SetPanel(const Value: THistoryPanels);
 var
   Lock: Boolean;
 begin
   FPanel := Value;
-  if (HistoryLength = 0) or ((hContact = 0) and (FPanel = hpSessions)) then
-    FPanel := hpNone;
-  tbSessions.Down := (Panel = hpSessions);
-  tbBookmarks.Down := (Panel = hpBookmarks);
+  if (HistoryLength = 0) or ((hContact = 0) and (hpSessions in FPanel)) then
+    exclude(FPanel,hpSessions);
+  tbSessions.Down := (hpSessions in Panel);
+  tbBookmarks.Down := (hpBookmarks in Panel);
   hg.BeginUpdate;
   if Visible then Lock := LockWindowUpdate(Handle);
   try
-    if (FPanel = hpBookmarks) and paSess.Visible then
-      paBook.Width := paSess.Width;
-    if (FPanel = hpSessions) and paBook.Visible then
-      paSess.Width := paBook.Width;
-    paBook.Visible := (FPanel = hpBookmarks);
-    paSess.Visible := (FPanel = hpSessions);
-    spSess.Visible := paBook.Visible or paSess.Visible;
-    spSess.Left := paSess.Left + paSess.Width + paBook.Left + paBook.Width + 1;
+    //if (FPanel = hpBookmarks) and paSess.Visible then
+    //  paBook.Width := paSess.Width;
+    //if (FPanel = hpSessions) and paBook.Visible then
+    //  paSess.Width := paBook.Width;
+
+    paSess.Visible := (hpSessions in Panel);
+    paBook.Visible := (hpBookmarks in Panel);
+
+    paHolder.Visible := paBook.Visible or paSess.Visible;
+    spHolder.Visible := paHolder.Visible;
+    spHolder.Left    := paHolder.Left + paHolder.Width + 1;
+
+    spBook.Visible := paBook.Visible and paSess.Visible;
+    if spBook.Visible then
+      paHolderResize(Self)
+    else
+      paSess.Height := paHolder.ClientHeight;
+    spBook.Top     := paSess.Top + paSess.Height + 1;
+
   finally
     if Visible and Lock then LockWindowUpdate(0);
     hg.EndUpdate;
@@ -2350,10 +2364,6 @@ begin
   EndHotFilterTimer;
 end;
 
-procedure THistoryFrm.ShowPanel(Panel: THistoryPanel);
-begin
-
-end;
 procedure THistoryFrm.SMFinished(var M: TMessage);
 begin
   SessThread.WaitFor;
@@ -2436,6 +2446,8 @@ begin
 end;
 
 procedure THistoryFrm.PostLoadHistory;
+var
+  tPanel: THistoryPanels;
 begin
   LoadPosition;
   ProcessPassword;
@@ -2447,17 +2459,18 @@ begin
   // "features", we'll load end of the list if put before Allocate
   SetRecentEventsPosition(GetDBBool(hppDBName,'SortOrder',false));
   // set ShowSessions here because we check for empty history
+  paHolder.Width := GetDBInt(hppDBName,'PanelWidth',150);
+  spBook.Tag := GetDBByte(hppDBName,'PanelSplit',127);
   if hContact = 0 then begin
     if GetDBBool(hppDBName,'ShowBookmarksSystem',False) then
-      Panel := hpBookmarks;
+      Panel := [hpBookmarks];
   end else begin
     if GetDBBool(hppDBName,'ShowSessions',False) then
-      Panel := hpSessions
-    else if GetDBBool(hppDBName,'ShowBookmarks',False) then
-      Panel := hpBookmarks;
+      include(tPanel,hpSessions);
+    if GetDBBool(hppDBName,'ShowBookmarks',False) then
+      include(tPanel,hpBookmarks);
+    Panel := tPanel;
   end;
-  paSess.Width := GetDBInt(hppDBName,'PanelWidth',150);
-  paBook.Width := paSess.Width;
 
   CreateEventsFilterMenu;
   if hContact <> 0 then
@@ -2959,8 +2972,10 @@ end;
 procedure THistoryFrm.AlignControls(Control: TControl; var ARect: TRect);
 begin
   inherited;
-  if paSess.Width = 0 then
-    paSess.Left := spSess.Left;
+  if paHolder.Width = 0 then
+    paHolder.Left := spHolder.Left;
+  if paSess.Height = 0 then
+    paSess.Top := spBook.Top;
 end;
 
 procedure THistoryFrm.ContactRTLmode1Click(Sender: TObject);
@@ -3168,9 +3183,9 @@ begin
     tbBookmarks.Down := not tbBookmarks.Down;
 
   if tbBookmarks.Down then
-    Panel := hpBookmarks
+    Panel := Panel + [hpBookmarks]
   else
-    Panel := hpNone;
+    Panel := Panel - [hpBookmarks];
 end;
 
 procedure THistoryFrm.tbDeleteClick(Sender: TObject);
@@ -3265,9 +3280,10 @@ begin
     tbSessions.Down := not tbSessions.Down;
 
   if tbSessions.Down then
-    Panel := hpSessions
+    Panel := Panel + [hpSessions]
   else
-    Panel := hpNone;
+    Panel := Panel - [hpSessions];
+
 end;
 
 procedure THistoryFrm.tiFilterTimer(Sender: TObject);
@@ -3665,6 +3681,17 @@ begin
   LoadSessionIcons;
   LoadBookIcons;
   Repaint;
+end;
+
+procedure THistoryFrm.spBookMoved(Sender: TObject);
+begin
+  spBook.Tag := MulDiv(paSess.Height,255,paHolder.ClientHeight);
+end;
+
+procedure THistoryFrm.paHolderResize(Sender: TObject);
+begin
+  if spBook.Visible then
+    paSess.Height := MulDiv(paHolder.ClientHeight,spBook.Tag,255);
 end;
 
 end.
