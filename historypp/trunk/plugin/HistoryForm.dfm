@@ -34,8 +34,8 @@ object HistoryFrm: THistoryFrm
     BevelOuter = bvNone
     BorderWidth = 2
     TabOrder = 0
-    object spSess: TTntSplitter
-      Left = 314
+    object spHolder: TTntSplitter
+      Left = 158
       Top = 32
       Height = 319
       AutoSnap = False
@@ -43,9 +43,9 @@ object HistoryFrm: THistoryFrm
       Visible = False
     end
     object paGrid: TTntPanel
-      Left = 317
+      Left = 161
       Top = 32
-      Width = 259
+      Width = 415
       Height = 319
       Align = alClient
       BevelOuter = bvNone
@@ -53,7 +53,7 @@ object HistoryFrm: THistoryFrm
       object hg: THistoryGrid
         Left = 0
         Top = 0
-        Width = 259
+        Width = 415
         Height = 319
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
@@ -108,82 +108,6 @@ object HistoryFrm: THistoryFrm
         ShowHint = True
       end
     end
-    object paSess: TTntPanel
-      Left = 158
-      Top = 32
-      Width = 156
-      Height = 319
-      Align = alLeft
-      BevelOuter = bvNone
-      TabOrder = 1
-      Visible = False
-      object paSessInt: TTntPanel
-        Left = 0
-        Top = 0
-        Width = 156
-        Height = 21
-        Align = alTop
-        BevelInner = bvRaised
-        BevelOuter = bvLowered
-        TabOrder = 0
-        DesignSize = (
-          156
-          21)
-        object laSess: TTntLabel
-          Left = 6
-          Top = 2
-          Width = 128
-          Height = 17
-          Anchors = [akLeft, akTop, akRight]
-          AutoSize = False
-          Caption = 'Conversations'
-          Layout = tlCenter
-        end
-        object sbCloseSess: TTntSpeedButton
-          Left = 135
-          Top = 2
-          Width = 18
-          Height = 17
-          AllowAllUp = True
-          Anchors = [akTop, akRight]
-          Flat = True
-          Glyph.Data = {
-            BE000000424DBE0000000000000076000000280000000A000000090000000100
-            04000000000048000000C40E0000C40E00001000000000000000000000000000
-            80000080000000808000800000008000800080800000C0C0C000808080000000
-            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777700
-            0000700777700700000077007700770000007770000777000000777700777700
-            0000777000077700000077007700770000007007777007000000777777777700
-            0000}
-          OnClick = sbCloseSessClick
-        end
-      end
-      object tvSess: TTntTreeView
-        Left = 0
-        Top = 21
-        Width = 156
-        Height = 298
-        Align = alClient
-        BevelInner = bvNone
-        BevelOuter = bvNone
-        Images = ilSessions
-        Indent = 19
-        MultiSelect = True
-        ParentShowHint = False
-        PopupMenu = pmSessions
-        ReadOnly = True
-        RightClickSelect = True
-        RowSelect = True
-        ShowHint = True
-        TabOrder = 1
-        ToolTips = False
-        OnChange = tvSessChange
-        OnGetSelectedIndex = tvSessGetSelectedIndex
-        OnKeyDown = tvSessKeyDown
-        OnKeyPress = edPassKeyPress
-        OnMouseMove = tvSessMouseMove
-      end
-    end
     object paSearch: TTntPanel
       Left = 2
       Top = 351
@@ -191,7 +115,7 @@ object HistoryFrm: THistoryFrm
       Height = 25
       Align = alBottom
       BevelOuter = bvNone
-      TabOrder = 2
+      TabOrder = 1
       Visible = False
       object paSearchPanel: TTntPanel
         Left = 0
@@ -323,7 +247,7 @@ object HistoryFrm: THistoryFrm
       Align = alTop
       AutoSize = True
       BevelOuter = bvNone
-      TabOrder = 3
+      TabOrder = 2
       object Toolbar: TTntToolBar
         Left = 0
         Top = 0
@@ -360,7 +284,7 @@ object HistoryFrm: THistoryFrm
           Left = 46
           Top = 0
           Width = 8
-          Style = tbsSeparator
+          Style = tbsDivider
         end
         object tbSessions: TTntToolButton
           Left = 54
@@ -483,78 +407,177 @@ object HistoryFrm: THistoryFrm
         end
       end
     end
-    object paBook: TTntPanel
+    object paHolder: TTntPanel
       Left = 2
       Top = 32
       Width = 156
       Height = 319
       Align = alLeft
       BevelOuter = bvNone
-      TabOrder = 4
+      TabOrder = 3
       Visible = False
-      object paBookInt: TTntPanel
+      OnResize = paHolderResize
+      object spBook: TTntSplitter
+        Left = 0
+        Top = 150
+        Width = 156
+        Height = 3
+        Cursor = crVSplit
+        Align = alTop
+        AutoSnap = False
+        MinSize = 100
+        Visible = False
+        OnMoved = spBookMoved
+      end
+      object paBook: TTntPanel
+        Left = 0
+        Top = 153
+        Width = 156
+        Height = 166
+        Align = alClient
+        BevelOuter = bvNone
+        TabOrder = 0
+        Visible = False
+        object paBookInt: TTntPanel
+          Left = 0
+          Top = 0
+          Width = 156
+          Height = 21
+          Align = alTop
+          BevelInner = bvRaised
+          BevelOuter = bvLowered
+          TabOrder = 0
+          DesignSize = (
+            156
+            21)
+          object laBook: TTntLabel
+            Left = 6
+            Top = 2
+            Width = 128
+            Height = 17
+            Anchors = [akLeft, akTop, akRight]
+            AutoSize = False
+            Caption = 'Bookmarks'
+            Layout = tlCenter
+          end
+          object sbCloseBook: TTntSpeedButton
+            Left = 135
+            Top = 2
+            Width = 18
+            Height = 17
+            AllowAllUp = True
+            Anchors = [akTop, akRight]
+            Flat = True
+            Glyph.Data = {
+              BE000000424DBE0000000000000076000000280000000A000000090000000100
+              04000000000048000000C40E0000C40E00001000000000000000000000000000
+              80000080000000808000800000008000800080800000C0C0C000808080000000
+              FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777700
+              0000700777700700000077007700770000007770000777000000777700777700
+              0000777000077700000077007700770000007007777007000000777777777700
+              0000}
+            OnClick = sbCloseBookClick
+          end
+        end
+        object lvBook: TTntListView
+          Left = 0
+          Top = 21
+          Width = 156
+          Height = 145
+          Align = alClient
+          BevelInner = bvNone
+          BevelOuter = bvNone
+          Columns = <
+            item
+              AutoSize = True
+            end>
+          FlatScrollBars = True
+          RowSelect = True
+          ShowColumnHeaders = False
+          SmallImages = ilBook
+          TabOrder = 1
+          ViewStyle = vsReport
+          OnContextPopup = lvBookContextPopup
+          OnEdited = lvBookEdited
+          OnKeyDown = lvBookKeyDown
+          OnSelectItem = lvBookSelectItem
+        end
+      end
+      object paSess: TTntPanel
         Left = 0
         Top = 0
         Width = 156
-        Height = 21
+        Height = 150
         Align = alTop
-        BevelInner = bvRaised
-        BevelOuter = bvLowered
-        TabOrder = 0
-        DesignSize = (
-          156
-          21)
-        object laBook: TTntLabel
-          Left = 6
-          Top = 2
-          Width = 128
-          Height = 17
-          Anchors = [akLeft, akTop, akRight]
-          AutoSize = False
-          Caption = 'Bookmarks'
-          Layout = tlCenter
-        end
-        object sbCloseBook: TTntSpeedButton
-          Left = 135
-          Top = 2
-          Width = 18
-          Height = 17
-          AllowAllUp = True
-          Anchors = [akTop, akRight]
-          Flat = True
-          Glyph.Data = {
-            BE000000424DBE0000000000000076000000280000000A000000090000000100
-            04000000000048000000C40E0000C40E00001000000000000000000000000000
-            80000080000000808000800000008000800080800000C0C0C000808080000000
-            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777700
-            0000700777700700000077007700770000007770000777000000777700777700
-            0000777000077700000077007700770000007007777007000000777777777700
-            0000}
-          OnClick = sbCloseBookClick
-        end
-      end
-      object lvBook: TTntListView
-        Left = 0
-        Top = 21
-        Width = 156
-        Height = 298
-        Align = alClient
-        BevelInner = bvNone
         BevelOuter = bvNone
-        Columns = <
-          item
-            AutoSize = True
-          end>
-        FlatScrollBars = True
-        RowSelect = True
-        ShowColumnHeaders = False
-        SmallImages = ilBook
         TabOrder = 1
-        ViewStyle = vsReport
-        OnContextPopup = lvBookContextPopup
-        OnEdited = lvBookEdited
-        OnKeyDown = lvBookKeyDown
-        OnSelectItem = lvBookSelectItem
+        Visible = False
+        object paSessInt: TTntPanel
+          Left = 0
+          Top = 0
+          Width = 156
+          Height = 21
+          Align = alTop
+          BevelInner = bvRaised
+          BevelOuter = bvLowered
+          TabOrder = 0
+          DesignSize = (
+            156
+            21)
+          object laSess: TTntLabel
+            Left = 6
+            Top = 2
+            Width = 128
+            Height = 17
+            Anchors = [akLeft, akTop, akRight]
+            AutoSize = False
+            Caption = 'Conversations'
+            Layout = tlCenter
+          end
+          object sbCloseSess: TTntSpeedButton
+            Left = 135
+            Top = 2
+            Width = 18
+            Height = 17
+            AllowAllUp = True
+            Anchors = [akTop, akRight]
+            Flat = True
+            Glyph.Data = {
+              BE000000424DBE0000000000000076000000280000000A000000090000000100
+              04000000000048000000C40E0000C40E00001000000000000000000000000000
+              80000080000000808000800000008000800080800000C0C0C000808080000000
+              FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777700
+              0000700777700700000077007700770000007770000777000000777700777700
+              0000777000077700000077007700770000007007777007000000777777777700
+              0000}
+            OnClick = sbCloseSessClick
+          end
+        end
+        object tvSess: TTntTreeView
+          Left = 0
+          Top = 21
+          Width = 156
+          Height = 129
+          Align = alClient
+          BevelInner = bvNone
+          BevelOuter = bvNone
+          Images = ilSessions
+          Indent = 19
+          MultiSelect = True
+          ParentShowHint = False
+          PopupMenu = pmSessions
+          ReadOnly = True
+          RightClickSelect = True
+          RowSelect = True
+          ShowHint = True
+          TabOrder = 1
+          ToolTips = False
+          OnChange = tvSessChange
+          OnGetSelectedIndex = tvSessGetSelectedIndex
+          OnKeyDown = tvSessKeyDown
+          OnKeyPress = edPassKeyPress
+          OnMouseMove = tvSessMouseMove
+        end
       end
     end
   end
