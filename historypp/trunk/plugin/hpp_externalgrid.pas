@@ -86,9 +86,9 @@ type
   public
     constructor Create(AParentWindow: HWND; ControlID: Cardinal = 0);
     destructor Destroy; override;
-    procedure AddEvent(hContact, hDBEvent: Cardinal; Codepage: Integer; RTL: boolean);
-    procedure AddCustomEvent(hContact: Cardinal; CustomItem: TExtCustomItem; Codepage: Integer; RTL: boolean);
-    procedure SetPosition(x,y,cx,cy: Integer);
+    procedure AddEvent(hContact, hDBEvent: Cardinal; Codepage: Integer; RTL: Boolean; DoScroll: Boolean);
+    procedure AddCustomEvent(hContact: Cardinal; CustomItem: TExtCustomItem; Codepage: Integer; RTL: boolean; DoScroll: Boolean);
+    procedure SetPosition(x, y, cx, cy: Integer; Force: Boolean = True);
     procedure ScrollToBottom;
     function GetSelection(NoUnicode: Boolean): PChar;
     procedure Clear;
@@ -125,7 +125,7 @@ begin
   Result := M.Result;
 end;
 
-procedure TExternalGrid.AddEvent(hContact, hDBEvent: Cardinal; Codepage: Integer; RTL: boolean);
+procedure TExternalGrid.AddEvent(hContact, hDBEvent: Cardinal; Codepage: Integer; RTL: Boolean; DoScroll: Boolean);
 var
   RTLMode: TRTLMode;
 begin
@@ -147,10 +147,10 @@ begin
   end;
   // comment or we'll get rerendering the whole grid
   //if Grid.Codepage <> Codepage then Grid.Codepage := Codepage;
-  Grid.Allocate(Length(Items),False);
+  Grid.Allocate(Length(Items),DoScroll);
 end;
 
-procedure TExternalGrid.AddCustomEvent(hContact: Cardinal; CustomItem: TExtCustomItem; Codepage: Integer; RTL: boolean);
+procedure TExternalGrid.AddCustomEvent(hContact: Cardinal; CustomItem: TExtCustomItem; Codepage: Integer; RTL: Boolean; DoScroll: Boolean);
 var
   RTLMode: TRTLMode;
 begin
@@ -176,7 +176,7 @@ begin
   end;
   // comment or we'll get rerendering the whole grid
   //if Grid.Codepage <> Codepage then Grid.Codepage := Codepage;
-  Grid.Allocate(Length(Items),False);
+  Grid.Allocate(Length(Items),DoScroll);
 end;
 
 constructor TExternalGrid.Create(AParentWindow: HWND; ControlID: Cardinal = 0);
@@ -412,13 +412,14 @@ begin
   end;
 end;
 
-procedure TExternalGrid.SetPosition(x, y, cx, cy: Integer);
+procedure TExternalGrid.SetPosition(x, y, cx, cy: Integer; Force: Boolean = True);
 begin
   Grid.Left := x;
   Grid.Top := y;
   Grid.Width := cx;
   Grid.Height := cy;
-  SetWindowPos(Grid.Handle,0,x,y,cx,cy,SWP_SHOWWINDOW);
+  if Force then
+    SetWindowPos(Grid.Handle,0,x,y,cx,cy,SWP_SHOWWINDOW);
 end;
 
 function TExternalGrid.GetSelection(NoUnicode: Boolean): PChar;
@@ -704,8 +705,11 @@ begin
      (Items[Index].hDBEvent <> 0) and
      (not Items[Index].Custom) then
     PluginLink.CallService(MS_DB_EVENT_DELETE,Items[Index].hContact,Items[Index].hDBEvent);
-  if Index < Length(Items) then
+  if Index <> High(Items) then begin
+    Finalize(Items[Index]);
     Move(Items[Index+1],Items[Index],(Length(Items)-Index-1)*SizeOf(Items[0]));
+    ZeroMemory(@Items[High(Items)],SizeOf(Items[0]));
+  end;
   SetLength(Items,Length(Items)-1);
   //Application.ProcessMessages;
 end;
