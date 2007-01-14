@@ -60,6 +60,7 @@ begin
             ExternalGrids[n].ShowBookmarks := False;
           end;
         end;
+        ExternalGrids[n].SetPosition(par.x,par.y,par.cx,par.cy,False);
         par.Hwnd := ExternalGrids[n].GridHandle;
       end;
       IEW_DESTROY: begin
@@ -127,14 +128,18 @@ begin
         if event.Count = -1 then begin
           hDBNext := event.data.hDBEventFirst;
           while hDBNext <> 0 do begin
-            ExtGrid.AddEvent(event.hContact, hDBNext, UsedCodepage, boolean(event.dwFlags and IEEF_RTL));
+            ExtGrid.AddEvent(event.hContact, hDBNext, UsedCodepage,
+                             boolean(event.dwFlags and IEEF_RTL),
+                             not boolean(event.dwFlags and IEEF_NO_SCROLLING));
             hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBNext,0);
           end
         end else begin
           hDBNext := event.data.hDBEventFirst;
           for i := 0 to event.count - 1 do begin
             if hDBNext = 0 then break;
-            ExtGrid.AddEvent(event.hContact, hDBNext, UsedCodepage, boolean(event.dwFlags and IEEF_RTL));
+            ExtGrid.AddEvent(event.hContact, hDBNext, UsedCodepage,
+                             boolean(event.dwFlags and IEEF_RTL),
+                             not boolean(event.dwFlags and IEEF_NO_SCROLLING));
             if i < event.count -1 then
             hDBNext := PluginLink.CallService(MS_DB_EVENT_FINDNEXT,hDBNext,0);
           end;
@@ -164,7 +169,9 @@ begin
             CustomItem.Nick := AnsiToWideString(AnsiString(customEvent.pszNick.a),UsedCodepage);
           CustomItem.Sent := boolean(customEvent.bIsMe);
           CustomItem.Time := customEvent.time;
-          ExtGrid.AddCustomEvent(event.hContact, CustomItem, UsedCodepage, boolean(event.dwFlags and IEEF_RTL));
+          ExtGrid.AddCustomEvent(event.hContact, CustomItem, UsedCodepage,
+                             boolean(event.dwFlags and IEEF_RTL),
+                             not boolean(event.dwFlags and IEEF_NO_SCROLLING));
           Inc(i);
           customEvent := event.data.eventData.next;
         Until (customEvent = nil) or (i > eventCount);

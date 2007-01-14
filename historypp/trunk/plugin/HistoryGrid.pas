@@ -1083,9 +1083,12 @@ begin
   Allocated := True;
   //if ItemsCount > 0 then SetSBPos(GetIdx(0));
   if Scroll then begin
-    if Reversed then SetSBPos(GetIdx(GetBottomItem))
-                else SetSBPos(GetIdx(GetTopItem));
-  end;
+    if Reversed xor ReversedHeader then
+      SetSBPos(GetIdx(GetBottomItem))
+    else
+      SetSBPos(GetIdx(GetTopItem));
+  end else
+    AdjustScrollBar;
   Invalidate;
 end;
 
