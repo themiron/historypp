@@ -95,7 +95,7 @@ type
     RTLDisabled2: TTntMenuItem;
     RTLEnabled2: TTntMenuItem;
     RTLDefault2: TTntMenuItem;
-    SystemCodepage1: TTntMenuItem;
+    SystemCodepage: TTntMenuItem;
     sbClearFilter: TTntSpeedButton;
     pbFilter: TPaintBox;
     tiFilter: TTimer;
@@ -583,6 +583,7 @@ begin
                   else Protocol := GetContactProto(hContact);
   hg.Contact := hContact;
   hg.Protocol := Protocol;
+  SystemCodepage.Tag := GetContactCodePage(0,Protocol);
   hg.ProfileName := GetContactDisplayName(0, Protocol);
   hg.ContactName := GetContactDisplayName(hContact, Protocol, true);
   UserCodepage := GetContactCodePage(hContact,Protocol,UseDefaultCP);
@@ -2869,9 +2870,9 @@ begin
       hppRTLDisable: Self.RTLDisabled2.Checked := true;
     end;
     if UseDefaultCP then
-      SystemCodepage1.Checked := true
+      SystemCodepage.Checked := true
     else
-      for i := 0 to ANSICodepage1.Count-1 do
+      for i := 1 to ANSICodepage1.Count-1 do
         if ANSICodepage1.Items[i].Tag = Integer(UserCodepage) then begin
           ANSICodepage1.Items[i].Checked := true;
           break;

@@ -343,17 +343,17 @@ begin
   LenW := 0;
   if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
     msgW := PWideChar(msgA+msglen);
-    for i := 0 to (EventInfo.cbBlob-msglen) div SizeOf(WideChar) do
+    for i := 0 to ((EventInfo.cbBlob-msglen) div SizeOf(WideChar))-1 do
       if msgW[i] = #0 then begin
         LenW := i;
         break;
       end;
-    UseUnicode := (lenW <= (msglen-1)) and (lenW > 0);
+    UseUnicode := (lenW < msglen) and (lenW > 0);
   end else UseUnicode := false;
   if UseUnicode then
     SetString(hi.Text,msgW,lenW)
   else
-    hi.Text := PCharToWideString(msgA,hi.Codepage);
+    hi.Text := AnsiToWideString(msgA,hi.Codepage);
   if TextHasUrls(hi.Text) then
     hi.MessageType := [mtUrl];
 end;
@@ -457,7 +457,7 @@ end;
 
 procedure GetEventTextForSms(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 begin
-  hi.Text := PCharToWideString(PChar(EventInfo.pBlob),hi.Codepage);
+  hi.Text := AnsiToWideString(PChar(EventInfo.pBlob),hi.Codepage);
 end;
 
 procedure GetEventTextForContacts(EventInfo: TDBEventInfo; var Hi: THistoryItem);
@@ -533,17 +533,17 @@ begin
   LenW := 0;
   if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
     msgW := PWideChar(msgA+msglen);
-    for i := 0 to (EventInfo.cbBlob-msglen) div SizeOf(WideChar) do
+    for i := 0 to ((EventInfo.cbBlob-msglen) div SizeOf(WideChar))-1 do
       if msgW[i] = #0 then begin
         LenW := i;
         break;
       end;
-    UseUnicode := (lenW <= (msglen-1)) and (lenW > 0);
+    UseUnicode := (lenW < msglen) and (lenW > 0);
   end else UseUnicode := false;
   if UseUnicode then
     SetString(hi.Text,msgW,lenW)
   else
-    hi.Text := PCharToWideString(msgA,hi.Codepage);
+    hi.Text := AnsiToWideString(msgA,hi.Codepage);
   msglen := msglen+(lenW+1)*SizeOf(WideChar);
   if msglen < EventInfo.cbBlob then begin
     msgA := msgA + msglen;
@@ -641,7 +641,7 @@ procedure GetEventTextForOther(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 begin
   AllocateTextBuffer(EventInfo.cbBlob+1);
   StrLCopy(buffer,PChar(EventInfo.pBlob),EventInfo.cbBlob);
-  hi.Text := PCharToWideString(buffer,hi.Codepage);
+  hi.Text := AnsiToWideString(buffer,hi.Codepage);
 end;
 
 initialization

@@ -162,10 +162,11 @@ begin
   if Proto = '' then
     Result := hppCodepage
   else begin
-    Result := GetDBWord(hContact,Proto,'AnsiCodePage',MaxWord);
-    UsedDefault := (Result = MaxWord);
-    If UsedDefault then
-      Result := GetDBWord(0,Proto,'AnsiCodePage',GetACP());
+    Result := GetDBWord(hContact,Proto,'AnsiCodePage',CP_ACP);
+    UsedDefault := (Result = CP_ACP);
+    If UsedDefault and (hContact <> 0) then
+      Result := GetDBWord(0,Proto,'AnsiCodePage',CP_ACP);
+    if Result = CP_ACP then Result := GetACP();
   end;
 end;
 
