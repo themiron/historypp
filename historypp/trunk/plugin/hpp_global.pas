@@ -162,6 +162,7 @@ var
 {$I m_historypp.inc}
 
 function AnsiToWideString(const S: AnsiString; CodePage: Cardinal): WideString;
+function PCharToWideString(const S: PChar; CodePage: Cardinal): WideString;
 function WideToAnsiString(const WS: WideString; CodePage: Cardinal): AnsiString;
 function TranslateAnsiW(const S: AnsiString{TRANSLATE-IGNORE}): WideString;
 function TranslateWideW(const WS: WideString{TRANSLATE-IGNORE}): WideString;
@@ -209,6 +210,21 @@ begin
     OutputLength := MultiByteToWideChar(CodePage,0,PChar(S),InputLength,nil,0);
     SetLength(Result,OutputLength);
     MultiByteToWideChar(CodePage,MB_PRECOMPOSED,PChar(S),InputLength,PWideChar(Result),OutputLength);
+  end;
+end;
+
+function PCharToWideString(const S: PChar; CodePage: Cardinal): WideString;
+var
+  InputLength,
+  OutputLength: Integer;
+begin
+  if CodePage = CP_UTF8 then begin
+    Result := UTF8Decode(AnsiString(S)); // CP_UTF8 not supported on Windows 95
+  end else begin
+    InputLength := lstrlenA(S);
+    OutputLength := MultiByteToWideChar(CodePage,0,S,InputLength,nil,0);
+    SetLength(Result,OutputLength);
+    MultiByteToWideChar(CodePage,MB_PRECOMPOSED,S,InputLength,PWideChar(Result),OutputLength);
   end;
 end;
 
