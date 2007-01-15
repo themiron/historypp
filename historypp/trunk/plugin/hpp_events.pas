@@ -353,7 +353,7 @@ begin
   if UseUnicode then
     SetString(hi.Text,msgW,lenW)
   else
-    hi.Text := AnsiToWideString(msgA,hi.Codepage);
+    hi.Text := PCharToWideString(msgA,hi.Codepage);
   if TextHasUrls(hi.Text) then
     hi.MessageType := [mtUrl];
 end;
@@ -457,7 +457,7 @@ end;
 
 procedure GetEventTextForSms(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 begin
-  hi.Text := AnsiToWideString(PChar(EventInfo.pBlob),hi.Codepage);
+  hi.Text := PCharToWideString(PChar(EventInfo.pBlob),hi.Codepage);
 end;
 
 procedure GetEventTextForContacts(EventInfo: TDBEventInfo; var Hi: THistoryItem);
@@ -543,7 +543,7 @@ begin
   if UseUnicode then
     SetString(hi.Text,msgW,lenW)
   else
-    hi.Text := AnsiToWideString(msgA,hi.Codepage);
+    hi.Text := PCharToWideString(msgA,hi.Codepage);
   msglen := msglen+(lenW+1)*SizeOf(WideChar);
   if msglen < EventInfo.cbBlob then begin
     msgA := msgA + msglen;
@@ -641,7 +641,7 @@ procedure GetEventTextForOther(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 begin
   AllocateTextBuffer(EventInfo.cbBlob+1);
   StrLCopy(buffer,PChar(EventInfo.pBlob),EventInfo.cbBlob);
-  hi.Text := AnsiToWideString(buffer,hi.Codepage);
+  hi.Text := PCharToWideString(buffer,hi.Codepage);
 end;
 
 initialization

@@ -267,14 +267,14 @@ Delete
 History is empty
 [No such items]
 No such items
-[Conversations]
-Conversations
 [User Details]
 User Details
 [Ctrl+I]
 Ctrl+I
 [User Menu]
 User Menu
+[Conversations]
+Conversations
 [Find]
 Find
 [Ctrl+F]
