@@ -1,3 +1,7 @@
+
+{$IFNDEF M_TEXTCONTROL}
+{$DEFINE M_TEXTCONTROL}
+
 const
 	// bidi options. currently works ONLY for simple engine. this will be fixed later.
 	MTEXT_BIDI_AUTO = 0x0c;
@@ -209,3 +213,5 @@ __inline int MTextDestroy(HANDLE text)
 #endif // __mtext_h__
 
 {$endif}
+
+{$ENDIF}

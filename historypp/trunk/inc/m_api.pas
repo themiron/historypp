@@ -76,6 +76,7 @@ uses
     {$include m_chat.inc}
     {$include m_flash.inc}
     {$include m_dataasmessage.inc}
+    {$include m_metacontacts.inc}
 
     {$define M_API_UNIT}
     {$include m_helpers.inc}
