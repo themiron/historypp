@@ -154,7 +154,8 @@ begin
   hppCoreUnicode := StrPos(pszVersion,'Unicode') <> nil;
   // Getting langpack codepage for ansi translation
   hppCodepage := PluginLink.CallService(MS_LANGPACK_GETCODEPAGE,0,0);
-  if hppCodepage = CALLSERVICE_NOTFOUND then hppCodepage := CP_ACP;
+  if (hppCodepage = CALLSERVICE_NOTFOUND) or
+     (hppCodepage = CP_ACP) then hppCodepage := GetACP();
   // Checking if richedit 2.0 or 3.0 availible
   if not IsRichEdit20Available and (IDYES <>
     // single line to translation script

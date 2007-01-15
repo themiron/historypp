@@ -831,7 +831,7 @@ object HistoryFrm: THistoryFrm
     end
     object ANSICodepage1: TTntMenuItem
       Caption = 'ANSI Encoding'
-      object SystemCodepage1: TTntMenuItem
+      object SystemCodepage: TTntMenuItem
         AutoCheck = True
         Caption = 'System default codepage'
         Checked = True
