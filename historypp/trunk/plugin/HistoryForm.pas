@@ -2248,10 +2248,7 @@ begin
     spHolder.Left    := paHolder.Left + paHolder.Width + 1;
 
     spBook.Visible := paBook.Visible and paSess.Visible;
-    if spBook.Visible then
-      paHolderResize(Self)
-    else
-      paSess.Height := paHolder.ClientHeight;
+    paHolderResize(Self);
     spBook.Top     := paSess.Top + paSess.Height + 1;
 
   finally
@@ -3689,9 +3686,14 @@ begin
 end;
 
 procedure THistoryFrm.paHolderResize(Sender: TObject);
+var
+  calcHeight: NaturalNumber;
 begin
   if spBook.Visible then
-    paSess.Height := MulDiv(paHolder.ClientHeight,spBook.Tag,255);
+    paSess.Height := Max(spBook.MinSize,MulDiv(paHolder.ClientHeight,spBook.Tag,255))
+  else
+  if paSess.Visible then
+    paSess.Height := paHolder.ClientHeight;
 end;
 
 end.

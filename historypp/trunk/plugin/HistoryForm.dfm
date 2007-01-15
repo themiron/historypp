@@ -425,7 +425,7 @@ object HistoryFrm: THistoryFrm
         Cursor = crVSplit
         Align = alTop
         AutoSnap = False
-        MinSize = 100
+        MinSize = 60
         Visible = False
         OnMoved = spBookMoved
       end
