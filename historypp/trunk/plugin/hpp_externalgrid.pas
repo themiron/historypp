@@ -556,9 +556,9 @@ begin
       pmGrid.Items[10].Visible := False
     else
     if Grid.Items[Grid.Selected].Bookmarked then
-      pmGrid.Items[10].Caption := TranslateWideW('Remove &Bookmark')
+      TTntMenuItem(pmGrid.Items[10]).Caption := TranslateWideW('Remove &Bookmark')
     else
-      pmGrid.Items[10].Caption := TranslateWideW('Set &Bookmark');
+      TTntMenuItem(pmGrid.Items[10]).Caption := TranslateWideW('Set &Bookmark');
   end;
   pmGrid.Items[12].Visible := (Grid.State = gsIdle);
   pmGrid.Items[12].Items[0].Checked := not FUseHistoryRTLMode;

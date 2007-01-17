@@ -319,6 +319,8 @@ Always LTR
 ANSI Encoding
 [System default codepage]
 System default codepage
+[Unknown codepage %u]
+Unknown codepage %u
 [Password protection...]
 Password protection...
 [Select]

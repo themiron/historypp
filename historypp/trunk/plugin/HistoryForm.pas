@@ -90,8 +90,8 @@ type
     N1: TTntMenuItem;
     OpenLinkNW: TTntMenuItem;
     OpenLink: TTntMenuItem;
-    ContactRTLmode1: TTntMenuItem;
-    ANSICodepage1: TTntMenuItem;
+    ContactRTLmode: TTntMenuItem;
+    ANSICodepage: TTntMenuItem;
     RTLDisabled2: TTntMenuItem;
     RTLEnabled2: TTntMenuItem;
     RTLDefault2: TTntMenuItem;
@@ -190,6 +190,7 @@ type
     tbHistory: TTntSpeedButton;
     paHolder: TTntPanel;
     spBook: TTntSplitter;
+    UnknownCodepage: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -583,12 +584,15 @@ begin
                   else Protocol := GetContactProto(hContact);
   hg.Contact := hContact;
   hg.Protocol := Protocol;
-  SystemCodepage.Tag := GetContactCodePage(0,Protocol);
   hg.ProfileName := GetContactDisplayName(0, Protocol);
   hg.ContactName := GetContactDisplayName(hContact, Protocol, true);
   UserCodepage := GetContactCodePage(hContact,Protocol,UseDefaultCP);
   hg.Codepage := UserCodepage;
   hg.RTLMode := GetContactRTLModeTRTL(hContact, Protocol);
+  UnknownCodepage.Tag := Integer(UserCodepage);
+  UnknownCodepage.Caption := WideFormat(
+        TranslateWideW('Unknown codepage %u'),
+        [UserCodepage]);
   if hContact = 0 then Caption := TranslateWideW('System History')
                   else Caption := WideFormat(Caption,[hg.ContactName]);
   hg.Allocate(HistoryLength);
@@ -630,7 +634,7 @@ begin
     mi.OnClick := CodepageChangeClick;
     mi.AutoCheck := True;
     mi.RadioItem := True;
-    ANSICodepage1.Add(mi);
+    ANSICodepage.Add(mi);
   end;
 
   TranslateForm;
@@ -1075,7 +1079,7 @@ begin
       hDBEvent := cb.Items[i];
       txt := cb.Names[i];
       if txt = '' then begin
-        hi := ReadEvent(hDBEvent);
+        hi := ReadEvent(hDBEvent,UserCodepage);
         txt := Copy(hi.Text,1,100);
         txt := Tnt_WideStringReplace(txt,#13#10,' ',[rfReplaceAll]);
         // without freeing Module string mem manager complains about memory leak! WTF???
@@ -2861,8 +2865,8 @@ var
   i: integer;
 begin
   if hContact = 0 then begin
-    ContactRTLmode1.Visible := False;
-    ANSICodepage1.Visible := False;
+    ContactRTLmode.Visible := False;
+    ANSICodepage.Visible := False;
   end else begin
     case hg.RTLMode of
       hppRTLDefault: Self.RTLDefault2.Checked := true;
@@ -2872,11 +2876,14 @@ begin
     if UseDefaultCP then
       SystemCodepage.Checked := true
     else
-      for i := 1 to ANSICodepage1.Count-1 do
-        if ANSICodepage1.Items[i].Tag = Integer(UserCodepage) then begin
-          ANSICodepage1.Items[i].Checked := true;
-          break;
-        end;
+    for i := 1 to ANSICodepage.Count-1 do
+      if ANSICodepage.Items[i].Tag = Integer(UserCodepage) then begin
+        ANSICodepage.Items[i].Checked := true;
+        if i > 1 then break;
+      end;
+    // no need to make it invisible if it was turned on
+    if UnknownCodepage.Checked then
+      UnknownCodepage.Visible := true;
   end;
 end;
 
@@ -2993,7 +3000,7 @@ var
   i: Integer;
   dt: TDateTime;
   ts: DWord;
-  PrevYear,PrevMonth: Integer;
+  PrevYear: Integer;
   PrevYearNode, PrevMonthNode: TtntTreeNode;
 begin
 {$RANGECHECKS OFF}
@@ -3417,7 +3424,7 @@ begin
      Bookmark1.Caption := TranslateWideW('Remove &Bookmark')
   else
     Bookmark1.Caption := TranslateWideW('Set &Bookmark');
-  AddMenuArray(pmGrid,[ContactRTLmode1,ANSICodepage1],-1);
+  AddMenuArray(pmGrid,[ContactRTLmode,ANSICodepage],-1);
 end;
 
 procedure THistoryFrm.pmHistoryPopup(Sender: TObject);
@@ -3435,7 +3442,7 @@ begin
   end;
   LoadInOptions();
   SaveSelected2.Visible := (hg.SelCount > 1);
-  AddMenuArray(pmHistory,[ContactRTLmode1,ANSICodepage1],7);
+  AddMenuArray(pmHistory,[ContactRTLmode,ANSICodepage],7);
   //Application.CancelHint;
 end;
 
@@ -3687,8 +3694,6 @@ begin
 end;
 
 procedure THistoryFrm.paHolderResize(Sender: TObject);
-var
-  calcHeight: NaturalNumber;
 begin
   if spBook.Visible then
     paSess.Height := Max(spBook.MinSize,MulDiv(paHolder.ClientHeight,spBook.Tag,255))

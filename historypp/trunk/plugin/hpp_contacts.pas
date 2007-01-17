@@ -149,10 +149,7 @@ begin
   Result := False;
   if Proto = '' then Proto := GetContactProto(hContact);
   if Proto = '' then exit;
-  if CodePage = 0 then
-    DBDeleteContactSetting(hContact,PChar(Proto),'AnsiCodePage')
-  else
-    WriteDBWord(hContact,Proto,'AnsiCodePage',Codepage);
+  WriteDBWord(hContact,Proto,'AnsiCodePage',Codepage);
   Result := True;
 end;
 
@@ -162,11 +159,11 @@ begin
   if Proto = '' then
     Result := hppCodepage
   else begin
-    Result := GetDBWord(hContact,Proto,'AnsiCodePage',CP_ACP);
-    UsedDefault := (Result = CP_ACP);
-    If UsedDefault and (hContact <> 0) then
+    Result := GetDBWord(hContact,Proto,'AnsiCodePage',$FFFF);
+    If Result = $FFFF then
       Result := GetDBWord(0,Proto,'AnsiCodePage',CP_ACP);
-    if Result = CP_ACP then Result := GetACP();
+    UsedDefault := (Result = CP_ACP);
+    if UsedDefault then Result := GetACP();
   end;
 end;
 
