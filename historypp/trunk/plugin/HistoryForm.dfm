@@ -807,7 +807,7 @@ object HistoryFrm: THistoryFrm
     object N6: TTntMenuItem
       Caption = '-'
     end
-    object ContactRTLmode1: TTntMenuItem
+    object ContactRTLmode: TTntMenuItem
       Caption = 'Text direction'
       object RTLDefault2: TTntMenuItem
         AutoCheck = True
@@ -829,13 +829,20 @@ object HistoryFrm: THistoryFrm
         OnClick = ContactRTLmode1Click
       end
     end
-    object ANSICodepage1: TTntMenuItem
+    object ANSICodepage: TTntMenuItem
       Caption = 'ANSI Encoding'
       object SystemCodepage: TTntMenuItem
         AutoCheck = True
         Caption = 'System default codepage'
         Checked = True
         RadioItem = True
+        OnClick = CodepageChangeClick
+      end
+      object UnknownCodepage: TTntMenuItem
+        AutoCheck = True
+        Caption = 'Unknown codepage %u'
+        RadioItem = True
+        Visible = False
         OnClick = CodepageChangeClick
       end
     end

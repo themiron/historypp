@@ -66,6 +66,7 @@ Always RTL
 Always LTR
 ANSI Encoding
 System default codepage
+Unknown codepage %u
 Password protection...
 &Customize...
 &Copy
@@ -118,6 +119,7 @@ You have entered the wrong password
 History++ Password Protection
 %d event
 %0.n events (%s)
+Unknown codepage %u
 Do you really want to delete ALL items (%.0f) for this contact?
 Note: It can take several minutes for large history.
 Empty History
