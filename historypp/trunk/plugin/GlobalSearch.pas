@@ -1002,9 +1002,7 @@ begin
     laProgress.Caption := TranslateWideW('Please wait while closing the window...');
     laProgress.Font.Style := [fsBold];
     pb.Visible := False;
-    st.Terminate;
-    if IsSearching then
-      SetThreadPriority(st.Handle, THREAD_PRIORITY_ABOVE_NORMAL);
+    st.Terminate(tpHigher);
     while IsSearching do
       Application.ProcessMessages;
   end;

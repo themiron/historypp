@@ -76,10 +76,19 @@ type
     FSearchRange: Boolean;
     FSearchRangeTo: TDateTime;
     FSearchRangeFrom: TDateTime;
+
     procedure GenerateSearchWords;
     procedure SetSearchRangeFrom(const Value: TDateTime);
     procedure SetSearchRangeTo(const Value: TDateTime);
-  protected
+
+    function SearchEvent(DBEvent: THandle): Boolean;
+    procedure SearchContact(Contact: THandle);
+    procedure SearchBookmarks(Contact: THandle);
+
+    procedure DoMessage(Message: DWord; wParam, lParam: DWord);
+    procedure SendItem(hDBEvent: Integer);
+    procedure SendBatch;
+
     function GetContactsCount: Integer;
     function GetItemsCount(hContact: THandle): Integer;
     procedure BuildContactsList;
@@ -87,14 +96,9 @@ type
     procedure IncProgress;
     procedure SetProgress(Progress: Integer);
 
-    function SearchEvent(DBEvent: THandle): Boolean;
-    procedure SearchContact(Contact: THandle);
-    procedure SearchBookmarks(Contact: THandle);
-    procedure SendItem(hDBEvent: Integer);
-    procedure SendBatch;
+  protected
     procedure Execute; override;
 
-    procedure DoMessage(Message: DWord; wParam, lParam: DWord);
   public
     AllContacts, AllEvents: Integer;
 
@@ -111,6 +115,7 @@ type
     property ParentHandle: Hwnd read FParentHandle write FParentHandle;
 
     property Terminated;
+    procedure Terminate(NewPriority: TThreadPriority = tpIdle); reintroduce;
   end;
 
 const
@@ -269,7 +274,8 @@ end;
 
 procedure TSearchThread.DoMessage(Message, wParam, lParam: DWord);
 begin
-  PostMessage(ParentHandle,Message,wParam,lParam);
+  while not PostMessage(ParentHandle,Message,wParam,lParam) do
+    Sleep(5);
 end;
 
 procedure TSearchThread.Execute;
@@ -301,7 +307,7 @@ begin
 
     {$IFNDEF SMARTSEARCH}
     hCont := PluginLink.CallService(MS_DB_CONTACT_FINDFIRST,0,0);
-    while hCont <> 0 do begin
+    while (hCont <> 0) and not Terminated do begin
       Inc(AllContacts);
       // I hope I haven't messed this up by
       // if yes, also fix the same in CalcMaxProgress
@@ -324,8 +330,15 @@ begin
   finally
     // only Post..., not Send... because we wait for this thread
     // to die in this message
-    PostMessage(ParentHandle,HM_STRD_FINISHED,0,0);
-    end;
+    DoMessage(HM_STRD_FINISHED,0,0);
+  end;
+end;
+
+procedure TSearchThread.Terminate(NewPriority: TThreadPriority = tpIdle);
+begin
+  if (NewPriority <> tpIdle) and (NewPriority <> Priority) then
+    Priority := NewPriority;
+    inherited Terminate;
 end;
 
 procedure TSearchThread.GenerateSearchWords;
@@ -370,13 +383,13 @@ procedure TSearchThread.SearchContact(Contact: THandle);
 var
   hDBEvent: THandle;
 begin
+  if Terminated then exit;
   CurContactCP := GetContactCodePage(Contact);
   CurContact := Contact;
   DoMessage(HM_STRD_NEXTCONTACT, Contact, GetContactsCount);
   hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDLAST,Contact,0);
-  while hDBEvent <> 0 do begin
-    if SearchEvent(hDBEvent) then
-      SendItem(hDBEvent);
+  while (hDBEvent <> 0) and (not Terminated) do begin
+    if SearchEvent(hDBEvent) then SendItem(hDBEvent);
     hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDPREV,hDBEvent,0);
   end;
   SendBatch;
@@ -386,11 +399,11 @@ procedure TSearchThread.SearchBookmarks(Contact: THandle);
 var
   i: Integer;
 begin
+  if Terminated then exit;
   DoMessage(HM_STRD_NEXTCONTACT, Contact, GetContactsCount);
   for i := 0 to BookmarkServer[Contact].Count-1 do begin
+    if Terminated then exit;
     Inc(AllEvents);
-    if Terminated then
-      raise EAbort.Create('Thread terminated');
     SendItem(BookmarkServer[Contact].Items[i]);
     IncProgress;
   end;
@@ -403,10 +416,9 @@ var
   InRange: Boolean;
   EventDate: TDateTime;
 begin
-  //Sleep(50);
+  Result := False;
+  if Terminated then exit;
   Inc(AllEvents);
-  if Terminated then
-    raise EAbort.Create('Thread terminated');
   if SearchRange then begin
     EventDate := Trunc(GetEventDateTime(DBEvent));
     InRange := ((SearchRangeFrom <= EventDate) and (SearchRangeTo >= EventDate));
@@ -423,8 +435,7 @@ begin
         Result := SearchTextExact(Tnt_WideUpperCase(hi.Text),SearchText);
       end;
     end;
-  end
-  else Result := False;
+  end;
   IncProgress;
 end;
 
@@ -433,20 +444,19 @@ procedure TSearchThread.SendItem(hDBEvent: Integer);
 var
   CurBuf: Integer;
 begin
-  //DoMessage(SM_ITEMFOUND,hDBEvent,0);
+  if Terminated then exit;
   Inc(BufCount);
   if FirstBatch then CurBuf := ST_FIRST_BATCH
   else CurBuf := ST_BATCH;
   Buffer[BufCount-1] := hDBEvent;
-  if BufCount = CurBuf then begin
-    SendBatch;
-    end;
+  if BufCount = CurBuf then SendBatch;
 end;
 
 procedure TSearchThread.SendBatch;
 var
   Batch: PDBArray;
 begin
+  if Terminated then exit;
   if BufCount > 0 then begin
     GetMem(Batch,SizeOf(Batch^));
     CopyMemory(Batch,@Buffer,SizeOf(Buffer));

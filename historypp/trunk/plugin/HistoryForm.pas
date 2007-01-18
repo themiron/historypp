@@ -1132,9 +1132,7 @@ begin
     EnableMenuItem(AppSysMenu,SC_CLOSE,MF_BYCOMMAND or Flag);
     sb.SimpleText := TranslateWideW('Please wait while closing the window...');
     // terminate thread
-    SessThread.Terminate;
-    if SessThread <> nil then
-      SetThreadPriority(SessThread.Handle, THREAD_PRIORITY_ABOVE_NORMAL);
+    SessThread.Terminate(tpHigher);
     while SessThread <> nil do
       Application.ProcessMessages;
   end;
