@@ -61,12 +61,12 @@ type
     FSearchTime: Cardinal;
     SearchStart: Cardinal;
     FContact: THandle;
-  protected
+    procedure DoMessage(Message: DWord; wParam: WPARAM; lParam: LPARAM);
     procedure SendItem(hDBEvent,Timestamp, LastEvent, LastTimestamp, Count: DWord);
     procedure SendBatch;
-    procedure Execute; override;
 
-    procedure DoMessage(Message: DWord; wParam, lParam: DWord);
+  protected
+    procedure Execute; override;
 
   public
     AllContacts, AllEvents: Integer;
@@ -79,6 +79,7 @@ type
     property ParentHandle: Hwnd read FParentHandle write FParentHandle;
 
     property Terminated;
+    procedure Terminate(NewPriority: TThreadPriority = tpIdle); reintroduce;
   end;
 
 const
@@ -106,7 +107,7 @@ function IsEventInSession(EventType: Word): boolean;
 var
   i: integer;
 begin
-  Result := false;
+  Result := False;
   for i := 0 to High(SessionEvents) do
     if SessionEvents[i] = EventType then begin
       Result := True;
@@ -129,9 +130,10 @@ begin
   SetLength(Buffer,0);
 end;
 
-procedure TSessionsThread.DoMessage(Message, wParam, lParam: DWord);
+procedure TSessionsThread.DoMessage(Message: DWord; wParam: WPARAM; lParam: LPARAM);
 begin
-  PostMessage(ParentHandle,Message,wParam,lParam);
+  while not PostMessage(ParentHandle,Message,wParam,lParam) do
+    Sleep(5);
 end;
 
 procedure TSessionsThread.Execute;
@@ -149,10 +151,7 @@ begin
   try
     DoMessage(HM_SESS_PREPARE,0,0);
     hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDFIRST,FContact,0);
-    while hDBEvent <> 0 do begin
-      if Terminated then
-        raise EAbort.Create('Sessions thread terminated');
-
+    while (hDBEvent <> 0) and not Terminated do begin
       ZeroMemory(@Event,SizeOf(Event));
       Event.cbSize:=SizeOf(Event);
       Event.cbBlob := 0;
@@ -188,47 +187,43 @@ begin
     FSearchTime := GetTickCount - SearchStart;
     // only Post..., not Send... because we wait for this thread
     // to die in this message
-    PostMessage(ParentHandle,HM_SESS_FINISHED,0,0);
+    DoMessage(HM_SESS_FINISHED,0,0);
   end;
- end;
+end;
+
+procedure TSessionsThread.Terminate(NewPriority: TThreadPriority = tpIdle);
+begin
+  if (NewPriority <> tpIdle) and (NewPriority <> Priority) then
+    Priority := NewPriority;
+  inherited Terminate;
+end;
 
 procedure TSessionsThread.SendItem(hDBEvent,Timestamp, LastEvent, LastTimestamp, Count: DWord);
-//var
-//  CurBuf: Integer;
 begin
-  if Terminated then
-    raise EAbort.Create('Sessions thread terminated');
-  //DoMessage(SM_ITEMFOUND,hDBEvent,0);
-  //Inc(BufCount);
-  //if FirstBatch then CurBuf := ST_FIRST_BATCH
-  //else CurBuf := ST_BATCH;
-  //Buffer[BufCount-1] := hDBEvent;
+  if Terminated then exit;
   SetLength(Buffer,Length(Buffer)+1);
-//  Timestamp := PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOLOCAL,Timestamp,0);
   BufCount := Length(Buffer);
   Buffer[BufCount-1].hDBEventFirst := hDBevent;
   Buffer[BufCount-1].TimestampFirst := Timestamp;
   Buffer[BufCount-1].hDBEventLast := LastEvent;
   Buffer[BufCount-1].TimestampLast := LastTimestamp;
   Buffer[BufCount-1].ItemsCount := Count;
-  //if BufCount = CurBuf then begin
-  //  SendBatch;
-  //  end;
 end;
 
 procedure TSessionsThread.SendBatch;
 var
   Batch: PSessArray;
 begin
-{$RANGECHECKS OFF}
+  if Terminated then exit;
+  {$RANGECHECKS OFF}
   if Length(Buffer) > 0 then begin
     GetMem(Batch,SizeOf(Buffer));
     CopyMemory(Batch,@Buffer,SizeOf(Buffer));
-    DoMessage(HM_SESS_ITEMSFOUND,DWord(Batch),Length(Buffer));
+    DoMessage(HM_SESS_ITEMSFOUND,WPARAM(Batch),Length(Buffer));
     BufCount := 0;
     FirstBatch := False;
   end;
-{$RANGECHECKS ON}
+  {$RANGECHECKS ON}
 end;
 
 end.
