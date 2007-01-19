@@ -7,10 +7,8 @@ uses Graphics, Windows, Messages, Forms, Controls, StdCtrls, Menus, ComCtrls,
 
 type
   THppHintWindow = class (TTntHintWindow)
-  private
-    //procedure WMShowWindow(var Message: TMessage); message WM_SHOWWINDOW;
   protected
-    //procedure CreateParams(var Params: TCreateParams); override;
+    procedure CreateParams(var Params: TCreateParams); override;
     procedure NCPaint(DC: HDC); override;
   end;
 
@@ -228,29 +226,14 @@ end;
 
 { THppHintWindow }
 
-{ // need some work
-procedure THppHintWindow.WMShowWindow(var Message: TMessage);
-var
-  hSysShadow: HWND;
-begin
-  if Message.WParam = 0 then begin
-    hSysShadow := FindWindowEx(Handle,0,'SysShadow',nil);
-    if hSysShadow <> 0 then
-      ShowWindow(hSysShadow,SW_HIDE);
-    Message.Result := 0;
-  end;
-end;
-}
-
-{ // obsolete
 procedure THppHintWindow.CreateParams(var Params: TCreateParams);
 begin
   // standard delphi's hint window leaves shadow border after hint
   // closes, this is workaround until real fix is found
   inherited CreateParams(Params);
-  Params.WindowClass.Style := Params.WindowClass.style and not CS_DROPSHADOW;
+  //Params.ExStyle := Params.ExStyle and not WS_EX_STATICEDGE;
+  //Params.WindowClass.Style := Params.WindowClass.style and not CS_DROPSHADOW;
 end;
-}
 
 procedure THppHintWindow.NCPaint(DC: HDC);
 var
@@ -259,11 +242,11 @@ var
 begin
   R := Rect(0, 0, Width, Height);
   if not ThemeServices.ThemesEnabled then
-    Windows.DrawEdge(DC, R, EDGE_RAISED, BF_RECT or BF_FLAT)
+    Windows.DrawEdge(DC, R, BDR_OUTER, BF_RECT or BF_ADJUST or BF_MONO)
   else
   begin
-    Details := ThemeServices.GetElementDetails(twWindowRoot);
-    ThemeServices.DrawEdge(DC, Details, R, EDGE_RAISED, BF_RECT or BF_FLAT);
+    Details := ThemeServices.GetElementDetails(tttToolTipRoot);
+    ThemeServices.DrawEdge(DC, Details, R, BDR_OUTER, BF_RECT or BF_ADJUST or BF_MONO);
   end;
 end;
 
