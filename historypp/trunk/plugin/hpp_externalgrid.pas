@@ -147,7 +147,7 @@ begin
   end;
   // comment or we'll get rerendering the whole grid
   //if Grid.Codepage <> Codepage then Grid.Codepage := Codepage;
-  Grid.Allocate(Length(Items),DoScroll);
+  Grid.Allocate(Length(Items),DoScroll and (Grid.State <> gsInline));
 end;
 
 procedure TExternalGrid.AddCustomEvent(hContact: Cardinal; CustomItem: TExtCustomItem; Codepage: Integer; RTL: Boolean; DoScroll: Boolean);
@@ -176,7 +176,7 @@ begin
   end;
   // comment or we'll get rerendering the whole grid
   //if Grid.Codepage <> Codepage then Grid.Codepage := Codepage;
-  Grid.Allocate(Length(Items),DoScroll);
+  Grid.Allocate(Length(Items),DoScroll and (Grid.State <> gsInline));
 end;
 
 constructor TExternalGrid.Create(AParentWindow: HWND; ControlID: Cardinal = 0);
