@@ -709,6 +709,7 @@ begin
     Finalize(Items[Index]);
     Move(Items[Index+1],Items[Index],(Length(Items)-Index-1)*SizeOf(Items[0]));
     ZeroMemory(@Items[High(Items)],SizeOf(Items[0]));
+    Grid.ResetItem(Index);
   end;
   SetLength(Items,Length(Items)-1);
   //Application.ProcessMessages;
