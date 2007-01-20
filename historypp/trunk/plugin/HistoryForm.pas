@@ -923,13 +923,13 @@ var
   i: Integer;
 begin
   {wParam - hContact; lParam - hDBEvent}
-  if (hg.State <> gsDelete) and (dword(message.wParam)=hContact) then
-    for i := 0 to hg.Count - 1 do begin
-      if (History[GridIndexToHistory(i)] = Message.lParam) then begin
-        hg.Delete(i);
-        hgState(hg,hg.State);
-        exit;
-      end;
+  if hg.State = gsDelete then exit;
+  if WPARAM(message.wParam) <> hContact then exit;
+  for i := 0 to hg.Count - 1 do
+    if (History[GridIndexToHistory(i)] = Message.lParam) then begin
+      hg.Delete(i);
+      hgState(hg,hg.State);
+      exit;
     end;
 end;
 

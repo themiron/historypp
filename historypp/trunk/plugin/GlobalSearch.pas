@@ -62,7 +62,7 @@ type
   TSearchItem = record
     hDBEvent: THandle;
     Contact: TContactInfo;
-    end;
+  end;
 
   TfmGlobalSearch = class(TTntForm)
     paClient: TTntPanel;
@@ -458,7 +458,7 @@ begin
 
   if (lvContacts.Items.Count = 0) or (Integer(lvContacts.Items.Item[lvContacts.Items.Count-1].Data) <> CurContact) then begin
     if lvContacts.Items.Count = 0 then begin
-    li := lvContacts.Items.Add;
+      li := lvContacts.Items.Add;
       li.Caption := TranslateWideW('All Results');
       li.ImageIndex := GlobalSearchAllResultsIcon;
       li.Selected := True;
@@ -953,22 +953,21 @@ var
   EventDeleted: Boolean;
 begin
   if Item = -1 then exit;
-  //for i := Item to Length(History) - 2 do begin
-  //  History[i] := History[i+1];
-  //end;
-  //SetLength(History,Length(History)-1);
-  if Item <> High(History) then
-    Move(History[Item+1],History[Item],(High(History)-Item)*SizeOf(History[0]));
-  SetLength(History,High(History));
+
+  i := High(History);
+  if Item <> i then
+    Move(History[Item+1],History[Item],(i-Item)*SizeOf(History[0]));
+  SetLength(History,i);
 
   if not FFiltered then exit;
 
   EventDeleted := False;
   for i := 0 to Length(FilterHistory) - 1 do begin
+    if EventDeleted then begin
+      if i < Length(FilterHistory)-1 then FilterHistory[i] := FilterHistory[i+1];
+      Dec(FilterHistory[i]);
+    end else
     if FilterHistory[i] = Item then EventDeleted := True;
-    if (EventDeleted) and (i < Length(FilterHistory)-1) then FilterHistory[i] := FilterHistory[i+1];
-    if EventDeleted then Dec(FilterHistory[i]);
-
   end;
   if EventDeleted then SetLength(FilterHistory,Length(FilterHistory)-1);
 end;
@@ -1621,19 +1620,19 @@ var
   i: Integer;
 begin
   {wParam - hContact; lParam - hDBEvent}
-  if hg.State <> gsDelete then
-    for i := 0 to hg.Count - 1 do begin
-      if GetSearchItem(i).hDBEvent = M.lParam then begin
-        hg.Delete(i);
-        hgState(hg,hg.State);
-        exit;
-      end;
+  if hg.State = gsDelete then exit;
+  //if WPARAM(message.wParam) <> hContact then exit;
+  for i := 0 to hg.Count - 1 do
+    if GetSearchItem(i).hDBEvent = M.lParam then begin
+      hg.Delete(i);
+      hgState(hg,hg.State);
+      exit;
     end;
-  // exit if we searched all
-  if not FFiltered then exit;
   // if event is not in filter, we must search the overall array
-  i := FindHistoryItemByHandle(m.LParam);
-  if i <> -1 then DeleteEventFromLists(i);
+  if FFiltered then begin
+    i := FindHistoryItemByHandle(m.LParam);
+    if i <> -1 then DeleteEventFromLists(i);
+  end;
 end;
 
 procedure TfmGlobalSearch.HMFiltersChanged(var M: TMessage);
