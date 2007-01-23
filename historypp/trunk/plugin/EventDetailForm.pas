@@ -39,14 +39,14 @@ uses
   m_globaldefs, m_api, hpp_messages,
   hpp_global, hpp_contacts, hpp_events, hpp_forms, hpp_richedit,
   TntExtCtrls, ComCtrls,
-  Menus, TntMenus, RichEdit, Buttons, TntButtons, PasswordEditControl;
+  Menus, TntMenus, RichEdit, Buttons, TntButtons, HistoryControls;
 
 type
 
   TEventDetailsFrm = class(TTntForm)
-    paBottom: TTntPanel;
-    Panel3: TTntPanel;
-    paInfo: TTntPanel;
+    paBottom: THppPanel;
+    Panel3: THppPanel;
+    paInfo: THppPanel;
     GroupBox: TTntGroupBox;
     laType: TTntLabel;
     laDateTime: TTntLabel;
@@ -65,7 +65,7 @@ type
     N1: TTntMenuItem;
     ReplyQuoted1: TTntMenuItem;
     SendMessage1: TTntMenuItem;
-    paText: TTntPanel;
+    paText: THppPanel;
     N2: TTntMenuItem;
     ToogleItemProcessing: TTntMenuItem;
     EFromMore: TTntSpeedButton;
@@ -280,8 +280,14 @@ procedure TEventDetailsFrm.FormCreate(Sender: TObject);
 begin
   Icon.ReleaseHandle;
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
+
   DesktopFont := True;
   MakeFontsParent(Self);
+
+  DoubleBuffered := True;
+  MakeDoubleBufferedParent(Self);
+  EText.DoubleBuffered := False;
+
   LoadButtonIcons;
   TranslateForm;
   Prev := -1;
