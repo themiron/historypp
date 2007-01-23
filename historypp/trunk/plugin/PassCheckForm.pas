@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Checksum, ExtCtrls, m_GlobalDefs, m_api, hpp_forms,
-  PasswordEditControl, TntForms, TntStdCtrls, TntExtCtrls;
+  HistoryControls, TntForms, TntStdCtrls, TntExtCtrls;
 
 type
   TfmPassCheck = class(TTntForm)

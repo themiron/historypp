@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, m_GlobalDefs, m_api, PasswordEditControl, hpp_forms,
+  StdCtrls, ExtCtrls, m_GlobalDefs, m_api, HistoryControls, hpp_forms,
   TntStdCtrls, TntExtCtrls, TntForms;
 
 type
