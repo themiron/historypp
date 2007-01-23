@@ -25,7 +25,7 @@ object HistoryFrm: THistoryFrm
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object paClient: TTntPanel
+  object paClient: THppPanel
     Left = 0
     Top = 0
     Width = 578
@@ -40,9 +40,10 @@ object HistoryFrm: THistoryFrm
       Height = 319
       AutoSnap = False
       MinSize = 100
+      ResizeStyle = rsUpdate
       Visible = False
     end
-    object paGrid: TTntPanel
+    object paGrid: THppPanel
       Left = 161
       Top = 32
       Width = 415
@@ -108,7 +109,7 @@ object HistoryFrm: THistoryFrm
         ShowHint = True
       end
     end
-    object paSearch: TTntPanel
+    object paSearch: THppPanel
       Left = 2
       Top = 351
       Width = 574
@@ -117,7 +118,7 @@ object HistoryFrm: THistoryFrm
       BevelOuter = bvNone
       TabOrder = 1
       Visible = False
-      object paSearchPanel: TTntPanel
+      object paSearchPanel: THppPanel
         Left = 0
         Top = 0
         Width = 495
@@ -155,7 +156,7 @@ object HistoryFrm: THistoryFrm
         end
         object edSearch: THppEdit
           Left = 47
-          Top = 4
+          Top = 3
           Width = 447
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -166,7 +167,7 @@ object HistoryFrm: THistoryFrm
           OnKeyUp = edSearchKeyUp
         end
       end
-      object paSearchButtons: TTntPanel
+      object paSearchButtons: THppPanel
         Left = 532
         Top = 0
         Width = 42
@@ -206,7 +207,7 @@ object HistoryFrm: THistoryFrm
           OnClick = sbSearchPrevClick
         end
       end
-      object paSearchStatus: TTntPanel
+      object paSearchStatus: THppPanel
         Left = 495
         Top = 0
         Width = 37
@@ -223,6 +224,7 @@ object HistoryFrm: THistoryFrm
           Height = 19
           Align = alRight
           Caption = '>>'
+          Transparent = True
           Layout = tlCenter
         end
         object imSearchEndOfPage: TTntImage
@@ -236,10 +238,11 @@ object HistoryFrm: THistoryFrm
           Top = 6
           Width = 16
           Height = 16
+          Transparent = True
         end
       end
     end
-    object TopPanel: TTntPanel
+    object TopPanel: THppPanel
       Left = 2
       Top = 2
       Width = 574
@@ -262,7 +265,7 @@ object HistoryFrm: THistoryFrm
         PopupMenu = pmToolbar
         ShowHint = True
         TabOrder = 0
-        Transparent = True
+        Transparent = False
         Wrapable = False
         OnDblClick = ToolbarDblClick
         object tbUserDetails: TTntToolButton
@@ -407,7 +410,7 @@ object HistoryFrm: THistoryFrm
         end
       end
     end
-    object paHolder: TTntPanel
+    object paHolder: THppPanel
       Left = 2
       Top = 32
       Width = 156
@@ -426,10 +429,11 @@ object HistoryFrm: THistoryFrm
         Align = alTop
         AutoSnap = False
         MinSize = 60
+        ResizeStyle = rsUpdate
         Visible = False
         OnMoved = spBookMoved
       end
-      object paBook: TTntPanel
+      object paBook: THppPanel
         Left = 0
         Top = 153
         Width = 156
@@ -438,7 +442,7 @@ object HistoryFrm: THistoryFrm
         BevelOuter = bvNone
         TabOrder = 0
         Visible = False
-        object paBookInt: TTntPanel
+        object paBookInt: THppPanel
           Left = 0
           Top = 0
           Width = 156
@@ -458,6 +462,7 @@ object HistoryFrm: THistoryFrm
             Anchors = [akLeft, akTop, akRight]
             AutoSize = False
             Caption = 'Bookmarks'
+            Transparent = True
             Layout = tlCenter
           end
           object sbCloseBook: TTntSpeedButton
@@ -503,7 +508,7 @@ object HistoryFrm: THistoryFrm
           OnSelectItem = lvBookSelectItem
         end
       end
-      object paSess: TTntPanel
+      object paSess: THppPanel
         Left = 0
         Top = 0
         Width = 156
@@ -512,7 +517,7 @@ object HistoryFrm: THistoryFrm
         BevelOuter = bvNone
         TabOrder = 1
         Visible = False
-        object paSessInt: TTntPanel
+        object paSessInt: THppPanel
           Left = 0
           Top = 0
           Width = 156
@@ -532,6 +537,7 @@ object HistoryFrm: THistoryFrm
             Anchors = [akLeft, akTop, akRight]
             AutoSize = False
             Caption = 'Conversations'
+            Transparent = True
             Layout = tlCenter
           end
           object sbCloseSess: TTntSpeedButton
@@ -589,7 +595,7 @@ object HistoryFrm: THistoryFrm
     Panels = <>
     SimplePanel = True
   end
-  object paPassHolder: TTntPanel
+  object paPassHolder: THppPanel
     Left = 179
     Top = 95
     Width = 325
@@ -600,7 +606,7 @@ object HistoryFrm: THistoryFrm
     TabOrder = 2
     Visible = False
     OnResize = paPassHolderResize
-    object paPassword: TTntPanel
+    object paPassword: THppPanel
       Left = 8
       Top = 16
       Width = 301
@@ -620,6 +626,7 @@ object HistoryFrm: THistoryFrm
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsBold]
         ParentFont = False
+        Transparent = True
         WordWrap = True
       end
       object Image1: TImage
@@ -636,6 +643,7 @@ object HistoryFrm: THistoryFrm
         Width = 49
         Height = 13
         Caption = 'Password:'
+        Transparent = True
       end
       object edPass: TPasswordEdit
         Left = 80

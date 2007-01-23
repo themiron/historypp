@@ -52,7 +52,7 @@ uses
   hpp_global, hpp_database, hpp_messages, hpp_events, hpp_contacts, hpp_itemprocess,
   hpp_bookmarks, hpp_forms, hpp_richedit, hpp_sessionsthread,
   HistoryGrid, Checksum, DateUtils,
-  ImgList, PasswordEditControl, CommCtrl, ToolWin, Themes;
+  ImgList, HistoryControls, CommCtrl, ToolWin, Themes;
 
 type
 
@@ -64,15 +64,15 @@ type
   THistoryFrm = class(TTntForm)
     SaveDialog: TSaveDialog;
     pmGrid: TTntPopupMenu;
-    paClient: TTntPanel;
-    paGrid: TTntPanel;
+    paClient: THppPanel;
+    paGrid: THppPanel;
     hg: THistoryGrid;
     sb: TTntStatusBar;
     pmLink: TTntPopupMenu;
-    paSess: TTntPanel;
+    paSess: THppPanel;
     spHolder: TTntSplitter;
     ilSessions: TImageList;
-    paSessInt: TTntPanel;
+    paSessInt: THppPanel;
     laSess: TTntLabel;
     sbCloseSess: TTntSpeedButton;
     N13: TTntMenuItem;
@@ -101,8 +101,8 @@ type
     tiFilter: TTimer;
     ilToolbar: TImageList;
     Toolbar: TTntToolBar;
-    paPassHolder: TTntPanel;
-    paPassword: TTntPanel;
+    paPassHolder: THppPanel;
+    paPassword: THppPanel;
     laPass: TTntLabel;
     Image1: TImage;
     laPass2: TTntLabel;
@@ -115,14 +115,14 @@ type
     SaveasText2: TTntMenuItem;
     tbSearch: TTntToolButton;
     TntToolButton3: TTntToolButton;
-    paSearch: TTntPanel;
+    paSearch: THppPanel;
     tbFilter: TTntToolButton;
     tbDelete: TTntToolButton;
     tbSessions: TTntToolButton;
     TntToolButton2: TTntToolButton;
-    paSearchStatus: TTntPanel;
+    paSearchStatus: THppPanel;
     laSearchState: TTntLabel;
-    paSearchPanel: TTntPanel;
+    paSearchPanel: THppPanel;
     sbSearchNext: TTntSpeedButton;
     sbSearchPrev: TTntSpeedButton;
     edSearch: THppEdit;
@@ -141,8 +141,8 @@ type
     Customize1: TTntMenuItem;
     N6: TTntMenuItem;
     Passwordprotection1: TTntMenuItem;
-    TopPanel: TTntPanel;
-    paSearchButtons: TTntPanel;
+    TopPanel: THppPanel;
+    paSearchButtons: THppPanel;
     pmSessions: TTntPopupMenu;
     SessCopy: TTntMenuItem;
     SessSelect: TTntMenuItem;
@@ -157,8 +157,8 @@ type
     pmToolbar: TTntPopupMenu;
     Customize2: TTntMenuItem;
     Bookmark1: TTntMenuItem;
-    paBook: TTntPanel;
-    paBookInt: TTntPanel;
+    paBook: THppPanel;
+    paBookInt: THppPanel;
     laBook: TTntLabel;
     sbCloseBook: TTntSpeedButton;
     lvBook: TTntListView;
@@ -188,7 +188,7 @@ type
     mmBookmark: TTntMenuItem;
     SelectAll1: TTntMenuItem;
     tbHistory: TTntSpeedButton;
-    paHolder: TTntPanel;
+    paHolder: THppPanel;
     spBook: TTntSplitter;
     UnknownCodepage: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
@@ -621,6 +621,9 @@ begin
 
   DesktopFont := True;
   MakeFontsParent(Self);
+
+  DoubleBuffered := True;
+  MakeDoubleBufferedParent(Self);
 
   FormState := gsIdle;
 
