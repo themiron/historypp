@@ -1,12 +1,14 @@
-unit PasswordEditControl;
+unit HistoryControls;
 
 interface
 
 uses
-  Windows, Messages, Classes, Controls, Forms, StdCtrls,
-  TntSysUtils, TntControls, TntStdCtrls;
+  Windows, Messages, Classes, Controls, Forms, StdCtrls, ExtCtrls,
+  TntSysUtils, TntControls, TntStdCtrls, TntExtCtrls,
+  Themes;
 
 type
+
   TPasswordEdit = class(TEdit)
   private
     FDummyPasswordChar: Char;
@@ -22,14 +24,20 @@ type
     procedure WMChar(var Message: TWMKey); message WM_CHAR;
   end;
 
+  THppPanel = class(TTntPanel)
+  public
+    constructor Create(AOwner: TComponent); override;
+  end;
+
 procedure Register;
 
 implementation
 
 procedure Register;
 begin
-  RegisterComponents('Custom', [TPasswordEdit]);
-  RegisterComponents('Custom', [THppEdit]);
+  RegisterComponents('HistoryPP', [TPasswordEdit]);
+  RegisterComponents('HistoryPP', [THppEdit]);
+  RegisterComponents('HistoryPP', [THppPanel]);
 end;
 
 procedure TPasswordEdit.CreateParams(var Params: TCreateParams);
@@ -78,6 +86,19 @@ begin
     Perform(EM_SETSEL,wParam(@ss),lParam(@ss));
   end else
     inherited;
+end;
+
+{ ThppPanel }
+
+constructor THppPanel.Create(AOwner: TComponent);
+var
+  StoredParentBackground: Boolean;
+begin
+  StoredParentBackground := ParentBackground;
+  inherited Create(AOwner);
+  //ControlStyle := ControlStyle - [csParentBackground] + [csOpaque];
+  if ThemeServices.ThemesEnabled then
+    ParentBackground := StoredParentBackground;
 end;
 
 end.
