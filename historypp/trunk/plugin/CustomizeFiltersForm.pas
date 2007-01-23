@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,Dialogs,
-  PasswordEditControl,
+  HistoryControls,
   TntForms, StdCtrls, TntStdCtrls, CheckLst, TntCheckLst, TntGraphics, TntWindows,
   hpp_global, hpp_eventfilters;
 
