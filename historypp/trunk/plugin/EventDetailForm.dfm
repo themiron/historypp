@@ -19,7 +19,7 @@ object EventDetailsFrm: TEventDetailsFrm
   OnKeyDown = FormKeyDown
   PixelsPerInch = 96
   TextHeight = 13
-  object paBottom: TTntPanel
+  object paBottom: THppPanel
     Left = 0
     Top = 322
     Width = 450
@@ -44,7 +44,7 @@ object EventDetailsFrm: TEventDetailsFrm
       Caption = 'Next'
       OnClick = NextBtnClick
     end
-    object Panel3: TTntPanel
+    object Panel3: THppPanel
       Left = 250
       Top = 0
       Width = 200
@@ -75,7 +75,7 @@ object EventDetailsFrm: TEventDetailsFrm
       end
     end
   end
-  object paInfo: TTntPanel
+  object paInfo: THppPanel
     Left = 0
     Top = 0
     Width = 450
@@ -91,6 +91,7 @@ object EventDetailsFrm: TEventDetailsFrm
       Height = 101
       Align = alClient
       Caption = 'Event Info'
+      ParentBackground = False
       TabOrder = 0
       DesignSize = (
         450
@@ -101,6 +102,7 @@ object EventDetailsFrm: TEventDetailsFrm
         Width = 27
         Height = 13
         Caption = 'Type:'
+        Transparent = True
       end
       object laDateTime: TTntLabel
         Left = 8
@@ -108,6 +110,7 @@ object EventDetailsFrm: TEventDetailsFrm
         Width = 54
         Height = 13
         Caption = 'Date/Time:'
+        Transparent = True
       end
       object laFrom: TTntLabel
         Left = 8
@@ -115,6 +118,7 @@ object EventDetailsFrm: TEventDetailsFrm
         Width = 26
         Height = 13
         Caption = 'From:'
+        Transparent = True
       end
       object laTo: TTntLabel
         Left = 8
@@ -122,6 +126,7 @@ object EventDetailsFrm: TEventDetailsFrm
         Width = 16
         Height = 13
         Caption = 'To:'
+        Transparent = True
       end
       object EFromMore: TTntSpeedButton
         Left = 424
@@ -195,7 +200,7 @@ object EventDetailsFrm: TEventDetailsFrm
       end
     end
   end
-  object paText: TTntPanel
+  object paText: THppPanel
     Left = 0
     Top = 101
     Width = 450
