@@ -571,12 +571,16 @@ begin
     if ThemeServices.ThemesEnabled then
     begin
       // theMIROn fix for correct background drawing of speedbutton {
-      //{$IFDEF COMPILER_7_UP}
-      //PerformEraseBackground(Self, Canvas.Handle);
-      //{$ENDIF}
-      //SelectObject(Canvas.Handle, Canvas.Font.Handle); { For some reason, PerformEraseBackground sometimes messes the font up. }
+      if Parent.DoubleBuffered then begin
       // } theMIROn
-
+      {$IFDEF COMPILER_7_UP}
+      PerformEraseBackground(Self, Canvas.Handle);
+      {$ENDIF}
+      SelectObject(Canvas.Handle, Canvas.Font.Handle); { For some reason, PerformEraseBackground sometimes messes the font up. }
+      // theMIROn fix for correct background drawing of speedbutton {
+      end else
+        ThemeServices.DrawParentBackground(Parent.Handle, Canvas.Handle, nil, True);
+      // } theMIROn
       if not Enabled then
         Button := tbPushButtonDisabled
       else
@@ -607,18 +611,12 @@ begin
       if ToolButton = ttbToolbarDontCare then
       begin
         Details := ThemeServices.GetElementDetails(Button);
-        // theMIROn fix for correct background drawing of speedbutton {
-        ThemeServices.DrawParentBackground(Parent.Handle, Canvas.Handle, @Details, True);
-        // } theMIROn
         ThemeServices.DrawElement(Canvas.Handle, Details, PaintRect);
         PaintRect := ThemeServices.ContentRect(Canvas.Handle, Details, PaintRect);
       end
       else
       begin
         Details := ThemeServices.GetElementDetails(ToolButton);
-        // theMIROn fix for correct background drawing of speedbutton {
-        ThemeServices.DrawParentBackground(Parent.Handle, Canvas.Handle, @Details, True);
-        // } theMIROn
         ThemeServices.DrawElement(Canvas.Handle, Details, PaintRect);
         PaintRect := ThemeServices.ContentRect(Canvas.Handle, Details, PaintRect);
       end;
