@@ -2,8 +2,10 @@ unit hpp_forms;
 
 interface
 
-uses Graphics, Windows, Messages, Forms, Controls, StdCtrls, Menus, ComCtrls,
-  TntControls, TntForms, TntMenus, TntComCtrls, TntStdCtrls, Classes, Themes;
+uses Windows, Messages, Classes, Graphics,
+  Controls, Forms, Menus, ComCtrls, StdCtrls,
+  TntControls, TntForms, TntMenus, TntComCtrls, TntStdCtrls,
+  Themes;
 
 type
   THppHintWindow = class (TTntHintWindow)
@@ -38,6 +40,7 @@ const
 procedure NotifyAllForms(Msg,wParam,lParam: DWord);
 procedure BringFormToFront(Form: TForm);
 procedure MakeFontsParent(Control: TControl);
+procedure MakeDoubleBufferedParent(Control: TWinControl);
 
 procedure TranslateMenu(mi: TMenuItem);
 procedure TranslateToolbar(const tb: TTntToolBar);
@@ -247,6 +250,22 @@ begin
   begin
     Details := ThemeServices.GetElementDetails(tttToolTipRoot);
     ThemeServices.DrawEdge(DC, Details, R, BDR_OUTER, BF_RECT or BF_ADJUST or BF_MONO);
+  end;
+end;
+
+// This procedure scans all WinControl children and set them the same
+// DoubleBuffered property.
+procedure MakeDoubleBufferedParent(Control: TWinControl);
+var
+  i: Integer;
+  DoubleBuffered: Boolean;
+begin
+  DoubleBuffered := Control.DoubleBuffered;
+  for i := 0 to Control.ComponentCount - 1 do begin
+    if Control.Components[i] is TWinControl then begin
+      TWinControl(Control.Components[i]).DoubleBuffered := DoubleBuffered;
+      MakeDoubleBufferedParent(TWinControl(Control.Components[i]));
+    end;
   end;
 end;
 

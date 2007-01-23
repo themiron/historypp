@@ -39,6 +39,6 @@ requires
 
 contains
   HistoryGrid in 'HistoryGrid.pas',
-  PasswordEditControl in 'PasswordEditControl.pas';
+  HistoryControls in 'HistoryControls.pas';
   
 end.
