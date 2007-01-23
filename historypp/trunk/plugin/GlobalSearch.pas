@@ -42,7 +42,7 @@ uses
   m_globaldefs, m_api,
   hpp_global, hpp_events, hpp_services, hpp_contacts,  hpp_database,  hpp_searchthread,
   hpp_eventfilters, hpp_bookmarks, hpp_richedit, RichEdit,
-  ImgList, PasswordEditControl, Buttons, TntButtons, Math, CommCtrl,
+  ImgList, HistoryControls, Buttons, TntButtons, Math, CommCtrl,
   Contnrs, TntMenus, hpp_forms, ToolWin;
 
 const
@@ -65,13 +65,13 @@ type
   end;
 
   TfmGlobalSearch = class(TTntForm)
-    paClient: TTntPanel;
-    paSearch: TtntPanel;
+    paClient: THppPanel;
+    paSearch: THppPanel;
     laSearch: TTntLabel;
     edSearch: THppEdit;
     bnSearch: TtntButton;
     sb: TtntStatusBar;
-    paProgress: TtntPanel;
+    paProgress: THppPanel;
     pb: TProgressBar;
     laProgress: TTntLabel;
     pmGrid: TtntPopupMenu;
@@ -81,20 +81,20 @@ type
     N1: TtntMenuItem;
     N2: TtntMenuItem;
     spContacts: TTntSplitter;
-    paPassword: TtntPanel;
+    paPassword: THppPanel;
     edPass: TPasswordEdit;
     laPass: TTntLabel;
     ilContacts: TImageList;
-    paContacts: TTntPanel;
+    paContacts: THppPanel;
     lvContacts: TTntListView;
     SendMessage1: TtntMenuItem;
     ReplyQuoted1: TtntMenuItem;
     SaveSelected1: TtntMenuItem;
     SaveDialog: TSaveDialog;
     tiFilter: TTimer;
-    paHistory: TtntPanel;
+    paHistory: THppPanel;
     hg: THistoryGrid;
-    paFilter: TtntPanel;
+    paFilter: THppPanel;
     sbClearFilter: TTntSpeedButton;
     edFilter: THppEdit;
     pbFilter: TPaintBox;
@@ -103,8 +103,8 @@ type
     Bookmark1: TTntMenuItem;
     ToolBar: TTntToolBar;
     tbPassword: TTntToolButton;
-    paAdvanced: TTntPanel;
-    paRange: TTntPanel;
+    paAdvanced: THppPanel;
+    paRange: THppPanel;
     rbAny: TTntRadioButton;
     rbAll: TTntRadioButton;
     rbExact: TTntRadioButton;
@@ -385,6 +385,9 @@ begin
 //  end;
   DesktopFont := True;
   MakeFontsParent(Self);
+
+  DoubleBuffered := True;
+  MakeDoubleBufferedParent(Self);
 
   FormState := gsIdle;
 
