@@ -21,7 +21,7 @@ object fmGlobalSearch: TfmGlobalSearch
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object paClient: TTntPanel
+  object paClient: THppPanel
     Left = 0
     Top = 0
     Width = 551
@@ -34,9 +34,10 @@ object fmGlobalSearch: TfmGlobalSearch
       Left = 157
       Top = 202
       Height = 240
+      ResizeStyle = rsUpdate
       Visible = False
     end
-    object paSearch: TTntPanel
+    object paSearch: THppPanel
       Left = 2
       Top = 32
       Width = 547
@@ -54,6 +55,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Height = 13
         Caption = 'Search for'
         FocusControl = edSearch
+        Transparent = True
       end
       object edSearch: THppEdit
         Left = 70
@@ -79,7 +81,7 @@ object fmGlobalSearch: TfmGlobalSearch
         OnClick = bnSearchClick
       end
     end
-    object paProgress: TTntPanel
+    object paProgress: THppPanel
       Left = 2
       Top = 442
       Width = 547
@@ -101,6 +103,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
         Caption = '-'
+        Transparent = True
       end
       object pb: TProgressBar
         Left = 12
@@ -112,7 +115,7 @@ object fmGlobalSearch: TfmGlobalSearch
         TabOrder = 0
       end
     end
-    object paPassword: TTntPanel
+    object paPassword: THppPanel
       Left = 2
       Top = 156
       Width = 547
@@ -187,7 +190,7 @@ object fmGlobalSearch: TfmGlobalSearch
         OnKeyPress = edPassKeyPress
       end
     end
-    object paContacts: TTntPanel
+    object paContacts: THppPanel
       Left = 2
       Top = 202
       Width = 155
@@ -220,7 +223,7 @@ object fmGlobalSearch: TfmGlobalSearch
         OnSelectItem = lvContactsSelectItem
       end
     end
-    object paHistory: TTntPanel
+    object paHistory: THppPanel
       Left = 160
       Top = 202
       Width = 389
@@ -278,7 +281,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Padding = 4
         ShowHint = True
       end
-      object paFilter: TTntPanel
+      object paFilter: THppPanel
         Left = 0
         Top = 212
         Width = 389
@@ -333,7 +336,7 @@ object fmGlobalSearch: TfmGlobalSearch
       ParentShowHint = False
       ShowHint = True
       TabOrder = 5
-      Transparent = True
+      Transparent = False
       object tbAdvanced: TTntToolButton
         Left = 0
         Top = 0
@@ -421,7 +424,7 @@ object fmGlobalSearch: TfmGlobalSearch
         OnClick = tbEventsFilterClick
       end
     end
-    object paAdvanced: TTntPanel
+    object paAdvanced: THppPanel
       Left = 2
       Top = 64
       Width = 547
@@ -500,7 +503,7 @@ object fmGlobalSearch: TfmGlobalSearch
         TabOrder = 2
       end
     end
-    object paRange: TTntPanel
+    object paRange: THppPanel
       Left = 2
       Top = 110
       Width = 547
@@ -519,6 +522,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Height = 13
         AutoSize = False
         Caption = 'Search messages from'
+        Transparent = True
       end
       object laRange2: TTntLabel
         Left = 223
