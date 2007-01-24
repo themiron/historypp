@@ -652,7 +652,7 @@ type
     function FormatItems(ItemList: array of Integer; Format: WideString): WideString;
     function FormatSelected(const Format: WideString): WideString;
     procedure MakeRangeSelected(FromItem,ToItem: Integer);
-  published
+
     property ShowBottomAligned: Boolean read FShowBottomAligned write FShowBottomAligned;
     property ShowBookmarks: Boolean read FShowBookmarks write FShowBookmarks;
     property MultiSelect: Boolean read FMultiSelect write SetMultiSelect;
@@ -898,7 +898,8 @@ begin
   FRichInline.OnKeyUp := OnInlineOnKeyUp;
   FRichInline.OnMouseDown := OnInlineOnMouseDown;
   FRichInline.OnMouseUp := OnInlineOnMouseUp;
-  //FRichInline.PopupMenu := FpmRichInline;
+
+  FRichInline.Brush.Style := bsClear;
 
   {$ENDIF}
   FCodepage := CP_ACP;
@@ -987,7 +988,6 @@ begin
   {$IFDEF RENDER_RICH}
   // it gets deleted autmagically because FRich.Owner = Self
   // FRich.Free;
-  //FpmRichInline.Free;
   FRichCache.Free;
   {$ENDIF}
   if Assigned(Options) then

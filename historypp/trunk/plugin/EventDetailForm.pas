@@ -286,7 +286,8 @@ begin
 
   DoubleBuffered := True;
   MakeDoubleBufferedParent(Self);
-  EText.DoubleBuffered := False;
+
+  EText.Brush.Style := bsClear;
 
   LoadButtonIcons;
   TranslateForm;
