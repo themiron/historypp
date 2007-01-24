@@ -262,7 +262,8 @@ var
 begin
   DoubleBuffered := Control.DoubleBuffered;
   for i := 0 to Control.ComponentCount - 1 do begin
-    if Control.Components[i] is TWinControl then begin
+    if not (Control.Components[i] is TRichEdit) and
+       (Control.Components[i] is TWinControl) then begin
       TWinControl(Control.Components[i]).DoubleBuffered := DoubleBuffered;
       MakeDoubleBufferedParent(TWinControl(Control.Components[i]));
     end;

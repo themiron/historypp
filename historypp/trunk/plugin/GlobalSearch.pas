@@ -388,6 +388,7 @@ begin
 
   DoubleBuffered := True;
   MakeDoubleBufferedParent(Self);
+  hg.DoubleBuffered := False;
 
   FormState := gsIdle;
 
