@@ -32,3 +32,16 @@
 32 Icon res\gsearch_advanced.ico
 33 Icon res\gsearch_limitrange.ico
 34 Icon res\gsearch_searchprotected.ico
+35 Icon res\event_incoming.ico
+36 Icon res\event_outgoing.ico
+37 Icon res\event_system.ico
+38 Icon res\event_contacts.ico
+39 Icon res\event_sms.ico
+40 Icon res\event_webpager.ico
+41 Icon res\event_eexpress.ico
+42 Icon res\event_status.ico
+43 Icon res\event_smtpsimple.ico
+44 Icon res\event_nick.ico
+45 Icon res\event_avatar.ico
+46 Icon res\event_watrack.ico
+47 Icon res\event_statusmes.ico
