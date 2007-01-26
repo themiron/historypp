@@ -1650,9 +1650,9 @@ begin
   Icon.Handle := CopyIcon(hppIcons[HPP_ICON_GLOBALSEARCH].handle);
   LoadToolbarIcons;
   LoadButtonIcons;
-  pbFilter.Repaint;
   LoadContactsIcons;
-  hg.Repaint;
+  pbFilter.Repaint;
+  //hg.Repaint;
 end;
 
 procedure TfmGlobalSearch.mmHideMenuClick(Sender: TObject);
