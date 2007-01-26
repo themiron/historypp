@@ -951,7 +951,7 @@ begin
   LoadSessionIcons;
   LoadBookIcons;
   pbFilter.Repaint;
-  hg.Repaint;
+  //hg.Repaint;
 end;
 
 procedure THistoryFrm.HMAccChanged(var M: TMessage);

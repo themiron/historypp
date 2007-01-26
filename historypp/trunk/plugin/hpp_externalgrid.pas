@@ -99,7 +99,7 @@ type
     property UseHistoryCodepage: Boolean read FUseHistoryCodepage write SetUseHistoryCodepage;
     function Perform(Msg: Cardinal; WParam, LParam: Longint): Longint;
     procedure HMBookmarkChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
-    procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
+    //procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
     procedure HMEventDeleted(var M: TMessage); message HM_MIEV_EVENTDELETED;
     procedure BeginUpdate;
     procedure EndUpdate;
@@ -491,10 +491,10 @@ begin
     end;
 end;
 
-procedure TExternalGrid.HMIcons2Changed(var M: TMessage);
-begin
-  Grid.Repaint;
-end;
+//procedure TExternalGrid.HMIcons2Changed(var M: TMessage);
+//begin
+//  Grid.Repaint;
+//end;
 
 procedure TExternalGrid.GridSelectRequest(Sender: TObject);
 begin
