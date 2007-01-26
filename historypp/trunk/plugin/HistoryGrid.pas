@@ -168,10 +168,10 @@ type
 
     FItemOptions: TItemOptions;
 
-    FIconMessage: TIcon;
-    FIconFile: TIcon;
-    FIconUrl: TIcon;
-    FIconOther: TIcon;
+    //FIconMessage: TIcon;
+    //FIconFile: TIcon;
+    //FIconUrl: TIcon;
+    //FIconOther: TIcon;
 
     FRTLEnabled: Boolean;
     //FShowAvatars: Boolean;
@@ -210,10 +210,10 @@ type
     procedure SetFontSessHeader(const Value: TFont);
     procedure SetFontMessage(const Value: TFont);
 
-    procedure SetIconOther(const Value: TIcon);
-    procedure SetIconFile(const Value: TIcon);
-    procedure SetIconURL(const Value: TIcon);
-    procedure SetIconMessage(const Value: TIcon);
+    //procedure SetIconOther(const Value: TIcon);
+    //procedure SetIconFile(const Value: TIcon);
+    //procedure SetIconURL(const Value: TIcon);
+    //procedure SetIconMessage(const Value: TIcon);
 
     procedure SetRTLEnabled(const Value: Boolean);
     procedure SetShowIcons(const Value: Boolean);
@@ -238,7 +238,7 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure StartChange;
-    procedure EndChange;
+    procedure EndChange(const Forced: Boolean = False);
     function AddItemOptions: integer;
     function GetItemOptions(Mes: TMessageTypes; out textFont: TFont; out textColor: TColor): integer;
     property OnShowIcons: TOnShowIcons read FOnShowIcons write FOnShowIcons;
@@ -250,10 +250,10 @@ type
 
     property Locked: Boolean read GetLocked;
 
-    property IconOther: TIcon read FIconOther write SetIconOther;
-    property IconFile: TIcon read FIconFile write SetIconFile;
-    property IconUrl: TIcon read FIconUrl write SetIconUrl;
-    property IconMessage: TIcon read FIconMessage write SetIconMessage;
+    //property IconOther: TIcon read FIconOther write SetIconOther;
+    //property IconFile: TIcon read FIconFile write SetIconFile;
+    //property IconUrl: TIcon read FIconUrl write SetIconUrl;
+    //property IconMessage: TIcon read FIconMessage write SetIconMessage;
 
     //property IconHistory: hIcon read FIconHistory write FIconHistory;
     //property IconSearch: hIcon read FIconSearch write FIconSearch;
@@ -1537,7 +1537,7 @@ var
   TimeStamp,HeaderName: WideString;
   OrgRect: TRect;
   TopIconOffset,IconOffset,NickOffset,TimeOffset: Integer;
-  icon: TIcon;
+  //icon: TIcon;
   BackColor: TColor;
   nameFont,timestampFont,textFont: TFont;
   Sel: Boolean;
@@ -1547,6 +1547,7 @@ var
   ic: HICON;
   HeadRect: TRect;
   offset,dtf: Integer;
+  er: PEventRecord;
 begin
   {$IFDEF DEBUG}
   OutputDebugString(PChar('Paint item '+intToStr(Index)+' to screen'));
@@ -1624,22 +1625,27 @@ begin
     end;
 
     if Options.ShowIcons then begin
-      if (mtFile in FItems[Index].MessageType) then
-        Icon := Options.IconFile
+      {if (mtFile in FItems[Index].MessageType) then
+        ic := Options.IconFile.Handle
       else if (mtUrl in FItems[Index].MessageType) then
-        Icon := Options.IconUrl
+        ic := Options.IconUrl.Handle
       else if (mtMessage in FItems[Index].MessageType) then
-        Icon := Options.IconMessage
+        ic := Options.IconMessage.Handle
+      else if (mtOther in FItems[Index].MessageType) then
+        ic := Options.IconOther.Handle;}
+      er := GetMessageRecord(FItems[Index].MessageType);
+      if er.iSkin = -1 then
+        ic := hppIcons[er.i].handle
       else
-        Icon := Options.IconOther;
-      if Icon <> nil then begin
+        ic := skinIcons[er.i].handle;
+      if ic <> 0 then begin
         // canvas. draw here can sometimes draw 32x32 icon (sic!)
         if RTL then begin
-          DrawIconEx(Canvas.Handle,HeadRect.Right-16,HeadRect.Top+TopIconOffset,Icon.Handle,16,16,0,0,DI_NORMAL);
+          DrawIconEx(Canvas.Handle,HeadRect.Right-16,HeadRect.Top+TopIconOffset,ic,16,16,0,0,DI_NORMAL);
           Dec(HeadRect.Right,16+Padding);
         end
         else begin
-          DrawIconEx(Canvas.Handle,HeadRect.Left,HeadRect.Top+TopIconOffset,Icon.Handle,16,16,0,0,DI_NORMAL);
+          DrawIconEx(Canvas.Handle,HeadRect.Left,HeadRect.Top+TopIconOffset,ic,16,16,0,0,DI_NORMAL);
           Inc(HeadRect.Left,16+Padding);
         end;
       end;
@@ -5031,14 +5037,14 @@ begin
   FLocks := 0;
   Changed := 0;
 
-  FIconOther := TIcon.Create;
-  FIconOther.OnChange := FontChanged;
-  FIconFile := TIcon.Create;
-  FIconFile.OnChange := FontChanged;
-  FIconUrl := TIcon.Create;
-  FIconUrl.OnChange := FontChanged;
-  FIconMessage := TIcon.Create;
-  FIconMessage.OnChange := FontChanged;
+  //FIconOther := TIcon.Create;
+  //FIconOther.OnChange := FontChanged;
+  //FIconFile := TIcon.Create;
+  //FIconFile.OnChange := FontChanged;
+  //FIconUrl := TIcon.Create;
+  //FIconUrl.OnChange := FontChanged;
+  //FIconMessage := TIcon.Create;
+  //FIconMessage.OnChange := FontChanged;
 
   FFontContact := TFont.Create;
   FFontContact.OnChange := FontChanged;
@@ -5084,10 +5090,10 @@ begin
   FFontOutgoingTimestamp.Free;
   FFontSessHeader.Free;
   FFontMessage.Free;
-  FIconUrl.Free;
-  FIconMessage.Free;
-  FIconFile.Free;
-  FIconOther.Free;
+  //FIconUrl.Free;
+  //FIconMessage.Free;
+  //FIconFile.Free;
+  //FIconOther.Free;
   for i := 0 to Length(FItemOptions) - 1 do begin
     FItemOptions[i].textFont.Free;
   end;
@@ -5109,10 +5115,11 @@ begin
   Changed := 0;
 end;
 
-procedure TGridOptions.EndChange;
+procedure TGridOptions.EndChange(const Forced: Boolean = False);
 begin
   if FLocks = 0 then exit;
   Dec(FLocks);
+  if Forced then Inc(Changed);
   if (FLocks = 0) and (Changed > 0) then DoChange;
 end;
 
@@ -5225,33 +5232,33 @@ begin
   DoChange;
 end;
 
-procedure TGridOptions.SetIconOther(const Value: TIcon);
-begin
-FIconOther.Assign(Value);
-FIconOther.OnChange := FontChanged;
-DoChange;
-end;
+//procedure TGridOptions.SetIconOther(const Value: TIcon);
+//begin
+//FIconOther.Assign(Value);
+//FIconOther.OnChange := FontChanged;
+//DoChange;
+//end;
 
-procedure TGridOptions.SetIconFile(const Value: TIcon);
-begin
-FIconFile.Assign(Value);
-FIconFile.OnChange := FontChanged;
-DoChange;
-end;
+//procedure TGridOptions.SetIconFile(const Value: TIcon);
+//begin
+//FIconFile.Assign(Value);
+//FIconFile.OnChange := FontChanged;
+//DoChange;
+//end;
 
-procedure TGridOptions.SetIconMessage(const Value: TIcon);
-begin
-FIconMessage.Assign(Value);
-FIconMessage.OnChange := FontChanged;
-DoChange;
-end;
+//procedure TGridOptions.SetIconMessage(const Value: TIcon);
+//begin
+//FIconMessage.Assign(Value);
+//FIconMessage.OnChange := FontChanged;
+//DoChange;
+//end;
 
-procedure TGridOptions.SetIconUrl(const Value: TIcon);
-begin
-FIconUrl.Assign(Value);
-FIconUrl.OnChange := FontChanged;
-DoChange;
-end;
+//procedure TGridOptions.SetIconUrl(const Value: TIcon);
+//begin
+//FIconUrl.Assign(Value);
+//FIconUrl.OnChange := FontChanged;
+//DoChange;
+//end;
 
 procedure TGridOptions.SetShowIcons(const Value: Boolean);
 begin

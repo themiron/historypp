@@ -35,8 +35,10 @@ uses
 type
 
   ThppIntIconsRec = record
-    name: PChar;
     handle: hIcon;
+    case boolean of
+      true:  (name: PChar);
+      false: (id: SmallInt);
   end;
 
   ThppIconsRec = record
@@ -44,7 +46,6 @@ type
     desc: PChar;
     group: PChar;
     i: shortint;
-    handle: hIcon;
   end;
 
   ThppFontType = set of (hppFont, hppColor);
@@ -67,82 +68,45 @@ const
   DEFFORMAT_REPLYQUOTEDTEXT = '%quot_selmes%\n';
   DEFFORMAT_DATETIME        = 'c'; // ShortDateFormat + LongTimeFormat
 
-const
-
-  HPP_ICON_CONTACTHISTORY    = 0;
-  HPP_ICON_GLOBALSEARCH      = 1;
-  HPP_ICON_SESS_DIVIDER      = 2;
-  HPP_ICON_SESSION           = 3;
-  HPP_ICON_SESS_SUMMER       = 4;
-  HPP_ICON_SESS_AUTUMN       = 5;
-  HPP_ICON_SESS_WINTER       = 6;
-  HPP_ICON_SESS_SPRING       = 7;
-  HPP_ICON_SESS_YEAR         = 8;
-  HPP_ICON_HOTFILTER         = 9;
-  HPP_ICON_HOTFILTERWAIT     = 10;
-  HPP_ICON_SEARCH_ALLRESULTS = 11;
-  HPP_ICON_TOOL_SAVEALL      = 12;
-  HPP_ICON_HOTSEARCH         = 13;
-  HPP_ICON_SEARCHUP          = 14;
-  HPP_ICON_SEARCHDOWN        = 15;
-  HPP_ICON_TOOL_DELETEALL    = 16;
-  HPP_ICON_TOOL_DELETE       = 17;
-  HPP_ICON_TOOL_SESSIONS     = 18;
-  HPP_ICON_TOOL_SAVE         = 19;
-  HPP_ICON_TOOL_COPY         = 20;
-  HPP_ICON_SEARCH_ENDOFPAGE  = 21;
-  HPP_ICON_SEARCH_NOTFOUND   = 22;
-  HPP_ICON_HOTFILTERCLEAR    = 23;
-  HPP_ICON_SESS_HIDE         = 24;
-  HPP_ICON_DROPDOWNARROW     = 25;
-  HPP_ICON_CONTACDETAILS     = 26;
-  HPP_ICON_CONTACTMENU       = 27;
-  HPP_ICON_BOOKMARK          = 28;
-  HPP_ICON_BOOKMARK_ON       = 29;
-  HPP_ICON_BOOKMARK_OFF      = 30;
-  HPP_ICON_SEARCHADVANCED    = 31;
-  HPP_ICON_SEARCHRANGE       = 32;
-  HPP_ICON_SEARCHPROTECTED   = 33;
-
-  hppIcons : array[0..33] of ThppIconsRec = (
-    (name:'historypp_01'; desc:'Contact history'; group: 'Main'; i:HPP_ICON_CONTACTHISTORY; handle:0),
-    (name:'historypp_02'; desc:'History search'; group: 'Main'; i:HPP_ICON_GLOBALSEARCH; handle:0),
-    (name:'historypp_03'; desc:'Conversation divider'; group: 'Conversations'; i:HPP_ICON_SESS_DIVIDER; handle:0),
-    (name:'historypp_04'; desc:'Conversation icon'; group: 'Conversations'; i:HPP_ICON_SESSION; handle:0),
-    (name:'historypp_05'; desc:'Conversation summer'; group: 'Conversations'; i:HPP_ICON_SESS_SUMMER; handle:0),
-    (name:'historypp_06'; desc:'Conversation autumn'; group: 'Conversations'; i:HPP_ICON_SESS_AUTUMN; handle:0),
-    (name:'historypp_07'; desc:'Conversation winter'; group: 'Conversations'; i:HPP_ICON_SESS_WINTER; handle:0),
-    (name:'historypp_08'; desc:'Conversation spring'; group: 'Conversations'; i:HPP_ICON_SESS_SPRING; handle:0),
-    (name:'historypp_09'; desc:'Conversation year'; group: 'Conversations'; i:HPP_ICON_SESS_YEAR; handle:0),
-    (name:'historypp_10'; desc:'Filter'; group: 'Toolbar'; i:HPP_ICON_HOTFILTER; handle:0),
-    (name:'historypp_11'; desc:'In-place filter wait'; group: 'Search panel'; i:HPP_ICON_HOTFILTERWAIT; handle:0),
-    (name:'historypp_12'; desc:'Search All Results'; group: 'Main'; i:HPP_ICON_SEARCH_ALLRESULTS; handle:0),
-    (name:'historypp_13'; desc:'Save All'; group: 'Toolbar'; i:HPP_ICON_TOOL_SAVEALL; handle:0),
-    (name:'historypp_14'; desc:'Search'; group: 'Toolbar'; i:HPP_ICON_HOTSEARCH; handle:0),
-    (name:'historypp_15'; desc:'Search Up'; group: 'Search panel'; i:HPP_ICON_SEARCHUP; handle:0),
-    (name:'historypp_16'; desc:'Search Down'; group: 'Search panel'; i:HPP_ICON_SEARCHDOWN; handle:0),
-    (name:'historypp_17'; desc:'Delete All'; group: 'Toolbar'; i:HPP_ICON_TOOL_DELETEALL; handle:0),
-    (name:'historypp_18'; desc:'Delete'; group: 'Toolbar'; i:HPP_ICON_TOOL_DELETE; handle:0),
-    (name:'historypp_19'; desc:'Conversations'; group: 'Toolbar'; i:HPP_ICON_TOOL_SESSIONS; handle:0),
-    (name:'historypp_20'; desc:'Save'; group: 'Toolbar'; i:HPP_ICON_TOOL_SAVE; handle:0),
-    (name:'historypp_21'; desc:'Copy'; group: 'Toolbar'; i:HPP_ICON_TOOL_COPY; handle:0),
-    (name:'historypp_22'; desc:'End of page'; group: 'Search panel'; i:HPP_ICON_SEARCH_ENDOFPAGE; handle:0),
-    (name:'historypp_23'; desc:'Phrase not found'; group: 'Search panel'; i:HPP_ICON_SEARCH_NOTFOUND; handle:0),
-    (name:'historypp_24'; desc:'Clear in-place filter'; group: 'Search panel'; i:HPP_ICON_HOTFILTERCLEAR; handle:0),
-    (name:'historypp_25'; desc:'Conversation hide'; group: 'Conversations'; i:HPP_ICON_SESS_HIDE; handle:0),
-    (name:'historypp_26'; desc:'Drop down arrow'; group: 'Toolbar'; i:HPP_ICON_DROPDOWNARROW; handle:0),
-    (name:'historypp_27'; desc:'User Details'; group: 'Toolbar'; i:HPP_ICON_CONTACDETAILS; handle:0),
-    (name:'historypp_28'; desc:'User Menu'; group: 'Toolbar'; i:HPP_ICON_CONTACTMENU; handle:0),
-    (name:'historypp_29'; desc:'Bookmarks'; group: 'Toolbar'; i:HPP_ICON_BOOKMARK; handle:0),
-    (name:'historypp_30'; desc:'Bookmark enabled'; group: 'Main'; i:HPP_ICON_BOOKMARK_ON; handle:0),
-    (name:'historypp_31'; desc:'Bookmark disabled'; group: 'Main'; i:HPP_ICON_BOOKMARK_OFF; handle:0),
-    (name:'historypp_32'; desc:'Advanced Search Options'; group: 'Toolbar'; i:HPP_ICON_SEARCHADVANCED; handle:0),
-    (name:'historypp_33'; desc:'Limit Search Range'; group: 'Toolbar'; i:HPP_ICON_SEARCHRANGE; handle:0),
-    (name:'historypp_34'; desc:'Search Protected Contacts'; group: 'Toolbar'; i:HPP_ICON_SEARCHPROTECTED; handle:0)
+  hppIconsDefs : array[0..33] of ThppIconsRec = (
+    (name:'historypp_01'; desc:'Contact history'; group: 'Main'; i:HPP_ICON_CONTACTHISTORY),
+    (name:'historypp_02'; desc:'History search'; group: 'Main'; i:HPP_ICON_GLOBALSEARCH),
+    (name:'historypp_03'; desc:'Conversation divider'; group: 'Conversations'; i:HPP_ICON_SESS_DIVIDER),
+    (name:'historypp_04'; desc:'Conversation icon'; group: 'Conversations'; i:HPP_ICON_SESSION),
+    (name:'historypp_05'; desc:'Conversation summer'; group: 'Conversations'; i:HPP_ICON_SESS_SUMMER),
+    (name:'historypp_06'; desc:'Conversation autumn'; group: 'Conversations'; i:HPP_ICON_SESS_AUTUMN),
+    (name:'historypp_07'; desc:'Conversation winter'; group: 'Conversations'; i:HPP_ICON_SESS_WINTER),
+    (name:'historypp_08'; desc:'Conversation spring'; group: 'Conversations'; i:HPP_ICON_SESS_SPRING),
+    (name:'historypp_09'; desc:'Conversation year'; group: 'Conversations'; i:HPP_ICON_SESS_YEAR),
+    (name:'historypp_10'; desc:'Filter'; group: 'Toolbar'; i:HPP_ICON_HOTFILTER),
+    (name:'historypp_11'; desc:'In-place filter wait'; group: 'Search panel'; i:HPP_ICON_HOTFILTERWAIT),
+    (name:'historypp_12'; desc:'Search All Results'; group: 'Main'; i:HPP_ICON_SEARCH_ALLRESULTS),
+    (name:'historypp_13'; desc:'Save All'; group: 'Toolbar'; i:HPP_ICON_TOOL_SAVEALL),
+    (name:'historypp_14'; desc:'Search'; group: 'Toolbar'; i:HPP_ICON_HOTSEARCH),
+    (name:'historypp_15'; desc:'Search Up'; group: 'Search panel'; i:HPP_ICON_SEARCHUP),
+    (name:'historypp_16'; desc:'Search Down'; group: 'Search panel'; i:HPP_ICON_SEARCHDOWN),
+    (name:'historypp_17'; desc:'Delete All'; group: 'Toolbar'; i:HPP_ICON_TOOL_DELETEALL),
+    (name:'historypp_18'; desc:'Delete'; group: 'Toolbar'; i:HPP_ICON_TOOL_DELETE),
+    (name:'historypp_19'; desc:'Conversations'; group: 'Toolbar'; i:HPP_ICON_TOOL_SESSIONS),
+    (name:'historypp_20'; desc:'Save'; group: 'Toolbar'; i:HPP_ICON_TOOL_SAVE),
+    (name:'historypp_21'; desc:'Copy'; group: 'Toolbar'; i:HPP_ICON_TOOL_COPY),
+    (name:'historypp_22'; desc:'End of page'; group: 'Search panel'; i:HPP_ICON_SEARCH_ENDOFPAGE),
+    (name:'historypp_23'; desc:'Phrase not found'; group: 'Search panel'; i:HPP_ICON_SEARCH_NOTFOUND),
+    (name:'historypp_24'; desc:'Clear in-place filter'; group: 'Search panel'; i:HPP_ICON_HOTFILTERCLEAR),
+    (name:'historypp_25'; desc:'Conversation hide'; group: 'Conversations'; i:HPP_ICON_SESS_HIDE),
+    (name:'historypp_26'; desc:'Drop down arrow'; group: 'Toolbar'; i:HPP_ICON_DROPDOWNARROW),
+    (name:'historypp_27'; desc:'User Details'; group: 'Toolbar'; i:HPP_ICON_CONTACDETAILS),
+    (name:'historypp_28'; desc:'User Menu'; group: 'Toolbar'; i:HPP_ICON_CONTACTMENU),
+    (name:'historypp_29'; desc:'Bookmarks'; group: 'Toolbar'; i:HPP_ICON_BOOKMARK),
+    (name:'historypp_30'; desc:'Bookmark enabled'; group: 'Main'; i:HPP_ICON_BOOKMARK_ON),
+    (name:'historypp_31'; desc:'Bookmark disabled'; group: 'Main'; i:HPP_ICON_BOOKMARK_OFF),
+    (name:'historypp_32'; desc:'Advanced Search Options'; group: 'Toolbar'; i:HPP_ICON_SEARCHADVANCED),
+    (name:'historypp_33'; desc:'Limit Search Range'; group: 'Toolbar'; i:HPP_ICON_SEARCHRANGE),
+    (name:'historypp_34'; desc:'Search Protected Contacts'; group: 'Toolbar'; i:HPP_ICON_SEARCHPROTECTED)
   );
 
   hppIntIcons: array[0..0] of ThppIntIconsRec = (
-    (name:'z_password_protect'; handle: 0)
+    (handle: 0; name:'z_password_protect')
   );
 
   hppFontItems: array[0..25] of ThppFontsRec = (
@@ -183,6 +147,8 @@ var
   SmileyAddEnabled: Boolean;
   MathModuleEnabled: Boolean;
   ShowHistoryCount: Boolean;
+  hppIcons: array of ThppIntIconsRec;
+  skinIcons: array of ThppIntIconsRec;
 
 procedure LoadGridOptions;
 procedure SaveGridOptions;
@@ -241,7 +207,7 @@ begin
   WriteDBBool(hppDBName,'InlineTextFormatting',Value);
 end;
 
-function LoadIconFromDB(ID: Integer; Icon: TIcon): Boolean;
+{function LoadIconFromDB(ID: Integer; Icon: TIcon): Boolean;
 var
   hic: HIcon;
 begin
@@ -252,18 +218,30 @@ begin
     Icon.Handle := hic;
     Result := True;
   end;
-end;
+end;}
 
 procedure LoadIcons;
+var
+  i: Integer;
+  ic: hIcon;
+  Changed: Boolean;
 begin
+  Changed := False;
   GridOptions.StartChange;
   try
-    LoadIconFromDB(SKINICON_EVENT_MESSAGE,GridOptions.IconMessage);
-    LoadIconFromDB(SKINICON_EVENT_URL,GridOptions.IconUrl);
-    LoadIconFromDB(SKINICON_EVENT_FILE,GridOptions.IconFile);
-    LoadIconFromDB(SKINICON_OTHER_MIRANDA,GridOptions.IconOther);
+    //LoadIconFromDB(SKINICON_EVENT_MESSAGE,GridOptions.IconMessage);
+    //LoadIconFromDB(SKINICON_EVENT_URL,GridOptions.IconUrl);
+    //LoadIconFromDB(SKINICON_EVENT_FILE,GridOptions.IconFile);
+    //LoadIconFromDB(SKINICON_OTHER_MIRANDA,GridOptions.IconOther);
+    for i := 0 to High(skinIcons) do begin
+      ic := LoadSkinnedIcon(skinIcons[i].id);
+      if skinIcons[i].handle <> ic then begin
+        skinIcons[i].handle := ic;
+        Changed := True;
+      end;
+    end;
   finally
-    GridOptions.EndChange;
+    GridOptions.EndChange(Changed);
   end;
 end;
 
@@ -279,21 +257,35 @@ procedure LoadIcons2;
 var
   i: integer;
   NeedIcons,CountIconsDll: Integer;
-  SmallIcons: array of HICON;
+  SmallIcons: array of hIcon;
+  ic: hIcon;
+  Changed: Boolean;
 begin
-  if IcoLibEnabled then begin
-    for i := 0 to High(hppIcons) do
-      hppIcons[i].handle := PluginLink.CallService(MS_SKIN2_GETICON,0,longint(hppIcons[i].name));
-  end
-  else begin
-    CountIconsDll := ExtractIconEx(PChar(hppIconPack),-1,HICON(nil^),HICON(nil^),0);
-    NeedIcons := Min(Length(hppIcons),CountIconsDll);
-    if NeedIcons <= 0 then exit;
-    SetLength(SmallIcons,NeedIcons);
-    CountIconsDll := ExtractIconEx(PChar(hppIconPack),0,HICON(nil^),SmallIcons[0],NeedIcons);
-    for i := 0 to CountIconsDll - 1 do
-      hppIcons[i].handle := SmallIcons[i];
-    Finalize(SmallIcons);
+  Changed := False;
+  GridOptions.StartChange;
+  try
+    if IcoLibEnabled then begin
+      for i := 0 to High(hppIcons) do begin
+        ic := PluginLink.CallService(MS_SKIN2_GETICON,0,LPARAM(hppIcons[i].name));
+        if hppIcons[i].handle <> ic then begin
+          hppIcons[i].handle := ic;
+          Changed := True;
+        end;
+      end;
+    end else begin
+      CountIconsDll := ExtractIconEx(PChar(hppIconPack),-1,HICON(nil^),HICON(nil^),0);
+      NeedIcons := Min(Length(hppIcons),CountIconsDll);
+      if NeedIcons > 0 then begin
+        SetLength(SmallIcons,NeedIcons);
+        CountIconsDll := ExtractIconEx(PChar(hppIconPack),0,HICON(nil^),SmallIcons[0],NeedIcons);
+        for i := 0 to CountIconsDll - 1 do
+          hppIcons[i].handle := SmallIcons[i];
+        Finalize(SmallIcons);
+        Changed := True;
+      end;
+    end;
+  finally
+    GridOptions.EndChange(Changed);
   end;
 end;
 
@@ -419,7 +411,10 @@ function FindIconsDll: string;
 var
   hppIconsDir: string;
   str: WideString;
+  CountIconsDll: Integer;
+  DoCheck: Boolean;
 begin
+  DoCheck := True;
   hppIconsDir := ExpandFileName(hppPluginsDir+'..\Icons\');
   if FileExists(hppIconsDir+hppIPName) then
     Result := hppIconsDir+hppIPName
@@ -427,14 +422,23 @@ begin
   if FileExists(hppPluginsDir+hppIPName) then
     Result := hppPluginsDir+hppIPName
   else begin
+    DoCheck := False;
     Result := hppPluginsDir+hppDllName;
-    str :=  'Cannot load icon pack '+hppIPName+' from:'+#13#10+
+    str := 'Cannot load icon pack ('+hppIPName+') from:'+#13#10+
             #13#10+
             hppIconsDir+#13#10+
             hppPluginsDir+#13#10+
             #13#10+
             'No icons will be shown.';
     hppMessageBox(0,str,hppName+' Error',MB_ICONERROR or MB_OK);
+  end;
+  if DoCheck then begin
+    CountIconsDll := ExtractIconEx(PChar(Result),-1,HICON(nil^),HICON(nil^),0);
+    if CountIconsDll < HppIconsCount then begin
+      str := 'You are using old icon pack ('+hppIPName+')'+#13#10+
+             'This can cause missing icons, so update the icon pack';
+      hppMessageBox(0,str,hppName+' Warning',MB_ICONWARNING or MB_OK);
+    end;
   end;
 end;
 
@@ -444,25 +448,42 @@ var
   defFont : FontSettings;
   //sarc: SMADD_REGCAT;
   i: integer;
+  mt: TMessageType;
 begin
+  hppIconPack := FindIconsDll;
   // Register in IcoLib
   IcoLibEnabled := Boolean(PluginLink.ServiceExists(MS_SKIN2_ADDICON));
-  hppIconPack := FindIconsDll;
   if IcoLibEnabled then begin
     ZeroMemory(@sid,SizeOf(sid));
     sid.cbSize := SizeOf(sid);
     sid.pszDefaultFile := PChar(hppIconPack);
-    for i := 0 to High(hppIcons) do begin
-      sid.pszName := hppIcons[i].name;
-      sid.pszDescription := translate(hppIcons[i].desc{TRANSLATE-IGNORE});
-      if StrLen(hppIcons[i].group) = 0 then
+    for i := 0 to High(hppIconsDefs) do begin
+      hppIcons[hppIconsDefs[i].i].name := hppIconsDefs[i].name;
+      sid.pszName := hppIconsDefs[i].name;
+      sid.pszDescription := Translate(hppIconsDefs[i].desc{TRANSLATE-IGNORE});
+      if StrLen(hppIconsDefs[i].group) = 0 then
         sid.pszSection := hppName
       else
-        sid.pszSection := PChar(hppName+'/'+translate(hppIcons[i].group){TRANSLATE-IGNORE});
-      sid.iDefaultIndex := hppIcons[i].i;
+        sid.pszSection := PChar(hppName+'/'+Translate(hppIconsDefs[i].group){TRANSLATE-IGNORE});
+      sid.iDefaultIndex := hppIconsDefs[i].i;
       PluginLink.CallService(MS_SKIN2_ADDICON,0,LPARAM(@sid));
     end;
   end;
+  for mt := Low(EventRecords) to High(EventRecords) do begin
+    if mt = mtUnknown then continue;
+    if EventRecords[mt].iSkin = -1 then begin
+      if IcoLibEnabled then begin
+        hppIcons[EventRecords[mt].i].name := EventRecords[mt].iName;
+        sid.pszName := hppIcons[EventRecords[mt].i].name;
+        sid.pszDescription := Translate(PChar(WideToAnsiString(EventRecords[mt].Name,hppCodepage)){TRANSLATE-IGNORE});
+        sid.pszSection := PChar(hppName+'/'+Translate('Events'){TRANSLATE-IGNORE});
+        sid.iDefaultIndex := EventRecords[mt].i;
+        PluginLink.CallService(MS_SKIN2_ADDICON,0,LPARAM(@sid));
+      end;
+    end else
+      skinIcons[EventRecords[mt].i].id := EventRecords[mt].iSkin;
+  end;
+
   // Register in FontService
   FontServiceEnabled := Boolean(PluginLink.ServiceExists(MS_FONT_GET));
   if FontServiceEnabled then begin
@@ -499,16 +520,18 @@ initialization
   GridOptions := TGridOptions.Create;
   GridOptions.OnShowIcons := OnShowIcons;
   GridOptions.OnTextFormatting := OnTextFormatting;
+  SetLength(hppIcons,HppIconsCount);
+  SetLength(skinIcons,SkinIconsCount);
 
 finalization
 
+  for i := 0 to High(hppIntIcons) do
+    if hppIntIcons[i].handle <> 0 then DestroyIcon(hppIntIcons[i].handle);
   if not IcoLibEnabled then
     for i := 0 to High(hppIcons) do
-      if hppIcons[i].handle <> 0 then
-        DestroyIcon(hppIcons[i].handle);
-  for i := 0 to High(hppIntIcons) do
-    if hppIntIcons[i].handle <> 0 then
-        DestroyIcon(hppIntIcons[i].handle);
+      if hppIcons[i].handle <> 0 then DestroyIcon(hppIcons[i].handle);
+  Finalize(hppIcons);
+  Finalize(skinIcons);
 
   GridOptions.Free;
 
