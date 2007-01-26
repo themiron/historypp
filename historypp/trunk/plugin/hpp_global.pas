@@ -75,9 +75,13 @@ type
     name: WideString;
   end;
 
+  PEventRecord = ^TEventRecord;
   TEventRecord = record
     Name: WideString;
     XML: String;
+    i: SmallInt;
+    iName: PChar;
+    iSkin: SmallInt;
   end;
 
   TWideStrArray = array of WideString;
@@ -127,6 +131,67 @@ const
     (cp: 1258; lid: $042A; name: 'Vietnamese'),
     (cp: 1361; lid: $0412; name: 'Korean (Johab)'));
 
+const
+
+  HPP_ICON_CONTACTHISTORY    = 0;
+  HPP_ICON_GLOBALSEARCH      = 1;
+  HPP_ICON_SESS_DIVIDER      = 2;
+  HPP_ICON_SESSION           = 3;
+  HPP_ICON_SESS_SUMMER       = 4;
+  HPP_ICON_SESS_AUTUMN       = 5;
+  HPP_ICON_SESS_WINTER       = 6;
+  HPP_ICON_SESS_SPRING       = 7;
+  HPP_ICON_SESS_YEAR         = 8;
+  HPP_ICON_HOTFILTER         = 9;
+  HPP_ICON_HOTFILTERWAIT     = 10;
+  HPP_ICON_SEARCH_ALLRESULTS = 11;
+  HPP_ICON_TOOL_SAVEALL      = 12;
+  HPP_ICON_HOTSEARCH         = 13;
+  HPP_ICON_SEARCHUP          = 14;
+  HPP_ICON_SEARCHDOWN        = 15;
+  HPP_ICON_TOOL_DELETEALL    = 16;
+  HPP_ICON_TOOL_DELETE       = 17;
+  HPP_ICON_TOOL_SESSIONS     = 18;
+  HPP_ICON_TOOL_SAVE         = 19;
+  HPP_ICON_TOOL_COPY         = 20;
+  HPP_ICON_SEARCH_ENDOFPAGE  = 21;
+  HPP_ICON_SEARCH_NOTFOUND   = 22;
+  HPP_ICON_HOTFILTERCLEAR    = 23;
+  HPP_ICON_SESS_HIDE         = 24;
+  HPP_ICON_DROPDOWNARROW     = 25;
+  HPP_ICON_CONTACDETAILS     = 26;
+  HPP_ICON_CONTACTMENU       = 27;
+  HPP_ICON_BOOKMARK          = 28;
+  HPP_ICON_BOOKMARK_ON       = 29;
+  HPP_ICON_BOOKMARK_OFF      = 30;
+  HPP_ICON_SEARCHADVANCED    = 31;
+  HPP_ICON_SEARCHRANGE       = 32;
+  HPP_ICON_SEARCHPROTECTED   = 33;
+
+  HPP_ICON_EVENT_INCOMING    = 34;
+  HPP_ICON_EVENT_OUTGOING    = 35;
+  HPP_ICON_EVENT_SYSTEM      = 36;
+  HPP_ICON_EVENT_CONTACTS    = 37;
+  HPP_ICON_EVENT_SMS         = 38;
+  HPP_ICON_EVENT_WEBPAGER    = 39;
+  HPP_ICON_EVENT_EEXPRESS    = 40;
+  HPP_ICON_EVENT_STATUS      = 41;
+  HPP_ICON_EVENT_SMTPSIMPLE  = 42;
+  HPP_ICON_EVENT_NICK        = 43;
+  HPP_ICON_EVENT_AVATAR      = 44;
+  HPP_ICON_EVENT_WATRACK     = 45;
+  HPP_ICON_EVENT_STATUSMES   = 46;
+
+  HppIconsCount              = 47;
+
+  HPP_SKIN_EVENT_MESSAGE     = 0;
+  HPP_SKIN_EVENT_URL         = 1;
+  HPP_SKIN_EVENT_FILE        = 2;
+  HPP_SKIN_OTHER_MIRANDA     = 3;
+
+  SkinIconsCount             = 4;
+
+
 var
   hppVersionStr: String;
   //hppVersionPrefix: String;
@@ -139,25 +204,28 @@ var
   hppPluginsDir: String;
   hppDllName: String;
 
+const
+
   EventRecords: array[TMessageType] of TEventRecord = (
-    (Name:'Unknown';XML:''),
-    (Name:'Incoming events';XML:''),
-    (Name:'Outgoing events';XML:''),
-    (Name:'Message';XML:'MSG'),
-    (Name:'Link';XML:'URL'),
-    (Name:'File transfer';XML:'FILE'),
-    (Name:'System message';XML:'SYS'),
-    (Name:'Contacts';XML:'ICQCNT'),
-    (Name:'SMS message';XML:'SMS'),
-    (Name:'Webpager message';XML:'ICQWP'),
-    (Name:'EMail Express message';XML:'ICQEX'),
-    (Name:'Status changes';XML:'STATUSCNG'),
-    (Name:'SMTP Simple Email';XML:'SMTP'),
-    (Name:'Other events (unknown)';XML:'OTHER'),
-    (Name:'Nick changes';XML:'NICKCNG'),
-    (Name:'Avatar changes';XML:'AVACNG'),
-    (Name:'WATrack notify';XML:'WATRACK'),
-    (Name:'Status message changes';XML:'STATUSMSGCHG'));
+    (Name:'Unknown'; XML:''; i:-1),
+    (Name:'Incoming events'; XML:''; i:HPP_ICON_EVENT_INCOMING; iName:'hppevn_inc'; iSkin:-1),
+    (Name:'Outgoing events'; XML:''; i:HPP_ICON_EVENT_OUTGOING; iName:'hppevn_out'; iSkin:-1),
+    (Name:'Message'; XML:'MSG'; i:HPP_SKIN_EVENT_MESSAGE; iSkin: SKINICON_EVENT_MESSAGE),
+    (Name:'Link'; XML:'URL'; i:HPP_SKIN_EVENT_URL; iSkin:SKINICON_EVENT_URL),
+    (Name:'File transfer'; XML:'FILE'; i:HPP_SKIN_EVENT_FILE; iSkin:SKINICON_EVENT_FILE),
+    (Name:'System message'; XML:'SYS'; i:HPP_ICON_EVENT_SYSTEM; iName:'hppevn_sys'; iSkin:-1),
+    (Name:'Contacts'; XML:'ICQCNT'; i:HPP_ICON_EVENT_CONTACTS; iName:'hppevn_icqcnt'; iSkin:-1),
+    (Name:'SMS message'; XML:'SMS'; i:HPP_ICON_EVENT_SMS; iName:'hppevn_sms'; iSkin:-1),
+    (Name:'Webpager message'; XML:'ICQWP'; i:HPP_ICON_EVENT_WEBPAGER; iName:'hppevn_icqwp'; iSkin:-1),
+    (Name:'EMail Express message'; XML:'ICQEX'; i:HPP_ICON_EVENT_EEXPRESS; iName:'hppevn_icqex'; iSkin:-1),
+    (Name:'Status changes'; XML:'STATUSCNG'; i:HPP_ICON_EVENT_STATUS; iName:'hppevn_status'; iSkin:-1),
+    (Name:'SMTP Simple Email'; XML:'SMTP'; i:HPP_ICON_EVENT_SMTPSIMPLE; iName:'hppevn_smtp'; iSkin:-1),
+    (Name:'Other events (unknown)'; XML:'OTHER'; i:HPP_SKIN_OTHER_MIRANDA; iSkin:SKINICON_OTHER_MIRANDA),
+    (Name:'Nick changes'; XML:'NICKCNG'; i:HPP_ICON_EVENT_NICK; iName:'hppevn_nick'; iSkin:-1),
+    (Name:'Avatar changes'; XML:'AVACNG'; i:HPP_ICON_EVENT_AVATAR; iName:'hppevn_avatar'; iSkin:-1),
+    (Name:'WATrack notify'; XML:'WATRACK'; i:HPP_ICON_EVENT_WATRACK; iName:'hppevn_watrack'; iSkin:-1),
+    (Name:'Status message changes'; XML:'STATUSMSGCHG'; i:HPP_ICON_EVENT_STATUSMES; iName:'hppevn_statuschng'; iSkin:-1)
+  );
 
 {$I m_historypp.inc}
 
@@ -170,7 +238,7 @@ function GetLCIDfromCodepage(Codepage: Cardinal): LCID;
 procedure CopyToClip(WideStr: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP; Clear: Boolean = True);
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
 function URLEncode(const ASrc: string): string;
-function GetMessageRecord(MesType: TMessageTypes): TEventRecord;
+function GetMessageRecord(MesType: TMessageTypes): PEventRecord;
 function MakeTextXMLedA(Text: String): String;
 function MakeTextXMLedW(Text: WideString): WideString;
 
@@ -353,7 +421,7 @@ begin
   end;
 end;
 
-function GetMessageRecord(MesType: TMessageTypes): TEventRecord;
+function GetMessageRecord(MesType: TMessageTypes): PEventRecord;
 var
   mt: TMessageType;
 begin
@@ -362,11 +430,11 @@ begin
   exclude(MesType,mtOther);
   for mt := Low(EventRecords) to High(EventRecords) do begin
     if mt in MesType then begin
-      Result := EventRecords[mt];
+      Result := @EventRecords[mt];
       exit;
     end;
   end;
-  Result := EventRecords[mtOther];
+  Result := @EventRecords[mtOther];
 end;
 
 function MakeTextXMLedA(Text: String): String;
