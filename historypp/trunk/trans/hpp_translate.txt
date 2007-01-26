@@ -504,3 +504,7 @@ WATrack: request denied
 ;; hpp_externalgrid.trans.txt file
 
 ;; Text found in ..\plugin\hpp_externalgrid.pas:
+
+;; hpp_options.trans.txt file
+
+;; Text found in ..\plugin\hpp_options.pas:
