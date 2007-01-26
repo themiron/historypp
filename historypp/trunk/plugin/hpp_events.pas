@@ -55,7 +55,8 @@ const
   EVENTTYPE_NICKNAMECHANGE      = 9001;   // from prescuma
   EVENTTYPE_STATUSMESSAGECHANGE = 9002;   // from prescuma
   EVENTTYPE_AVATARCHANGE        = 9003;   // from prescuma
-  EVENTTYPE_CONTACTLEFTCHANNEL  = 9004;   // from tabSRMM
+  EVENTTYPE_CONTACTLEFTCHANNEL  = 9004;   // from prescuma
+  EVENTTYPE_VOICE_CALL          = 8739;   // from prescuma
 
 // General timstamp function
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;
@@ -114,7 +115,7 @@ const
 
 var
 
-  EventTable: array[0..23] of TEventTableItem = (
+  EventTable: array[0..24] of TEventTableItem = (
     // must be the first item in array for unknown events
     (EventType: MaxWord; MessageType: mtOther; TextFunction: GetEventTextForOther),
     // events definitions
@@ -140,7 +141,8 @@ var
     (EventType: EVENTTYPE_CONTACTLEFTCHANNEL; MessageType: mtStatus; TextFunction: GetEventTextForMessage),
     (EventType: EVENTTYPE_WAT_REQUEST; MessageType: mtWATrack; TextFunction: GetEventTextWATrackRequest),
     (EventType: EVENTTYPE_WAT_ANSWER; MessageType: mtWATrack; TextFunction: GetEventTextWATrackAnswer),
-    (EventType: EVENTTYPE_WAT_ERROR; MessageType: mtWATrack; TextFunction: GetEventTextWATrackError)
+    (EventType: EVENTTYPE_WAT_ERROR; MessageType: mtWATrack; TextFunction: GetEventTextWATrackError),
+    (EventType: EVENTTYPE_VOICE_CALL; MessageType: mtVoiceCall; TextFunction: GetEventTextForMessage)
   );
 
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;

@@ -45,7 +45,7 @@ type
                   mtMessage, mtUrl, mtFile, mtSystem,
                   mtContacts, mtSMS, mtWebPager, mtEmailExpress, mtStatus, mtSMTPSimple,
                   mtOther,
-                  mtNickChange,mtAvatarChange,mtWATrack,mtStatusMessage);
+                  mtNickChange,mtAvatarChange,mtWATrack,mtStatusMessage,mtVoiceCall);
   TMessageTypes = set of TMessageType;
   PMessageTypes = ^TMessageTypes;
 
@@ -181,8 +181,9 @@ const
   HPP_ICON_EVENT_AVATAR      = 44;
   HPP_ICON_EVENT_WATRACK     = 45;
   HPP_ICON_EVENT_STATUSMES   = 46;
+  HPP_ICON_EVENT_VOICECALL   = 47;
 
-  HppIconsCount              = 47;
+  HppIconsCount              = 48;
 
   HPP_SKIN_EVENT_MESSAGE     = 0;
   HPP_SKIN_EVENT_URL         = 1;
@@ -224,7 +225,8 @@ const
     (Name:'Nick changes'; XML:'NICKCNG'; i:HPP_ICON_EVENT_NICK; iName:'hppevn_nick'; iSkin:-1),
     (Name:'Avatar changes'; XML:'AVACNG'; i:HPP_ICON_EVENT_AVATAR; iName:'hppevn_avatar'; iSkin:-1),
     (Name:'WATrack notify'; XML:'WATRACK'; i:HPP_ICON_EVENT_WATRACK; iName:'hppevn_watrack'; iSkin:-1),
-    (Name:'Status message changes'; XML:'STATUSMSGCHG'; i:HPP_ICON_EVENT_STATUSMES; iName:'hppevn_statuschng'; iSkin:-1)
+    (Name:'Status message changes'; XML:'STATUSMSGCHG'; i:HPP_ICON_EVENT_STATUSMES; iName:'hppevn_statuschng'; iSkin:-1),
+    (Name:'Voice call'; XML:'VCALL'; i:HPP_ICON_EVENT_VOICECALL; iName:'hppevn_vcall'; iSkin:-1)
   );
 
 {$I m_historypp.inc}
