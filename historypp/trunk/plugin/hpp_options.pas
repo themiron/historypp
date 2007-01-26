@@ -109,7 +109,7 @@ const
     (handle: 0; name:'z_password_protect')
   );
 
-  hppFontItems: array[0..27] of ThppFontsRec = (
+  hppFontItems: array[0..26] of ThppFontsRec = (
     (_type:[hppFont,hppColor]; name: 'Incoming nick'; nameColor: 'Divider'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $6B3FC8; back: clGray),
     (_type:[hppFont,hppColor]; name: 'Outgoing nick'; nameColor: 'Selected text'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $BD6008; back: clHighlightText),
     (_type:[hppColor];         nameColor: 'Selected background'; Mes: []; back: clHighlight),
@@ -136,8 +136,7 @@ const
     (_type:[hppFont,hppColor]; name: 'Incoming WATrack notify'; Mes: [mtWATrack,mtIncoming]; style:0; size: -11; color: $C08000; back: $C8FFFF),
     (_type:[hppFont,hppColor]; name: 'Outgoing WATrack notify'; Mes: [mtWATrack,mtOutgoing]; style:0; size: -11; color: $C08000; back: $C8FFFF),
     (_type:[hppFont,hppColor]; name: 'Status message changes'; Mes: [mtStatusMessage,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $F0F0F0),
-    (_type:[hppFont,hppColor]; name: 'Incoming voice call'; Mes: [mtVoiceCall,mtIncoming]; style:0; size: -11; color: $000000; back: $E9DFAB),
-    (_type:[hppFont,hppColor]; name: 'Outgoing voice call'; Mes: [mtVoiceCall,mtOutgoing]; style:0; size: -11; color: $000000; back: $E9DFAB)
+    (_type:[hppFont,hppColor]; name: 'Voice calls'; Mes: [mtVoiceCall,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $E9DFAB)
     );
 
 var
