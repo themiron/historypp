@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -46,7 +46,7 @@ procedure EditPropertyWithDialog(Component: TPersistent; const PropName: AnsiStr
 implementation
 
 uses
-  SysUtils, TntSysUtils;
+  SysUtils;
 
 { TTntDesignerSelections }
 

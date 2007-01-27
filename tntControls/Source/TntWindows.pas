@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -444,7 +444,7 @@ function SUBLANGID(lgid: WORD): WORD;
 implementation
 
 uses
-  SysUtils, Math, TntSystem, TntSysUtils,
+  SysUtils, Math, TntSysUtils,
   {$IFDEF COMPILER_9_UP} WideStrUtils, {$ENDIF} TntWideStrUtils;
 
 function _PAnsiCharWithNil(const S: AnsiString): PAnsiChar;

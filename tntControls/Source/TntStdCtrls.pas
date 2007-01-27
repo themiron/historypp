@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -18,7 +18,7 @@ interface
 { TODO: Implement TCustomListBox.KeyPress, OnDataFind. }
 
 uses
-  Windows, Messages, Classes, Controls, TntControls, StdCtrls, CheckLst, Graphics,
+  Windows, Messages, Classes, Controls, TntControls, StdCtrls, Graphics,
   TntClasses, TntSysUtils;
 
 {TNT-WARN TCustomEdit}

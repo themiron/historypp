@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -16,8 +16,8 @@ unit TntDBLogDlg;
 interface
 
 uses
-  SysUtils, Windows, Messages, Classes, Graphics, Controls, 
-  TntForms, TntStdCtrls, TntExtCtrls, StdCtrls, ExtCtrls;
+  SysUtils, Windows, Messages, Classes, Graphics,  
+  TntForms, TntStdCtrls, TntExtCtrls, StdCtrls, ExtCtrls, Controls;
 
 type
   TTntLoginDialog = class(TTntForm)

@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -16,7 +16,7 @@ unit TntGraphics;
 interface
 
 uses
-  Classes, Graphics, Windows;
+  Graphics, Windows;
 
 {TNT-WARN TextRect}
 procedure WideCanvasTextRect(Canvas: TCanvas; Rect: TRect; X, Y: Integer; const Text: WideString);
@@ -41,7 +41,7 @@ type
 implementation
 
 uses
-  SysUtils, TntClasses, TntSysUtils;
+  SysUtils, TntSysUtils;
 
 type
   TAccessCanvas = class(TCanvas);

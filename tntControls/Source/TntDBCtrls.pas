@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -16,7 +16,7 @@ unit TntDBCtrls;
 interface
 
 uses
-  Forms, Classes, Windows, Messages, DB, DBCtrls, Controls, StdCtrls,
+  Classes, Windows, Messages, DB, DBCtrls, Controls, StdCtrls,
   TntClasses, TntStdCtrls, TntControls, TntComCtrls, TntExtCtrls;
 
 type
@@ -532,7 +532,7 @@ type
 implementation
 
 uses
-  SysUtils, Graphics, Variants, TntDB,
+  Forms, SysUtils, Graphics, Variants, TntDB,
   TntActnList, TntGraphics, TntSysUtils, RichEdit, Mask;
 
 function FieldIsBlobLike(Field: TField): Boolean;
@@ -567,7 +567,7 @@ end;
 procedure TTntPaintControl.DestroyHandle;
 begin
   if FHandle <> 0 then DestroyWindow(FHandle);
-  FreeObjectInstance(FObjectInstance);
+  Classes.FreeObjectInstance(FObjectInstance);
   FHandle := 0;
   FObjectInstance := nil;
 end;
@@ -578,7 +578,7 @@ var
 begin
   if FHandle = 0 then
   begin
-    FObjectInstance := MakeObjectInstance(WndProc);
+    FObjectInstance := Classes.MakeObjectInstance(WndProc);
     TAccessWinControl(FOwner).CreateParams(Params);
     Params.Style := Params.Style and not (WS_HSCROLL or WS_VSCROLL);
     if (not Win32PlatformIsUnicode) then begin

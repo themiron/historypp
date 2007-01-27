@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -45,7 +45,7 @@ function AutoDetectCharacterSet(Stream: TStream): TTntStreamCharSet;
 {TNT-WARN TStringStream}   // TODO: Implement a TWideStringStream
 
 // A potential implementation of TWideStringStream can be found at:
-//   http://cvs.sourceforge.net/viewcvs.py/kdsxml/Global/KDSClasses.pas?view=markup
+//   http://kdsxml.cvs.sourceforge.net/kdsxml/Global/KDSClasses.pas?revision=1.10&view=markup
 
 procedure TntPersistent_AfterInherited_DefineProperties(Filer: TFiler; Instance: TPersistent);
 
@@ -690,7 +690,7 @@ end;
 destructor TTntResourceStream.Destroy;
 begin
   UnlockResource(HGlobal);
-  FreeResource(HGlobal);
+  FreeResource(HGlobal); { Technically this is not necessary (MS KB #193678) }
   inherited Destroy;
 end;
 
