@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -19,8 +19,8 @@ interface
 { TODO: Property editor for TTntOpenDialog.Filter }
 
 uses
-  Classes, Controls, Forms, Messages, CommDlg, Windows, Dialogs,
-  TntClasses, TntControls, TntForms, TntSysUtils;
+  Classes, Messages, CommDlg, Windows, Dialogs,
+  TntClasses, TntForms, TntSysUtils;
 
 type
 {TNT-WARN TIncludeItemEvent}
@@ -93,18 +93,29 @@ type
 
 {TNT-WARN CreateMessageDialog}
 function WideCreateMessageDialog(const Msg: WideString; DlgType: TMsgDlgType;
-  Buttons: TMsgDlgButtons): TTntForm;
+  Buttons: TMsgDlgButtons): TTntForm;overload;
+function WideCreateMessageDialog(const Msg: WideString; DlgType: TMsgDlgType;
+  Buttons: TMsgDlgButtons; DefaultButton: TMsgDlgBtn): TTntForm; overload;
 
 {TNT-WARN MessageDlg}
 function WideMessageDlg(const Msg: WideString; DlgType: TMsgDlgType;
-  Buttons: TMsgDlgButtons; HelpCtx: Longint): Integer;
+  Buttons: TMsgDlgButtons; HelpCtx: Longint): Integer; overload;
+function WideMessageDlg(const Msg: WideString; DlgType: TMsgDlgType;
+  Buttons: TMsgDlgButtons; HelpCtx: Longint; DefaultButton: TMsgDlgBtn): Integer; overload;
+
 {TNT-WARN MessageDlgPos}
 function WideMessageDlgPos(const Msg: WideString; DlgType: TMsgDlgType;
-  Buttons: TMsgDlgButtons; HelpCtx: Longint; X, Y: Integer): Integer;
+  Buttons: TMsgDlgButtons; HelpCtx: Longint; X, Y: Integer): Integer; overload;
+function WideMessageDlgPos(const Msg: WideString; DlgType: TMsgDlgType;
+  Buttons: TMsgDlgButtons; HelpCtx: Longint; X, Y: Integer; DefaultButton: TMsgDlgBtn): Integer; overload;
+
 {TNT-WARN MessageDlgPosHelp}
 function WideMessageDlgPosHelp(const Msg: WideString; DlgType: TMsgDlgType;
   Buttons: TMsgDlgButtons; HelpCtx: Longint; X, Y: Integer;
-  const HelpFileName: WideString): Integer;
+  const HelpFileName: WideString): Integer; overload;
+function WideMessageDlgPosHelp(const Msg: WideString; DlgType: TMsgDlgType;
+  Buttons: TMsgDlgButtons; HelpCtx: Longint; X, Y: Integer;
+  const HelpFileName: WideString; DefaultButton: TMsgDlgBtn): Integer; overload;
 
 {TNT-WARN ShowMessage}
 procedure WideShowMessage(const Msg: WideString);
@@ -126,12 +137,32 @@ function WidePromptForFileName(var AFileName: WideString; const AFilter: WideStr
   const ADefaultExt: WideString = ''; const ATitle: WideString = '';
   const AInitialDir: WideString = ''; SaveDialog: Boolean = False): Boolean;
 
+function GetModalParentWnd: HWND;
+
 implementation
 
 uses
-  Types, SysUtils, Graphics, Consts, Math,
-  TntSystem, TntWindows, TntStdCtrls, TntClipBrd, TntExtCtrls,
+  Controls, Forms, Types, SysUtils, Graphics, Consts, Math,
+  TntWindows, TntStdCtrls, TntClipBrd, TntExtCtrls,
   {$IFDEF COMPILER_9_UP} WideStrUtils, {$ENDIF} TntWideStrUtils;
+
+function GetModalParentWnd: HWND;
+begin
+  {$IFDEF COMPILER_9}
+  Result := Application.ActiveFormHandle;
+  {$ELSE}
+  Result := 0;
+  {$ENDIF}
+  {$IFDEF COMPILER_10_UP}
+  if Application.ModalPopupMode <> pmNone then
+  begin
+    Result := Application.ActiveFormHandle;
+  end;
+  {$ENDIF}
+  if Result = 0 then begin
+    Result := Application.Handle;
+  end;
+end;
 
 var
   ProxyExecuteDialog: TTntOpenDialog;
@@ -312,24 +343,8 @@ begin
 end;
 
 function TTntOpenDialog.DoExecuteW(Func: Pointer): Bool;
-var
-  ParentWnd: HWND;
 begin
-  {$IFDEF COMPILER_9}
-  ParentWnd := Application.ActiveFormHandle;
-  {$ELSE}
-  ParentWnd := 0;
-  {$ENDIF}
-  {$IFDEF COMPILER_10_UP}
-  if Application.ModalPopupMode <> pmNone then
-  begin
-    ParentWnd := Application.ActiveFormHandle;
-  end;
-  {$ENDIF}
-  if ParentWnd = 0 then begin
-    ParentWnd := Application.Handle;
-  end;
-  Result := DoExecuteW(Func, ParentWnd);
+  Result := DoExecuteW(Func, GetModalParentWnd);
 end;
 
 function TTntOpenDialog.DoExecuteW(Func: Pointer; ParentWnd: HWND): Bool;
@@ -638,7 +653,7 @@ var
     mrYesToAll, 0);
 
 function WideCreateMessageDialog(const Msg: WideString; DlgType: TMsgDlgType;
-  Buttons: TMsgDlgButtons): TTntForm;
+  Buttons: TMsgDlgButtons; DefaultButton: TMsgDlgBtn): TTntForm;
 const
   mcHorzMargin = 8;
   mcVertMargin = 8;
@@ -652,10 +667,11 @@ var
   HorzMargin, VertMargin, HorzSpacing, VertSpacing, ButtonWidth,
   ButtonHeight, ButtonSpacing, ButtonCount, ButtonGroupWidth,
   IconTextWidth, IconTextHeight, X, ALeft: Integer;
-  B, DefaultButton, CancelButton: TMsgDlgBtn;
+  B, CancelButton: TMsgDlgBtn;
   IconID: PAnsiChar;
   ATextRect: TRect;
   ThisButtonWidth: integer;
+  LButton: TTntButton;
 begin
   Result := TTntMessageForm.CreateNew(Application);
   with Result do
@@ -739,30 +755,52 @@ begin
       SetBounds(ALeft, VertMargin,
         ATextRect.Right, ATextRect.Bottom);
     end;
-    if mbOk in Buttons then DefaultButton := mbOk else
-      if mbYes in Buttons then DefaultButton := mbYes else
-        DefaultButton := mbRetry;
     if mbCancel in Buttons then CancelButton := mbCancel else
       if mbNo in Buttons then CancelButton := mbNo else
         CancelButton := mbOk;
     X := (ClientWidth - ButtonGroupWidth) div 2;
     for B := Low(TMsgDlgBtn) to High(TMsgDlgBtn) do
       if B in Buttons then
-        with TTntButton.Create(Result) do
+      begin
+        LButton := TTntButton.Create(Result);
+        with LButton do
         begin
           Name := ButtonNames[B];
           Parent := Result;
           Caption := GetButtonCaption(B);
           ModalResult := ModalResults[B];
-          if B = DefaultButton then Default := True;
-          if B = CancelButton then Cancel := True;
+          if B = DefaultButton then
+          begin
+            Default := True;
+            ActiveControl := LButton;
+          end;
+          if B = CancelButton then
+            Cancel := True;
           SetBounds(X, IconTextHeight + VertMargin + VertSpacing,
             ButtonWidth, ButtonHeight);
           Inc(X, ButtonWidth + ButtonSpacing);
           if B = mbHelp then
             OnClick := TTntMessageForm(Result).HelpButtonClick;
         end;
+      end;
   end;
+end;
+
+function WideCreateMessageDialog(const Msg: WideString; DlgType: TMsgDlgType;
+  Buttons: TMsgDlgButtons): TTntForm;
+var
+  DefaultButton: TMsgDlgBtn;
+begin
+  if mbOk in Buttons then DefaultButton := mbOk else
+    if mbYes in Buttons then DefaultButton := mbYes else
+      DefaultButton := mbRetry;
+  Result := WideCreateMessageDialog(Msg, DlgType, Buttons, DefaultButton);
+end;
+
+function WideMessageDlg(const Msg: WideString; DlgType: TMsgDlgType;
+  Buttons: TMsgDlgButtons; HelpCtx: Longint; DefaultButton: TMsgDlgBtn): Integer;
+begin
+  Result := WideMessageDlgPosHelp(Msg, DlgType, Buttons, HelpCtx, -1, -1, '', DefaultButton);
 end;
 
 function WideMessageDlg(const Msg: WideString; DlgType: TMsgDlgType;
@@ -772,16 +810,21 @@ begin
 end;
 
 function WideMessageDlgPos(const Msg: WideString; DlgType: TMsgDlgType;
+  Buttons: TMsgDlgButtons; HelpCtx: Longint; X, Y: Integer; DefaultButton: TMsgDlgBtn): Integer;
+begin
+  Result := WideMessageDlgPosHelp(Msg, DlgType, Buttons, HelpCtx, X, Y, '', DefaultButton);
+end;
+
+function WideMessageDlgPos(const Msg: WideString; DlgType: TMsgDlgType;
   Buttons: TMsgDlgButtons; HelpCtx: Longint; X, Y: Integer): Integer;
 begin
   Result := WideMessageDlgPosHelp(Msg, DlgType, Buttons, HelpCtx, X, Y, '');
 end;
 
-function WideMessageDlgPosHelp(const Msg: WideString; DlgType: TMsgDlgType;
-  Buttons: TMsgDlgButtons; HelpCtx: Longint; X, Y: Integer;
+function _Internal_WideMessageDlgPosHelp(Dlg: TTntForm; HelpCtx: Longint; X, Y: Integer;
   const HelpFileName: WideString): Integer;
 begin
-  with WideCreateMessageDialog(Msg, DlgType, Buttons) do
+  with Dlg do
     try
       HelpContext := HelpCtx;
       HelpFile := HelpFileName;
@@ -792,6 +835,22 @@ begin
     finally
       Free;
     end;
+end;
+
+function WideMessageDlgPosHelp(const Msg: WideString; DlgType: TMsgDlgType;
+  Buttons: TMsgDlgButtons; HelpCtx: Longint; X, Y: Integer;
+  const HelpFileName: WideString; DefaultButton: TMsgDlgBtn): Integer;
+begin
+  Result := _Internal_WideMessageDlgPosHelp(
+    WideCreateMessageDialog(Msg, DlgType, Buttons, DefaultButton), HelpCtx, X, Y, HelpFileName);
+end;
+
+function WideMessageDlgPosHelp(const Msg: WideString; DlgType: TMsgDlgType;
+  Buttons: TMsgDlgButtons; HelpCtx: Longint; X, Y: Integer;
+  const HelpFileName: WideString): Integer;
+begin
+  Result := _Internal_WideMessageDlgPosHelp(
+    WideCreateMessageDialog(Msg, DlgType, Buttons), HelpCtx, X, Y, HelpFileName);
 end;
 
 procedure WideShowMessage(const Msg: WideString);

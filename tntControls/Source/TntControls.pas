@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -62,8 +62,8 @@ interface
 { TODO: Unicode enable .OnKeyPress event }
 
 uses
-  Forms, Classes, Windows, Messages, Controls, TntClasses, ActnList, Menus, TntMenus,
-  TntSysUtils;
+  Classes, Windows, Messages, Controls, Menus;
+
 
 {TNT-WARN TCaption}
 type TWideCaption = type WideString;
@@ -144,7 +144,8 @@ var
 implementation
 
 uses
-  SysUtils, Contnrs, TntGraphics, TntWindows;
+  ActnList, Forms, SysUtils, Contnrs, 
+  TntGraphics, TntWindows, TntClasses, TntMenus, TntSysUtils;
 
 type
   TAccessControl = class(TControl);
@@ -454,16 +455,16 @@ begin
   inherited Create(nil);
   FControl.FreeNotification(Self);
 
-  WinControl_ObjectInstance := MakeObjectInstance(FControl.MainWndProc);
-  ObjectInstance := MakeObjectInstance(Win32Proc);
-  DefObjectInstance := MakeObjectInstance(DefWin32Proc);
+  WinControl_ObjectInstance := Classes.MakeObjectInstance(FControl.MainWndProc);
+  ObjectInstance := Classes.MakeObjectInstance(Win32Proc);
+  DefObjectInstance := Classes.MakeObjectInstance(DefWin32Proc);
 end;
 
 destructor TWinControlTrap.Destroy;
 begin
-  FreeObjectInstance(ObjectInstance);
-  FreeObjectInstance(DefObjectInstance);
-  FreeObjectInstance(WinControl_ObjectInstance);
+  Classes.FreeObjectInstance(ObjectInstance);
+  Classes.FreeObjectInstance(DefObjectInstance);
+  Classes.FreeObjectInstance(WinControl_ObjectInstance);
   inherited;
 end;
 

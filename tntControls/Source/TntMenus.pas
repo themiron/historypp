@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -25,6 +25,7 @@ type
     FIgnoreMenuChanged: Boolean;
     FCaption: WideString;
     FHint: WideString;
+    FKeyboardLayout: HKL;
     function GetCaption: WideString;
     procedure SetInheritedCaption(const Value: AnsiString);
     procedure SetCaption(const Value: WideString);
@@ -47,6 +48,7 @@ type
       var Rect: TRect; Selected: Boolean; Flags: Integer);
     procedure MeasureItem(ACanvas: TCanvas; var Width, Height: Integer); override; 
   public
+    procedure InitiateAction; override;
     procedure Loaded; override;
     function Find(ACaption: WideString): TMenuItem{TNT-ALLOW TMenuItem};
   published
@@ -122,8 +124,8 @@ var
 implementation
 
 uses
-  Controls, Forms, SysUtils, Consts, ActnList, ImgList, TntControls,
-  TntGraphics, TntActnList, TntClasses, TntForms, TntSysUtils, TntWindows;
+  Forms, SysUtils, Consts, ActnList, ImgList, TntControls, TntGraphics,
+  TntActnList, TntClasses, TntForms, TntSysUtils, TntWindows;
 
 function WideNewSubMenu(const ACaption: WideString; hCtx: THelpContext;
   const AName: TComponentName; const Items: array of TTntMenuItem;
@@ -181,9 +183,19 @@ begin
 end;
 
 function WideGetKeyboardChar(Key: Word): WideChar;
+var
+  LatinNumChar: WideChar;
 begin
   Assert(Win32PlatformIsUnicode);
   Result := WideChar(MapVirtualKeyW(Key, 2));
+  if (Key in [$30..$39]) then
+  begin
+    // Check to see if "0" - "9" can be used if all that differs is shift state
+    LatinNumChar := WideChar(Key - $30 + Ord('0'));
+    if (Result <> LatinNumChar)
+    and (Byte(Key) = WordRec(VkKeyScanW(LatinNumChar)).Lo) then  // .Hi would be the shift state
+      Result := LatinNumChar;
+  end;
 end;
 
 function WideShortCutToText(WordShortCut: Word): WideString;
@@ -437,17 +449,24 @@ begin
 end;
 
 procedure FixMenuBiDiProblem(Menu: TMenu);
+var
+  i: integer;
 begin
-  // TMenu sometimes sets bidi on item[0] which can convert caption to ansi
-  if (SysLocale.MiddleEast) then begin
-    if (Menu <> nil)
-    and (Menu.Items.Count > 0)
-    and (Menu.Items[0] is TTntMenuItem) then
-    begin
-      (Menu.Items[0] as TTntMenuItem).UpdateMenuString(Menu);
+  // TMenu sometimes sets bidi on first visible item which can convert caption to ansi
+  if (SysLocale.MiddleEast)
+  and (Menu <> nil)
+  and (Menu.Items.Count > 0) then
+  begin
+    for i := 0 to Menu.Items.Count - 1 do begin
+      if Menu.Items[i].Visible then begin
+        if (Menu.Items[i] is TTntMenuItem) then
+          (Menu.Items[i] as TTntMenuItem).UpdateMenuString(Menu);
+        break; // found first visible menu item!
+      end;
     end;
   end;
 end;
+
 
 {$IFDEF COMPILER_6} // verified against VCL source in Delphi 6 and BCB 6
 type
@@ -577,6 +596,13 @@ end;
 
 type TAccessActionlink = class(TActionLink);
 
+procedure TTntMenuItem.InitiateAction;
+begin
+  if GetKeyboardLayout(0) <> FKeyboardLayout then
+    MenuChanged(False);
+  inherited;
+end;
+
 function TTntMenuItem.IsCaptionStored: Boolean;
 begin
   Result := (ActionLink = nil) or (not TAccessActionlink(ActionLink).IsCaptionLinked);
@@ -697,6 +723,7 @@ var
 var
   MenuCaption: WideString;
 begin
+  FKeyboardLayout := GetKeyboardLayout(0);
   if Parent = nil then
     ParentHandle := 0
   else if (THackMenuItem(Self.Parent).FMergedWith <> nil) then

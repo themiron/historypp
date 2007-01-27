@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -16,7 +16,7 @@ unit TntForms;
 interface
 
 uses
-  Classes, TntClasses, Windows, Messages, Controls, Forms, TntControls;
+  Classes, Windows, Messages, Controls, Forms, TntControls;
 
 type
 {TNT-WARN TScrollBox}
@@ -140,6 +140,7 @@ type
     procedure DefineProperties(Filer: TFiler); override;
     function GetActionLinkClass: TControlActionLinkClass; override;
     procedure ActionChange(Sender: TObject; CheckDefaults: Boolean); override;
+    function CreateDockManager: IDockManager; override;
   public
     constructor Create(AOwner: TComponent); override;
     procedure DefaultHandler(var Message); override;
@@ -198,7 +199,7 @@ implementation
 
 uses
   SysUtils, Consts, RTLConsts, Menus, FlatSB, StdActns,
-  Graphics, TntSystem, TntSysUtils, TntWindows, TntMenus, TntActnList, TntStdActns;
+  Graphics, TntSystem, TntSysUtils, TntMenus, TntActnList, TntStdActns, TntClasses;
 
 function IsWideCharAccel(CharCode: Word; const Caption: WideString): Boolean;
 var
@@ -481,6 +482,13 @@ begin
   FixMenuBiDiProblem(Menu);
 end;
 
+function TTntForm.CreateDockManager: IDockManager;
+begin
+  if (DockManager = nil) and DockSite and UseDockManager then
+    HandleNeeded; // force TNT subclassing to occur first
+  Result := inherited CreateDockManager;
+end;
+
 { TTntApplication }
 
 constructor TTntApplication.Create(AOwner: TComponent);
@@ -611,7 +619,9 @@ end;
 
 procedure TTntApplication.DoIdle;
 begin
-  Hint := ApplicationMouseControlHint;
+  // update TntApplication.Hint only when Ansi encodings are the same... (otherwise there are problems with action menus)
+  if Application.Hint = AnsiString(ApplicationMouseControlHint) then
+    Hint := ApplicationMouseControlHint;
 end;
 
 function TTntApplication.IsDlgMsg(var Msg: TMsg): Boolean;
@@ -775,14 +785,6 @@ begin
     RaiseLastOSError;
 end;
 
-function UnhookIsKnownToFail: Boolean;
-begin
-  Result := (WideTextPos('W3WP.',    WideExtractFileName(WideParamStr(0))) = 1) // for IIS 6.0
-         or (WideTextPos('DLLHOST.', WideExtractFileName(WideParamStr(0))) = 1) // for IIS 5.0
-         or (WideTextPos('miranda32.exe', WideExtractFileName(WideParamStr(0))) = 1) // for Miranda IM
-         or (_IsShellProgramming);
-end;
-
 //---------------------------------------------------------------------------------------------
 //                                 Tnt Environment Setup
 //---------------------------------------------------------------------------------------------
@@ -864,10 +866,7 @@ initialization
 
 finalization
   if NTGetMessageHook <> 0 then begin
-    if UnhookIsKnownToFail then
-      UnhookWindowsHookEx(NTGetMessageHook) // no Win32Check!
-    else
-      Win32Check(UnhookWindowsHookEx(NTGetMessageHook));
+    UnhookWindowsHookEx(NTGetMessageHook) // no Win32Check, fails in too many cases, and doesn't matter
   end;
   FreeAndNil(TntApplication);
 

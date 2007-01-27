@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -331,6 +331,7 @@ var
   Win32PlatformIsUnicode: Boolean;
   Win32PlatformIsXP: Boolean;
   Win32PlatformIs2003: Boolean;
+  Win32PlatformIsVista: Boolean;
 
 {$IFNDEF COMPILER_7_UP}
 function CheckWin32Version(AMajor: Integer; AMinor: Integer = 0): Boolean;
@@ -382,7 +383,7 @@ var
 implementation
 
 uses
-  ActiveX, ComObj, Math, SysConst, Consts,
+  ActiveX, ComObj, SysConst,
   {$IFDEF COMPILER_9_UP} WideStrUtils, {$ENDIF} TntWideStrUtils,
   TntSystem, TntWindows, TntFormatStrUtils;
 
@@ -1688,6 +1689,7 @@ initialization
                     or  (Win32MajorVersion > 5);
   Win32PlatformIs2003 := ((Win32MajorVersion = 5) and (Win32MinorVersion >= 2))
                     or  (Win32MajorVersion > 5);
+  Win32PlatformIsVista := (Win32MajorVersion >= 6);
 
 finalization
   Currency_DecimalSep := ''; {make memory sleuth happy}

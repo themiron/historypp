@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -18,7 +18,7 @@ interface
 // this unit provides functions to work with format strings
 
 uses
-  Classes, TntClasses, TntSysUtils;
+  TntSysUtils;
 
 function GetCanonicalFormatStr(const _FormatString: WideString): WideString;
 {$IFNDEF COMPILER_9_UP}
@@ -35,7 +35,7 @@ type
 implementation
 
 uses
-  SysUtils, Math;
+  SysUtils, Math, TntClasses;
 
 resourcestring
   SInvalidFormatSpecifier = 'Invalid Format Specifier: %s';
@@ -442,7 +442,7 @@ begin
     UpdateTypeList(ArgList2, TypeList2);
 
     if TypeList1.Count <> TypeList2.Count then
-      raise EFormatSpecError.Create(SMismatchedArgumentCounts);
+      raise EFormatSpecError.Create(SMismatchedArgumentCounts + CRLF + CRLF + '> ' + FormatStr1 + CRLF + '> ' + FormatStr2);
 
     for i := 0 to TypeList1.Count - 1 do begin
       if TypeList1.Objects[i] <> TypeList2.Objects[i] then begin

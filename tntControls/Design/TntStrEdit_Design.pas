@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -18,9 +18,9 @@ unit TntStrEdit_Design;
 interface
 
 uses
-  Windows, Classes, Graphics, Forms, Controls, Buttons, Dialogs, Menus, StdCtrls,
+  Windows, Classes, Graphics, Controls, Buttons, Menus, StdCtrls,
   TntStdCtrls, ExtCtrls, DesignEditors, DesignIntf,
-  TntForms, TntMenus, TntExtCtrls, TntClasses, TntDialogs;
+  TntForms, TntMenus, TntClasses, TntDialogs;
 
 type
   TTntStrEditDlg = class(TTntForm)
@@ -76,8 +76,8 @@ implementation
 {$R *.dfm}
 
 uses
-  ActiveX, SysUtils, DesignConst, ToolsAPI, IStreams, LibHelp,
-  StFilSys, TypInfo, TntDesignEditors_Design, TntSystem, TntSysUtils;
+  ActiveX, Forms, SysUtils, DesignConst, ToolsAPI, IStreams, LibHelp,
+  StFilSys, TypInfo, TntSystem, TntDesignEditors_Design;
 
 procedure Register;
 begin

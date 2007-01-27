@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -23,7 +23,7 @@ interface
 { TODO: TToolBar: Unicode-enable handling of CN_DIALOGCHAR, WM_SYSCOMMAND, FindButtonFromAccel }
 
 uses
-  Forms, Classes, Controls, ListActns, ComCtrls, Messages, Menus,
+  Classes, Controls, ListActns, Menus, ComCtrls, Messages,
   Windows, CommCtrl, Contnrs, TntControls, TntClasses, Graphics, TntSysUtils;
 
 type
@@ -1140,9 +1140,9 @@ type
 implementation
 
 uses
-  SysUtils, TntGraphics, ImgList, TntSystem, TntStdCtrls, StdCtrls, Consts,
-  RichEdit, ActiveIMM_TLB, Printers, TntForms, ComStrs,
-  TntActnList, TntStdActns, TntWindows, TntMenus,
+  Forms, SysUtils, TntGraphics, ImgList, TntSystem, TntStdCtrls, StdCtrls,
+  RichEdit, ActiveIMM_TLB, TntForms, ComStrs, TntMenus,
+  TntActnList, TntStdActns, TntWindows,
   {$IFNDEF COMPILER_10_UP}
   TntWideStrings,
   {$ELSE}
@@ -1634,7 +1634,7 @@ var
 constructor TTntCustomListView.Create(AOwner: TComponent);
 begin
   inherited;
-  FEditInstance := MakeObjectInstance(EditWndProcW);
+  FEditInstance := Classes.MakeObjectInstance(EditWndProcW);
   // create list columns
   Assert(THackCustomListView(Self).FListColumns = inherited Columns, 'Internal Error in TTntCustomListView.Create().');
   FreeAndNil(THackCustomListView(Self).FListColumns);
@@ -1644,7 +1644,8 @@ end;
 destructor TTntCustomListView.Destroy;
 begin
   inherited;
-  FreeObjectInstance(FEditInstance);
+  Classes.FreeObjectInstance(FEditInstance);
+  FreeAndNil(FSavedItems);
 end;
 
 procedure TTntCustomListView.CreateWindowHandle(const Params: TCreateParams);
@@ -1866,8 +1867,8 @@ begin
   TntLClass := TTntListItemClass(LClass);
   Result := TntLClass.Create(inherited Items);
   if FTempItem = nil then
-    FTempItem := Result as TTntListItem; { In Delphi 5/6/7/9, the first item created is the temp item }
-  { TODO: Verify that D10 creates a temp item in its constructor. }
+    FTempItem := Result as TTntListItem; { In Delphi 5/6/7/9/10, the first item created is the temp item }
+  { TODO: Verify that D11 creates a temp item in its constructor. }
 end;
 
 function TTntCustomListView.CreateListItems: TListItems{TNT-ALLOW TListItems};
@@ -4581,13 +4582,13 @@ end;
 constructor TTntCustomTreeView.Create(AOwner: TComponent);
 begin
   inherited;
-  FEditInstance := MakeObjectInstance(EditWndProcW);
+  FEditInstance := Classes.MakeObjectInstance(EditWndProcW);
 end;
 
 destructor TTntCustomTreeView.Destroy;
 begin
   Destroying;
-  FreeObjectInstance(FEditInstance);
+  Classes.FreeObjectInstance(FEditInstance);
   FreeAndNil(FSavedNodeText);
   inherited;
 end;

@@ -3,9 +3,9 @@
 {                                                                             }
 {    Tnt Delphi Unicode Controls                                              }
 {      http://www.tntware.com/delphicontrols/unicode/                         }
-{        Version: 2.2.8                                                       }
+{        Version: 2.3.0                                                       }
 {                                                                             }
-{    Copyright (c) 2002-2006, Troy Wolbrink (troy.wolbrink@tntware.com)       }
+{    Copyright (c) 2002-2007, Troy Wolbrink (troy.wolbrink@tntware.com)       }
 {                                                                             }
 {*****************************************************************************}
 
@@ -16,7 +16,7 @@ unit TntForms_Design;
 interface
 
 uses
-  Classes, Windows, DesignIntf, ToolsApi, Forms;
+  Classes, Windows, DesignIntf, ToolsApi;
 
 type HICON = LongWord;
 
@@ -28,6 +28,7 @@ type
   protected
     function ThisFormName: WideString;
     function ThisFormClass: TComponentClass; virtual; abstract;
+    function ThisFormUnit: WideString; 
   public
     // IOTAWizard
     function GetIDString: AnsiString;
@@ -43,7 +44,7 @@ type
     // IOTARepositoryWizard60
     function GetDesigner: AnsiString;
     {$ENDIF}
-    {$IFDEF COMPILER_9_UP}    
+    {$IFDEF COMPILER_9_UP}
     // IOTARepositoryWizard80
     function GetGalleryCategory: IOTAGalleryCategory; 
     function GetPersonality: AnsiString; 
@@ -133,6 +134,7 @@ type
   TTntNewFormCreator = class(TInterfacedObject, IOTACreator, IOTAModuleCreator)
   private
     FAncestorName: WideString;
+    FUnitName: WideString;
   public
     // IOTACreator
     function GetCreatorType: AnsiString;
@@ -153,7 +155,7 @@ type
     function NewIntfSource(const ModuleIdent, FormIdent, AncestorIdent: AnsiString): IOTAFile;
     procedure FormCreated(const FormEditor: IOTAFormEditor);
   public
-    constructor Create(const FormName, AncestorName: WideString);
+    constructor Create(const UnitName, AncestorName: WideString);
   end;
 
   TTntSourceFile = class(TInterfacedObject, IOTAFile)
@@ -165,9 +167,10 @@ type
     constructor Create(const Source: AnsiString);
   end;
 
-constructor TTntNewFormCreator.Create(const FormName, AncestorName: WideString);
+constructor TTntNewFormCreator.Create(const UnitName, AncestorName: WideString);
 begin
   inherited Create;
+  FUnitName := UnitName;
   FAncestorName := AncestorName;
 end;
 
@@ -249,7 +252,7 @@ const
     '' + #13#10 +
     'uses' + #13#10 +
     '  Windows, Messages, SysUtils' + {$IFDEF COMPILER_6_UP}', Variants' + {$ENDIF}
-    ', Classes, Graphics, Controls, Forms,' + #13#10 + '  Dialogs, TntForms;' + #13#10 +
+    ', Classes, Graphics, Controls, Forms,' + #13#10 + '  Dialogs, %s;' + #13#10 +
     '' + #13#10 +
     'type' + #13#10 +
     '  T%s = class(T%s)' + #13#10 +
@@ -267,9 +270,9 @@ const
     '{$R *.DFM}' + #13#10 +
     '' + #13#10 +
     'end.';
-begin               
-  Result := TTntSourceFile.Create(Format{TNT-ALLOW Format}(cSource, [ModuleIdent, FormIdent,
-    AncestorIdent, FormIdent, FormIdent]));
+begin
+  Result := TTntSourceFile.Create(Format{TNT-ALLOW Format}(cSource,
+    [ModuleIdent, FUnitName, FormIdent, AncestorIdent, FormIdent, FormIdent]));
 end;
 
 function TTntNewFormCreator.NewIntfSource(const ModuleIdent, FormIdent, AncestorIdent: AnsiString): IOTAFile;
@@ -283,6 +286,11 @@ function TTntNewFormWizard.ThisFormName: WideString;
 begin
   Result := ThisFormClass.ClassName;
   Delete(Result, 1, 1); // drop the 'T'
+end;
+
+function TTntNewFormWizard.ThisFormUnit: WideString;
+begin
+  Result := GetTypeData(ThisFormClass.ClassInfo).UnitName;
 end;
 
 function TTntNewFormWizard.GetName: AnsiString;
@@ -319,7 +327,7 @@ procedure TTntNewFormWizard.Execute;
 var
   Module: IOTAModule;
 begin
-  Module := (BorlandIDEServices as IOTAModuleServices).CreateModule(TTntNewFormCreator.Create('', ThisFormName));
+  Module := (BorlandIDEServices as IOTAModuleServices).CreateModule(TTntNewFormCreator.Create(ThisFormUnit, ThisFormName));
 end;
 
 {$IFDEF COMPILER_6_UP}
