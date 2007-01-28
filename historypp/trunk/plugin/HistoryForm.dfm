@@ -136,7 +136,7 @@ object HistoryFrm: THistoryFrm
           Height = 16
           OnPaint = pbSearchPaint
         end
-        object sbClearFilter: TTntSpeedButton
+        object sbClearFilter: THppSpeedButton
           Left = 21
           Top = 4
           Width = 23
@@ -179,7 +179,7 @@ object HistoryFrm: THistoryFrm
         DesignSize = (
           42
           25)
-        object sbSearchNext: TTntSpeedButton
+        object sbSearchNext: THppSpeedButton
           Left = 0
           Top = 4
           Width = 21
@@ -193,7 +193,7 @@ object HistoryFrm: THistoryFrm
           Spacing = 0
           OnClick = sbSearchNextClick
         end
-        object sbSearchPrev: TTntSpeedButton
+        object sbSearchPrev: THppSpeedButton
           Left = 21
           Top = 4
           Width = 21
@@ -265,7 +265,7 @@ object HistoryFrm: THistoryFrm
         PopupMenu = pmToolbar
         ShowHint = True
         TabOrder = 0
-        Transparent = False
+        Transparent = True
         Wrapable = False
         OnDblClick = ToolbarDblClick
         object tbUserDetails: TTntToolButton
@@ -343,7 +343,7 @@ object HistoryFrm: THistoryFrm
           Width = 7
           Style = tbsSeparator
         end
-        object tbEventsFilter: TTntSpeedButton
+        object tbEventsFilter: THppSpeedButton
           Left = 160
           Top = 0
           Width = 110
@@ -388,7 +388,7 @@ object HistoryFrm: THistoryFrm
           Width = 8
           Style = tbsSeparator
         end
-        object tbHistory: TTntSpeedButton
+        object tbHistory: THppSpeedButton
           Left = 354
           Top = 0
           Width = 36
@@ -465,7 +465,7 @@ object HistoryFrm: THistoryFrm
             Transparent = True
             Layout = tlCenter
           end
-          object sbCloseBook: TTntSpeedButton
+          object sbCloseBook: THppSpeedButton
             Left = 135
             Top = 2
             Width = 18
@@ -473,14 +473,6 @@ object HistoryFrm: THistoryFrm
             AllowAllUp = True
             Anchors = [akTop, akRight]
             Flat = True
-            Glyph.Data = {
-              BE000000424DBE0000000000000076000000280000000A000000090000000100
-              04000000000048000000C40E0000C40E00001000000000000000000000000000
-              80000080000000808000800000008000800080800000C0C0C000808080000000
-              FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777700
-              0000700777700700000077007700770000007770000777000000777700777700
-              0000777000077700000077007700770000007007777007000000777777777700
-              0000}
             OnClick = sbCloseBookClick
           end
         end
@@ -540,7 +532,7 @@ object HistoryFrm: THistoryFrm
             Transparent = True
             Layout = tlCenter
           end
-          object sbCloseSess: TTntSpeedButton
+          object sbCloseSess: THppSpeedButton
             Left = 135
             Top = 2
             Width = 18
@@ -548,14 +540,6 @@ object HistoryFrm: THistoryFrm
             AllowAllUp = True
             Anchors = [akTop, akRight]
             Flat = True
-            Glyph.Data = {
-              BE000000424DBE0000000000000076000000280000000A000000090000000100
-              04000000000048000000C40E0000C40E00001000000000000000000000000000
-              80000080000000808000800000008000800080800000C0C0C000808080000000
-              FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777700
-              0000700777700700000077007700770000007770000777000000777700777700
-              0000777000077700000077007700770000007007777007000000777777777700
-              0000}
             OnClick = sbCloseSessClick
           end
         end

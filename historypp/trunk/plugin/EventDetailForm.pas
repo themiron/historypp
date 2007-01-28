@@ -68,11 +68,11 @@ type
     paText: THppPanel;
     N2: TTntMenuItem;
     ToogleItemProcessing: TTntMenuItem;
-    EFromMore: TTntSpeedButton;
+    EFromMore: THppSpeedButton;
     EDateTime: THppEdit;
-    EToMore: TTntSpeedButton;
-    PrevBtn: TTntSpeedButton;
-    NextBtn: TTntSpeedButton;
+    EToMore: THppSpeedButton;
+    PrevBtn: THppSpeedButton;
+    NextBtn: THppSpeedButton;
     OpenLinkNW: TTntMenuItem;
     OpenLink: TTntMenuItem;
     CopyLink: TTntMenuItem;

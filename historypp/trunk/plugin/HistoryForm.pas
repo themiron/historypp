@@ -74,7 +74,7 @@ type
     ilSessions: TImageList;
     paSessInt: THppPanel;
     laSess: TTntLabel;
-    sbCloseSess: TTntSpeedButton;
+    sbCloseSess: THppSpeedButton;
     N13: TTntMenuItem;
     SaveSelected1: TTntMenuItem;
     N2: TTntMenuItem;
@@ -96,7 +96,7 @@ type
     RTLEnabled2: TTntMenuItem;
     RTLDefault2: TTntMenuItem;
     SystemCodepage: TTntMenuItem;
-    sbClearFilter: TTntSpeedButton;
+    sbClearFilter: THppSpeedButton;
     pbFilter: TPaintBox;
     tiFilter: TTimer;
     ilToolbar: TImageList;
@@ -123,8 +123,8 @@ type
     paSearchStatus: THppPanel;
     laSearchState: TTntLabel;
     paSearchPanel: THppPanel;
-    sbSearchNext: TTntSpeedButton;
-    sbSearchPrev: TTntSpeedButton;
+    sbSearchNext: THppSpeedButton;
+    sbSearchPrev: THppSpeedButton;
     edSearch: THppEdit;
     pbSearch: TPaintBox;
     tvSess: TTntTreeView;
@@ -152,7 +152,7 @@ type
     tbUserMenu: TTntToolButton;
     tbUserDetails: TTntToolButton;
     TntToolButton1: TTntToolButton;
-    tbEventsFilter: TTntSpeedButton;
+    tbEventsFilter: THppSpeedButton;
     TntToolButton5: TTntToolButton;
     pmToolbar: TTntPopupMenu;
     Customize2: TTntMenuItem;
@@ -160,7 +160,7 @@ type
     paBook: THppPanel;
     paBookInt: THppPanel;
     laBook: TTntLabel;
-    sbCloseBook: TTntSpeedButton;
+    sbCloseBook: THppSpeedButton;
     lvBook: TTntListView;
     ilBook: TImageList;
     tbBookmarks: TTntToolButton;
@@ -187,7 +187,7 @@ type
     mmShortcuts: TTntMenuItem;
     mmBookmark: TTntMenuItem;
     SelectAll1: TTntMenuItem;
-    tbHistory: TTntSpeedButton;
+    tbHistory: THppSpeedButton;
     paHolder: THppPanel;
     spBook: TTntSplitter;
     UnknownCodepage: TTntMenuItem;
@@ -624,6 +624,7 @@ begin
 
   DoubleBuffered := True;
   MakeDoubleBufferedParent(Self);
+  TopPanel.DoubleBuffered := False;
   hg.DoubleBuffered := False;
 
   FormState := gsIdle;
@@ -1230,7 +1231,7 @@ begin
   with sbSearchPrev.Glyph do begin
     Width := 16;
     Height := 16;
-    Canvas.Brush.Color := paSearch.Color;
+    Canvas.Brush.Color := clBtnFace;
     Canvas.FillRect(Canvas.ClipRect);
     DrawiconEx(Canvas.Handle,0,0,
       previc,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
@@ -1238,7 +1239,7 @@ begin
   with sbSearchNext.Glyph do begin
     Width := 16;
     Height := 16;
-    Canvas.Brush.Color := paSearch.Color;
+    Canvas.Brush.Color := clBtnFace;
     Canvas.FillRect(Canvas.ClipRect);
     DrawiconEx(Canvas.Handle,0,0,
       nextic,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
@@ -1246,10 +1247,26 @@ begin
   with sbClearFilter.Glyph do begin
     Width := 16;
     Height := 16;
-    Canvas.Brush.Color := paSearch.Color;
+    Canvas.Brush.Color := clBtnFace;
     Canvas.FillRect(Canvas.ClipRect);
     DrawiconEx(Canvas.Handle,0,0,
       hppIcons[HPP_ICON_HOTFILTERCLEAR].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
+  with sbCloseSess.Glyph do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := clBtnFace;
+    Canvas.FillRect(Canvas.ClipRect);
+    DrawiconEx(Canvas.Handle,0,0,
+      hppIcons[HPP_ICON_SESS_HIDE].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
+  with Self.sbCloseBook.Glyph do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := clBtnFace;
+    Canvas.FillRect(Canvas.ClipRect);
+    DrawiconEx(Canvas.Handle,0,0,
+      hppIcons[HPP_ICON_SESS_HIDE].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
 
   imSearchNotFound.Picture.Icon.Handle := CopyIcon(hppIcons[HPP_ICON_SEARCH_NOTFOUND].handle);
@@ -1281,7 +1298,7 @@ begin
 
   tbEventsFilter.Glyph.Height := GlyphHeight;
   tbEventsFilter.Glyph.Width := GlyphWidth*2;
-  tbEventsFilter.Glyph.Canvas.Brush.Color := Toolbar.Color;
+  tbEventsFilter.Glyph.Canvas.Brush.Color := clBtnFace;
   tbEventsFilter.Glyph.Canvas.FillRect(tbEventsFilter.Glyph.Canvas.ClipRect);
   DrawIconEx(tbEventsFilter.Glyph.Canvas.Handle,sz.cx+tbEventsFilter.Spacing,((GlyphHeight-16) div 2),
             hppIcons[HPP_ICON_DROPDOWNARROW].Handle,16,16,
@@ -1290,6 +1307,8 @@ begin
             Integer(hppIcons[HPP_ICON_DROPDOWNARROW].Handle),0,
             sz.cx+tbEventsFilter.Spacing+GlyphWidth,((GlyphHeight-16) div 2),0,0,
             DST_ICON or DSS_DISABLED);
+
+  tbEventsFilter.Glyph.Canvas.Brush.Style := bsClear;
   PaintRect := Rect(0,((GlyphHeight-sz.cy) div 2),GlyphWidth-16-tbEventsFilter.Spacing,tbEventsFilter.Glyph.Height);
   DrawTextFlags := DT_END_ELLIPSIS or DT_NOPREFIX or DT_CENTER;
   tbEventsFilter.Glyph.Canvas.Font.Color := clWindowText;
@@ -1310,7 +1329,7 @@ begin
   GlyphWidth := 16+16+tbHistory.Spacing;
   tbHistory.Glyph.Height := 16;
   tbHistory.Glyph.Width := GlyphWidth*2;
-  tbHistory.Glyph.Canvas.Brush.Color := Toolbar.Color;
+  tbHistory.Glyph.Canvas.Brush.Color := clBtnFace;
   tbHistory.Glyph.Canvas.FillRect(tbHistory.Glyph.Canvas.ClipRect);
   DrawIconEx(tbHistory.Glyph.Canvas.Handle,16+tbHistory.Spacing,0,
             hppIcons[HPP_ICON_DROPDOWNARROW].Handle,16,16,

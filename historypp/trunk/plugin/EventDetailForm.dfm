@@ -28,7 +28,7 @@ object EventDetailsFrm: TEventDetailsFrm
     BevelOuter = bvNone
     Caption = ' '
     TabOrder = 1
-    object PrevBtn: TTntSpeedButton
+    object PrevBtn: THppSpeedButton
       Left = 0
       Top = 4
       Width = 77
@@ -36,7 +36,7 @@ object EventDetailsFrm: TEventDetailsFrm
       Caption = 'Prev'
       OnClick = PrevBtnClick
     end
-    object NextBtn: TTntSpeedButton
+    object NextBtn: THppSpeedButton
       Left = 82
       Top = 4
       Width = 77
@@ -91,7 +91,6 @@ object EventDetailsFrm: TEventDetailsFrm
       Height = 101
       Align = alClient
       Caption = 'Event Info'
-      ParentBackground = False
       TabOrder = 0
       DesignSize = (
         450
@@ -128,7 +127,7 @@ object EventDetailsFrm: TEventDetailsFrm
         Caption = 'To:'
         Transparent = True
       end
-      object EFromMore: TTntSpeedButton
+      object EFromMore: THppSpeedButton
         Left = 424
         Top = 56
         Width = 20
@@ -141,7 +140,7 @@ object EventDetailsFrm: TEventDetailsFrm
         ShowHint = True
         OnClick = EFromMoreClick
       end
-      object EToMore: TTntSpeedButton
+      object EToMore: THppSpeedButton
         Left = 424
         Top = 76
         Width = 20

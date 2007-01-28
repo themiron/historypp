@@ -44,7 +44,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Height = 32
       Align = alTop
       BevelOuter = bvNone
-      TabOrder = 0
+      TabOrder = 5
       DesignSize = (
         547
         32)
@@ -156,21 +156,13 @@ object fmGlobalSearch: TfmGlobalSearch
         ParentFont = False
         Transparent = False
       end
-      object sbPasswordClose: TTntSpeedButton
+      object sbPasswordClose: THppSpeedButton
         Left = 525
         Top = 2
         Width = 18
         Height = 17
         Anchors = [akTop, akRight]
         Flat = True
-        Glyph.Data = {
-          BE000000424DBE0000000000000076000000280000000A000000090000000100
-          04000000000048000000C40E0000C40E00001000000000000000000000000000
-          80000080000000808000800000008000800080800000C0C0C000808080000000
-          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777700
-          0000700777700700000077007700770000007770000777000000777700777700
-          0000777000077700000077007700770000007007777007000000777777777700
-          0000}
         Transparent = False
         OnClick = sbPasswordCloseClick
       end
@@ -292,7 +284,7 @@ object fmGlobalSearch: TfmGlobalSearch
         DesignSize = (
           389
           28)
-        object sbClearFilter: TTntSpeedButton
+        object sbClearFilter: THppSpeedButton
           Left = 27
           Top = 4
           Width = 23
@@ -321,107 +313,6 @@ object fmGlobalSearch: TfmGlobalSearch
           OnKeyDown = edFilterKeyDown
           OnKeyUp = edFilterKeyUp
         end
-      end
-    end
-    object ToolBar: TTntToolBar
-      Left = 2
-      Top = 2
-      Width = 547
-      Height = 30
-      AutoSize = True
-      BorderWidth = 2
-      EdgeBorders = []
-      Flat = True
-      Images = ilToolbar
-      ParentShowHint = False
-      ShowHint = True
-      TabOrder = 5
-      Transparent = False
-      object tbAdvanced: TTntToolButton
-        Left = 0
-        Top = 0
-        Hint = 'Advanced search options'
-        HelpKeyword = 'F4'
-        Caption = 'Advanced search options'
-        Style = tbsCheck
-        OnClick = tbAdvancedClick
-      end
-      object tbRange: TTntToolButton
-        Left = 23
-        Top = 0
-        Hint = 'Limit search range'
-        HelpKeyword = 'F5'
-        Caption = 'Limit search range'
-        Style = tbsCheck
-        OnClick = tbRangeClick
-      end
-      object tbPassword: TTntToolButton
-        Left = 46
-        Top = 0
-        Hint = 'Search protected contacts'
-        HelpKeyword = 'F6'
-        Caption = 'Search protected contacts'
-        Style = tbsCheck
-        OnClick = tbPasswordClick
-      end
-      object TntToolButton1: TTntToolButton
-        Left = 69
-        Top = 0
-        Width = 8
-        Style = tbsSeparator
-      end
-      object tbBookmarks: TTntToolButton
-        Left = 77
-        Top = 0
-        Hint = 'Bookmarks'
-        HelpKeyword = 'F7'
-        Caption = 'Bookmarks'
-        Style = tbsCheck
-        OnClick = tbBookmarksClick
-      end
-      object TntToolButton2: TTntToolButton
-        Left = 100
-        Top = 0
-        Width = 8
-        Style = tbsSeparator
-      end
-      object tbSearch: TTntToolButton
-        Left = 108
-        Top = 0
-        Caption = 'tbSearch'
-        Grouped = True
-        Style = tbsCheck
-        Visible = False
-      end
-      object tbFilter: TTntToolButton
-        Left = 131
-        Top = 0
-        Caption = 'tbFilter'
-        Grouped = True
-        Style = tbsCheck
-        Visible = False
-      end
-      object TntToolButton3: TTntToolButton
-        Left = 154
-        Top = 0
-        Width = 8
-        Style = tbsSeparator
-        Visible = False
-      end
-      object tbEventsFilter: TTntSpeedButton
-        Left = 162
-        Top = 0
-        Width = 110
-        Height = 22
-        Enabled = False
-        Flat = True
-        Layout = blGlyphTop
-        ParentShowHint = False
-        PopupMenu = pmEventsFilter
-        ShowHint = True
-        Spacing = -5
-        Transparent = False
-        OnClick = tbEventsFilterClick
       end
     end
     object paAdvanced: THppPanel
@@ -458,21 +349,13 @@ object fmGlobalSearch: TfmGlobalSearch
         ParentFont = False
         Transparent = False
       end
-      object sbAdvancedClose: TTntSpeedButton
+      object sbAdvancedClose: THppSpeedButton
         Left = 525
         Top = 2
         Width = 18
         Height = 17
         Anchors = [akTop, akRight]
         Flat = True
-        Glyph.Data = {
-          BE000000424DBE0000000000000076000000280000000A000000090000000100
-          04000000000048000000C40E0000C40E00001000000000000000000000000000
-          80000080000000808000800000008000800080800000C0C0C000808080000000
-          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777700
-          0000700777700700000077007700770000007770000777000000777700777700
-          0000777000077700000077007700770000007007777007000000777777777700
-          0000}
         Transparent = False
         OnClick = sbAdvancedCloseClick
       end
@@ -555,21 +438,13 @@ object fmGlobalSearch: TfmGlobalSearch
         ParentFont = False
         Transparent = False
       end
-      object sbRangeClose: TTntSpeedButton
+      object sbRangeClose: THppSpeedButton
         Left = 525
         Top = 2
         Width = 18
         Height = 17
         Anchors = [akTop, akRight]
         Flat = True
-        Glyph.Data = {
-          BE000000424DBE0000000000000076000000280000000A000000090000000100
-          04000000000048000000C40E0000C40E00001000000000000000000000000000
-          80000080000000808000800000008000800080800000C0C0C000808080000000
-          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777700
-          0000700777700700000077007700770000007770000777000000777700777700
-          0000777000077700000077007700770000007007777007000000777777777700
-          0000}
         Transparent = False
         OnClick = sbRangeCloseClick
       end
@@ -594,6 +469,117 @@ object fmGlobalSearch: TfmGlobalSearch
         Time = 29221.999988425930000000
         ParentBiDiMode = False
         TabOrder = 1
+      end
+    end
+    object TopPanel: THppPanel
+      Left = 2
+      Top = 2
+      Width = 547
+      Height = 30
+      Align = alTop
+      AutoSize = True
+      BevelOuter = bvNone
+      TabOrder = 0
+      object ToolBar: TTntToolBar
+        Left = 0
+        Top = 0
+        Width = 547
+        Height = 30
+        AutoSize = True
+        BorderWidth = 2
+        EdgeBorders = []
+        Flat = True
+        Images = ilToolbar
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 0
+        Transparent = True
+        object tbAdvanced: TTntToolButton
+          Left = 0
+          Top = 0
+          Hint = 'Advanced search options'
+          HelpKeyword = 'F4'
+          Caption = 'Advanced search options'
+          Style = tbsCheck
+          OnClick = tbAdvancedClick
+        end
+        object tbRange: TTntToolButton
+          Left = 23
+          Top = 0
+          Hint = 'Limit search range'
+          HelpKeyword = 'F5'
+          Caption = 'Limit search range'
+          Style = tbsCheck
+          OnClick = tbRangeClick
+        end
+        object tbPassword: TTntToolButton
+          Left = 46
+          Top = 0
+          Hint = 'Search protected contacts'
+          HelpKeyword = 'F6'
+          Caption = 'Search protected contacts'
+          Style = tbsCheck
+          OnClick = tbPasswordClick
+        end
+        object TntToolButton1: TTntToolButton
+          Left = 69
+          Top = 0
+          Width = 8
+          Style = tbsSeparator
+        end
+        object tbBookmarks: TTntToolButton
+          Left = 77
+          Top = 0
+          Hint = 'Bookmarks'
+          HelpKeyword = 'F7'
+          Caption = 'Bookmarks'
+          Style = tbsCheck
+          OnClick = tbBookmarksClick
+        end
+        object TntToolButton2: TTntToolButton
+          Left = 100
+          Top = 0
+          Width = 8
+          Style = tbsSeparator
+        end
+        object tbSearch: TTntToolButton
+          Left = 108
+          Top = 0
+          Caption = 'tbSearch'
+          Grouped = True
+          Style = tbsCheck
+          Visible = False
+        end
+        object tbFilter: TTntToolButton
+          Left = 131
+          Top = 0
+          Caption = 'tbFilter'
+          Grouped = True
+          Style = tbsCheck
+          Visible = False
+        end
+        object TntToolButton3: TTntToolButton
+          Left = 154
+          Top = 0
+          Width = 8
+          Style = tbsSeparator
+          Visible = False
+        end
+        object tbEventsFilter: THppSpeedButton
+          Left = 162
+          Top = 0
+          Width = 110
+          Height = 22
+          Enabled = False
+          Flat = True
+          Layout = blGlyphTop
+          ParentShowHint = False
+          PopupMenu = pmEventsFilter
+          ShowHint = True
+          Spacing = -5
+          Transparent = False
+          OnClick = tbEventsFilterClick
+        end
       end
     end
   end
