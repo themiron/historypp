@@ -95,7 +95,7 @@ type
     paHistory: THppPanel;
     hg: THistoryGrid;
     paFilter: THppPanel;
-    sbClearFilter: TTntSpeedButton;
+    sbClearFilter: THppSpeedButton;
     edFilter: THppEdit;
     pbFilter: TPaintBox;
     Delete1: TTntMenuItem;
@@ -109,16 +109,16 @@ type
     rbAll: TTntRadioButton;
     rbExact: TTntRadioButton;
     laAdvancedHead: TTntLabel;
-    sbAdvancedClose: TTntSpeedButton;
-    sbRangeClose: TTntSpeedButton;
-    sbPasswordClose: TTntSpeedButton;
+    sbAdvancedClose: THppSpeedButton;
+    sbRangeClose: THppSpeedButton;
+    sbPasswordClose: THppSpeedButton;
     dtRange1: TTntDateTimePicker;
     laRange1: TTntLabel;
     laRange2: TTntLabel;
     dtRange2: TTntDateTimePicker;
     laPasswordHead: TTntLabel;
     laRangeHead: TTntLabel;
-    tbEventsFilter: TTntSpeedButton;
+    tbEventsFilter: THppSpeedButton;
     tbAdvanced: TTntToolButton;
     tbRange: TTntToolButton;
     TntToolButton2: TTntToolButton;
@@ -155,6 +155,7 @@ type
     mmBookmark: TTntMenuItem;
     tbBookmarks: TTntToolButton;
     TntToolButton1: TTntToolButton;
+    TopPanel: THppPanel;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -388,6 +389,7 @@ begin
 
   DoubleBuffered := True;
   MakeDoubleBufferedParent(Self);
+  TopPanel.DoubleBuffered := False;
   hg.DoubleBuffered := False;
 
   FormState := gsIdle;
@@ -1114,10 +1116,34 @@ begin
   with sbClearFilter.Glyph do begin
     Width := 16;
     Height := 16;
-    Canvas.Brush.Color := paFilter.Color;
+    Canvas.Brush.Color := clBtnFace;
     Canvas.FillRect(Canvas.ClipRect);
     DrawiconEx(Canvas.Handle,0,0,
       hppIcons[HPP_ICON_HOTFILTERCLEAR].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
+  with sbAdvancedClose.Glyph do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := clBtnFace;
+    Canvas.FillRect(Canvas.ClipRect);
+    DrawiconEx(Canvas.Handle,0,0,
+      hppIcons[HPP_ICON_SESS_HIDE].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
+  with sbRangeClose.Glyph do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := clBtnFace;
+    Canvas.FillRect(Canvas.ClipRect);
+    DrawiconEx(Canvas.Handle,0,0,
+      hppIcons[HPP_ICON_SESS_HIDE].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
+  with sbPasswordClose.Glyph do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := clBtnFace;
+    Canvas.FillRect(Canvas.ClipRect);
+    DrawiconEx(Canvas.Handle,0,0,
+      hppIcons[HPP_ICON_SESS_HIDE].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
 end;
 
@@ -1158,7 +1184,7 @@ begin
 
   tbEventsFilter.Glyph.Height := GlyphHeight;
   tbEventsFilter.Glyph.Width := GlyphWidth*2;
-  tbEventsFilter.Glyph.Canvas.Brush.Color := Toolbar.Color;
+  tbEventsFilter.Glyph.Canvas.Brush.Color := clBtnFace;
   tbEventsFilter.Glyph.Canvas.FillRect(tbEventsFilter.Glyph.Canvas.ClipRect);
   DrawIconEx(tbEventsFilter.Glyph.Canvas.Handle,sz.cx+tbEventsFilter.Spacing,((GlyphHeight-16) div 2),
             hppIcons[HPP_ICON_DROPDOWNARROW].Handle,16,16,
@@ -1167,6 +1193,7 @@ begin
             Integer(hppIcons[HPP_ICON_DROPDOWNARROW].Handle),0,
             sz.cx+tbEventsFilter.Spacing+GlyphWidth,((GlyphHeight-16) div 2),0,0,
             DST_ICON or DSS_DISABLED);
+  
   PaintRect := Rect(0,((GlyphHeight-sz.cy) div 2),GlyphWidth-16-tbEventsFilter.Spacing,tbEventsFilter.Glyph.Height);
   DrawTextFlags := DT_END_ELLIPSIS or DT_NOPREFIX or DT_CENTER;
   tbEventsFilter.Glyph.Canvas.Font.Color := clWindowText;
