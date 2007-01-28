@@ -121,7 +121,9 @@ type
     procedure SetItem(const Value: Integer);
     procedure TranslateForm;
     procedure LoadButtonIcons;
+    procedure LoadFormIcon;
     { Private declarations }
+    procedure HMIconsChanged(var M: TMessage); message HM_NOTF_ICONSCHANGED;
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
     procedure HMEventDeleted(var Message: TMessage); message HM_MIEV_EVENTDELETED;
   public
@@ -279,7 +281,6 @@ procedure TEventDetailsFrm.FormCreate(Sender: TObject);
   //re_mask: integer;
 begin
   Icon.ReleaseHandle;
-  Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
 
   DesktopFont := True;
   MakeFontsParent(Self);
@@ -321,6 +322,8 @@ begin
     if TOhContact = 0 then ToContact := true;
     FromhContact:=0;
   end;
+
+  LoadFormIcon;
 
   EFromMore.Enabled := not FromContact;
   EToMore.Enabled := not ToContact;
@@ -501,9 +504,29 @@ begin
   end;
 end;
 
+procedure TEventDetailsFrm.LoadFormIcon;
+var
+  ic: hIcon;
+  er: PEventRecord;
+begin
+  er := GetMessageRecord(FParentForm.hg.Items[FItem].MessageType);
+  if er.iSkin = -1 then
+    ic := hppIcons[er.i].handle
+  else
+    ic := skinIcons[er.i].handle;
+  if ic = 0 then
+    ic := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
+  Icon.Handle := CopyIcon(ic);
+end;
+
+procedure TEventDetailsFrm.HMIconsChanged(var M: TMessage);
+begin
+  LoadFormIcon;
+end;
+
 procedure TEventDetailsFrm.HMIcons2Changed(var M: TMessage);
 begin
-  Icon.Handle := CopyIcon(hppIcons[HPP_ICON_CONTACTHISTORY].handle);
+  LoadFormIcon;
   LoadButtonIcons;
 end;
 

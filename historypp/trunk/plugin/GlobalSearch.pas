@@ -384,6 +384,9 @@ begin
 //  if Scaled then begin
 //    Font.Height := NonClientMetrics.lfMessageFont.lfHeight;
 //  end;
+  Icon.ReleaseHandle;
+  Icon.Handle := CopyIcon(hppIcons[HPP_ICON_GLOBALSEARCH].handle);
+
   DesktopFont := True;
   MakeFontsParent(Self);
 
@@ -1589,8 +1592,7 @@ begin
   ShowContacts(False);
 
   IsSearching := False;
-  Icon.Handle := CopyIcon(hppIcons[HPP_ICON_GLOBALSEARCH].handle);
-
+  
   hg.Codepage := hppCodepage;
   hg.RTLMode := hppRTLDefault;
 
