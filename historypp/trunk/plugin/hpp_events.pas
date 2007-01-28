@@ -52,11 +52,11 @@ const
 
   EVENTTYPE_STATUSCHANGE        = 25368;  // from srmm's
   EVENTTYPE_SMTPSIMPLE          = 2350;   // from SMTP Simple
-  EVENTTYPE_NICKNAMECHANGE      = 9001;   // from prescuma
-  EVENTTYPE_STATUSMESSAGECHANGE = 9002;   // from prescuma
-  EVENTTYPE_AVATARCHANGE        = 9003;   // from prescuma
-  EVENTTYPE_CONTACTLEFTCHANNEL  = 9004;   // from prescuma
-  EVENTTYPE_VOICE_CALL          = 8739;   // from prescuma
+  EVENTTYPE_NICKNAMECHANGE      = 9001;   // from pescuma
+  EVENTTYPE_STATUSMESSAGECHANGE = 9002;   // from pescuma
+  EVENTTYPE_AVATARCHANGE        = 9003;   // from pescuma
+  EVENTTYPE_CONTACTLEFTCHANNEL  = 9004;   // from pescuma
+  EVENTTYPE_VOICE_CALL          = 8739;   // from pescuma
 
 // General timstamp function
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;
