@@ -833,8 +833,8 @@ end;
 
 procedure Register;
 begin
-  RegisterComponents('Custom', [THistoryGrid]);
-  RegisterComponents('Custom', [THPPRichedit]);
+  RegisterComponents('History++', [THistoryGrid]);
+  RegisterComponents('History++', [THPPRichedit]);
 end;
 
 { THistoryGrid }
