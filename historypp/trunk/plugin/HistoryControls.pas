@@ -1,11 +1,12 @@
 unit HistoryControls;
 
+{$I compilers.inc}
+
 interface
 
 uses
-  Windows, Messages, Classes, Controls, Forms, StdCtrls, ExtCtrls,
-  TntSysUtils, TntControls, TntStdCtrls, TntExtCtrls,
-  Themes;
+  Windows, Messages, Classes, Controls, Forms, StdCtrls, ExtCtrls, Buttons,
+  TntSysUtils, TntStdCtrls, TntExtCtrls, TntButtons;
 
 type
 
@@ -26,18 +27,57 @@ type
 
   THppPanel = class(TTntPanel)
   public
+    {$IFDEF COMPILER_7}
     constructor Create(AOwner: TComponent); override;
+    {$ENDIF}
+  end;
+
+  THppSpeedButton = class(TTntSpeedButton)
+  private
+    procedure WMContextMenu(var Message: TWMContextMenu); message WM_CONTEXTMENU;
+  protected
+    procedure PaintButton; override;
+    {$IFDEF COMPILER_7}
+    procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
+    {$ENDIF}
   end;
 
 procedure Register;
 
 implementation
 
+uses Themes;
+
+type
+
+  THackSpeedButton_D6_D7_D9 = class(TGraphicControl)
+  protected
+    FxxxxGroupIndex: Integer;
+    FGlyph: Pointer;
+    FxxxxDown: Boolean;
+    FDragging: Boolean;
+    {$IFDEF DELPHI_7}
+    FxxxxAllowAllUp: Boolean;
+    FxxxxLayout: TButtonLayout;
+    FxxxxSpacing: Integer;
+    FxxxxTransparent: Boolean;
+    FxxxxMargin: Integer;
+    FxxxxFlat: Boolean;
+    FMouseInControl: Boolean;
+    {$ENDIF}
+  end;
+
+  {$IFDEF COMPILER_6_UP} // verified against VCL source in Delphi 6 and BCB 6
+  THackSpeedButton = THackSpeedButton_D6_D7_D9;
+  {$ENDIF}
+
 procedure Register;
 begin
-  RegisterComponents('HistoryPP', [TPasswordEdit]);
-  RegisterComponents('HistoryPP', [THppEdit]);
-  RegisterComponents('HistoryPP', [THppPanel]);
+  RegisterComponents('History++', [TPasswordEdit]);
+  RegisterComponents('History++', [THppEdit]);
+  RegisterComponents('History++', [THppPanel]);
+  RegisterComponents('History++', [THppSpeedButton]);
 end;
 
 procedure TPasswordEdit.CreateParams(var Params: TCreateParams);
@@ -88,8 +128,11 @@ begin
     inherited;
 end;
 
-{ ThppPanel }
+{ THppPanel }
 
+{$IFDEF DELPHI_7}
+// hack to make panel really ParentBackground'ed.
+// VCL bug. http://qc.borland.com/wc/qcmain.aspx?d=2534
 constructor THppPanel.Create(AOwner: TComponent);
 var
   StoredParentBackground: Boolean;
@@ -99,6 +142,59 @@ begin
   //ControlStyle := ControlStyle - [csParentBackground] + [csOpaque];
   if ThemeServices.ThemesEnabled then
     ParentBackground := StoredParentBackground;
+end;
+{$ENDIF}
+
+{ THppSpeedButton }
+
+// hack to prepaint non transparent sppedbuttons with themed
+// parent control, such as doublebuffered toolbar.
+// VCL bug.
+procedure THppSpeedButton.PaintButton;
+begin
+  with ThemeServices do
+    if not Transparent and ThemesEnabled and Assigned(Parent) then
+      DrawParentBackground(Parent.Handle, Canvas.Handle, nil, True);
+  inherited;
+end;
+
+{$IFDEF DELPHI_7}
+// hack to avoid speed buttons always hovered in Deplhi 7
+// since there we have no CM_MOUSEENTER and CM_MOUSELEAVE
+// from Application.Idle;
+procedure THppSpeedButton.MouseMove(Shift: TShiftState; X, Y: Integer);
+var
+  P : TPoint;
+begin
+  GetCursorPos(P);
+  if FindDragTarget(P, True) = Self then begin
+    if not (THackSpeedButton(Self).FDragging or
+            THackSpeedButton(Self).FMouseInControl)
+            then Perform(CM_MOUSEENTER,0,0);
+    MouseCapture := True;
+  end else begin
+    THackSpeedButton(Self).FMouseInControl := not Flat;
+    MouseCapture := THackSpeedButton(Self).FDragging;
+    if not THackSpeedButton(Self).FDragging then
+      Perform(CM_MOUSELEAVE,0,0);
+  end;
+  inherited;
+end;
+
+procedure THppSpeedButton.MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  inherited MouseUp(Button, Shift, X, Y);
+  MouseMove(Shift,X,Y);
+end;
+{$ENDIF}
+
+// hack to avoid speed buttons hovered after context menu
+// show since we have no CM_MOUSEENTER and CM_MOUSELEAVE
+// from Application.Idle;
+procedure THppSpeedButton.WMContextMenu(var Message: TWMContextMenu);
+begin
+  inherited;
+  if Message.Result <> 0 then Perform(CM_MOUSELEAVE, 0, 0);
 end;
 
 end.
