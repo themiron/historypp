@@ -3,3 +3,4 @@ History++ module could not be loaded, riched20.dll is missing. Press Yes to cont
 Information
 Global History Search
 History
+History
