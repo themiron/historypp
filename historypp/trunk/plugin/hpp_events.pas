@@ -356,7 +356,7 @@ begin
     SetString(hi.Text,msgW,lenW)
   else
     hi.Text := AnsiToWideString(msgA,hi.Codepage);
-  if TextHasUrls(hi.Text) then
+  if (hi.MessageType = [mtMessage]) and TextHasUrls(hi.Text) then
     hi.MessageType := [mtUrl];
 end;
 
