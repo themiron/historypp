@@ -408,14 +408,14 @@ begin
   end;
 end;
 
-function FindIconsDll: string;
+function FindIconsDll(ForceCheck: Boolean): string;
 var
   hppIconsDir: string;
-  str: WideString;
+  hppMessage: WideString;
   CountIconsDll: Integer;
   DoCheck: Boolean;
 begin
-  DoCheck := True;
+  DoCheck := ForceCheck or GetDBBool(hppDBName,'CheckIconPack',True);
   hppIconsDir := ExpandFileName(hppPluginsDir+'..\Icons\');
   if FileExists(hppIconsDir+hppIPName) then
     Result := hppIconsDir+hppIPName
@@ -423,22 +423,26 @@ begin
   if FileExists(hppPluginsDir+hppIPName) then
     Result := hppPluginsDir+hppIPName
   else begin
-    DoCheck := False;
     Result := hppPluginsDir+hppDllName;
-    str := 'Cannot load icon pack ('+hppIPName+') from:'+#13#10+
-            #13#10+
-            hppIconsDir+#13#10+
-            hppPluginsDir+#13#10+
-            #13#10+
-            'No icons will be shown.';
-    hppMessageBox(0,str,hppName+' Error',MB_ICONERROR or MB_OK);
+    if DoCheck then begin
+      DoCheck := False;
+      hppMessage := WideFormat(FormatCString(TranslateWideW(
+        'Cannot load icon pack (%s) from:\r\n'+
+        '%s\r\n'+
+        'This can cause no icons will be shown.')),
+        [hppIPName,hppIconsDir+#13#10+hppPluginsDir]);
+      hppMessageBox(0,hppMessage,hppName+' Error',MB_ICONERROR or MB_OK);
+    end;
   end;
   if DoCheck then begin
     CountIconsDll := ExtractIconEx(PChar(Result),-1,HICON(nil^),HICON(nil^),0);
     if CountIconsDll < HppIconsCount then begin
-      str := 'You are using old icon pack ('+hppIPName+')'+#13#10+
-             'This can cause missing icons, so update the icon pack';
-      hppMessageBox(0,str,hppName+' Warning',MB_ICONWARNING or MB_OK);
+      hppMessage := WideFormat(FormatCString(TranslateWideW(
+        'You are using old icon pack from:\r\n'+
+        '%s\r\n'+
+        'This can cause missing icons, so update the icon pack.')),
+        [AnsiToWideString(Result,hppCodepage)]);
+      hppMessageBox(0,hppMessage,hppName+' Warning',MB_ICONWARNING or MB_OK);
     end;
   end;
 end;
@@ -451,9 +455,9 @@ var
   i: integer;
   mt: TMessageType;
 begin
-  hppIconPack := FindIconsDll;
   // Register in IcoLib
   IcoLibEnabled := Boolean(PluginLink.ServiceExists(MS_SKIN2_ADDICON));
+  hppIconPack := FindIconsDll(not IcoLibEnabled);
   if IcoLibEnabled then begin
     ZeroMemory(@sid,SizeOf(sid));
     sid.cbSize := SizeOf(sid);
