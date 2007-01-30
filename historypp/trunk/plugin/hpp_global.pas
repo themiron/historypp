@@ -376,8 +376,8 @@ var
   ASize,WSize: Integer;
   AnsiStr: AnsiString;
 begin
-  WSize := Length(WideStr)+1;
-  if WSize = 1 then exit;
+  WSize := (Length(WideStr)+1)*SizeOf(WideChar);
+  if WSize = SizeOf(WideChar) then exit;
   AnsiStr := WideToAnsiString(WideStr,CodePage);
   ASize := Length(AnsiStr)+1;
   OpenClipboard(Handle);
