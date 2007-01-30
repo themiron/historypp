@@ -465,7 +465,9 @@ begin
       if StrLen(hppIconsDefs[i].group) = 0 then
         sid.pszSection := hppName
       else
-        sid.pszSection := PChar(hppName+'/'+Translate(hppIconsDefs[i].group){TRANSLATE-IGNORE});
+        //sid.pszSection := PChar(hppName+'/'+Translate(hppIconsDefs[i].group){TRANSLATE-IGNORE});
+        //sid.pszSection := PChar(hppName+'/'+hppIconsDefs[i].group);
+        sid.pszSection := PChar(Translate(hppName)+'/'+Translate(hppIconsDefs[i].group){TRANSLATE-IGNORE});
       sid.iDefaultIndex := hppIconsDefs[i].i;
       PluginLink.CallService(MS_SKIN2_ADDICON,0,LPARAM(@sid));
     end;
@@ -477,7 +479,9 @@ begin
         hppIcons[EventRecords[mt].i].name := EventRecords[mt].iName;
         sid.pszName := hppIcons[EventRecords[mt].i].name;
         sid.pszDescription := Translate(PChar(WideToAnsiString(EventRecords[mt].Name,hppCodepage)){TRANSLATE-IGNORE});
-        sid.pszSection := PChar(hppName+'/'+Translate('Events'){TRANSLATE-IGNORE});
+        //sid.pszSection := PChar(hppName+'/'+Translate('Events'){TRANSLATE-IGNORE});
+        //sid.pszSection := hppName+'/Events';
+        sid.pszSection := PChar(Translate(hppName)+'/'+Translate('Events'){TRANSLATE-IGNORE});
         sid.iDefaultIndex := EventRecords[mt].i;
         PluginLink.CallService(MS_SKIN2_ADDICON,0,LPARAM(@sid));
       end;
