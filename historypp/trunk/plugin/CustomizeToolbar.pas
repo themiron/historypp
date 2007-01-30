@@ -5,10 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, CheckLst, TntCheckLst, TntComCtrls, ComCtrls, CommCtrl,
-  TntStdCtrls, TntWindows, TntButtons, ExtCtrls, TntExtCtrls, m_api, hpp_forms;
+  TntStdCtrls, TntWindows, TntButtons, TntForms, ExtCtrls, TntExtCtrls, m_api, hpp_forms;
 
 type
-  TfmCustomizeToolbar = class(TForm)
+  TfmCustomizeToolbar = class(TTntForm)
     bnAdd: TTntButton;
     bnRemove: TTntButton;
     lbAdded: TTntListBox;
