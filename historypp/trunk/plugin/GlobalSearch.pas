@@ -1560,25 +1560,24 @@ begin
 end;
 
 procedure TfmGlobalSearch.WndProc(var Message: TMessage);
-var
-  res: Integer;
 begin
   case Message.Msg of
     WM_COMMAND: begin
       if mmAcc.DispatchCommand(Message.WParam) then exit;
-      if PluginLink.CallService(MS_CLIST_MENUPROCESSCOMMAND,
-        MAKEWPARAM(Message.WParamLo,MPCF_CONTACTMENU),UserMenuContact) = 0 then
-        exit;
-    end;
-    WM_MEASUREITEM: begin
-      Message.Result := PluginLink.CallService(MS_CLIST_MENUMEASUREITEM,Message.WParam,Message.LParam);
+      inherited;
+      if Message.Result <> 0 then exit;
+      Message.Result := PluginLink.CallService(MS_CLIST_MENUPROCESSCOMMAND,
+        MAKEWPARAM(Message.WParamLo,MPCF_CONTACTMENU),UserMenuContact);
       exit;
     end;
-    WM_DRAWITEM:
-      if TWMDrawItem(Message).DrawItemStruct^.hwndItem = UserMenu then begin
-		    Message.Result := PluginLink.CallService(MS_CLIST_MENUDRAWITEM,Message.WParam,Message.LParam);
-        exit;
-      end;
+    WM_MEASUREITEM: if Self.UserMenu <> 0 then begin
+ 	    Message.Result := PluginLink.CallService(MS_CLIST_MENUMEASUREITEM,Message.WParam,Message.LParam);
+      if Message.Result <> 0 then exit;
+    end;
+    WM_DRAWITEM: if Self.UserMenu <> 0 then begin
+      Message.Result := PluginLink.CallService(MS_CLIST_MENUDRAWITEM,Message.WParam,Message.LParam);
+      if Message.Result <> 0 then exit;
+    end;
   end;
   inherited;
 end;
