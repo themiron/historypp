@@ -625,9 +625,8 @@ begin
   ReadStringTillZeroW(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Template,BytePos);
   if (Artist <> '') or (Title <> '') or (Album <> '') then begin
     if Template <> '' then Template := Template + #13#10;
-    Template := Template + WideFormat(
-      Tnt_WideStringReplace(TranslateWideW('Artist: %s\nTitle: %s\nAlbum: %s'),
-      '\n',#13#10,[rfReplaceAll]),
+    Template := Template + WideFormat(FormatCString(
+      TranslateWideW('Artist: %s\r\nTitle: %s\r\nAlbum: %s')),
       [Artist,Title,Album]);
   end;
   hi.Text := TranslateWideW('WATrack: %s');

@@ -426,10 +426,8 @@ begin
     Result := hppPluginsDir+hppDllName;
     if DoCheck then begin
       DoCheck := False;
-      hppMessage := WideFormat(FormatCString(TranslateWideW(
-        'Cannot load icon pack (%s) from:\r\n'+
-        '%s\r\n'+
-        'This can cause no icons will be shown.')),
+      hppMessage := WideFormat(FormatCString(
+        TranslateWideW('Cannot load icon pack (%s) from:\r\n%s\r\nThis can cause no icons will be shown.')),
         [hppIPName,hppIconsDir+#13#10+hppPluginsDir]);
       hppMessageBox(0,hppMessage,hppName+' Error',MB_ICONERROR or MB_OK);
     end;
@@ -437,10 +435,8 @@ begin
   if DoCheck then begin
     CountIconsDll := ExtractIconEx(PChar(Result),-1,HICON(nil^),HICON(nil^),0);
     if CountIconsDll < HppIconsCount then begin
-      hppMessage := WideFormat(FormatCString(TranslateWideW(
-        'You are using old icon pack from:\r\n'+
-        '%s\r\n'+
-        'This can cause missing icons, so update the icon pack.')),
+      hppMessage := WideFormat(FormatCString(
+        TranslateWideW('You are using old icon pack from:\r\n%s\r\nThis can cause missing icons, so update the icon pack.')),
         [AnsiToWideString(Result,hppCodepage)]);
       hppMessageBox(0,hppMessage,hppName+' Warning',MB_ICONWARNING or MB_OK);
     end;
