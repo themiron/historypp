@@ -390,8 +390,10 @@ begin
   odp.Position := 0;
   odp.hInstance := hInstance;
   odp.pszTemplate := MakeIntResource(IDD_OPT_HISTORYPP);
-  odp.pszTitle := Translate(hppName{TRANSLATE-IGNORE});
-  odp.pszGroup := Translate('History');
+  //odp.pszTitle := Translate(hppName{TRANSLATE-IGNORE});
+  //odp.pszGroup := Translate('History');
+  odp.pszTitle := Translate('History');
+  odp.pszGroup := nil;
   odp.pfnDlgProc := @OptDialogProc;
   odp.flags := ODPF_BOLDGROUPS;
   PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp));
