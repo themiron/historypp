@@ -243,6 +243,7 @@ function URLEncode(const ASrc: string): string;
 function GetMessageRecord(MesType: TMessageTypes): PEventRecord;
 function MakeTextXMLedA(Text: String): String;
 function MakeTextXMLedW(Text: WideString): WideString;
+function FormatCString(Text: WideString): WideString;
 
 implementation
 
@@ -375,9 +376,10 @@ var
   ASize,WSize: Integer;
   AnsiStr: AnsiString;
 begin
+  WSize := Length(WideStr)+1;
+  if WSize = 1 then exit;
   AnsiStr := WideToAnsiString(WideStr,CodePage);
   ASize := Length(AnsiStr)+1;
-  WSize := ASize*SizeOf(WideChar);
   OpenClipboard(Handle);
   try
     if Clear then EmptyClipboard;
@@ -457,6 +459,32 @@ begin;
   Result := Tnt_WideStringReplace(Result,'<','&lt;',[rfReplaceAll]);
   Result := Tnt_WideStringReplace(Result,'“','&quot;',[rfReplaceAll]);
   Result := Tnt_WideStringReplace(Result,'‘','&apos;',[rfReplaceAll]);
+end;
+
+function FormatCString(Text: WideString): WideString;
+var
+  inlen,inpos,outpos: integer;
+begin
+  inlen := Length(Text);
+  SetLength(Result,inlen);
+  if inlen = 0 then exit;
+  inpos := 1;
+  outpos := 0;
+  while inpos <= inlen do begin
+    inc(outpos);
+    if (Text[inpos] = '\') and (inpos < inlen) then begin
+      case Text[inpos+1] of
+        'r': begin Result[outpos] := #13; inc(inpos); end;
+        'n': begin Result[outpos] := #10; inc(inpos); end;
+        't': begin Result[outpos] := #09; inc(inpos); end;
+        '\': begin Result[outpos] := '\'; inc(inpos); end;
+      else         Result[outpos] := Text[inpos];
+      end;
+    end else
+      Result[outpos] := Text[inpos];
+    inc(inpos);
+  end;
+  SetLength(Result,outpos);
 end;
 
 begin
