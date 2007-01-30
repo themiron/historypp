@@ -140,6 +140,20 @@ History++ export
 Conversation started at %s
 [Clear Search]
 Clear Search
+[Advanced Search Options]
+Advanced Search Options
+[Search any word]
+Search any word
+[Search all words]
+Search all words
+[Search exact phrase]
+Search exact phrase
+[Search messages from]
+Search messages from
+[to]
+to
+[Limit Search Range]
+Limit Search Range
 [Advanced search options]
 Advanced search options
 [F4]
@@ -160,20 +174,6 @@ F7
 tbSearch
 [tbFilter]
 tbFilter
-[Advanced Search Options]
-Advanced Search Options
-[Search any word]
-Search any word
-[Search all words]
-Search all words
-[Search exact phrase]
-Search exact phrase
-[Search messages from]
-Search messages from
-[to]
-to
-[Limit Search Range]
-Limit Search Range
 [Sh&ow in context]
 Sh&ow in context
 [Set &Bookmark]
@@ -494,8 +494,8 @@ Authorization future request by %s (%d): %s
 Broadcast message from %s (%s): %s
 [WATrack: information request]
 WATrack: information request
-[Artist: %s\nTitle: %s\nAlbum: %s]
-Artist: %s\nTitle: %s\nAlbum: %s
+[Artist: %s\r\nTitle: %s\r\nAlbum: %s]
+Artist: %s\r\nTitle: %s\r\nAlbum: %s
 [WATrack: %s]
 WATrack: %s
 [WATrack: request denied]
@@ -508,3 +508,7 @@ WATrack: request denied
 ;; hpp_options.trans.txt file
 
 ;; Text found in ..\plugin\hpp_options.pas:
+[Cannot load icon pack (%s) from:\r\n%s\r\nThis can cause no icons will be shown.]
+Cannot load icon pack (%s) from:\r\n%s\r\nThis can cause no icons will be shown.
+[You are using old icon pack from:\r\n%s\r\nThis can cause missing icons, so update the icon pack.]
+You are using old icon pack from:\r\n%s\r\nThis can cause missing icons, so update the icon pack.
