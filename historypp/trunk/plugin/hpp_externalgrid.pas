@@ -434,7 +434,7 @@ begin
     TextW := GetRichString(Grid.InlineRichEdit.Handle,True)
   else
   if Grid.Focused and (Grid.Selected <> -1) then
-    TextW := Grid.FormatSelected(Grid.Options.ClipCopyFormat)
+    TextW := Grid.FormatSelected(GridOptions.SelectionFormat)
   else
     TextW := '';
   if Length(TextW) > 0 then begin
@@ -576,7 +576,7 @@ begin
     if Grid.InlineRichEdit.SelLength = 0 then exit;
     Grid.InlineRichEdit.CopyToClipboard;
   end else begin
-    CopyToClip(Grid.FormatSelected(Grid.Options.ClipCopyFormat),
+    CopyToClip(Grid.FormatSelected(GridOptions.ClipCopyFormat),
       Grid.Handle,Items[Grid.Selected].Codepage);
   end;
 end;
@@ -594,7 +594,7 @@ begin
     Grid.InlineRichEdit.Perform(EM_EXSETSEL,0,LPARAM(@cr));
     Grid.InlineRichEdit.Lines.EndUpdate;
   end else
-    CopyToClip(Grid.FormatSelected(Grid.Options.ClipCopyTextFormat),
+    CopyToClip(Grid.FormatSelected(GridOptions.ClipCopyTextFormat),
       Grid.Handle,Items[Grid.Selected].Codepage);
 end;
 
@@ -640,11 +640,11 @@ begin
   if Grid.State = gsInline then begin
     if Grid.InlineRichEdit.SelLength = 0 then exit;
     SendMessageTo(Items[Grid.Selected].hContact,
-      Grid.FormatSelected(DEFFORMAT_REPLYQUOTEDTEXT));
+      Grid.FormatSelected(GridOptions.ReplyQuotedTextFormat));
   end else begin
     //if (hContact = 0) or (hg.SelCount = 0) then exit;
     SendMessageTo(Items[Grid.Selected].hContact,
-      Grid.FormatSelected(Grid.Options.ReplyQuotedFormat));
+      Grid.FormatSelected(GridOptions.ReplyQuotedFormat));
   end;
 end;
 

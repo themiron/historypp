@@ -334,6 +334,12 @@ begin
   if (PDBContactWriteSetting(lParam).szSetting = 'FormatReplyQuoted') then
     GridOptions.ReplyQuotedFormat := GetDBWideStr(hppDBName,'FormatReplyQuoted',DEFFORMAT_REPLYQUOTED)
   else
+  if (PDBContactWriteSetting(lParam).szSetting = 'FormatReplyQuotedText') then
+    GridOptions.ReplyQuotedTextFormat := GetDBWideStr(hppDBName,'FormatReplyQuotedText',DEFFORMAT_REPLYQUOTED)
+  else
+  if (PDBContactWriteSetting(lParam).szSetting = 'FormatSelection') then
+    GridOptions.SelectionFormat := GetDBWideStr(hppDBName,'FormatSelection',DEFFORMAT_SELECTION)
+  else
   if (PDBContactWriteSetting(lParam).szSetting = 'ProfileName') then
     GridOptions.ProfileName := GetDBWideStr(hppDBName,'ProfileName','')
   else

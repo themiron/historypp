@@ -190,6 +190,8 @@ type
     FClipCopyTextFormat: WideString;
     FClipCopyFormat: WideString;
     FReplyQuotedFormat: WideString;
+    FReplyQuotedTextFormat: WideString;
+    FSelectionFormat: WideString;
 
     FOpenDetailsMode: Boolean;
 
@@ -247,6 +249,8 @@ type
     property ClipCopyFormat: WideString read FClipCopyFormat write FClipCopyFormat;
     property ClipCopyTextFormat: WideString read FClipCopyTextFormat write FClipCopyTextFormat;
     property ReplyQuotedFormat: WideString read FReplyQuotedFormat write FReplyQuotedFormat;
+    property ReplyQuotedTextFormat: WideString read FReplyQuotedTextFormat write FReplyQuotedTextFormat;
+    property SelectionFormat: WideString read FSelectionFormat write FSelectionFormat; 
 
     property Locked: Boolean read GetLocked;
 
@@ -2996,7 +3000,6 @@ begin
         from_nick := ProfileName;
         to_nick := ContactName;
       end;
-      // oxy, for what???
       nick := from_nick;
       if Assigned(FGetNameData) then
         FGetNameData(Self,Item,nick);

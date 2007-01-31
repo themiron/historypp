@@ -3660,7 +3660,7 @@ procedure THistoryFrm.InlineReplyQuotedClick(Sender: TObject);
 begin
   if (hg.Selected = -1) or (hContact = 0) then exit;
   if hg.InlineRichEdit.SelLength = 0 then exit;
-  SendMessageTo(hContact,hg.FormatSelected(DEFFORMAT_REPLYQUOTEDTEXT));
+  SendMessageTo(hContact,hg.FormatSelected(GridOptions.ReplyQuotedTextFormat));
 end;
 
 procedure THistoryFrm.hgInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
