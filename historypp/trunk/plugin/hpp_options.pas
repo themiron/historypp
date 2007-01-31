@@ -66,6 +66,7 @@ const
   DEFFORMAT_CLIPCOPYTEXT    = '%mes%\n';
   DEFFORMAT_REPLYQUOTED     = '%nick%, %smart_datetime%:\n%quot_mes%\n';
   DEFFORMAT_REPLYQUOTEDTEXT = '%quot_selmes%\n';
+  DEFFORMAT_SELECTION       = '%selmes%\n';
   DEFFORMAT_DATETIME        = 'c'; // ShortDateFormat + LongTimeFormat
 
   hppIconsDefs : array[0..33] of ThppIconsRec = (
@@ -376,6 +377,8 @@ begin
   GridOptions.ClipCopyFormat := GetDBWideStr(hppDBName,'FormatCopy',DEFFORMAT_CLIPCOPY);
   GridOptions.ClipCopyTextFormat := GetDBWideStr(hppDBName,'FormatCopyText',DEFFORMAT_CLIPCOPYTEXT);
   GridOptions.ReplyQuotedFormat := GetDBWideStr(hppDBName,'FormatReplyQuoted',DEFFORMAT_REPLYQUOTED);
+  GridOptions.ReplyQuotedTextFormat := GetDBWideStr(hppDBName,'FormatReplyQuotedText',DEFFORMAT_REPLYQUOTEDTEXT);
+  GridOptions.SelectionFormat := GetDBWideStr(hppDBName,'FormatSelection',DEFFORMAT_SELECTION);
   GridOptions.ProfileName := GetDBWideStr(hppDBName,'ProfileName','');
   GridOptions.DateTimeFormat := GetDBStr(hppDBName,'DateTimeFormat',DEFFORMAT_DATETIME);
   GridOptions.TextFormatting := GetDBBool(hppDBName,'InlineTextFormatting',True);

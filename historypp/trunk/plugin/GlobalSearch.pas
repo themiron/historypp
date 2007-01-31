@@ -2125,7 +2125,7 @@ begin
   if hg.Selected <> -1 then begin
     if GetSearchItem(hg.Selected).Contact.Handle = 0 then exit;
     if hg.InlineRichEdit.SelLength = 0 then exit;
-    SendMessageTo(GetSearchItem(hg.Selected).Contact.Handle,hg.FormatSelected(DEFFORMAT_REPLYQUOTEDTEXT));
+    SendMessageTo(GetSearchItem(hg.Selected).Contact.Handle,hg.FormatSelected(GridOptions.ReplyQuotedTextFormat));
   end;
 end;
 
