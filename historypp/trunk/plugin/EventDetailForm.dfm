@@ -226,6 +226,8 @@ object EventDetailsFrm: TEventDetailsFrm
     OnResizeRequest = ETextResizeRequest
   end
   object pmEText: TTntPopupMenu
+    BiDiMode = bdLeftToRight
+    ParentBiDiMode = False
     OnPopup = pmETextPopup
     Left = 68
     Top = 173
