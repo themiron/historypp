@@ -114,15 +114,15 @@ begin
   if mon >= Screen.MonitorCount then mon := Form.Monitor.MonitorNum;
   w := GetDBWord(Module,Prefix+'width',Form.ClientWidth) + deltaW;
   h := GetDBWord(Module,Prefix+'height',Form.ClientHeight) + deltaH;
-  l := GetDBWord(Module,Prefix+'x',Screen.Monitors[mon].Left+((Screen.Monitors[mon].Width-w) div 2));
-  t := GetDBWord(Module,Prefix+'y',Screen.Monitors[mon].Top+((Screen.Monitors[mon].Height-h) div 2));
+  l := GetDBInt(Module,Prefix+'x',Screen.Monitors[mon].Left+((Screen.Monitors[mon].Width-w) div 2));
+  t := GetDBInt(Module,Prefix+'y',Screen.Monitors[mon].Top+((Screen.Monitors[mon].Height-h) div 2));
   maximized := GetDBBool(Module,Prefix+'maximized',False);
   // just to be safe, don't let window jump out of the screen
-  // at least 50 px from each side should be visible
-  if l+50 > Screen.DesktopWidth then l := Screen.DesktopWidth-50;
-  if t+50 > Screen.DesktopHeight then t := Screen.DesktopHeight-50;
-  if l+w < 50 then l := 50-w;
-  if t+h < 50 then t := 50-h;
+  // at least 100 px from each side should be visible
+  if l+100 > Screen.DesktopWidth then l := Screen.DesktopWidth-100;
+  if t+100 > Screen.DesktopHeight then t := Screen.DesktopHeight-100;
+  if l+w < 100 then l := 100-w;
+  if t+h < 100 then t := 100-h;
   Form.SetBounds(l,t,w,h);
   if maximized then Form.WindowState := wsMaximized;
 end;
@@ -148,8 +148,8 @@ begin
     w := Form.ClientWidth;
     h := Form.ClientHeight;
   end;
-  WriteDBWord(Module,Prefix+'x',l);
-  WriteDBWord(Module,Prefix+'y',t);
+  WriteDBInt(Module,Prefix+'x',l);
+  WriteDBInt(Module,Prefix+'y',t);
   WriteDBWord(Module,Prefix+'width',w);
   WriteDBWord(Module,Prefix+'height',h);
   WriteDBWord(Module,Prefix+'monitor',Form.Monitor.MonitorNum);
