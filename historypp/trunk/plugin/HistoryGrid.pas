@@ -5718,10 +5718,9 @@ var
   re_options,new_options: DWord;
 begin
   re_options := SendMessage(Handle,EM_GETLANGOPTIONS,0,0);
-  case Enabled of
-    True:  new_options := re_options or IMF_AUTOKEYBOARD;
-    False: new_options := re_options and not IMF_AUTOKEYBOARD;
-  end;
+  if Enabled then
+    new_options := re_options or IMF_AUTOKEYBOARD else
+    new_options := re_options and not IMF_AUTOKEYBOARD;
   if re_options <> new_options then
     SendMessage(Handle,EM_SETLANGOPTIONS,0,new_options);
 end;
@@ -5751,26 +5750,24 @@ end;
 
 // Fix for VCL TRichEdit uses RichEdit 1.0 class, incompatible
 // with EM_REQUESTRESIZE message for some reasons
+type
+  TAccessCustomMemo = class(TCustomMemo);
+  InheritedCreateParams = procedure(var Params: TCreateParams) of object;
 procedure THPPRichedit.CreateParams(var Params: TCreateParams);
-
-  procedure CallInherited(Obj: TObject; var Params: TCreateParams; AClass: TClass); register;
-  asm
-    { ->    EAX     Pointer to our object   }
-    {       EDX     Pointer to Params       }
-    {       ECX     Pointer to AClass       }
-    CALL    DWORD PTR [ECX + VMTOFFSET AClass.CreateParams]
-  end;
-
 const
   RICHED10_DLL = 'RICHED32.DLL';
   aHideScrollBars: array[Boolean] of DWORD = (ES_DISABLENOSCROLL, 0);
   aHideSelections: array[Boolean] of DWORD = (ES_NOHIDESEL, 0);
+var
+  Method: TMethod;
 begin
   if (not IsRichEdit20Available) and (FRichEdit10Module = 0) then begin
     FRichEdit10Module := LoadLibrary(RICHED10_DLL);
     if FRichEdit10Module <= HINSTANCE_ERROR then FRichEdit10Module := 0;
   end;
-  CallInherited(Self,Params,TCustomMemo);
+  Method.Code := @TAccessCustomMemo.CreateParams;
+  Method.Data := Self;
+  InheritedCreateParams(Method)(Params);
   if IsRichEdit20Available then
     CreateSubClass(Params, RICHEDIT_CLASSA)
   else
@@ -5789,9 +5786,9 @@ end;
 procedure THPPRichedit.WMCopy(var Message: TWMCopy);
 var
   Text: WideString;
-  hClip: THandle;
 begin
   inherited;
+  // do not empty clip to not to loose rtf data
   //EmptyClipboard();
   Text := GetRichString(Handle,True);
   CopyToClip(Text,Handle,FCodepage,False);
