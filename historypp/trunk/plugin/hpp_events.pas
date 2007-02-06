@@ -60,10 +60,10 @@ const
 
 // General timstamp function
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;
-function DateTimeToUnixTime(DateTime: TDateTime): DWord;
+function DateTimeToUnixTime(const DateTime: TDateTime): DWord;
 // Miranda timestamp to TDateTime
-function TimestampToDateTime(Timestamp: DWord): TDateTime;
-function TimestampToString(Timestamp: DWord): WideString;
+function TimestampToDateTime(const Timestamp: DWord): TDateTime;
+function TimestampToString(const Timestamp: DWord): WideString;
 // general routine
 function ReadEvent(hDBEvent: THandle; UseCP: Cardinal = CP_ACP): THistoryItem;
 function GetEventInfo(hDBEvent: DWord): TDBEventInfo;
@@ -150,16 +150,22 @@ begin
   Result:= UnixTimeStart + (UnixTime / SecondsPerDay);
 end;
 
-function DateTimeToUnixTime(DateTime: TDateTime): DWord;
+function DateTimeToUnixTime(const DateTime: TDateTime): DWord;
 begin
   Result := Trunc((DateTime-UnixTimeStart) * SecondsPerDay);
 end;
 
 // Miranda timestamp to TDateTime
-function TimestampToDateTime(Timestamp: DWord): TDateTime;
+function TimestampToDateTime(const Timestamp: DWord): TDateTime;
 begin
-  Timestamp := PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOLOCAL,Timestamp,0);
-  Result := UnixTimeToDateTime(Timestamp);
+  Result := UnixTimeToDateTime(PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOLOCAL,Timestamp,0));
+end;
+
+// should probably add function param to use
+// custom grid options object and not the global one
+function TimestampToString(const Timestamp: DWord): WideString;
+begin
+  Result := FormatDateTime(GridOptions.DateTimeFormat,TimestampToDateTime(Timestamp));
 end;
 
 function GetEventDateTime(hDBEvent: THandle): TDateTime;
@@ -176,13 +182,6 @@ begin
   Event.cbBlob := 0;
   PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,Integer(@Event));
   Result := Event.timestamp;
-end;
-
-// should probably add function param to use
-// custom grid options object and not the global one
-function TimestampToString(Timestamp: DWord): WideString;
-begin
-  Result := FormatDateTime(GridOptions.DateTimeFormat,TimestampToDateTime(Timestamp));
 end;
 
 var
