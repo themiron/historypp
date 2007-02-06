@@ -70,8 +70,8 @@ const
   DEFFORMAT_DATETIME        = 'c'; // ShortDateFormat + LongTimeFormat
 
   hppIconsDefs : array[0..33] of ThppIconsRec = (
-    (name:'historypp_01'; desc:'Contact history'; group: 'Main'; i:HPP_ICON_CONTACTHISTORY),
-    (name:'historypp_02'; desc:'History search'; group: 'Main'; i:HPP_ICON_GLOBALSEARCH),
+    (name:'historypp_01'; desc:'Contact history'; group: nil; i:HPP_ICON_CONTACTHISTORY),
+    (name:'historypp_02'; desc:'History search'; group: nil; i:HPP_ICON_GLOBALSEARCH),
     (name:'historypp_03'; desc:'Conversation divider'; group: 'Conversations'; i:HPP_ICON_SESS_DIVIDER),
     (name:'historypp_04'; desc:'Conversation icon'; group: 'Conversations'; i:HPP_ICON_SESSION),
     (name:'historypp_05'; desc:'Conversation summer'; group: 'Conversations'; i:HPP_ICON_SESS_SUMMER),
@@ -81,7 +81,7 @@ const
     (name:'historypp_09'; desc:'Conversation year'; group: 'Conversations'; i:HPP_ICON_SESS_YEAR),
     (name:'historypp_10'; desc:'Filter'; group: 'Toolbar'; i:HPP_ICON_HOTFILTER),
     (name:'historypp_11'; desc:'In-place filter wait'; group: 'Search panel'; i:HPP_ICON_HOTFILTERWAIT),
-    (name:'historypp_12'; desc:'Search All Results'; group: 'Main'; i:HPP_ICON_SEARCH_ALLRESULTS),
+    (name:'historypp_12'; desc:'Search All Results'; group: nil; i:HPP_ICON_SEARCH_ALLRESULTS),
     (name:'historypp_13'; desc:'Save All'; group: 'Toolbar'; i:HPP_ICON_TOOL_SAVEALL),
     (name:'historypp_14'; desc:'Search'; group: 'Toolbar'; i:HPP_ICON_HOTSEARCH),
     (name:'historypp_15'; desc:'Search Up'; group: 'Search panel'; i:HPP_ICON_SEARCHUP),
@@ -99,8 +99,8 @@ const
     (name:'historypp_27'; desc:'User Details'; group: 'Toolbar'; i:HPP_ICON_CONTACDETAILS),
     (name:'historypp_28'; desc:'User Menu'; group: 'Toolbar'; i:HPP_ICON_CONTACTMENU),
     (name:'historypp_29'; desc:'Bookmarks'; group: 'Toolbar'; i:HPP_ICON_BOOKMARK),
-    (name:'historypp_30'; desc:'Bookmark enabled'; group: 'Main'; i:HPP_ICON_BOOKMARK_ON),
-    (name:'historypp_31'; desc:'Bookmark disabled'; group: 'Main'; i:HPP_ICON_BOOKMARK_OFF),
+    (name:'historypp_30'; desc:'Bookmark enabled'; group: nil; i:HPP_ICON_BOOKMARK_ON),
+    (name:'historypp_31'; desc:'Bookmark disabled'; group: nil; i:HPP_ICON_BOOKMARK_OFF),
     (name:'historypp_32'; desc:'Advanced Search Options'; group: 'Toolbar'; i:HPP_ICON_SEARCHADVANCED),
     (name:'historypp_33'; desc:'Limit Search Range'; group: 'Toolbar'; i:HPP_ICON_SEARCHRANGE),
     (name:'historypp_34'; desc:'Search Protected Contacts'; group: 'Toolbar'; i:HPP_ICON_SEARCHPROTECTED)
@@ -465,12 +465,9 @@ begin
       hppIcons[hppIconsDefs[i].i].name := hppIconsDefs[i].name;
       sid.pszName := hppIconsDefs[i].name;
       sid.pszDescription := Translate(hppIconsDefs[i].desc{TRANSLATE-IGNORE});
-      if StrLen(hppIconsDefs[i].group) = 0 then
-        sid.pszSection := hppName
-      else
-        //sid.pszSection := PChar(hppName+'/'+Translate(hppIconsDefs[i].group){TRANSLATE-IGNORE});
-        //sid.pszSection := PChar(hppName+'/'+hppIconsDefs[i].group);
-        sid.pszSection := PChar(Translate(hppName)+'/'+Translate(hppIconsDefs[i].group){TRANSLATE-IGNORE});
+      if hppIconsDefs[i].group = nil then
+        sid.pszSection := hppName else
+        sid.pszSection := PChar(Translate(hppName){TRANSLATE-IGNORE}+'/'+Translate(hppIconsDefs[i].group){TRANSLATE-IGNORE});
       sid.iDefaultIndex := hppIconsDefs[i].i;
       PluginLink.CallService(MS_SKIN2_ADDICON,0,LPARAM(@sid));
     end;
@@ -482,9 +479,7 @@ begin
         hppIcons[EventRecords[mt].i].name := EventRecords[mt].iName;
         sid.pszName := hppIcons[EventRecords[mt].i].name;
         sid.pszDescription := Translate(PChar(WideToAnsiString(EventRecords[mt].Name,hppCodepage)){TRANSLATE-IGNORE});
-        //sid.pszSection := PChar(hppName+'/'+Translate('Events'){TRANSLATE-IGNORE});
-        //sid.pszSection := hppName+'/Events';
-        sid.pszSection := PChar(Translate(hppName)+'/'+Translate('Events'){TRANSLATE-IGNORE});
+        sid.pszSection := PChar(Translate(hppName){TRANSLATE-IGNORE}+'/'+Translate('Events'){TRANSLATE-IGNORE});
         sid.iDefaultIndex := EventRecords[mt].i;
         PluginLink.CallService(MS_SKIN2_ADDICON,0,LPARAM(@sid));
       end;
