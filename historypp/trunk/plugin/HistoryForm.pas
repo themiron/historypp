@@ -1518,18 +1518,24 @@ end;
 procedure THistoryFrm.hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
 var
   PrevTimestamp: DWord;
+  HistoryIndex: Integer;
 begin
-  Item := GetItemData(GridIndexToHistory(Index));
+  HistoryIndex := GridIndexToHistory(Index);
+  Item := GetItemData(HistoryIndex);
   Item.Proto := Protocol;
-  if GridIndexToHistory(Index) = 0 then
+  Item.Bookmarked := BookmarkServer[hContact].Bookmarked[History[HistoryIndex]];
+  if HistoryIndex = 0 then
     Item.HasHeader := IsEventInSession(Item.EventType)
   else begin
-    if History[GridIndexToHistory(Index)-1] = 0 then
-      LoadPendingHeaders(GridIndexToHistory(Index)-1,HistoryLength);
-    PrevTimestamp := GetEventTimestamp(History[GridIndexToHistory(Index)-1]);
-    Item.HasHeader := IsEventInSession(Item.EventType) and ((DWord(Item.Time) - PrevTimestamp) > SESSION_TIMEDIFF);
+    if History[HistoryIndex-1] = 0 then
+      LoadPendingHeaders(HistoryIndex-1,HistoryLength);
+    Item.HasHeader := IsEventInSession(Item.EventType);
+    if Item.HasHeader then begin
+      PrevTimestamp := GetEventTimestamp(History[HistoryIndex-1]);
+      Item.HasHeader := ((DWord(Item.Time) - PrevTimestamp) > SESSION_TIMEDIFF);
+    end;
   end;
-  Item.Bookmarked := BookmarkServer[hContact].Bookmarked[History[GridIndexToHistory(Index)]];
+
 end;
 
 procedure THistoryFrm.hgTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
@@ -3553,6 +3559,7 @@ var
   Index,i: Integer;
   Event: THandle;
 begin
+  if not Selected then exit; 
   Event := DWord(Item.Data);
   Index := -1;
   // looks like history starts to load from end?
@@ -3587,8 +3594,8 @@ var
 begin
   Handled := True;
   Item := TTntListItem(lvBook.GetItemAt(MousePos.X,MousePos.Y));
-  lvBook.Selected := Item;
   if  Item = nil then exit;
+  lvBook.Selected := Item;
   if BookmarkServer[hContact].Bookmarked[THandle(Item.Data)] then begin
     MousePos := lvBook.ClientToScreen(MousePos);
     pmBook.Popup(MousePos.X,MousePos.Y);
