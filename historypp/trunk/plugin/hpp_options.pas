@@ -466,7 +466,7 @@ begin
       sid.pszName := hppIconsDefs[i].name;
       sid.pszDescription := Translate(hppIconsDefs[i].desc{TRANSLATE-IGNORE});
       if hppIconsDefs[i].group = nil then
-        sid.pszSection := hppName else
+        sid.pszSection := Translate(hppName) else
         sid.pszSection := PChar(Translate(hppName){TRANSLATE-IGNORE}+'/'+Translate(hppIconsDefs[i].group){TRANSLATE-IGNORE});
       sid.iDefaultIndex := hppIconsDefs[i].i;
       PluginLink.CallService(MS_SKIN2_ADDICON,0,LPARAM(@sid));
