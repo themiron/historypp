@@ -180,7 +180,7 @@ begin
   ZeroMemory(@Event,SizeOf(Event));
   Event.cbSize:=SizeOf(Event);
   Event.cbBlob := 0;
-  PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,Integer(@Event));
+  PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,LPARAM(@Event));
   Result := Event.timestamp;
 end;
 
@@ -273,7 +273,7 @@ begin
   BlobSize:=PluginLink.CallService(MS_DB_EVENT_GETBLOBSIZE,hDBEvent,0);
   GetMem(Result.pBlob,BlobSize);
   Result.cbBlob:=BlobSize;
-  PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,Integer(@Result));
+  PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,LPARAM(@Result));
 end;
 
 // reads event from hDbEvent handle
