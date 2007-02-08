@@ -12,6 +12,7 @@ object fmGlobalSearch: TfmGlobalSearch
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
+  ShowHint = True
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -291,8 +292,6 @@ object fmGlobalSearch: TfmGlobalSearch
           Height = 21
           Hint = 'Clear Search'
           Flat = True
-          ParentShowHint = False
-          ShowHint = True
           OnClick = sbClearFilterClick
         end
         object pbFilter: TPaintBox
@@ -480,7 +479,7 @@ object fmGlobalSearch: TfmGlobalSearch
       AutoSize = True
       BevelOuter = bvNone
       TabOrder = 0
-      object ToolBar: TTntToolBar
+      object ToolBar: THppToolBar
         Left = 0
         Top = 0
         Width = 547
@@ -490,11 +489,9 @@ object fmGlobalSearch: TfmGlobalSearch
         EdgeBorders = []
         Flat = True
         Images = ilToolbar
-        ParentShowHint = False
-        ShowHint = True
         TabOrder = 0
         Transparent = True
-        object tbAdvanced: TTntToolButton
+        object tbAdvanced: THppToolButton
           Left = 0
           Top = 0
           Hint = 'Advanced search options'
@@ -503,7 +500,7 @@ object fmGlobalSearch: TfmGlobalSearch
           Style = tbsCheck
           OnClick = tbAdvancedClick
         end
-        object tbRange: TTntToolButton
+        object tbRange: THppToolButton
           Left = 23
           Top = 0
           Hint = 'Limit search range'
@@ -512,7 +509,7 @@ object fmGlobalSearch: TfmGlobalSearch
           Style = tbsCheck
           OnClick = tbRangeClick
         end
-        object tbPassword: TTntToolButton
+        object tbPassword: THppToolButton
           Left = 46
           Top = 0
           Hint = 'Search protected contacts'
@@ -521,13 +518,13 @@ object fmGlobalSearch: TfmGlobalSearch
           Style = tbsCheck
           OnClick = tbPasswordClick
         end
-        object TntToolButton1: TTntToolButton
+        object TntToolButton1: THppToolButton
           Left = 69
           Top = 0
           Width = 8
           Style = tbsSeparator
         end
-        object tbBookmarks: TTntToolButton
+        object tbBookmarks: THppToolButton
           Left = 77
           Top = 0
           Hint = 'Bookmarks'
@@ -536,13 +533,13 @@ object fmGlobalSearch: TfmGlobalSearch
           Style = tbsCheck
           OnClick = tbBookmarksClick
         end
-        object TntToolButton2: TTntToolButton
+        object TntToolButton2: THppToolButton
           Left = 100
           Top = 0
           Width = 8
           Style = tbsSeparator
         end
-        object tbSearch: TTntToolButton
+        object tbSearch: THppToolButton
           Left = 108
           Top = 0
           Caption = 'tbSearch'
@@ -550,7 +547,7 @@ object fmGlobalSearch: TfmGlobalSearch
           Style = tbsCheck
           Visible = False
         end
-        object tbFilter: TTntToolButton
+        object tbFilter: THppToolButton
           Left = 131
           Top = 0
           Caption = 'tbFilter'
@@ -558,7 +555,7 @@ object fmGlobalSearch: TfmGlobalSearch
           Style = tbsCheck
           Visible = False
         end
-        object TntToolButton3: TTntToolButton
+        object TntToolButton3: THppToolButton
           Left = 154
           Top = 0
           Width = 8
@@ -573,9 +570,7 @@ object fmGlobalSearch: TfmGlobalSearch
           Enabled = False
           Flat = True
           Layout = blGlyphTop
-          ParentShowHint = False
           PopupMenu = pmEventsFilter
-          ShowHint = True
           Spacing = -5
           Transparent = False
           OnClick = tbEventsFilterClick

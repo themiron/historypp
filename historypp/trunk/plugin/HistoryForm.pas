@@ -100,7 +100,7 @@ type
     pbFilter: TPaintBox;
     tiFilter: TTimer;
     ilToolbar: TImageList;
-    Toolbar: TTntToolBar;
+    Toolbar: THppToolBar;
     paPassHolder: THppPanel;
     paPassword: THppPanel;
     laPass: TTntLabel;
@@ -113,13 +113,13 @@ type
     SaveasXML2: TTntMenuItem;
     SaveasHTML2: TTntMenuItem;
     SaveasText2: TTntMenuItem;
-    tbSearch: TTntToolButton;
-    TntToolButton3: TTntToolButton;
+    tbSearch: THppToolButton;
+    TntToolButton3: THppToolButton;
     paSearch: THppPanel;
-    tbFilter: TTntToolButton;
-    tbDelete: TTntToolButton;
-    tbSessions: TTntToolButton;
-    TntToolButton2: TTntToolButton;
+    tbFilter: THppToolButton;
+    tbDelete: THppToolButton;
+    tbSessions: THppToolButton;
+    TntToolButton2: THppToolButton;
     paSearchStatus: THppPanel;
     laSearchState: TTntLabel;
     paSearchPanel: THppPanel;
@@ -128,16 +128,16 @@ type
     edSearch: THppEdit;
     pbSearch: TPaintBox;
     tvSess: TTntTreeView;
-    tbSave: TTntToolButton;
-    tbCopy: TTntToolButton;
-    tbHistorySearch: TTntToolButton;
+    tbSave: THppToolButton;
+    tbCopy: THppToolButton;
+    tbHistorySearch: THppToolButton;
     imSearchEndOfPage: TTntImage;
     imSearchNotFound: TTntImage;
-    TntToolButton4: TTntToolButton;
+    TntToolButton4: THppToolButton;
     N4: TTntMenuItem;
     Emptyhistory1: TTntMenuItem;
     pmEventsFilter: TTntPopupMenu;
-    Showall1: TTntMenuItem;
+    ShowAll1: TTntMenuItem;
     Customize1: TTntMenuItem;
     N6: TTntMenuItem;
     Passwordprotection1: TTntMenuItem;
@@ -149,11 +149,11 @@ type
     SessDelete: TTntMenuItem;
     N7: TTntMenuItem;
     SessSave: TTntMenuItem;
-    tbUserMenu: TTntToolButton;
-    tbUserDetails: TTntToolButton;
-    TntToolButton1: TTntToolButton;
+    tbUserMenu: THppToolButton;
+    tbUserDetails: THppToolButton;
+    TntToolButton1: THppToolButton;
     tbEventsFilter: THppSpeedButton;
-    TntToolButton5: TTntToolButton;
+    TntToolButton5: THppToolButton;
     pmToolbar: TTntPopupMenu;
     Customize2: TTntMenuItem;
     Bookmark1: TTntMenuItem;
@@ -163,7 +163,7 @@ type
     sbCloseBook: THppSpeedButton;
     lvBook: TTntListView;
     ilBook: TImageList;
-    tbBookmarks: TTntToolButton;
+    tbBookmarks: THppToolButton;
     pmBook: TTntPopupMenu;
     DeleteBookmark1: TTntMenuItem;
     N3: TTntMenuItem;
@@ -187,7 +187,7 @@ type
     mmShortcuts: TTntMenuItem;
     mmBookmark: TTntMenuItem;
     SelectAll1: TTntMenuItem;
-    tbHistory: THppSpeedButton;
+    tbHistory: THppToolButton;
     paHolder: THppPanel;
     spBook: TTntSplitter;
     UnknownCodepage: TTntMenuItem;
@@ -309,6 +309,7 @@ type
     procedure tvSessKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure paHolderResize(Sender: TObject);
     procedure spBookMoved(Sender: TObject);
+    procedure pmToolbarPopup(Sender: TObject);
   private
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
@@ -390,7 +391,6 @@ type
     procedure LoadBookIcons;
     procedure LoadToolbarIcons;
     procedure LoadEventFilterButton;
-    procedure LoadHistoryActionButton;
     procedure LoadButtonIcons;
 
     procedure CustomizeToolbar;
@@ -707,7 +707,7 @@ procedure THistoryFrm.LoadToolbar;
 var
   tool: array of TControl;
   i,n: Integer;
-  tb_butt: TTntToolButton;
+  tb_butt: THppToolButton;
   butt: TControl;
   butt_str,tb_str,str: String;
 begin
@@ -722,8 +722,8 @@ begin
   i := 0;
   while True do begin
     if i = Toolbar.ControlCount then break;
-    if Toolbar.Controls[i] is TTntToolButton then begin
-      tb_butt := TTntToolButton(Toolbar.Controls[i]);
+    if Toolbar.Controls[i] is THppToolButton then begin
+      tb_butt := THppToolButton(Toolbar.Controls[i]);
       if (tb_butt.Style = tbsSeparator) or (tb_butt.Style = tbsDivider) then begin
         // adding separator in runtime results in too wide separators
         // we'll remeber the currect width and later re-apply it
@@ -734,8 +734,8 @@ begin
       else
         tb_butt.Visible := False;
     end
-    else if Toolbar.Controls[i] is TTntSpeedButton then
-      TTntSpeedButton(Toolbar.Controls[i]).Visible := False;
+    else if Toolbar.Controls[i] is THppSpeedButton then
+      THppSpeedButton(Toolbar.Controls[i]).Visible := False;
     Inc(i);
   end;
 
@@ -743,9 +743,9 @@ begin
     while True do begin
       if str = '' then break;
       if (str[1] = ' ') or (str[1] = '|') then begin
-        if (Length(tool) > 0) and (tool[High(tool)] is TTntToolButton) then begin
+        if (Length(tool) > 0) and (tool[High(tool)] is THppToolButton) then begin
           // don't add separator if previous button is separator
-          tb_butt := TTntToolButton(tool[High(tool)]);
+          tb_butt := THppToolButton(tool[High(tool)]);
           if (tb_butt.Style = tbsDivider) or (tb_butt.Style = tbsSeparator) then begin
             Delete(str,1,1);
             continue;
@@ -757,7 +757,7 @@ begin
           continue;
         end;
         SetLength(tool,Length(tool)+1);
-        tb_butt := TTntToolButton.Create(Toolbar);
+        tb_butt := THppToolButton.Create(Toolbar);
         tb_butt.Visible := False;
         if str[1] = ' ' then
           tb_butt.Style := tbsSeparator
@@ -823,10 +823,10 @@ begin
   // thanks Luu Tran for this tip
   // http://groups.google.com/group/borland.public.delphi.vcl.components.using/browse_thread/thread/da4e4da814baa745/c1ce8b671c1dac20
   for i := High(tool) downto 0 do begin
-    if not (tool[i] is TTntSpeedButton) then tool[i].Parent := nil;
+    if not (tool[i] is THppSpeedButton) then tool[i].Parent := nil;
     tool[i].Left := -3;
     tool[i].Visible := True;
-    if not (tool[i] is TTntSpeedButton) then tool[i].Parent := Toolbar;
+    if not (tool[i] is THppSpeedButton) then tool[i].Parent := Toolbar;
   end;
 
   // Thanks Primoz Gabrijeleie for this trick!
@@ -872,8 +872,9 @@ begin
     tbHistorySearch.ImageIndex := ii;
     ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_BOOKMARK].Handle);
     tbBookmarks.ImageIndex := ii;
+    ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_CONTACTHISTORY].Handle);
+    tbHistory.ImageIndex := ii;
 
-    LoadHistoryActionButton;
     LoadEventFilterButton;
   finally
   end;
@@ -1260,7 +1261,7 @@ begin
     DrawiconEx(Canvas.Handle,0,0,
       hppIcons[HPP_ICON_SESS_HIDE].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
-  with Self.sbCloseBook.Glyph do begin
+  with sbCloseBook.Glyph do begin
     Width := 16;
     Height := 16;
     Canvas.Brush.Color := clBtnFace;
@@ -1318,35 +1319,6 @@ begin
   Tnt_DrawTextW(tbEventsFilter.Glyph.Canvas.Handle,@Name[1],Length(Name),PaintRect,DrawTextFlags);
   tbEventsFilter.Width := GlyphWidth+2*PadH;
   tbEventsFilter.NumGlyphs := 2;
-end;
-
-procedure THistoryFrm.LoadHistoryActionButton;
-var
-  PadH: Integer;
-  GlyphWidth: Integer;
-begin
-  PadH := LoWord(SendMessage(Toolbar.Handle,TB_GETPADDING,0,0));
-  GlyphWidth := 16+16+tbHistory.Spacing;
-  tbHistory.Glyph.Height := 16;
-  tbHistory.Glyph.Width := GlyphWidth*2;
-  tbHistory.Glyph.Canvas.Brush.Color := clBtnFace;
-  tbHistory.Glyph.Canvas.FillRect(tbHistory.Glyph.Canvas.ClipRect);
-  DrawIconEx(tbHistory.Glyph.Canvas.Handle,16+tbHistory.Spacing,0,
-            hppIcons[HPP_ICON_DROPDOWNARROW].Handle,16,16,
-            0,tbHistory.Glyph.Canvas.Brush.Handle,DI_NORMAL);
-  DrawState(tbHistory.Glyph.Canvas.Handle,0,nil,
-            Integer(hppIcons[HPP_ICON_DROPDOWNARROW].Handle),0,
-            16+tbHistory.Spacing+GlyphWidth,0,0,0,
-            DST_ICON or DSS_DISABLED);
-  DrawIconEx(tbHistory.Glyph.Canvas.Handle,0,0,
-            hppIcons[HPP_ICON_CONTACTHISTORY].Handle,16,16,
-            0,tbHistory.Glyph.Canvas.Brush.Handle,DI_NORMAL);
-  DrawState(tbHistory.Glyph.Canvas.Handle,0,nil,
-            Integer(hppIcons[HPP_ICON_CONTACTHISTORY].Handle),0,
-            GlyphWidth,0,0,0,
-            DST_ICON or DSS_DISABLED);
-  tbHistory.Width := GlyphWidth+2*PadH;
-  tbHistory.NumGlyphs := 2;
 end;
 
 procedure THistoryFrm.LoadPendingHeaders(rowidx: integer; count: integer);
@@ -2566,12 +2538,12 @@ var
   flag: Boolean;
 begin
   for i := 0 to mmToolbar.Count - 1 do begin
-    if mmToolbar.Items[i].Owner is TTntToolButton then begin
+    if mmToolbar.Items[i].Owner is THppToolButton then begin
       flag := TToolButton(mmToolbar.Items[i].Owner).Enabled
     end else
-    if mmToolbar.Items[i].Owner is TTntSpeedButton then begin
-      TTntMenuItem(mmToolbar.Items[i]).Caption := TTntSpeedButton(mmToolbar.Items[i].Owner).Hint;
-      flag := TTntSpeedButton(mmToolbar.Items[i].Owner).Enabled
+    if mmToolbar.Items[i].Owner is THppSpeedButton then begin
+      TTntMenuItem(mmToolbar.Items[i]).Caption := THppSpeedButton(mmToolbar.Items[i].Owner).Hint;
+      flag := THppSpeedButton(mmToolbar.Items[i].Owner).Enabled
     end else
       flag := true;
     mmToolbar.Items[i].Enabled := flag;
@@ -3231,10 +3203,7 @@ var
 begin
   p := tbEventsFilter.ClientOrigin;
   tbEventsFilter.ClientToScreen(p);
-  Application.CancelHint;
-  tbEventsFilter.ShowHint := false;
   pmEventsFilter.Popup(p.X,p.Y+tbEventsFilter.Height);
-  tbEventsFilter.ShowHint := true;
 end;
 
 procedure THistoryFrm.tbSearchClick(Sender: TObject);
@@ -3270,22 +3239,15 @@ begin
 end;
 
 procedure THistoryFrm.tbHistoryClick(Sender: TObject);
-var
-  //t: String;
-  //SaveFormat: TSaveFormat;}
-  p: TPoint;
 begin
-  //if hg.SelCount > 1 then
-  //  SaveSelected1.Click
-  //else begin
-    p := tbHistory.ClientOrigin;
-    tbHistory.ClientToScreen(p);
-    Application.CancelHint;
-    tbHistory.ShowHint := false;
-    pmHistory.Popup(p.X,p.Y+tbHistory.Height);
-    tbHistory.ShowHint := true;
-  //end;
-  {RecentFormat := TSaveFormat(GetDBInt(hppDBName,'ExportFormat',0));
+  tbHistory.Down := True;
+  tbHistory.CheckMenuDropdown;
+  tbHistory.Down := False;
+  {if hg.SelCount > 1 then begin
+    SaveSelected1.Click
+    exit;
+  end;
+  RecentFormat := TSaveFormat(GetDBInt(hppDBName,'ExportFormat',0));
   SaveFormat := RecentFormat;
   PrepareSaveDialog(SaveDialog,SaveFormat,True);
   t := Translate('Full History [%s] - [%s]');
@@ -3441,7 +3403,7 @@ begin
       pmEventsFilter.Items.Insert(0,mi);
     end;
   end;
-  //Application.CancelHint;
+  Application.CancelHint;
 end;
 
 procedure THistoryFrm.pmGridPopup(Sender: TObject);
@@ -3470,7 +3432,7 @@ begin
   LoadInOptions();
   SaveSelected2.Visible := (hg.SelCount > 1);
   AddMenuArray(pmHistory,[ContactRTLmode,ANSICodepage],7);
-  //Application.CancelHint;
+  Application.CancelHint;
 end;
 
 procedure THistoryFrm.WndProc(var Message: TMessage);
@@ -3499,19 +3461,14 @@ end;
 procedure THistoryFrm.tbUserMenuClick(Sender: TObject);
 var
   p: TPoint;
-  //hm: hMenu;
 begin
   UserMenu := PluginLink.CallService(MS_CLIST_MENUBUILDCONTACT,hContact,0);
   if UserMenu <> 0 then begin
-    p.x := 0;
-    p.y := tbUserMenu.Height;
-    p := tbUserMenu.ClientToScreen(p);
+    p := tbUserMenu.ClientToScreen(Point(0,tbUserMenu.Height));
     Application.CancelHint;
-    tbUserMenu.ShowHint := false;
     TrackPopupMenu(UserMenu,TPM_TOPALIGN or TPM_LEFTALIGN or TPM_LEFTBUTTON,p.x,p.y,0,Handle,nil);
     DestroyMenu(UserMenu);
     UserMenu := 0;
-    tbUserMenu.ShowHint := true;
   end;
 end;
 
@@ -3729,6 +3686,11 @@ begin
   else
   if paSess.Visible then
     paSess.Height := paHolder.ClientHeight;
+end;
+
+procedure THistoryFrm.pmToolbarPopup(Sender: TObject);
+begin
+  Application.CancelHint;
 end;
 
 end.

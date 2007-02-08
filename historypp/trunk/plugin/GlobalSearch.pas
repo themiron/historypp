@@ -101,8 +101,8 @@ type
     Delete1: TTntMenuItem;
     N3: TTntMenuItem;
     Bookmark1: TTntMenuItem;
-    ToolBar: TTntToolBar;
-    tbPassword: TTntToolButton;
+    ToolBar: THppToolBar;
+    tbPassword: THppToolButton;
     paAdvanced: THppPanel;
     paRange: THppPanel;
     rbAny: TTntRadioButton;
@@ -119,16 +119,16 @@ type
     laPasswordHead: TTntLabel;
     laRangeHead: TTntLabel;
     tbEventsFilter: THppSpeedButton;
-    tbAdvanced: TTntToolButton;
-    tbRange: TTntToolButton;
-    TntToolButton2: TTntToolButton;
+    tbAdvanced: THppToolButton;
+    tbRange: THppToolButton;
+    TntToolButton2: THppToolButton;
     ilToolbar: TImageList;
     bePassword: TTntBevel;
     beRange: TTntBevel;
     beAdvanced: TTntBevel;
-    TntToolButton3: TTntToolButton;
-    tbSearch: TTntToolButton;
-    tbFilter: TTntToolButton;
+    TntToolButton3: THppToolButton;
+    tbSearch: THppToolButton;
+    tbFilter: THppToolButton;
     laPassNote: TTntLabel;
     pmEventsFilter: TTntPopupMenu;
     N4: TTntMenuItem;
@@ -153,8 +153,8 @@ type
     mmHideMenu: TTntMenuItem;
     mmShortcuts: TTntMenuItem;
     mmBookmark: TTntMenuItem;
-    tbBookmarks: TTntToolButton;
-    TntToolButton1: TTntToolButton;
+    tbBookmarks: THppToolButton;
+    TntToolButton1: THppToolButton;
     TopPanel: THppPanel;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -597,10 +597,7 @@ var
 begin
   p := tbEventsFilter.ClientOrigin;
   tbEventsFilter.ClientToScreen(p);
-  Application.CancelHint;
-  tbEventsFilter.ShowHint := false;
   pmEventsFilter.Popup(p.X,p.Y+tbEventsFilter.Height);
-  tbEventsFilter.ShowHint := true;
 end;
 
 procedure TfmGlobalSearch.tbPasswordClick(Sender: TObject);
@@ -738,12 +735,12 @@ var
   flag: Boolean;
 begin
   for i := 0 to mmToolbar.Count - 1 do begin
-    if mmToolbar.Items[i].Owner is TTntToolButton then begin
+    if mmToolbar.Items[i].Owner is THppToolButton then begin
       flag := TToolButton(mmToolbar.Items[i].Owner).Enabled
     end else
-    if mmToolbar.Items[i].Owner is TTntSpeedButton then begin
-      TTntMenuItem(mmToolbar.Items[i]).Caption := TTntSpeedButton(mmToolbar.Items[i].Owner).Hint;
-      flag := TTntSpeedButton(mmToolbar.Items[i].Owner).Enabled
+    if mmToolbar.Items[i].Owner is THppSpeedButton then begin
+      TTntMenuItem(mmToolbar.Items[i]).Caption := THppSpeedButton(mmToolbar.Items[i].Owner).Hint;
+      flag := THppSpeedButton(mmToolbar.Items[i].Owner).Enabled
     end else
       flag := true;
     mmToolbar.Items[i].Enabled := flag;
@@ -1196,7 +1193,7 @@ begin
             Integer(hppIcons[HPP_ICON_DROPDOWNARROW].Handle),0,
             sz.cx+tbEventsFilter.Spacing+GlyphWidth,((GlyphHeight-16) div 2),0,0,
             DST_ICON or DSS_DISABLED);
-  
+
   PaintRect := Rect(0,((GlyphHeight-sz.cy) div 2),GlyphWidth-16-tbEventsFilter.Spacing,tbEventsFilter.Glyph.Height);
   DrawTextFlags := DT_END_ELLIPSIS or DT_NOPREFIX or DT_CENTER;
   tbEventsFilter.Glyph.Canvas.Font.Color := clWindowText;
@@ -1294,6 +1291,7 @@ begin
   if UserMenu <> 0 then begin
     UserMenuContact := hContact;
     MousePos := lvContacts.ClientToScreen(MousePos);
+    Application.CancelHint;
     TrackPopupMenu(UserMenu,TPM_TOPALIGN or TPM_LEFTALIGN or TPM_LEFTBUTTON,MousePos.x,MousePos.y,0,Handle,nil);
     DestroyMenu(UserMenu);
     UserMenu := 0;
@@ -1392,6 +1390,7 @@ begin
       pmEventsFilter.Items.Insert(0,mi);
     end;
   end;
+  Application.CancelHint;
 end;
 
 procedure TfmGlobalSearch.ReplyQuoted(Item: Integer);

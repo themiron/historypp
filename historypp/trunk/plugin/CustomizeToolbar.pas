@@ -3,9 +3,11 @@ unit CustomizeToolbar;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, CheckLst, TntCheckLst, TntComCtrls, ComCtrls, CommCtrl,
-  TntStdCtrls, TntWindows, TntButtons, TntForms, ExtCtrls, TntExtCtrls, m_api, hpp_forms;
+  Windows, TntWindows, Messages, SysUtils, Classes, Graphics, Controls, Dialogs, CommCtrl,
+  Forms, ComCtrls, StdCtrls, ExtCtrls, CheckLst,
+  TntForms, TntComCtrls, TntStdCtrls, TntExtCtrls, TntCheckLst,
+  HistoryControls,
+  m_api, hpp_forms;
 
 type
   TfmCustomizeToolbar = class(TTntForm)
@@ -147,7 +149,7 @@ var
   txtW: WideString;
   r: TRect;
   r2: TRect;
-  but: TTntToolButton;
+  but: THppToolButton;
   fm: THistoryFrm;
   src,dst: Integer;
   lb: TTntListBox;
@@ -195,8 +197,8 @@ begin
     {can.Brush.Color := clBtnFace;
     can.FillRect(r2);}
     fm := THistoryFrm(Owner);
-    if lb.Items.Objects[Index] is TTntToolButton then begin
-      but := TTntToolButton(lb.Items.Objects[Index]);
+    if lb.Items.Objects[Index] is THppToolButton then begin
+      but := THppToolButton(lb.Items.Objects[Index]);
       ImageList_Draw(fm.ilToolbar.Handle,but.ImageIndex,can.Handle,
       r2.Left+2,r2.Top+2,ILD_NORMAL);
     end else
@@ -352,18 +354,18 @@ begin
   for i := 0 to fm.Toolbar.ButtonCount - 1 do begin
     but := fm.Toolbar.Buttons[i];
     txt := '';
-    if but is TTntToolButton then begin
-      if TTntToolButton(but).Style in [tbsSeparator,tbsDivider] then
+    if but is THppToolButton then begin
+      if THppToolButton(but).Style in [tbsSeparator,tbsDivider] then
         txt := '-'
       else
-        txt := TTntToolButton(but).Hint
+        txt := THppToolButton(but).Hint
     end
     else
     if but = fm.tbEventsFilter then
       txt := TranslateWideW('Event Filters')
     else
-    if but is TTntSpeedButton then
-      txt := TTntSpeedButton(but).Hint;
+    if but is THppSpeedButton then
+      txt := THppSpeedButton(but).Hint;
 
     if txt <> '' then begin
       if but.Visible then begin

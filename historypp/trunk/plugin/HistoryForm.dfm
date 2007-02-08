@@ -16,6 +16,7 @@ object HistoryFrm: THistoryFrm
   KeyPreview = True
   OldCreateOrder = False
   Position = poDefault
+  ShowHint = True
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -143,8 +144,6 @@ object HistoryFrm: THistoryFrm
           Height = 21
           Hint = 'Clear Search'
           Flat = True
-          ParentShowHint = False
-          ShowHint = True
           OnClick = sbClearFilterClick
         end
         object pbFilter: TPaintBox
@@ -184,12 +183,9 @@ object HistoryFrm: THistoryFrm
           Top = 4
           Width = 21
           Height = 21
-          AllowAllUp = True
           Anchors = [akTop, akRight]
           Flat = True
           Layout = blGlyphTop
-          ParentShowHint = False
-          ShowHint = True
           Spacing = 0
           OnClick = sbSearchNextClick
         end
@@ -201,8 +197,6 @@ object HistoryFrm: THistoryFrm
           Anchors = [akTop, akRight]
           Flat = True
           Layout = blGlyphTop
-          ParentShowHint = False
-          ShowHint = True
           Spacing = 0
           OnClick = sbSearchPrevClick
         end
@@ -251,7 +245,7 @@ object HistoryFrm: THistoryFrm
       AutoSize = True
       BevelOuter = bvNone
       TabOrder = 2
-      object Toolbar: TTntToolBar
+      object Toolbar: THppToolBar
         Left = 0
         Top = 0
         Width = 574
@@ -261,14 +255,12 @@ object HistoryFrm: THistoryFrm
         EdgeBorders = []
         Flat = True
         Images = ilToolbar
-        ParentShowHint = False
         PopupMenu = pmToolbar
-        ShowHint = True
         TabOrder = 0
         Transparent = True
         Wrapable = False
         OnDblClick = ToolbarDblClick
-        object tbUserDetails: TTntToolButton
+        object tbUserDetails: THppToolButton
           Left = 0
           Top = 0
           Hint = 'User Details'
@@ -276,46 +268,44 @@ object HistoryFrm: THistoryFrm
           Caption = 'User Details'
           OnClick = tbUserDetailsClick
         end
-        object tbUserMenu: TTntToolButton
+        object tbUserMenu: THppToolButton
           Left = 23
           Top = 0
           Hint = 'User Menu'
           Caption = 'User Menu'
           OnClick = tbUserMenuClick
         end
-        object TntToolButton1: TTntToolButton
+        object TntToolButton1: THppToolButton
           Left = 46
           Top = 0
           Width = 8
           Style = tbsDivider
         end
-        object tbSessions: TTntToolButton
+        object tbSessions: THppToolButton
           Left = 54
           Top = 0
           Hint = 'Conversations'
           HelpKeyword = 'F4'
-          AllowAllUp = True
           Caption = 'Conversations'
           Style = tbsCheck
           OnClick = tbSessionsClick
         end
-        object tbBookmarks: TTntToolButton
+        object tbBookmarks: THppToolButton
           Left = 77
           Top = 0
           Hint = 'Bookmarks'
           HelpKeyword = 'F5'
-          AllowAllUp = True
           Caption = 'Bookmarks'
           Style = tbsCheck
           OnClick = tbBookmarksClick
         end
-        object TntToolButton2: TTntToolButton
+        object TntToolButton2: THppToolButton
           Left = 100
           Top = 0
           Width = 7
           Style = tbsSeparator
         end
-        object tbSearch: TTntToolButton
+        object tbSearch: THppToolButton
           Left = 107
           Top = 0
           Hint = 'Find'
@@ -326,7 +316,7 @@ object HistoryFrm: THistoryFrm
           Style = tbsCheck
           OnClick = tbSearchClick
         end
-        object tbFilter: TTntToolButton
+        object tbFilter: THppToolButton
           Left = 130
           Top = 0
           Hint = 'Filter'
@@ -337,7 +327,7 @@ object HistoryFrm: THistoryFrm
           Style = tbsCheck
           OnClick = tbFilterClick
         end
-        object TntToolButton3: TTntToolButton
+        object TntToolButton3: THppToolButton
           Left = 153
           Top = 0
           Width = 7
@@ -355,54 +345,52 @@ object HistoryFrm: THistoryFrm
           Transparent = False
           OnClick = tbEventsFilterClick
         end
-        object TntToolButton4: TTntToolButton
+        object TntToolButton4: THppToolButton
           Left = 270
           Top = 0
           Width = 7
           Style = tbsSeparator
         end
-        object tbCopy: TTntToolButton
+        object tbCopy: THppToolButton
           Left = 277
           Top = 0
           Hint = 'Copy'
           Caption = 'Copy'
           OnClick = Copy1Click
         end
-        object tbDelete: TTntToolButton
+        object tbDelete: THppToolButton
           Left = 300
           Top = 0
           Hint = 'Delete'
           Caption = 'Delete'
           OnClick = tbDeleteClick
         end
-        object tbSave: TTntToolButton
+        object tbSave: THppToolButton
           Left = 323
           Top = 0
           Hint = 'Save'
           Caption = 'Save'
           Visible = False
         end
-        object TntToolButton5: TTntToolButton
+        object TntToolButton5: THppToolButton
           Left = 346
           Top = 0
           Width = 8
           Style = tbsSeparator
         end
-        object tbHistory: THppSpeedButton
+        object tbHistory: THppToolButton
           Left = 354
           Top = 0
-          Width = 36
-          Height = 22
           Hint = 'History Actions'
-          Flat = True
-          Layout = blGlyphTop
+          Caption = 'History Actions'
+          DropdownMenu = pmHistory
           PopupMenu = pmHistory
-          Spacing = -5
-          Transparent = False
+          Style = tbsDropDown
           OnClick = tbHistoryClick
+          WholeDropDown = True
         end
-        object tbHistorySearch: TTntToolButton
-          Left = 390
+        object tbHistorySearch: THppToolButton
+          Left = 386
           Top = 0
           Hint = 'History Search'
           Caption = 'History Search'
@@ -554,12 +542,10 @@ object HistoryFrm: THistoryFrm
           Images = ilSessions
           Indent = 19
           MultiSelect = True
-          ParentShowHint = False
           PopupMenu = pmSessions
           ReadOnly = True
           RightClickSelect = True
           RowSelect = True
-          ShowHint = True
           TabOrder = 1
           ToolTips = False
           OnChange = tvSessChange
@@ -884,6 +870,7 @@ object HistoryFrm: THistoryFrm
   end
   object pmToolbar: TTntPopupMenu
     Images = ilToolbar
+    OnPopup = pmToolbarPopup
     Left = 476
     Top = 20
     object N5: TTntMenuItem
