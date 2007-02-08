@@ -13,6 +13,7 @@ object EventDetailsFrm: TEventDetailsFrm
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
+  ShowHint = True
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -91,6 +92,7 @@ object EventDetailsFrm: TEventDetailsFrm
       Height = 101
       Align = alClient
       Caption = 'Event Info'
+      ParentBackground = False
       TabOrder = 0
       DesignSize = (
         450
@@ -136,8 +138,6 @@ object EventDetailsFrm: TEventDetailsFrm
         Anchors = [akTop, akRight]
         Flat = True
         Layout = blGlyphTop
-        ParentShowHint = False
-        ShowHint = True
         OnClick = EFromMoreClick
       end
       object EToMore: THppSpeedButton
@@ -149,8 +149,6 @@ object EventDetailsFrm: TEventDetailsFrm
         Anchors = [akTop, akRight]
         Flat = True
         Layout = blGlyphTop
-        ParentShowHint = False
-        ShowHint = True
         OnClick = EToMoreClick
       end
       object EMsgType: THppEdit
