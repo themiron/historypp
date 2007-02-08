@@ -30,7 +30,7 @@ function parse_object() {
     if (preg_match('/^(\s)*object (.*): (.*)$/',$lines[$lineid],$matches)) {
       if (($ignore_menuitems && (($matches[3] == "TMenuItem")||($matches[3] == "TTntMenuItem"))) ||
           ($ignore_menuitems && (($matches[3] == "TSpeedButton")||($matches[3] == "TTntSpeedButton")||($matches[3] == "THppSpeedButton"))) ||
-          ($ignore_tbitems && (($matches[3] == "TTntToolButton")||($matches[3] == "TToolButton")))) {
+          ($ignore_tbitems && (($matches[3] == "TToolButton")||($matches[3] == "TTntToolButton")||($matches[3] == "THppToolButton")))) {
         $no_add = true;
         parse_object();
         $no_add = false;

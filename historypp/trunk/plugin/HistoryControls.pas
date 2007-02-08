@@ -5,8 +5,9 @@ unit HistoryControls;
 interface
 
 uses
-  Windows, Messages, Classes, Controls, Forms, StdCtrls, ExtCtrls, Buttons,
-  TntSysUtils, TntStdCtrls, TntExtCtrls, TntButtons;
+  Windows, Messages, Classes,
+  Controls, StdCtrls, ComCtrls, ExtCtrls, Buttons,
+  TntControls, TntStdCtrls, TntComCtrls, TntExtCtrls, TntButtons;
 
 type
 
@@ -32,14 +33,27 @@ type
     {$ENDIF}
   end;
 
-  THppSpeedButton = class(TTntSpeedButton)
+  THppToolButton = class(TTntToolButton)
   private
-    procedure WMContextMenu(var Message: TWMContextMenu); message WM_CONTEXTMENU;
+    FWholeDropDown: Boolean; // ignored unless Style = tbsDropDown is set
+    procedure SetWholeDropDown(const Value: Boolean);
+  published
+    property WholeDropDown: Boolean read FWholeDropDown write SetWholeDropDown default False;
+  end;
+
+  THppToolBar = class(TTntToolBar)
+  private
+    procedure AddToolButtonStyle(const Control: TControl; var Style: Byte);
+  protected
+    procedure WndProc(var Message: TMessage); override;
+  end;
+
+  THppSpeedButton = class(TTntSpeedButton)
   protected
     procedure PaintButton; override;
     {$IFDEF COMPILER_7}
-    procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
-    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
+    procedure UpdateTracking;
+    procedure WndProc(var Message: TMessage); override;
     {$ENDIF}
   end;
 
@@ -47,30 +61,7 @@ procedure Register;
 
 implementation
 
-uses Themes;
-
-type
-
-  THackSpeedButton_D6_D7_D9 = class(TGraphicControl)
-  protected
-    FxxxxGroupIndex: Integer;
-    FGlyph: Pointer;
-    FxxxxDown: Boolean;
-    FDragging: Boolean;
-    {$IFDEF DELPHI_7}
-    FxxxxAllowAllUp: Boolean;
-    FxxxxLayout: TButtonLayout;
-    FxxxxSpacing: Integer;
-    FxxxxTransparent: Boolean;
-    FxxxxMargin: Integer;
-    FxxxxFlat: Boolean;
-    FMouseInControl: Boolean;
-    {$ENDIF}
-  end;
-
-  {$IFDEF COMPILER_6_UP} // verified against VCL source in Delphi 6 and BCB 6
-  THackSpeedButton = THackSpeedButton_D6_D7_D9;
-  {$ENDIF}
+uses CommCtrl, Forms, Themes, TntSysUtils;
 
 procedure Register;
 begin
@@ -78,6 +69,8 @@ begin
   RegisterComponents('History++', [THppEdit]);
   RegisterComponents('History++', [THppPanel]);
   RegisterComponents('History++', [THppSpeedButton]);
+  RegisterComponents('History++', [THppToolBar]);
+  RegisterComponents('History++', [THppToolButton]);
 end;
 
 procedure TPasswordEdit.CreateParams(var Params: TCreateParams);
@@ -118,8 +111,8 @@ begin
       currentWS := IsWordSeparator(txt[ss]);
       if not lastWS and currentWS then break;
       lastWS := currentWS;
-      dec(ss);
-      inc(sl);
+      Dec(ss);
+      Inc(sl);
     end;
     Delete(txt,ss+1,sl);
     Text := txt;
@@ -145,7 +138,74 @@ begin
 end;
 {$ENDIF}
 
+{ THppToolButton }
+
+// Note: ignored unless Style = tbsDropDown is set
+procedure THppToolButton.SetWholeDropDown(const Value: Boolean);
+begin
+  if FWholeDropDown = Value then exit;
+  FWholeDropDown := Value;
+  RefreshControl;
+  // Trick: resize tool buttons.
+  // TODO: refresh only when theme is loaded.
+  if Assigned(FToolBar) then FToolBar.Invalidate;
+  Width := 1;
+end;
+
+{ THppToolBar }
+
+procedure THppToolBar.AddToolButtonStyle(const Control: TControl; var Style: Byte);
+const
+  BTNS_WHOLEDROPDOWN = $0080;
+  WholeDropDownStyles: array[Boolean] of DWORD = (0, BTNS_WHOLEDROPDOWN);
+begin
+  if Control.InheritsFrom(THppToolButton) and
+    (GetComCtlVersion >= ComCtlVersionIE5) then
+      Style := Style or WholeDropDownStyles[THppToolButton(Control).WholeDropDown];
+end;
+
+procedure THppToolBar.WndProc(var Message: TMessage);
+var
+  BT: PTBButton;
+  BI: PTBButtonInfoW;
+begin
+  case Message.Msg of
+    TB_INSERTBUTTON: begin
+      BT := PTBButton(Message.LParam);
+      AddToolButtonStyle(TControl(BT.dwData), BT.fsStyle);
+    end;
+    TB_SETBUTTONINFO: begin
+      BI := PTBButtonInfoW(Message.LParam);
+      AddToolButtonStyle(TControl(BI.lParam), BI.fsStyle);
+    end;
+  end;
+  inherited;
+end;
+
 { THppSpeedButton }
+
+type
+
+  THackSpeedButton_D6_D7_D9 = class(TGraphicControl)
+  protected
+    FxxxxGroupIndex: Integer;
+    FGlyph: Pointer;
+    FxxxxDown: Boolean;
+    FDragging: Boolean;
+    {$IFDEF DELPHI_7}
+    FxxxxAllowAllUp: Boolean;
+    FxxxxLayout: TButtonLayout;
+    FxxxxSpacing: Integer;
+    FxxxxTransparent: Boolean;
+    FxxxxMargin: Integer;
+    FxxxxFlat: Boolean;
+    FMouseInControl: Boolean;
+    {$ENDIF}
+  end;
+
+  {$IFDEF COMPILER_6_UP} // verified against VCL source in Delphi 6 and BCB 6
+  THackSpeedButton = THackSpeedButton_D6_D7_D9;
+  {$ENDIF}
 
 // hack to prepaint non transparent sppedbuttons with themed
 // parent control, such as doublebuffered toolbar.
@@ -159,10 +219,7 @@ begin
 end;
 
 {$IFDEF DELPHI_7}
-// hack to avoid speed buttons always hovered in Deplhi 7
-// since there we have no CM_MOUSEENTER and CM_MOUSELEAVE
-// from Application.Idle;
-procedure THppSpeedButton.MouseMove(Shift: TShiftState; X, Y: Integer);
+procedure THppSpeedButton.UpdateTracking;
 var
   P : TPoint;
 begin
@@ -178,23 +235,23 @@ begin
     if not THackSpeedButton(Self).FDragging then
       Perform(CM_MOUSELEAVE,0,0);
   end;
-  inherited;
 end;
 
-procedure THppSpeedButton.MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+// hack to avoid speed buttons always hovered in Deplhi 7
+// since there we have no CM_MOUSEENTER and CM_MOUSELEAVE
+// from Application.Idle;
+procedure THppSpeedButton.WndProc(var Message: TMessage);
 begin
-  inherited MouseUp(Button, Shift, X, Y);
-  MouseMove(Shift,X,Y);
+  case Message.Msg of
+    WM_MOUSEMOVE,WM_NCMOUSEMOVE:
+      UpdateTracking;
+  end;
+  inherited;
+  case Message.Msg of
+    WM_LBUTTONUP,WM_RBUTTONUP,WM_MBUTTONUP,WM_CONTEXTMENU:
+      UpdateTracking;
+  end;
 end;
 {$ENDIF}
-
-// hack to avoid speed buttons hovered after context menu
-// show since we have no CM_MOUSEENTER and CM_MOUSELEAVE
-// from Application.Idle;
-procedure THppSpeedButton.WMContextMenu(var Message: TWMContextMenu);
-begin
-  inherited;
-  if Message.Result <> 0 then Perform(CM_MOUSELEAVE, 0, 0);
-end;
 
 end.
