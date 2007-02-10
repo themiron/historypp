@@ -3,12 +3,12 @@ unit hpp_externalgrid;
 interface
 
 uses
-  Windows, Classes, Controls, Forms, Graphics, Messages, SysUtils,
+  Windows, Classes, Controls, Forms, Graphics, Messages, SysUtils, Dialogs,
   m_api, m_globaldefs,
   hpp_global, hpp_events, hpp_contacts, hpp_services, hpp_forms, hpp_bookmarks,
-  hpp_richedit, hpp_messages, hpp_eventfilters, hpp_database,
+  hpp_richedit, hpp_messages, hpp_eventfilters, hpp_database, hpp_itemprocess,
   HistoryGrid,
-  RichEdit, Menus, TntMenus;
+  RichEdit, Menus, TntMenus, TntSysUtils;
 
 type
   TExGridMode = (gmNative, gmIEView);
@@ -46,6 +46,8 @@ type
     FUseHistoryCodepage: Boolean;
     FExternalCodepage: Cardinal;
     FGridState: TGridState;
+    SaveDialog: TSaveDialog;
+    RecentFormat: TSaveFormat;
 
     function GetGridHandle: HWND;
     procedure SetUseHistoryRTLMode(const Value: Boolean);
@@ -53,6 +55,7 @@ type
     procedure SetGroupLinked(const Value: Boolean);
     procedure SetShowHeaders(const Value: Boolean);
     procedure SetShowBookmarks(const Value: Boolean);
+    procedure PrepareSaveDialog(var SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
     procedure GridTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
@@ -68,6 +71,7 @@ type
     procedure GridUrlPopup(Sender: TObject; Item: Integer; Url: String);
     procedure GridInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure GridItemDelete(Sender: TObject; Index: Integer);
+    procedure GridXMLData(Sender: TObject; Index: Integer; var Item: TXMLItem);
     procedure OnCopyClick(Sender: TObject);
     procedure OnCopyTextClick(Sender: TObject);
     procedure OnSelectAllClick(Sender: TObject);
@@ -83,6 +87,7 @@ type
     procedure OnBidiModeHistoryClick(Sender: TObject);
     procedure OnCodepageLogClick(Sender: TObject);
     procedure OnCodepageHistoryClick(Sender: TObject);
+    procedure OnSaveSelectedClick(Sender: TObject);
   public
     constructor Create(AParentWindow: HWND; ControlID: Cardinal = 0);
     destructor Destroy; override;
@@ -197,6 +202,7 @@ begin
   FExternalCodepage := CP_ACP;
   FSelection := nil;
   FGridState := gsIdle;
+  RecentFormat := sfHtml;
 
   Grid := THistoryGrid.CreateParented(ParentWindow);
 
@@ -233,6 +239,7 @@ begin
   Grid.OnUrlPopup := GridUrlPopup;
   Grid.OnInlineKeyDown := GridInlineKeyDown;
   Grid.OnItemDelete := GridItemDelete;
+  Grid.OnXMLData := GridXMLData;
 
   Grid.TxtFullLog := TranslateWideW(Grid.TxtFullLog{TRANSLATE-IGNORE});
   Grid.TxtGenHist1 := TranslateWideW(Grid.TxtGenHist1{TRANSLATE-IGNORE});
@@ -270,6 +277,8 @@ begin
     RadioItem(true,WideNewItem('Log default',0,true,true,OnCodepageLogClick,0,'pmCodepageLog',)),
     RadioItem(true,WideNewItem('History default',0,false,true,OnCodepageHistoryClick,0,'pmCodepageHistory'))
   ],true));
+  pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN5'));
+  pmGrid.Items.Add(WideNewItem('&Save Selected...',TextToShortCut('Ctrl+S'),false,true,OnSaveSelectedClick,0,'pmSaveSelected'));
 
   pmLink := TTntPopupMenu.Create(Grid);
   pmLink.ParentBiDiMode := False;
@@ -542,7 +551,7 @@ procedure TExternalGrid.GridPopup(Sender: TObject);
 begin
   if Grid.Selected = -1 then exit;
   pmGrid.Items[0].Visible := (Grid.State = gsIdle) and not Items[Grid.Selected].Custom;
-  pmGrid.Items[4].Visible := (Grid.State = gsInline);
+  pmGrid.Items[4].Visible := (Grid.State = gsInline); // works even if not in pseudo-edit
   pmGrid.Items[7].Visible := (Grid.State = gsInline);
   pmGrid.Items[7].Checked := GridOptions.TextFormatting;
   if Grid.State = gsInline then
@@ -566,6 +575,7 @@ begin
   pmGrid.Items[13].Visible := (Grid.State = gsIdle);
   pmGrid.Items[13].Items[0].Checked := not FUseHistoryCodepage;
   pmGrid.Items[13].Items[1].Checked := FUseHistoryCodepage;
+  pmGrid.Items[15].Visible := (Grid.SelCount > 1);
   pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
 end;
 
@@ -600,8 +610,13 @@ end;
 
 procedure TExternalGrid.OnSelectAllClick(Sender: TObject);
 begin
-  if (Grid.Selected = -1) or (Grid.State <> gsInline) then exit;
-  Grid.InlineRichEdit.SelectAll;
+  if Grid.State = gsInline then begin
+    if Grid.Selected = -1 then exit;
+    Grid.InlineRichEdit.SelectAll;
+  end else begin
+    Grid.MakeRangeSelected(0,Grid.Count-1);
+    Grid.Invalidate;
+  end;
 end;
 
 procedure TExternalGrid.OnDeleteClick(Sender: TObject);
@@ -803,6 +818,141 @@ begin
       exit;
     end;
   end;
+end;
+
+var
+  HtmlFilter: String = 'HTML file (*.html; *.htm)|*.html;*.htm';
+  XmlFilter: String = 'XML file (*.xml)|*.xml';
+  RtfFilter: String = 'RTF file (*.rtf)|*.rtf';
+  UnicodeFilter: String = 'Unicode text file (*.txt)|*.txt';
+  TextFilter: String = 'Text file (*.txt)|*.txt';
+  AllFilter: String = 'All files (*.*)|*.*';
+  HtmlDef: String = '.html';
+  XmlDef: String = '.xml';
+  RtfDef: String = '.rtf';
+  TextDef: String = '.txt';
+
+procedure TExternalGrid.PrepareSaveDialog(var SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
+begin
+  if not Assigned(SaveDialog) then begin
+    SaveDialog := TSaveDialog.Create(Grid);
+    SaveDialog.Title := Translate('Save History');
+    SaveDialog.Options := [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofShareAware, ofEnableSizing];
+  end;
+  if AllFormats then begin
+    SaveDialog.Filter := HtmlFilter+'|'+XmlFilter+'|'+RtfFilter+'|'+UnicodeFilter+'|'+TextFilter+'|'+AllFilter;
+    case SaveFormat of
+      sfHTML: SaveDialog.FilterIndex := 1;
+      sfXML: SaveDialog.FilterIndex := 2;
+      sfRTF: SaveDialog.FilterIndex := 3;
+      sfUnicode: SaveDialog.FilterIndex := 4;
+      sfText: SaveDialog.FilterIndex := 5;
+    end;
+  end else begin
+    case SaveFormat of
+      sfHTML: begin SaveDialog.Filter := HtmlFilter; SaveDialog.FilterIndex := 1; end;
+      sfXML:  begin SaveDialog.Filter := XmlFilter; SaveDialog.FilterIndex := 1; end;
+      sfRTF:  begin SaveDialog.Filter := RtfFilter; SaveDialog.FilterIndex := 1; end;
+      sfUnicode: begin SaveDialog.Filter := UnicodeFilter+'|'+TextFilter; SaveDialog.FilterIndex := 1; end;
+      sfText: begin SaveDialog.Filter := UnicodeFilter+'|'+TextFilter; SaveDialog.FilterIndex := 2; end;
+    end;
+    SaveDialog.Filter := SaveDialog.Filter + '|' + AllFilter;
+  end;
+  case SaveFormat of
+    sfHTML: SaveDialog.DefaultExt := HtmlDef;
+    sfXML: SaveDialog.DefaultExt := XmlDef;
+    sfRTF: SaveDialog.DefaultExt := RtfDef;
+    sfUnicode: SaveDialog.DefaultExt := TextDef;
+    sfText: SaveDialog.DefaultExt := TextDef;
+  end;
+end;
+
+procedure TExternalGrid.OnSaveSelectedClick(Sender: TObject);
+var
+  t: String;
+  SaveFormat: TSaveFormat;
+begin
+  if Grid.SelCount < 2 then exit;
+  RecentFormat := TSaveFormat(GetDBInt(hppDBName,'ExportFormat',0));
+  SaveFormat := RecentFormat;
+  PrepareSaveDialog(SaveDialog,SaveFormat,True);
+  t := Translate('Partial History [%s] - [%s]');
+  t := Format(t,[WideToAnsiString(Grid.ProfileName,CP_ACP),WideToAnsiString(Grid.ContactName,CP_ACP)]);
+  t := MakeFileName(t);
+  SaveDialog.FileName := t;
+  if not SaveDialog.Execute then exit;
+  case SaveDialog.FilterIndex of
+    1: SaveFormat := sfHtml;
+    2: SaveFormat := sfXml;
+    3: SaveFormat := sfRTF;
+    4: SaveFormat := sfUnicode;
+    5: SaveFormat := sfText;
+  end;
+  RecentFormat := SaveFormat;
+  Grid.SaveSelected(SaveDialog.Files[0],SaveFormat);
+  WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
+end;
+
+procedure TExternalGrid.GridXMLData(Sender: TObject; Index: Integer; var Item: TXMLItem);
+var
+  tmp: string;
+  dt: TDateTime;
+  er: TEventRecord;
+  mes: WideString;
+begin
+  dt := TimestampToDateTime(Grid.Items[Index].Time);
+  Item.Time := MakeTextXMLedA(FormatDateTime('hh:mm:ss',dt));
+  Item.Date := MakeTextXMLedA(FormatDateTime('yyyy-mm-dd',dt));
+
+  Item.Contact := UTF8Encode(MakeTextXMLedW(Grid.ContactName));
+  if mtIncoming in Grid.Items[Index].MessageType then
+    Item.From := Item.Contact
+  else
+    Item.From := '&ME;';
+
+  Item.EventType := '&'+GetMessageRecord(Grid.Items[Index].MessageType).XML+';';
+
+  mes := Grid.Items[Index].Text;
+  if GridOptions.RawRTFEnabled and IsRTF(mes) then begin
+    Grid.ApplyItemToRich(Index);
+    mes := GetRichString(Grid.RichEdit.Handle,False);
+  end;
+  if GridOptions.BBCodesEnabled then
+    mes := DoStripBBCodes(mes);
+  Item.Mes := UTF8Encode(MakeTextXMLedW(mes));
+
+  if mtFile in Grid.Items[Index].MessageType then begin
+    tmp := Grid.Items[Index].Extended;
+    if tmp = '' then Item.FileName := '&UNK;'
+                else Item.FileName := UTF8Encode(MakeTextXMLedA(tmp));
+  end else
+  if mtUrl in Grid.Items[Index].MessageType then begin
+    tmp := Grid.Items[Index].Extended;
+    if tmp = '' then Item.Url := '&UNK;'
+                else Item.Url := UTF8Encode(MakeTextXMLedA(tmp));
+  end else
+  if mtAvatarChange in Grid.Items[Index].MessageType then begin
+    tmp := Grid.Items[Index].Extended;
+    if tmp = '' then Item.FileName := '&UNK;'
+                else Item.FileName := UTF8Encode(MakeTextXMLedA(tmp));
+  end;
+
+  {2.8.2004 OXY: Change protocol guessing order. Now
+  first use protocol name, then, if missing, use module }
+
+  Item.Protocol := Grid.Items[Index].Proto;
+  if Item.Protocol = '' then
+    Item.Protocol := MakeTextXMLedA(Grid.Items[Index].Module);
+  if Item.Protocol = '' then Item.Protocol := '&UNK;';
+
+  if mtIncoming in Grid.Items[Index].MessageType then
+    Item.ID := GetContactID(Grid.Contact, Grid.Protocol, true)
+  else
+    Item.ID := GetContactID(0, Grid.Protocol);
+  if Item.ID = '' then
+    Item.ID := '&UNK;'
+  else
+    Item.ID := MakeTextXMLedA(Item.ID);
 end;
 
 end.

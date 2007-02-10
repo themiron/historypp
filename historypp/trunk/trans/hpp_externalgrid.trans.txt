@@ -5,3 +5,5 @@ Do you really want to delete selected items (%.0f)?
 Delete Selected
 Do you really want to delete selected item?
 Delete
+Save History
+Partial History [%s] - [%s]
