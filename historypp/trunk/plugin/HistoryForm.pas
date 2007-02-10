@@ -270,7 +270,6 @@ type
     procedure Emptyhistory1Click(Sender: TObject);
     procedure EventsFilterItemClick(Sender: TObject);
     procedure Passwordprotection1Click(Sender: TObject);
-    procedure paSearchPanelResize(Sender: TObject);
     procedure SessSelectClick(Sender: TObject);
     procedure pmGridPopup(Sender: TObject);
     procedure pmHistoryPopup(Sender: TObject);
@@ -3304,17 +3303,6 @@ end;
 procedure THistoryFrm.tbHistorySearchClick(Sender: TObject);
 begin
   PluginLink.CallService(MS_HPP_SHOWGLOBALSEARCH,0,0);
-end;
-
-{procedure THistoryFrm.tbEventsFilterClick(Sender: TObject);
-begin
-  tbEventsFilter.CheckMenuDropdown;
-end;}
-
-procedure THistoryFrm.paSearchPanelResize(Sender: TObject);
-begin
-  //paSearchButtons.Left := paSearch.ClientWidth-paSearchButtons.Width;
-  //paSearchStatus.Left := paSearchButtons.Left - paSearchStatus.Width;
 end;
 
 procedure THistoryFrm.SessSelectClick(Sender: TObject);
