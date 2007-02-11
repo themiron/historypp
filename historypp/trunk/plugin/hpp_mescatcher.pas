@@ -62,10 +62,8 @@ begin
       Screen.ResetFonts;
       Result := DefWindowProc(hwndDlg, uMsg, wParam, lParam);
     end;
-    WM_THEMECHANGED: begin
-      if ThemeServices.ThemesEnabled then
-        ThemeServices.ApplyThemeChange;
-    end;
+    WM_THEMECHANGED:
+      ThemeServices.ApplyThemeChange;
     WM_NULL:
       CheckSynchronize;
     else
