@@ -30,36 +30,46 @@ interface
 {$I compilers.inc}
 
 uses
-  Windows, Messages, Controls, Forms, Themes;
+  Windows, Messages, Classes, Controls, Forms, Themes;
 
 const
   hppMCWindowClassName = 'hppMessageCatcher';
 
+procedure hppWakeMainThread(Sender: TObject);
 function hppRegisterMessagesCatcher: Boolean;
 function hppUnregisterMessagesCatcher: Boolean;
 
 implementation
 
 var
-  MCWindow: HWND;
+  MCWindow: HWND = 0;
+  SavedWakeMainThread: TNotifyEvent = nil;
 
 function MessageCatcherWndProc(hwndDlg: HWND; uMsg: Integer; wParam: WPARAM; lParam: LPARAM): Integer; stdcall;
 begin
-  Result := 1;
+  Result := 0;
   case uMsg of
     // place for global hotkeys :)
     {WM_HOTKEY: begin
       if wParam = Hotkey then
         PluginLink.CallService(MS_HPP_SHOWGLOBALSEARCH,0,0);
     end;}
-    WM_SETTINGCHANGE:
+    WM_SETTINGCHANGE: begin
       Mouse.SettingChanged(wParam);
-    WM_FONTCHANGE:
-      Screen.ResetFonts;
-    WM_THEMECHANGED: begin
-      ThemeServices.ApplyThemeChange;
-      Result := 0;
+      Result := DefWindowProc(hwndDlg, uMsg, wParam, lParam);
     end;
+    WM_FONTCHANGE: begin
+      Screen.ResetFonts;
+      Result := DefWindowProc(hwndDlg, uMsg, wParam, lParam);
+    end;
+    WM_THEMECHANGED: begin
+      if ThemeServices.ThemesEnabled then
+        ThemeServices.ApplyThemeChange;
+    end;
+    WM_NULL:
+      CheckSynchronize;
+    else
+      Result := DefWindowProc(hwndDlg, uMsg, wParam, lParam);
   end;
 end;
 
@@ -76,6 +86,10 @@ begin
   MCWindow := CreateWindow(hppMCWindowClassName,'hppMessageCatcher',WS_DISABLED,
               0,0,0,0,0,0,WndClass.hInstance,nil);
   Result := (MCWindow <> 0);
+  if Result then begin
+    SavedWakeMainThread := Classes.WakeMainThread;
+    @Classes.WakeMainThread := @hppWakeMainThread;
+  end;
 end;
 
 function hppUnregisterMessagesCatcher: Boolean;
@@ -85,6 +99,14 @@ begin
     MCWindow := 0;
   end;
   Result := Boolean(Windows.UnregisterClass(hppMCWindowClassName,GetModuleHandle(nil)));
+  Classes.WakeMainThread := SavedWakeMainThread;
+end;
+
+procedure hppWakeMainThread(Sender: TObject);
+begin
+  PostMessage(MCWindow, WM_NULL, 0, 0);
+  if Assigned(SavedWakeMainThread) then
+    SavedWakeMainThread(Sender);
 end;
 
 end.
