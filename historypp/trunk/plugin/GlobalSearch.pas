@@ -423,15 +423,16 @@ begin
   stime := GetTickCount - st.SearchStart;
   AllContacts := st.AllContacts;
   AllItems := st.AllEvents;
-  // if change, change also in hg.State:
-  sbt := WideFormat(TranslateWideW('%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.'),[Length(History)/1, ContactsFound, stime/1000, AllItems/1]);
   st.WaitFor;
   FreeAndNil(st);
   IsSearching := False;
   bnSearch.Caption := TranslateWideW('Search');
   paProgress.Hide;
   //paFilter.Show;
-  sb.SimpleText := sbt;
+  // if change, change also in hg.State:
+  //sbt := WideFormat(TranslateWideW('%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.'),[Length(History)/1, ContactsFound, stime/1000, AllItems/1]);
+  //sb.SimpleText := sbt;
+  hgState(Self,hg.State);
   if Length(History) = 0 then
     ShowContacts(False);
 end;
@@ -1970,25 +1971,18 @@ procedure TfmGlobalSearch.hgState(Sender: TObject; State: TGridState);
 var
   t: WideString;
 begin
-  if csDestroying in ComponentState then
-    exit;
-
+  if csDestroying in ComponentState then exit;
+  if IsSearching then
+    t := WideFormat(TranslateWideW('Searching... %.0n items in %d contacts found'),[Length(History)/1, ContactsFound])
+  else
   case State of
-    // if change, change also in SMFinished:
     gsIdle:   t := WideFormat(TranslateWideW('%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.'),[Length(History)/1, ContactsFound, stime/1000, AllItems/1]);
     gsLoad:   t := TranslateWideW('Loading...');
     gsSave:   t := TranslateWideW('Saving...');
     gsSearch: t := TranslateWideW('Searching...');
     gsDelete: t := TranslateWideW('Deleting...');
   end;
-  if IsSearching then
-    // if change, change also in SMProgress
-    sb.SimpleText := WideFormat(TranslateWideW('Searching... %.0n items in %d contacts found'),[Length(History)/1, ContactsFound])
-  else
-  //if IsBookmarksMode then
-  //  sb.SimpleText := TranslateWideW('Bookmarks mode')
-  //else
-    sb.SimpleText := t;
+  sb.SimpleText := t;
 end;
 
 procedure TfmGlobalSearch.Copy1Click(Sender: TObject);
@@ -2206,15 +2200,13 @@ begin
     tbBookmarks.Down := not tbBookmarks.Down;
   IsBookmarksMode := tbBookmarks.Down;
 
-  paSearch.Visible := not IsBookmarksMode;
+  if IsSearching then StopSearching;
 
+  paSearch.Visible := not IsBookmarksMode;
   tbAdvanced.Enabled := not IsBookmarksMode;
   ToggleAdvancedPanel(tbAdvanced.Down);
-
   tbRange.Enabled := not IsBookmarksMode;
   ToggleRangePanel(tbRange.Down);
-
-  if IsSearching then StopSearching;
 
   if IsBookmarksMode then bnSearch.Click;
 end;

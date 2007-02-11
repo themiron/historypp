@@ -58,8 +58,8 @@ Toolbar
 Service
 Hide Menu
 ;; Text found in ..\plugin\GlobalSearch.pas:
-%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.
 Search
+%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.
 All Results
 System History
 Searching "%s"...
@@ -85,13 +85,12 @@ Do you want to continue searching at the beginning?
 History++ Search
 History++ Search
 HotSearch: %s (F3 to find next)
+Searching... %.0n items in %d contacts found
 %.0n items in %d contacts found. Searched for %.1f sec in %.0n items.
 Loading...
 Saving...
 Searching...
 Deleting...
-Searching... %.0n items in %d contacts found
-Bookmarks mode
 Do you really want to delete selected items (%.0f)?
 Delete Selected
 Do you really want to delete selected item?
