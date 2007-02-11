@@ -542,6 +542,9 @@ begin
   // shadow is back again...
   Forms.HintWindowClass := THppHintWindow;
 
+  // init ThemeServices before widows open
+  ThemeServices;
+
   {$IFDEF REPORT_LEAKS}
   // TThemeServices leaks on exit, looks like it's ok
   // to leave it leaking, just ignore the leak report
