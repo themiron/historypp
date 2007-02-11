@@ -31,30 +31,90 @@ uses
 
 const
 
-  IID_IDataObject: TGUID = (
-    D1:$0000010E;D2:$0000;D3:$0000;D4:($C0,$00,$00,$00,$00,$00,$00,$46));
   IID_IOleObject: TGUID = (
     D1:$00000112;D2:$0000;D3:$0000;D4:($C0,$00,$00,$00,$00,$00,$00,$46));
   IID_IRichEditOleCallback: TGUID = (
     D1:$00020D03;D2:$0000;D3:$0000;D4:($C0,$00,$00,$00,$00,$00,$00,$46));
-
-  REO_CP_SELECTION    = ULONG(-1);
-  REO_IOB_SELECTION   = ULONG(-1);
-  REO_GETOBJ_POLEOBJ  =  $00000001;
+  IID_IDataObject: TGUID = (
+    D1:$0000010E;D2:$0000;D3:$0000;D4:($C0,$00,$00,$00,$00,$00,$00,$46));
 
 type
 
-  TReobject = record
-    cbStruct: DWORD;
-    cp: ULONG;
-    clsid: TCLSID;
-    poleobj: IOleObject;
-    pstg: IStorage;
-    polesite: IOleClientSite;
-    sizel: TSize;
-    dvAspect: Longint;
-    dwFlags: DWORD;
-    dwUser: DWORD;
+  TReObject = packed record
+    cbStruct: DWORD; // Size of structure
+    cp: integer; // Character position of object
+    clsid: TCLSID; // Class ID of object
+    poleobj: IOleObject; // OLE object interface
+    pstg: IStorage; // Associated storage interface
+    polesite: IOLEClientSite; // Associated client site interface
+    sizel: TSize; // Size of object (may be 0,0)
+    dvaspect: DWORD; // Display aspect to use
+    dwFlags: DWORD; // Object status flags
+    dwUser: DWORD; // Dword for user's use
+  end;
+
+const
+
+  // Flags to specify which interfaces should be returned in the structure above
+  REO_GETOBJ_NO_INTERFACES  = $00000000;
+  REO_GETOBJ_POLEOBJ        = $00000001;
+  REO_GETOBJ_PSTG           = $00000002;
+  REO_GETOBJ_POLESITE       = $00000004;
+  REO_GETOBJ_ALL_INTERFACES = $00000007;
+
+  // Place object at selection
+  REO_CP_SELECTION  = ULONG(-1);
+
+  // Use character position to specify object instead of index
+  REO_IOB_SELECTION = ULONG(-1);
+  REO_IOB_USE_CP    = ULONG(-1);
+
+  // Object flags
+  REO_NULL            = $00000000; // No flags
+  REO_READWRITEMASK   = $0000003F; // Mask out RO bits
+  REO_DONTNEEDPALETTE = $00000020; // Object doesn't need palette
+  REO_BLANK           = $00000010; // Object is blank
+  REO_DYNAMICSIZE     = $00000008; // Object defines size always
+  REO_INVERTEDSELECT  = $00000004; // Object drawn all inverted if sel
+  REO_BELOWBASELINE   = $00000002; // Object sits below the baseline
+  REO_RESIZABLE       = $00000001; // Object may be resized
+  REO_LINK            = $80000000; // Object is a link (RO)
+  REO_STATIC          = $40000000; // Object is static (RO)
+  REO_SELECTED        = $08000000; // Object selected (RO)
+  REO_OPEN            = $04000000; // Object open in its server (RO)
+  REO_INPLACEACTIVE   = $02000000; // Object in place active (RO)
+  REO_HILITED         = $01000000; // Object is to be hilited (RO)
+  REO_LINKAVAILABLE   = $00800000; // Link believed available (RO)
+  REO_GETMETAFILE     = $00400000; // Object requires metafile (RO)
+
+  // flags for IRichEditOle::GetClipboardData(),
+  // IRichEditOleCallback::GetClipboardData() and
+  // IRichEditOleCallback::QueryAcceptData()
+  RECO_PASTE  = $00000000; // paste from clipboard
+  RECO_DROP   = $00000001; // drop
+  RECO_COPY   = $00000002; // copy to the clipboard
+  RECO_CUT    = $00000003; // cut to the clipboard
+  RECO_DRAG   = $00000004; // drag
+
+type
+
+  IRichEditOle = interface(IUnknown)
+    ['{00020d00-0000-0000-c000-000000000046}']
+    function GetClientSite(out clientSite: IOleClientSite): HResult; stdcall;
+    function GetObjectCount: HResult; stdcall;
+    function GetLinkCount: HResult; stdcall;
+    function GetObject(iob: Longint; out ReObject: TReObject; dwFlags: DWORD): HResult; stdcall;
+    function InsertObject(var ReObject: TReObject): HResult; stdcall;
+    function ConvertObject(iob: Longint; rclsidNew: TIID; lpstrUserTypeNew: LPCSTR): HResult; stdcall;
+    function ActivateAs(rclsid: TIID; rclsidAs: TIID): HResult; stdcall; function SetHostNames(lpstrContainerApp: LPCSTR; lpstrContainerObj: LPCSTR): HResult; stdcall;
+    function SetLinkAvailable(iob: Longint; fAvailable: BOOL): HResult; stdcall;
+    function SetDvaspect(iob: Longint; dvaspect: DWORD): HResult; stdcall;
+    function HandsOffStorage(iob: Longint): HResult; stdcall;
+    function SaveCompleted(iob: Longint; const stg: IStorage): HResult; stdcall;
+    function InPlaceDeactivate: HResult; stdcall;
+    function ContextSensitiveHelp(fEnterMode: BOOL): HResult; stdcall;
+    function GetClipboardData(var chrg: TCharRange; reco: DWORD; out dataobj: IDataObject): HResult; stdcall;
+    function ImportDataObject(dataobj: IDataObject; cf: TClipFormat; hMetaPict: HGLOBAL): HResult; stdcall;
   end;
 
   IRichEditOleCallback = interface(IUnknown)
@@ -92,25 +152,6 @@ type
       function GetDragDropEffect(fDrag: BOOL; grfKeyState: DWORD; var dwEffect: DWORD): HResult;  stdcall;
   end;
 
-  IRichEditOle = interface(IUnknown)
-    ['{00020d00-0000-0000-c000-000000000046}']
-    function GetClientSite(out clientSite: IOleClientSite): HResult; stdcall;
-    function GetObjectCount: HResult; stdcall;
-    function GetLinkCount: HResult; stdcall;
-    function GetObject(iob: Longint; out reobject: TReObject; dwFlags: DWORD): HResult; stdcall;
-    function InsertObject(var reobject: TReObject): HResult; stdcall;
-    function ConvertObject(iob: Longint; rclsidNew: TIID; lpstrUserTypeNew: LPCSTR): HResult; stdcall;
-    function ActivateAs(rclsid: TIID; rclsidAs: TIID): HResult; stdcall; function SetHostNames(lpstrContainerApp: LPCSTR; lpstrContainerObj: LPCSTR): HResult; stdcall;
-    function SetLinkAvailable(iob: Longint; fAvailable: BOOL): HResult; stdcall;
-    function SetDvaspect(iob: Longint; dvaspect: DWORD): HResult; stdcall;
-    function HandsOffStorage(iob: Longint): HResult; stdcall;
-    function SaveCompleted(iob: Longint; const stg: IStorage): HResult; stdcall;
-    function InPlaceDeactivate: HResult; stdcall;
-    function ContextSensitiveHelp(fEnterMode: BOOL): HResult; stdcall;
-    function GetClipboardData(var chrg: TCharRange; reco: DWORD; out dataobj: IDataObject): HResult; stdcall;
-    function ImportDataObject(dataobj: IDataObject; cf: TClipFormat; hMetaPict: HGLOBAL): HResult; stdcall;
-  end;
-
   TImageDataObject = class(TInterfacedObject,IDataObject)
   private
     FBmp:hBitmap;
@@ -130,10 +171,10 @@ type
     function EnumDAdvise(out enumAdvise: IEnumStatData): HResult; stdcall;
   public
     destructor Destroy;override;
-    procedure InsertBitmap(wnd:HWND; Bitmap:hBitmap);
+    procedure InsertBitmap(REHandle:HWND; Bitmap: hBitmap; cp: Integer = REO_CP_SELECTION);
   end;
 
-  procedure InsertBitmapToRichEdit(Wnd:HWND; bmp:hBitmap);
+procedure REInsertBitmap(REHandle:HWND; Bitmap: hBitmap; cp: Integer = REO_CP_SELECTION);
 
 implementation
 
@@ -179,7 +220,8 @@ var
 begin
   OleCheck(CreateILockBytesOnHGlobal(0, True, LockBytes));
   try
-    OleCheck(StgCreateDocfileOnILockBytes(LockBytes, STGM_READWRITE or STGM_SHARE_EXCLUSIVE or STGM_CREATE, 0, Storage));
+    OleCheck(StgCreateDocfileOnILockBytes(LockBytes,
+      STGM_READWRITE or STGM_SHARE_EXCLUSIVE or STGM_CREATE, 0, Storage));
   finally
     ReleaseObject(LockBytes);
   end;
@@ -199,8 +241,9 @@ end;
 
 function TRichEditOleCallback.QueryInterface(const iid: TGUID; out Obj): HResult;
 begin
-  if GetInterface(iid, Obj) then Result := S_OK
-  else Result := E_NOINTERFACE;
+  if GetInterface(iid, Obj) then
+    Result := S_OK else
+    Result := E_NOINTERFACE;
 end;
 
 function TRichEditOleCallback._AddRef: Longint;
@@ -346,62 +389,63 @@ end;
 
 function TImageDataObject.GetOleObject(OleClientSite: IOleClientSite; Storage: IStorage):IOleObject;
 begin
-  if (Fmedium.hBitmap=0) then Result:=nil else
-  OleCreateStaticFromData(self, IID_IOleObject, OLERENDER_FORMAT, @FFormatEtc, OleClientSite, Storage, Result);
+  if (Fmedium.hBitmap=0) then
+    Result := nil else
+    OleCreateStaticFromData(Self, IID_IOleObject,
+      OLERENDER_FORMAT, @FFormatEtc, OleClientSite, Storage, Result);
 end;
 
-procedure TImageDataObject.InsertBitmap(wnd:HWND; Bitmap: hBitmap);
+procedure TImageDataObject.InsertBitmap(REHandle:HWND; Bitmap: hBitmap; cp: Integer = REO_CP_SELECTION);
 var
-  OleClientSite:IOleClientSite;
   RichEditOLE:IRichEditOLE;
+  OleClientSite:IOleClientSite;
   Storage:IStorage;
   LockBytes:ILockBytes;
   OleObject:IOleObject;
-  reobject:TReobject;
+  ReObject:TReObject;
   clsid:TGUID;
 begin
-  if (SendMessage(wnd, EM_GETOLEINTERFACE, 0, cardinal(@RichEditOle))=0) then exit;
-  FBmp:=CopyImage(Bitmap,IMAGE_BITMAP,0,0,0);
-  if FBmp=0 then exit;
+  SendMessage(REHandle, EM_GETOLEINTERFACE, 0, LPARAM(@RichEditOle));
+  if (RichEditOle = nil) or (Bitmap = 0)then exit;
+  FBmp := CopyImage(Bitmap,IMAGE_BITMAP,0,0,0);
+  if FBmp = 0 then exit;
   try
-    SetBitmap(Fbmp);
+    SetBitmap(FBmp);
     RichEditOle.GetClientSite(OleClientSite);
-    if (OleClientSite=nil) then exit;
-
-    CreateILockBytesOnHGlobal(0, TRUE,LockBytes);
-    if (LockBytes = nil) then exit;
-    if (StgCreateDocfileOnILockBytes(LockBytes, STGM_SHARE_EXCLUSIVE or STGM_CREATE or STGM_READWRITE, 0,Storage) <> S_OK) then begin
+    if OleClientSite = nil then exit;
+    if CreateILockBytesOnHGlobal(0, True, LockBytes) <> S_OK then exit;
+    if StgCreateDocfileOnILockBytes(LockBytes,
+      STGM_SHARE_EXCLUSIVE or STGM_CREATE or STGM_READWRITE, 0,Storage) <> S_OK then begin
       LockBytes._Release;
       exit;
     end;
-
-    if (Storage = nil) then exit;
-    OleObject:=GetOleObject(OleClientSite, Storage);
-    if (OleObject = nil) then exit;
-    OleSetContainedObject(OleObject, TRUE);
-
-    ZeroMemory(@reobject, sizeof(TReobject));
-    reobject.cbStruct := sizeof(TReobject);
+    if Storage = nil then exit;
+    OleObject := GetOleObject(OleClientSite, Storage);
+    if OleObject = nil then exit;
+    OleSetContainedObject(OleObject, True);
     OleObject.GetUserClassID(clsid);
-    reobject.clsid := clsid;
-    reobject.cp := REO_CP_SELECTION;
-    reobject.dvaspect := DVASPECT_CONTENT;
-    reobject.poleobj := OleObject;
-    reobject.polesite := OleClientSite;
-    reobject.pstg := Storage;
-
-    RichEditOle.InsertObject(reobject);
+    ZeroMemory(@ReObject, SizeOf(ReObject));
+    ReObject.cbStruct := SizeOf(ReObject);
+    ReObject.clsid := clsid;
+    ReObject.cp := cp;
+    //ReObject.dvaspect := DVASPECT_CONTENT or REO_BELOWBASELINE;
+    ReObject.dvaspect := DVASPECT_CONTENT;
+    ReObject.poleobj := OleObject;
+    ReObject.polesite := OleClientSite;
+    ReObject.pstg := Storage;
+    RichEditOle.InsertObject(ReObject);
   finally
-    DeleteObject(FBmp)
+    DeleteObject(FBmp);
+    RichEditOLE := nil;
+    OleObject := nil;
   end;
 end;
 
-
-procedure InsertBitmapToRichEdit(Wnd:HWND; bmp:hBitmap);
+procedure REInsertBitmap(REHandle:HWND; Bitmap: hBitmap; cp: Integer = REO_CP_SELECTION);
 begin
   with TImageDataObject.Create do
   try
-    InsertBitmap(Wnd,Bmp);
+    InsertBitmap(REHandle,Bitmap,cp);
   finally
     Free;
   end
