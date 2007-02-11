@@ -151,10 +151,20 @@ object EventDetailsFrm: TEventDetailsFrm
         Layout = blGlyphTop
         OnClick = EToMoreClick
       end
+      object imDirection: TTntImage
+        Left = 426
+        Top = 18
+        Width = 16
+        Height = 16
+        Hint = 'Message direction'
+        Anchors = [akTop, akRight]
+        Center = True
+        Transparent = True
+      end
       object EMsgType: THppEdit
         Left = 80
         Top = 16
-        Width = 361
+        Width = 341
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone

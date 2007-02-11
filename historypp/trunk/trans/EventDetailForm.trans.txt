@@ -11,6 +11,7 @@ From:
 To:
 Show sender information
 Show receiver information
+Message direction
 Open in &new window
 &Open in existing window
 &Copy Link

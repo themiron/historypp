@@ -88,6 +88,8 @@ To:
 Show sender information
 [Show receiver information]
 Show receiver information
+[Message direction]
+Message direction
 [Open in &new window]
 Open in &new window
 [&Open in existing window]
@@ -247,8 +249,6 @@ Saving...
 Searching...
 [Deleting...]
 Deleting...
-[Bookmarks mode]
-Bookmarks mode
 [Do you really want to delete selected items (%.0f)?]
 Do you really want to delete selected items (%.0f)?
 [Delete Selected]

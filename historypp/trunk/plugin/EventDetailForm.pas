@@ -77,6 +77,7 @@ type
     OpenLink: TTntMenuItem;
     CopyLink: TTntMenuItem;
     N4: TTntMenuItem;
+    imDirection: TTntImage;
     procedure PrevBtnClick(Sender: TObject);
     procedure NextBtnClick(Sender: TObject);
     procedure EFromMoreClick(Sender: TObject);
@@ -105,7 +106,7 @@ type
     //FRowIdx: integer;
     FParentForm: THistoryFrm;
     FItem: Integer;
-    Prev,Next: Integer;
+
     FRichHeight: Integer;
     FOverURL: Boolean;
     SavedLinkUrl: String;
@@ -121,11 +122,16 @@ type
     procedure SetItem(const Value: Integer);
     procedure TranslateForm;
     procedure LoadButtonIcons;
-    procedure LoadFormIcon;
+    procedure LoadMessageIcons;
     { Private declarations }
     procedure HMIconsChanged(var M: TMessage); message HM_NOTF_ICONSCHANGED;
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
     procedure HMEventDeleted(var Message: TMessage); message HM_MIEV_EVENTDELETED;
+    function GetPrevItem: Integer;
+    function GetNextItem: Integer;
+  protected
+    property PrevItem: Integer read GetPrevItem;
+    property NextItem: Integer read GetNextItem;
   public
     TOhContact:THandle;
     FROMhContact:THandle;
@@ -157,7 +163,7 @@ end;
 
 procedure TEventDetailsFrm.PrevBtnClick(Sender: TObject);
 begin
-  Item := Prev;
+  Item := PrevItem;
 end;
 
 procedure TEventDetailsFrm.ProcessRichEdit(const FItem: Integer);
@@ -186,7 +192,7 @@ end;
 
 procedure TEventDetailsFrm.NextBtnClick(Sender: TObject);
 begin
-  Item := Next;
+  Item := NextItem;
 end;
 
 procedure TEventDetailsFrm.EFromMoreClick(Sender: TObject);
@@ -202,8 +208,9 @@ end;
 procedure TEventDetailsFrm.FormDestroy(Sender: TObject);
 begin
   try
-  FParentForm.EventDetailFrom:=nil;
-  except end;
+    FParentForm.EventDetailForm := nil;
+  except
+  end;
 end;
 
 procedure TEventDetailsFrm.FormKeyDown(Sender: TObject; var Key: Word;
@@ -292,8 +299,7 @@ begin
 
   LoadButtonIcons;
   TranslateForm;
-  Prev := -1;
-  Next := -1;
+
   //re_mask := SendMessage(EText.Handle,EM_GETEVENTMASK, 0, 0);
   //SendMessage(EText.Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK or ENM_REQUESTRESIZE);
   //SendMessage(EText.Handle,EM_AUTOURLDETECT,1,0);
@@ -307,6 +313,7 @@ var
   FromContact,ToContact : boolean;
 begin
   Assert(Assigned(FParentForm));
+  if Value = -1 then exit;
   FItem := Value;
   EMsgType.Text := TranslateWideW(GetMessageRecord(FParentForm.hg.Items[FItem].MessageType).Name{TRANSLATE-IGNORE});
   EMsgType.Text := WideFormat('%s #%u',[EMsgType.Text,FParentForm.hg.Items[FItem].EventType]);
@@ -323,7 +330,7 @@ begin
     FromhContact:=0;
   end;
 
-  LoadFormIcon;
+  LoadMessageIcons;
 
   EFromMore.Enabled := not FromContact;
   EToMore.Enabled := not ToContact;
@@ -349,12 +356,10 @@ begin
     bnReply.Enabled := True;
 
   // check forward and back buttons
-  Prev := FParentForm.hg.GetPrev(FItem);
-  Next := FParentForm.hg.GetNext(FItem);
-  NextBtn.Enabled := (Next <> -1);
-  PrevBtn.Enabled := (Prev <> -1);
+  NextBtn.Enabled := (NextItem <> -1);
+  PrevBtn.Enabled := (PrevItem <> -1);
 
-  if FParentForm.hg.selected <> FItem then
+  if FParentForm.hg.Selected <> FItem then
     FParentForm.hg.Selected := FItem;
 end;
 
@@ -366,17 +371,18 @@ end;
 procedure TEventDetailsFrm.TranslateForm;
 begin
   Caption := TranslateWideW(Caption);
-  GroupBox.Caption:=TranslateWideW(GroupBox.Caption);
-  laType.Caption:=TranslateWideW(laType.Caption);
-  laDateTime.Caption:=TranslateWideW(laDateTime.Caption);
-  laFrom.Caption:=TranslateWideW(laFrom.Caption);
-  laTo.Caption:=TranslateWideW(laTo.Caption);
-  EFromMore.Hint:=TranslateWideW(EFromMore.Hint);
-  EToMore.Hint:=TranslateWideW(EToMore.Hint);
-  PrevBtn.Caption:=TranslateWideW(PrevBtn.Caption);
-  NextBtn.Caption:=TranslateWideW(NextBtn.Caption);
-  CloseBtn.Caption:=TranslateWideW(CloseBtn.Caption);
-  bnReply.Caption:=TranslateWideW(bnReply.Caption);
+  GroupBox.Caption := TranslateWideW(GroupBox.Caption);
+  laType.Caption := TranslateWideW(laType.Caption);
+  laDateTime.Caption := TranslateWideW(laDateTime.Caption);
+  laFrom.Caption := TranslateWideW(laFrom.Caption);
+  laTo.Caption := TranslateWideW(laTo.Caption);
+  EFromMore.Hint := TranslateWideW(EFromMore.Hint);
+  EToMore.Hint := TranslateWideW(EToMore.Hint);
+  PrevBtn.Caption := TranslateWideW(PrevBtn.Caption);
+  NextBtn.Caption := TranslateWideW(NextBtn.Caption);
+  CloseBtn.Caption := TranslateWideW(CloseBtn.Caption);
+  bnReply.Caption := TranslateWideW(bnReply.Caption);
+  imDirection.Hint := TranslateWideW(imDirection.Hint);
   TranslateMenu(pmEText.Items);
 end;
 
@@ -477,34 +483,34 @@ begin
   with EFromMore.Glyph do begin
     Width := 16;
     Height := 16;
-    Canvas.Brush.Color := paInfo.Color;
+    Canvas.Brush.Color := clBtnFace;
     Canvas.FillRect(Canvas.ClipRect);
     DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_CONTACDETAILS].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
   with EToMore.Glyph do begin
     Width := 16;
     Height := 16;
-    Canvas.Brush.Color := paInfo.Color;
+    Canvas.Brush.Color := clBtnFace;
     Canvas.FillRect(Canvas.ClipRect);
     DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_CONTACDETAILS].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
   with PrevBtn.Glyph do begin
     Width := 16;
     Height := 16;
-    Canvas.Brush.Color := paInfo.Color;
+    Canvas.Brush.Color := clBtnFace;
     Canvas.FillRect(Canvas.ClipRect);
     DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_SEARCHUP].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
   with NextBtn.Glyph do begin
     Width := 16;
     Height := 16;
-    Canvas.Brush.Color := paInfo.Color;
+    Canvas.Brush.Color := clBtnFace;
     Canvas.FillRect(Canvas.ClipRect);
     DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_SEARCHDOWN].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
 end;
 
-procedure TEventDetailsFrm.LoadFormIcon;
+procedure TEventDetailsFrm.LoadMessageIcons;
 var
   ic: hIcon;
   er: PEventRecord;
@@ -517,16 +523,29 @@ begin
   if ic = 0 then
     ic := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
   Icon.Handle := CopyIcon(ic);
+  with imDirection.Picture.Bitmap do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := clBtnFace;
+    Canvas.FillRect(Canvas.ClipRect);
+    if mtIncoming in FParentForm.hg.Items[FItem].MessageType then
+      ic := hppIcons[EventRecords[mtIncoming].i].handle
+    else
+    if mtOutgoing in FParentForm.hg.Items[FItem].MessageType then
+      ic := hppIcons[EventRecords[mtOutgoing].i].handle
+    else exit;
+    DrawIconEx(Canvas.Handle,0,0,ic,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
 end;
 
 procedure TEventDetailsFrm.HMIconsChanged(var M: TMessage);
 begin
-  LoadFormIcon;
+  LoadMessageIcons;
 end;
 
 procedure TEventDetailsFrm.HMIcons2Changed(var M: TMessage);
 begin
-  LoadFormIcon;
+  LoadMessageIcons;
   LoadButtonIcons;
 end;
 
@@ -544,6 +563,7 @@ end;
 procedure TEventDetailsFrm.WMSysColorChange(var Message: TMessage);
 begin
   inherited;
+  LoadMessageIcons;
   LoadButtonIcons;
   Repaint;
 end;
@@ -572,6 +592,20 @@ end;
 procedure TEventDetailsFrm.ETextMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 begin
   FOverURL := False;
+end;
+
+function TEventDetailsFrm.GetPrevItem: Integer;
+begin
+  if Assigned(FParentForm) then
+    Result := FParentForm.hg.GetPrev(FItem) else
+    Result := -1;
+end;
+
+function TEventDetailsFrm.GetNextItem: Integer;
+begin
+  if Assigned(FParentForm) then
+    Result := FParentForm.hg.GetNext(FItem) else
+    Result := -1;
 end;
 
 end.
