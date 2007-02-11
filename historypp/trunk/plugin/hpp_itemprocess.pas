@@ -270,7 +270,7 @@ begin
     cr.cpMax := cr.cpMin;
     SendMessage(wParam,EM_EXSETSEL,0,integer(@cr));
     SetRichRTF(wParam,crlf,True,False,True);
-    InsertBitmapToRichEdit(wParam,hBmp);
+    REInsertBitmap(wParam,hBmp,-1);
   end;
 end;
 
