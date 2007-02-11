@@ -113,6 +113,7 @@ type
   TOnProcessRichText = procedure(Sender: TObject; Handle: THandle; Item: Integer) of object;
   TOnSearchItem = procedure(Sender: TObject; Item: Integer; ID: Integer; var Found: Boolean) of object;
   TOnSelectRequest = TNotifyEvent;
+  TOnFilterChange = TNotifyEvent;
 
   THPPRichEdit = class(TRichEdit)
   private
@@ -402,6 +403,7 @@ type
     FOptions: TGridOptions;
     FMultiSelect: Boolean;
     FOnSelect: TOnSelect;
+    FOnFilterChange: TOnFilterChange;
     FGetXMLData: TGetXMLData;
     FOnItemFilter: TOnItemFilter;
     {$IFDEF CUST_SB}
@@ -703,6 +705,8 @@ type
     property OnProcessRichText: TOnProcessRichText read FOnProcessRichText write FOnProcessRichText;
     property OnSearchItem: TOnSearchItem read FOnSearchItem write FOnSearchItem;
     property OnSelectRequest: TOnSelectRequest read FOnSelectRequest write FOnSelectRequest;
+    property OnFilterChange: TOnFilterChange read FOnFilterChange write FOnFilterChange;
+
     property Reversed: Boolean read FReversed write SetReversed;
     property ReversedHeader: Boolean read FReversedHeader write SetReversedHeader;
     property TopItem: integer read GetTopItem;
@@ -1696,7 +1700,8 @@ begin
   BitBlt(Canvas.Handle,ItemRect.Left,ItemRect.Top,RichBMP.Width,RichBMP.Height,
     RichBMP.Canvas.Handle,0,0,SRCCOPY);
 
-  if (Focused or WindowPrePainting) and (Index = Selected) then begin
+  //if (Focused or WindowPrePainting) and (Index = Selected) then begin
+  if (not FGridNotFocused or WindowPrePainting) and (Index = Selected) then begin
     DrawFocusRect(Canvas.Handle,OrgRect);
   end;
 
@@ -2360,6 +2365,7 @@ begin
   if (Filter = Value) or (Value = []) or (Value = [mtUnknown]) then exit;
   FFilter := Value;
   UpdateFilter;
+  if Assigned(FOnFilterChange) then FOnFilterChange(Self);
   {CheckBusy;
   SetLength(FSelItems,0);
   FSelected := 0;

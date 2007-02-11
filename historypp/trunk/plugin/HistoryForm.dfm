@@ -95,6 +95,7 @@ object HistoryFrm: THistoryFrm
         OnItemFilter = hgItemFilter
         OnProcessRichText = hgProcessRichText
         OnSearchItem = hgSearchItem
+        OnFilterChange = hgFilterChange
         Reversed = False
         ReversedHeader = False
         Align = alClient
