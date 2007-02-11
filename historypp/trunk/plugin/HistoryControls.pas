@@ -230,9 +230,9 @@ begin
             then Perform(CM_MOUSEENTER,0,0);
     MouseCapture := True;
   end else begin
-    THackSpeedButton(Self).FMouseInControl := not Flat;
     MouseCapture := THackSpeedButton(Self).FDragging;
-    if not THackSpeedButton(Self).FDragging then
+    if THackSpeedButton(Self).FDragging then
+      THackSpeedButton(Self).FMouseInControl := not Flat else
       Perform(CM_MOUSELEAVE,0,0);
   end;
 end;
