@@ -181,8 +181,8 @@ begin
   {$ENDIF}
 
   for i := HstWindowList.Count - 1 downto 0 do begin
-    if Assigned(THistoryFrm(HstWindowList[i]).EventDetailFrom) then
-      THistoryFrm(HstWindowList[i]).EventDetailFrom.Perform(Msg,wParam,lParam);
+    if Assigned(THistoryFrm(HstWindowList[i]).EventDetailForm) then
+      THistoryFrm(HstWindowList[i]).EventDetailForm.Perform(Msg,wParam,lParam);
     THistoryFrm(HstWindowList[i]).Perform(Msg,wParam,lParam);
   end;
 

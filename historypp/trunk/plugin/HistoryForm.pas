@@ -309,6 +309,7 @@ type
     procedure paHolderResize(Sender: TObject);
     procedure spBookMoved(Sender: TObject);
     procedure pmToolbarPopup(Sender: TObject);
+    procedure hgFilterChange(Sender: TObject);
   private
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
@@ -357,7 +358,7 @@ type
     LastSearch: TLastSearch;
     HotString: WideString;
     LastHotIdx: Integer;
-    EventDetailFrom: TForm;
+    EventDetailForm: TForm;
     CustomizeFiltersForm: TForm;
     CustomizeToolbarForm: TForm;
     WindowList:TList;
@@ -1392,8 +1393,8 @@ begin
     CustomizeToolbarForm.Release;
   if Assigned(CustomizeFiltersForm) then
     CustomizeFiltersForm.Release;
-  if Assigned(EventDetailFrom) then
-    EventDetailFrom.Release;
+  if Assigned(EventDetailForm) then
+    EventDetailForm.Release;
 end;
 
 procedure THistoryFrm.DeleteHistoryItem(ItemIdx: Integer);
@@ -1750,14 +1751,14 @@ end;
 
 procedure THistoryFrm.OpenDetails(Item: Integer);
 begin
-  if not Assigned(EventDetailFrom) then begin
-    EventDetailFrom:=TEventDetailsFrm.Create(Self);
-    TEventDetailsFrm(EventDetailFrom).ParentForm := Self;
-    TEventDetailsFrm(EventDetailFrom).Item := Item;
-    TEventDetailsFrm(EventDetailFrom).Show;
+  if not Assigned(EventDetailForm) then begin
+    EventDetailForm:=TEventDetailsFrm.Create(Self);
+    TEventDetailsFrm(EventDetailForm).ParentForm := Self;
+    TEventDetailsFrm(EventDetailForm).Item := Item;
+    TEventDetailsFrm(EventDetailForm).Show;
   end else begin
-    TEventDetailsFrm(EventDetailFrom).Item:=Item;
-    TEventDetailsFrm(EventDetailFrom).Show;
+    TEventDetailsFrm(EventDetailForm).Item:=Item;
+    TEventDetailsFrm(EventDetailForm).Show;
   end;
 end;
 
@@ -2805,9 +2806,9 @@ procedure THistoryFrm.hgProcessRichText(Sender: TObject; Handle: Cardinal; Item:
 var
   ItemRenderDetails: TItemRenderDetails;
 begin
-  if Assigned(EventDetailFrom) then
-    if Handle = TEventDetailsFrm(EventDetailFrom).EText.Handle then begin
-      TEventDetailsFrm(EventDetailFrom).ProcessRichEdit(Item);
+  if Assigned(EventDetailForm) then
+    if Handle = TEventDetailsFrm(EventDetailForm).EText.Handle then begin
+      TEventDetailsFrm(EventDetailForm).ProcessRichEdit(Item);
       exit;
     end;
   ZeroMemory(@ItemRenderDetails,SizeOf(ItemRenderDetails));
@@ -3130,8 +3131,8 @@ end;
 
 procedure THistoryFrm.EmptyHistory;
 begin
-  if Assigned(EventDetailFrom) then
-    EventDetailFrom.Release;
+  if Assigned(EventDetailForm) then
+    EventDetailForm.Release;
 
   HistoryLength := 0;
   SetLength(History,HistoryLength);
@@ -3479,8 +3480,8 @@ begin
   edPass.BiDiMode := BiDiMode;
   edSearch.BiDiMode := BiDiMode;
   //tvSess.BiDiMode := BiDiMode;
-  if Assigned(EventDetailFrom) then
-    TEventDetailsFrm(EventDetailFrom).Item := TEventDetailsFrm(EventDetailFrom).Item;
+  if Assigned(EventDetailForm) then
+    TEventDetailsFrm(EventDetailForm).Item := TEventDetailsFrm(EventDetailForm).Item;
 end;
 
 procedure THistoryFrm.Bookmark1Click(Sender: TObject);
@@ -3566,8 +3567,8 @@ end;
 
 procedure THistoryFrm.hgProcessInlineChange(Sender: TObject; Enabled: Boolean);
 begin
-  if Assigned(EventDetailFrom) then
-    TEventDetailsFrm(EventDetailFrom).Item := TEventDetailsFrm(EventDetailFrom).Item;
+  if Assigned(EventDetailForm) then
+    TEventDetailsFrm(EventDetailForm).Item := TEventDetailsFrm(EventDetailForm).Item;
 end;
 
 procedure THistoryFrm.hgInlinePopup(Sender: TObject);
@@ -3679,6 +3680,12 @@ end;
 procedure THistoryFrm.pmToolbarPopup(Sender: TObject);
 begin
   Application.CancelHint;
+end;
+
+procedure THistoryFrm.hgFilterChange(Sender: TObject);
+begin
+  if Assigned(EventDetailForm) then
+    TEventDetailsFrm(EventDetailForm).Item := TEventDetailsFrm(EventDetailForm).Item;
 end;
 
 end.
