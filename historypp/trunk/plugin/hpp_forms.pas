@@ -292,8 +292,4 @@ begin
     end;
 end;
 
-initialization
-  // init ThemeServices before widows open
-  ThemeServices;
-
 end.
