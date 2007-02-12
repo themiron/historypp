@@ -60,7 +60,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, ComCtrls, CommCtrl,
   TntSysUtils, TntWindows, TntControls,TntGraphics, {TntComCtrls,} Menus, TntMenus, StdCtrls,
   Math, mmsystem,
-  hpp_global, hpp_contacts, hpp_itemprocess, hpp_events, m_api, hpp_eventfilters,
+  hpp_global, hpp_contacts, hpp_itemprocess, hpp_events, hpp_eventfilters,
   hpp_richedit, hpp_richedit_ole,
   Contnrs,
   VertSB,
@@ -369,7 +369,7 @@ type
     FItems: array of THistoryItem;
     FClient: TBitmap;
     FCanvas: TCanvas;
-    FContact: THandle;
+    FContact: Integer;  // cose THandle defined as integer in m_globaldef
     FProtocol: String;
     FLoadedCount: Integer;
     FContactName: WideString;
@@ -496,7 +496,7 @@ type
     procedure SetContolID(const Value: Cardinal);
     function SendMsgFilterMessage(var Message: TMessage): Longint;
     function GetCount: Integer;
-    procedure SetContact(const Value: THandle);
+    procedure SetContact(const Value: Integer);
     procedure SetPadding(Value: Integer);
     procedure SetSelected(const Value: Integer);
     procedure AddSelected(Item: Integer);
@@ -588,7 +588,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     property Count: Integer read GetCount;
-    property Contact: THandle read FContact write SetContact;
+    property Contact: Integer read FContact write SetContact;
     property Protocol: String read FProtocol write FProtocol;
     property LoadedCount: Integer read FLoadedCount;
     procedure Allocate(ItemsCount: Integer; Scroll: Boolean = True);
@@ -1285,7 +1285,7 @@ begin
   end;
 end;
 
-procedure THistoryGrid.SetContact(const Value: THandle);
+procedure THistoryGrid.SetContact(const Value: Integer);
 begin
   if FContact = Value then exit;
   FContact := Value;

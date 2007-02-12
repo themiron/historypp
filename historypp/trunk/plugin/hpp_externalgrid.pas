@@ -269,6 +269,8 @@ begin
   pmGrid.Items.Add(WideNewItem('&Reply Quoted',TextToShortCut('Ctrl+R'),false,true,OnReplyQuotedClick,0,'pmReplyQuoted'));
   pmGrid.Items.Add(WideNewItem('Set &Bookmark',TextToShortCut('Ctrl+B'),false,true,OnBookmarkClick,0,'pmBookmark'));
   pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN4'));
+  pmGrid.Items.Add(WideNewItem('&Save Selected...',TextToShortCut('Ctrl+S'),false,true,OnSaveSelectedClick,0,'pmSaveSelected'));
+  pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN5'));
   pmGrid.Items.Add(WideNewSubMenu('Text direction',0,'pmBidiMode',[
     RadioItem(true,WideNewItem('Log default',0,true,true,OnBidiModeLogClick,0,'pmBidiModeLog',)),
     RadioItem(true,WideNewItem('History default',0,false,true,OnBidiModeHistoryClick,0,'pmBidiModeHistory'))
@@ -277,8 +279,6 @@ begin
     RadioItem(true,WideNewItem('Log default',0,true,true,OnCodepageLogClick,0,'pmCodepageLog',)),
     RadioItem(true,WideNewItem('History default',0,false,true,OnCodepageHistoryClick,0,'pmCodepageHistory'))
   ],true));
-  pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN5'));
-  pmGrid.Items.Add(WideNewItem('&Save Selected...',TextToShortCut('Ctrl+S'),false,true,OnSaveSelectedClick,0,'pmSaveSelected'));
 
   pmLink := TTntPopupMenu.Create(Grid);
   pmLink.ParentBiDiMode := False;
@@ -569,13 +569,13 @@ begin
     else
       TTntMenuItem(pmGrid.Items[10]).Caption := TranslateWideW('Set &Bookmark');
   end;
-  pmGrid.Items[12].Visible := (Grid.State = gsIdle);
-  pmGrid.Items[12].Items[0].Checked := not FUseHistoryRTLMode;
-  pmGrid.Items[12].Items[1].Checked := FUseHistoryRTLMode;
-  pmGrid.Items[13].Visible := (Grid.State = gsIdle);
-  pmGrid.Items[13].Items[0].Checked := not FUseHistoryCodepage;
-  pmGrid.Items[13].Items[1].Checked := FUseHistoryCodepage;
-  pmGrid.Items[15].Visible := (Grid.SelCount > 1);
+  pmGrid.Items[12].Visible := (Grid.SelCount > 1);
+  pmGrid.Items[14].Visible := (Grid.State = gsIdle);
+  pmGrid.Items[14].Items[0].Checked := not FUseHistoryRTLMode;
+  pmGrid.Items[14].Items[1].Checked := FUseHistoryRTLMode;
+  pmGrid.Items[15].Visible := (Grid.State = gsIdle);
+  pmGrid.Items[15].Items[0].Checked := not FUseHistoryCodepage;
+  pmGrid.Items[15].Items[1].Checked := FUseHistoryCodepage;
   pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
 end;
 
@@ -620,8 +620,6 @@ begin
 end;
 
 procedure TExternalGrid.OnDeleteClick(Sender: TObject);
-var
-  OldSelMode: Boolean;
 begin
   if Grid.SelCount = 0 then exit;
   if Grid.SelCount > 1 then begin
