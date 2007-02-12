@@ -266,14 +266,18 @@ end;
 
 function GetEventInfo(hDBEvent: DWord): TDBEventInfo;
 var
-  BlobSize:Integer;
+  BlobSize: integer;
 begin
   ZeroMemory(@Result,SizeOf(Result));
-  Result.cbSize:=SizeOf(Result);
-  BlobSize:=PluginLink.CallService(MS_DB_EVENT_GETBLOBSIZE,hDBEvent,0);
-  GetMem(Result.pBlob,BlobSize);
-  Result.cbBlob:=BlobSize;
-  PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,LPARAM(@Result));
+  Result.cbSize := SizeOf(Result);
+  BlobSize := PluginLink.CallService(MS_DB_EVENT_GETBLOBSIZE,hDBEvent,0);
+  if BlobSize > 0 then
+    GetMem(Result.pBlob,BlobSize) else
+    BlobSize := 0;
+  Result.cbBlob := BlobSize;
+  if PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,LPARAM(@Result)) = 0 then
+    Result.cbBlob := BlobSize else
+    Result.cbBlob := 0;
 end;
 
 // reads event from hDbEvent handle
@@ -287,30 +291,33 @@ begin
   ZeroMemory(@Result,SizeOf(Result));
   Result.Height := -1;
   EventInfo := GetEventInfo(hDBEvent);
-  Result.Module := EventInfo.szModule;
-  Result.Proto := '';
-  Result.Time := EventInfo.timestamp;
-  Result.EventType := EventInfo.EventType;
-  Result.IsRead := boolean(EventInfo.flags and DBEF_READ);
-  // enable autoRTL feature
-  if boolean(EventInfo.flags and DBEF_RTL) then
-   Result.RTLMode := hppRTLEnable;
-  EventIndex := 0;
-  for i := 1 to High(EventTable) do
-    if EventTable[i].EventType = EventInfo.EventType then begin
-      EventIndex := i;
-      break;
-    end;
-  Result.Codepage := UseCP;
-  Result.MessageType := [EventTable[EventIndex].MessageType];
-  EventTable[EventIndex].TextFunction(EventInfo,Result);
-  if (EventInfo.flags and DBEF_SENT) = 0 then
-    include(Result.MessageType,mtIncoming)
-  else
-    include(Result.MessageType,mtOutgoing);
-  Result.Text := TntAdjustLineBreaks(Result.Text);
-  Result.Text := TrimRight(Result.Text);
-  if Assigned(EventInfo.pBlob) then FreeMem(EventInfo.pBlob);
+  try
+    Result.Module := EventInfo.szModule;
+    Result.Proto := '';
+    Result.Time := EventInfo.timestamp;
+    Result.EventType := EventInfo.EventType;
+    Result.IsRead := Boolean(EventInfo.flags and DBEF_READ);
+    // enable autoRTL feature
+    if boolean(EventInfo.flags and DBEF_RTL) then
+     Result.RTLMode := hppRTLEnable;
+    EventIndex := 0;
+    for i := 1 to High(EventTable) do
+      if EventTable[i].EventType = EventInfo.EventType then begin
+        EventIndex := i;
+        break;
+      end;
+    Result.Codepage := UseCP;
+    Result.MessageType := [EventTable[EventIndex].MessageType];
+    EventTable[EventIndex].TextFunction(EventInfo,Result);
+    if (EventInfo.flags and DBEF_SENT) = 0 then
+      include(Result.MessageType,mtIncoming)
+    else
+      include(Result.MessageType,mtOutgoing);
+    Result.Text := TntAdjustLineBreaks(Result.Text);
+    Result.Text := TrimRight(Result.Text);
+  finally
+    if Assigned(EventInfo.pBlob) then FreeMem(EventInfo.pBlob);
+  end;
 end;
 
 procedure ReadStringTillZeroA(Text: PChar; Size: LongWord; var Result: String; var Pos: LongWord);
