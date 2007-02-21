@@ -333,7 +333,6 @@ end;
 function GetLCIDfromCodepage(Codepage: Cardinal): LCID;
 var
   i: integer;
-  lcid: Cardinal;
 begin
   if CodePage = CP_ACP then CodePage := GetACP;
   for i := 0 to High(cpTable) do

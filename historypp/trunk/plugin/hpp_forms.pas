@@ -10,8 +10,9 @@ uses Windows, Messages, Classes, Graphics,
 type
   THppHintWindow = class (TTntHintWindow)
   protected
-    procedure CreateParams(var Params: TCreateParams); override;
     procedure NCPaint(DC: HDC); override;
+  public
+    constructor Create(AOwner: TComponent); override;
   end;
 
 const
@@ -56,8 +57,8 @@ implementation
 uses hpp_global, hpp_services, hpp_opt_dialog, hpp_database,
   HistoryForm, GlobalSearch,
   {$IFNDEF NO_EXTERNALGRID}hpp_external,{$ENDIF}
-  CustomizeFiltersForm,
-  CustomizeToolbar;
+  CustomizeFiltersForm, CustomizeToolbar,
+  TntSysUtils;
 
 function IsFormShortCut(List: Array of TComponent; Key: DWord; ShiftState: TShiftState): Boolean;
 var
@@ -229,28 +230,18 @@ end;
 
 { THppHintWindow }
 
-procedure THppHintWindow.CreateParams(var Params: TCreateParams);
+constructor THppHintWindow.Create(AOwner: TComponent);
 begin
-  // standard delphi's hint window leaves shadow border after hint
-  // closes, this is workaround until real fix is found
-  inherited CreateParams(Params);
-  //Params.ExStyle := Params.ExStyle and not WS_EX_STATICEDGE;
-  //Params.WindowClass.Style := Params.WindowClass.style and not CS_DROPSHADOW;
+  inherited Create(AOwner);
+  Color := clInfoBk;
 end;
 
 procedure THppHintWindow.NCPaint(DC: HDC);
 var
   R: TRect;
-  Details: TThemedElementDetails;
 begin
   R := Rect(0, 0, Width, Height);
-  if not ThemeServices.ThemesEnabled then
-    Windows.DrawEdge(DC, R, BDR_OUTER, BF_RECT or BF_ADJUST or BF_MONO)
-  else
-  begin
-    Details := ThemeServices.GetElementDetails(tttToolTipRoot);
-    ThemeServices.DrawEdge(DC, Details, R, BDR_OUTER, BF_RECT or BF_ADJUST or BF_MONO);
-  end;
+  DrawEdge(DC, R, EDGE_ETCHED, BF_RECT or BF_MONO);
 end;
 
 // This procedure scans all WinControl children and set them the same
