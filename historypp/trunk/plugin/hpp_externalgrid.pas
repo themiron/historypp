@@ -39,6 +39,7 @@ type
     SavedLinkUrl: AnsiString;
     pmGrid: TTntPopupMenu;
     pmLink: TTntPopupMenu;
+    miEventsFilter: TTntMenuItem;
     WasKeyPressed: Boolean;
     FGridMode: TExGridMode;
     FUseHistoryRTLMode: Boolean;
@@ -56,6 +57,8 @@ type
     procedure SetShowHeaders(const Value: Boolean);
     procedure SetShowBookmarks(const Value: Boolean);
     procedure PrepareSaveDialog(var SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
+    procedure CreateEventsFilterMenu;
+    procedure SetEventFilter(FilterIndex: Integer = -1);
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
     procedure GridTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
@@ -88,6 +91,7 @@ type
     procedure OnCodepageLogClick(Sender: TObject);
     procedure OnCodepageHistoryClick(Sender: TObject);
     procedure OnSaveSelectedClick(Sender: TObject);
+    procedure OnEventsFilterItemClick(Sender: TObject);
   public
     constructor Create(AParentWindow: HWND; ControlID: Cardinal = 0);
     destructor Destroy; override;
@@ -105,6 +109,7 @@ type
     function Perform(Msg: Cardinal; WParam, LParam: Longint): Longint;
     procedure HMBookmarkChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
     //procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
+    procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED; 
     procedure HMEventDeleted(var M: TMessage); message HM_MIEV_EVENTDELETED;
     procedure BeginUpdate;
     procedure EndUpdate;
@@ -279,6 +284,11 @@ begin
     RadioItem(true,WideNewItem('Log default',0,true,true,OnCodepageLogClick,0,'pmCodepageLog',)),
     RadioItem(true,WideNewItem('History default',0,false,true,OnCodepageHistoryClick,0,'pmCodepageHistory'))
   ],true));
+  pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN6'));
+
+  miEventsFilter := TTntMenuItem.Create(pmGrid);
+  miEventsFilter.Caption := 'Events filter';
+  pmGrid.Items.Add(miEventsFilter);
 
   pmLink := TTntPopupMenu.Create(Grid);
   pmLink.ParentBiDiMode := False;
@@ -289,6 +299,10 @@ begin
 
   TranslateMenu(pmGrid.Items);
   TranslateMenu(pmLink.Items);
+  
+  CreateEventsFilterMenu;
+  //SetEventFilter(GetDBInt(hppDBName,'RecentLogFilter',GetShowAllEventsIndex));
+  SetEventFilter(GetShowAllEventsIndex);
 end;
 
 destructor TExternalGrid.Destroy;
@@ -548,19 +562,27 @@ begin
 end;
 
 procedure TExternalGrid.GridPopup(Sender: TObject);
+var
+  GridSelected: Boolean;
 begin
-  if Grid.Selected = -1 then exit;
-  pmGrid.Items[0].Visible := (Grid.State = gsIdle) and not Items[Grid.Selected].Custom;
-  pmGrid.Items[4].Visible := (Grid.State = gsInline); // works even if not in pseudo-edit
-  pmGrid.Items[7].Visible := (Grid.State = gsInline);
-  pmGrid.Items[7].Checked := GridOptions.TextFormatting;
-  if Grid.State = gsInline then
-    pmGrid.Items[2].Enabled := Grid.InlineRichEdit.SelLength > 0
-  else
-    pmGrid.Items[2].Enabled := True;
-  pmGrid.Items[8].Enabled := pmGrid.Items[2].Enabled;
-  pmGrid.Items[9].Visible := not Items[Grid.Selected].Custom;
-  if Grid.Selected <> -1 then begin
+  GridSelected := (Grid.Selected <> -1);
+  pmGrid.Items[0].Visible := GridSelected and (Grid.State = gsIdle) and not Items[Grid.Selected].Custom;
+  pmGrid.Items[2].Visible := GridSelected;
+  pmGrid.Items[3].Visible := GridSelected;
+  pmGrid.Items[4].Visible := GridSelected and (Grid.State = gsInline); // works even if not in pseudo-edit
+  pmGrid.Items[5].Visible := GridSelected;
+  pmGrid.Items[7].Visible := GridSelected and (Grid.State = gsInline);
+  pmGrid.Items[8].Visible := GridSelected;
+  if GridSelected then begin
+    pmGrid.Items[7].Checked := GridOptions.TextFormatting;
+    if Grid.State = gsInline then
+      pmGrid.Items[2].Enabled := Grid.InlineRichEdit.SelLength > 0 else
+      pmGrid.Items[2].Enabled := True;
+    pmGrid.Items[8].Enabled := pmGrid.Items[2].Enabled;
+  end;
+  pmGrid.Items[9].Visible := GridSelected and not Items[Grid.Selected].Custom;
+  pmGrid.Items[10].Visible := GridSelected;
+  if GridSelected then begin
     if Items[Grid.Selected].Custom then
       pmGrid.Items[10].Visible := False
     else
@@ -576,6 +598,7 @@ begin
   pmGrid.Items[15].Visible := (Grid.State = gsIdle);
   pmGrid.Items[15].Items[0].Checked := not FUseHistoryCodepage;
   pmGrid.Items[15].Items[1].Checked := FUseHistoryCodepage;
+  pmGrid.Items[17].Visible := (Grid.State = gsIdle);
   pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
 end;
 
@@ -951,6 +974,62 @@ begin
     Item.ID := '&UNK;'
   else
     Item.ID := MakeTextXMLedA(Item.ID);
+end;
+
+procedure TExternalGrid.SetEventFilter(FilterIndex: Integer = -1);
+var
+  i,fi: Integer;
+  ShowAllEventsIndex: Integer;
+begin
+  ShowAllEventsIndex := GetShowAllEventsIndex;
+  if FilterIndex = -1 then begin
+    fi := miEventsFilter.Tag+1;
+    if fi > High(hppEventFilters) then fi := 0;
+  end else begin
+    fi := FilterIndex;
+    if fi > High(hppEventFilters) then fi := ShowAllEventsIndex;
+  end;
+  miEventsFilter.Tag := fi;
+  for i := 0 to miEventsFilter.Count-1 do
+    miEventsFilter[i].Checked := (miEventsFilter[i].Tag = fi);
+  if fi = ShowAllEventsIndex then
+    Grid.TxtNoSuch := TranslateWideW('No such items') else
+    Grid.TxtNoSuch := WideFormat(TranslateWideW('No "%s" items'),[hppEventFilters[fi].Name]);
+  //Grid.ShowHeaders := mtMessage in hppEventFilters[fi].Events;
+  Grid.Filter := hppEventFilters[fi].Events;
+end;
+
+procedure TExternalGrid.HMFiltersChanged(var M: TMessage);
+begin
+  CreateEventsFilterMenu;
+  SetEventFilter(GetShowAllEventsIndex);
+  //WriteDBInt(hppDBName,'RecentLogFilter',miEventsFilter.Tag);
+end;
+
+procedure TExternalGrid.OnEventsFilterItemClick(Sender: TObject);
+begin
+  SetEventFilter(TTntMenuItem(Sender).Tag);
+  //WriteDBInt(hppDBName,'RecentLogFilter',miEventsFilter.Tag);
+end;
+
+procedure TExternalGrid.CreateEventsFilterMenu;
+var
+  i: Integer;
+  mi: TTntMenuItem;
+  ShowAllEventsIndex: Integer;
+begin
+  ShowAllEventsIndex := GetShowAllEventsIndex;
+  miEventsFilter.Clear;
+  for i := 0 to Length(hppEventFilters) - 1 do begin
+    mi := TTntMenuItem.Create(pmGrid);
+    mi.Caption := Tnt_WideStringReplace(hppEventFilters[i].Name,'&','&&',[rfReplaceAll]);
+    mi.GroupIndex := 1;
+    mi.RadioItem := True;
+    mi.Tag := i;
+    mi.OnClick := OnEventsFilterItemClick;
+    if i = ShowAllEventsIndex then mi.Default := True;
+    miEventsFilter.Insert(i,mi);
+  end;
 end;
 
 end.
