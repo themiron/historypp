@@ -9,6 +9,41 @@ Changelog
 
 SVN Changelog: https://opensvn.csie.org/traccgi/historypp/log/?verbose=on
 
+1.5.0.113
+
+Added ability to set external log filter from context menu
+Added ability to save selected history from external log
+Added full list of bookmarks in global search window
+Added alpha build timestamp into plugin version info
+Added ability to display unknown codepages
+Added direction icon in event details form
+Added own icons for third-party supported events (Iconpack updated)
+Added icon pack checking
+Added FormatReplyQuotedText and FormatSelection templates customization
+Added ability to disable icon pack old/not found messages
+Added ability to log memory events (see IEVIEWEVENTDATA) to external log
+Introduced toolbar with whole dropdown buttons
+Redesigned conversation and bookmarks panels
+Reworked hint showing/hiding
+Moved main option page to Options/History. The old History++ entry is now gone
+Moved main icolib icons into the root History++ item
+Made forms doublebuffered to avoid flicking and speedup painting
+Improoved database reading in case of malformed/broken profile
+Fixed access violation crash on empty string copy to clipboard attempt
+Fixed crash if grid is shown while destroying
+Fixed non-message events with urls threated as url events
+Fixed error on filtered events delete in history search
+Fixed selected message state paint in pseudo-edit mode
+Fixed wrong prev/next item calculation in event details form after filter reapplying
+Fixed alpha-blending of "History Action" button icon
+Fixed negative windows postition saving/restoring
+Fixed contact submenu icons weren't drawn
+Fixed several visual unicode issues
+Fixed forms flicking on resize
+Reduced GDI objects usage
+Translation changes
+Other changes and fixes i don't remember
+
 1.5.0.112 HappyNewYear build
 
 + Added session dividers to external grid
