@@ -185,10 +185,9 @@ begin
       #09: Result := Result + '\tab ';
       '\','{','}': Result := Result + '\' + Text[0];
     else
-      if word(Text[0]) < word(High(AnsiChar)) then
-        Result := Result + AnsiChar(integer(Text[0]))
-      else
-        Result := Result + Format('\u%d?',[word(Text[0])]);
+    if word(Text[0]) < 128 then
+      Result := Result + AnsiChar(Word(Text[0])) else
+      Result := Result + Format('\u%d?',[word(Text[0])]);
     end;
     Inc(Text);
   end;
