@@ -222,13 +222,18 @@ begin
   Grid.Ctl3D := True;
   Grid.ParentColor := False;
   Grid.Color := clBtnFace;
+
   Grid.BevelEdges := [beLeft, beTop, beRight, beBottom];
   Grid.BevelKind := bkNone;
   Grid.BevelInner := bvNone;
   Grid.BevelOuter := bvNone;
   Grid.BevelWidth := 1;
-  Grid.BorderStyle := bsSingle;
+
+  if GetDBBool(hppDBName,'NoLogBorder',False) then
+    Grid.BorderStyle := bsNone else
+    Grid.BorderStyle := bsSingle;
   Grid.BorderWidth := 0;
+
   Grid.OnItemData := GridItemData;
   Grid.OnTranslateTime := GridTranslateTime;
   Grid.OnNameData := GridNameData;
@@ -258,7 +263,7 @@ begin
 
   Grid.Options := GridOptions;
 
-  Grid.GroupLinked := GetDBBool(hppDBName,'GroupLogItems',false);
+  Grid.GroupLinked := GetDBBool(hppDBName,'GroupLogItems',False);
 
   pmGrid := TTntPopupMenu.Create(Grid);
   pmGrid.ParentBiDiMode := False;
