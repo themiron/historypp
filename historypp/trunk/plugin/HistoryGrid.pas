@@ -3901,10 +3901,16 @@ begin
     fs := TFileStream.Create(FileName,fmCreate or fmShareExclusive);
     SaveStart(fs,SaveFormat,TxtFullLog);
     ShowProgress := True;
-    for i := Count-1 downto 0 do begin
-      SaveItem(fs,i,SaveFormat);
-      DoProgress(Count-1-i,Count-1);
-    end;
+    if ReversedHeader then
+      for i := 0 to SelCount-1 do begin
+        SaveItem(fs,FSelItems[i],SaveFormat);
+        DoProgress(i,Count-1);
+      end
+    else
+      for i := Count-1 downto 0 do begin
+        SaveItem(fs,i,SaveFormat);
+        DoProgress(Count-1-i,Count-1);
+      end;
     SaveEnd(fs,SaveFormat);
     fs.Free;
     ShowProgress := False;
@@ -3919,21 +3925,21 @@ var
   fs: TFileStream;
   i: Integer;
 begin
-  Assert((SelCount > 1),'Save Selection is available when more than 1 item is selected');
+  Assert((SelCount > 0),'Save Selection is available when more than 1 item is selected');
   State := gsSave;
   try
     fs := TFileStream.Create(FileName,fmCreate or fmShareExclusive);
     SaveStart(fs,SaveFormat,TxtPartLog);
     ShowProgress := True;
-    if FSelItems[0] > FSelItems[High(FSelItems)] then
+    if (FSelItems[0] > FSelItems[High(FSelItems)]) xor ReversedHeader then
       for i := 0 to SelCount-1 do begin
-        DoProgress(i,SelCount);
         SaveItem(fs,FSelItems[i],SaveFormat);
+        DoProgress(i,SelCount);
       end
     else
       for i := SelCount-1 downto 0 do begin
-        DoProgress(SelCount-1-i,SelCount);
         SaveItem(fs,FSelItems[i],SaveFormat);
+        DoProgress(SelCount-1-i,SelCount);
       end;
     SaveEnd(fs,SaveFormat);
     fs.Free;
