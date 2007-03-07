@@ -96,8 +96,10 @@ const
   hppVerMinor   = {MINOR_VER}5{/MINOR_VER};
   hppVerRelease = {SUB_VER}0{/SUB_VER};
   hppVerBuild   = {BUILD}113{/BUILD};
-  hppVerAlpha    = {$IFDEF ALPHA}True{$ELSE}False{$ENDIF};
+  hppVerAlpha   = {$IFDEF ALPHA}True{$ELSE}False{$ENDIF};
   hppVersion    = hppVerMajor shl 24 + hppVerMinor shl 16 + hppVerRelease shl 8 + hppVerBuild;
+
+  hppMUUID: TGUID = '{B92282AC-686B-4541-A12D-6E9971A253B7}';
 
   hppFLUpdateURL    = 'http://addons.miranda-im.org/feed.php?dlfile=2995';
   hppFLVersionURL   = 'http://addons.miranda-im.org/details.php?action=viewfile&id=2995';
