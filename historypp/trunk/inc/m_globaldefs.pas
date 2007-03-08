@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
+Copyright 2000-2007 Miranda ICQ/IM project, 
+all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -19,7 +19,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
 *)
 
 {$IFDEF FPC}
@@ -47,8 +46,8 @@ type
     WPARAM                  = Integer;
     LPARAM                  = Integer;
     DWORD                   = Integer;
-    THandle                 = Integer;
-    
+    //THandle                 = Integer;
+
     TChar                   = Record
       case boolean of
       false: (a:PChar);     // ANSI
@@ -98,7 +97,8 @@ var
     { has to be returned via MirandaPluginInfo and has to be statically allocated,
     this means only one module can return info, you shouldn't be merging them anyway! }
 
-    PLUGININFO: TPLUGININFO;
+    PLUGININFO:   TPLUGININFO;
+    PLUGININFOEX: TPLUGININFOEX;
 
 implementation
 
