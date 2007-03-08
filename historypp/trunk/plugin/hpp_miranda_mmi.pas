@@ -11,7 +11,7 @@ procedure InitMMI;
 procedure MirandaFree(pb: Pointer);
 
 var
-  mmi: TMM_Interface;
+  mmi: TMM_INTERFACE;
 
 implementation
 
