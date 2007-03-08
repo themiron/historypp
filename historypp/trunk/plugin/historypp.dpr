@@ -97,7 +97,7 @@ const
     (Handle:0; Count:-1; Name:'His&tory Search'));
 
 var
-  Interfaces: array[0..1] of TMUUID;
+  Interfaces: array[0..2] of TMUUID;
   HookModulesLoad,
   HookOptInit,
   HookSettingsChanged,
@@ -165,7 +165,8 @@ end;
 function MirandaPluginInterfaces:PMUUID; cdecl;
 begin
   Interfaces[0] := hppMUUID;
-  Interfaces[1] := MIID_LAST;
+  Interfaces[1] := MIID_UIHISTORY;
+  Interfaces[2] := MIID_LAST;
   Result := @Interfaces;
 end;
 
