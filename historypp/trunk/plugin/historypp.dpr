@@ -137,7 +137,7 @@ begin
   PluginInfo.description := 'Easy, fast and feature complete history viewer.';
   PluginInfo.author := 'theMIROn, Art Fedorov';
   PluginInfo.authorEmail := 'themiron@mail.ru, artemf@mail.ru';
-  PluginInfo.copyright := '© 2006 theMIROn, 2003-2006 Art Fedorov. History+ parts © 2001 Christian Kastner';
+  PluginInfo.copyright := '© 2006-2007 theMIROn, 2003-2006 Art Fedorov. History+ parts © 2001 Christian Kastner';
   PluginInfo.homepage := hppHomePageURL;
   PluginInfo.flags := 0{UNICODE_AWARE};
   PluginInfo.replacesDefaultModule := DEFMOD_UIHISTORY;
@@ -153,7 +153,7 @@ begin
   PluginInfoEx.description := 'Easy, fast and feature complete history viewer.';
   PluginInfoEx.author := 'theMIROn, Art Fedorov';
   PluginInfoEx.authorEmail := 'themiron@mail.ru, artemf@mail.ru';
-  PluginInfoEx.copyright := '© 2006 theMIROn, 2003-2006 Art Fedorov. History+ parts © 2001 Christian Kastner';
+  PluginInfoEx.copyright := '© 2006-2007 theMIROn, 2003-2006 Art Fedorov. History+ parts © 2001 Christian Kastner';
   PluginInfoEx.homepage := hppHomePageURL;
   PluginInfoEx.flags := 0{UNICODE_AWARE};
   PluginInfoEx.replacesDefaultModule := DEFMOD_UIHISTORY;

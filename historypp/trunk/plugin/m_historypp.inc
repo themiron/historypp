@@ -20,7 +20,7 @@
  [ Known Issues ]
  none
 
- Copyright (c) Art Fedorov, 2004
+ Copyright 2006-2007 theMIROn, 2003-2006 Art Fedorov
 -----------------------------------------------------------------------------}
 
 {$IFNDEF M_HISTORYPP}
