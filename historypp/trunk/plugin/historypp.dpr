@@ -97,6 +97,7 @@ const
     (Handle:0; Count:-1; Name:'His&tory Search'));
 
 var
+  Interfaces: array[0..1] of TMUUID;
   HookModulesLoad,
   HookOptInit,
   HookSettingsChanged,
@@ -112,7 +113,7 @@ var
   HookEventDeleted,
   HookPreshutdown: THandle;
 
-function OnModulesLoad(wParam,lParam:DWord):integer;cdecl; forward;
+function OnModulesLoad(wParam,lParam:DWord):integer; cdecl; forward;
 function OnSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnSmAddSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnIconChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
@@ -128,7 +129,7 @@ function OnEventDeleted(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward
 function OnPreshutdown(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 
 //Tell Miranda about this plugin
-function MirandaPluginInfo(mirandaVersion:DWord):PPLUGININFO;cdecl;
+function MirandaPluginInfo(mirandaVersion:DWord):PPLUGININFO; cdecl;
 begin
   PluginInfo.cbSize := sizeof(TPLUGININFO);
   PluginInfo.shortName := hppShortHame{$IFDEF ALPHA}+' [alpha '+{$I 'alpha.inc'}+']'{$ENDIF};
@@ -138,13 +139,38 @@ begin
   PluginInfo.authorEmail := 'themiron@mail.ru, artemf@mail.ru';
   PluginInfo.copyright := '© 2006 theMIROn, 2003-2006 Art Fedorov. History+ parts © 2001 Christian Kastner';
   PluginInfo.homepage := hppHomePageURL;
-  PluginInfo.isTransient := 0;
+  PluginInfo.flags := 0{UNICODE_AWARE};
   PluginInfo.replacesDefaultModule := DEFMOD_UIHISTORY;
   Result := @PluginInfo;
 end;
 
+//Tell Miranda about this plugin ExVersion
+function MirandaPluginInfoEx(mirandaVersion:DWord):PPLUGININFOEX; cdecl;
+begin
+  PluginInfoEx.cbSize := sizeof(TPLUGININFOEX);
+  PluginInfoEx.shortName := hppShortHame{$IFDEF ALPHA}+' [alpha '+{$I 'alpha.inc'}+']'{$ENDIF};
+  PluginInfoEx.version := hppVersion;
+  PluginInfoEx.description := 'Easy, fast and feature complete history viewer.';
+  PluginInfoEx.author := 'theMIROn, Art Fedorov';
+  PluginInfoEx.authorEmail := 'themiron@mail.ru, artemf@mail.ru';
+  PluginInfoEx.copyright := '© 2006 theMIROn, 2003-2006 Art Fedorov. History+ parts © 2001 Christian Kastner';
+  PluginInfoEx.homepage := hppHomePageURL;
+  PluginInfoEx.flags := 0{UNICODE_AWARE};
+  PluginInfoEx.replacesDefaultModule := DEFMOD_UIHISTORY;
+  PluginInfoEx.uuid.guid := hppMUUID.guid;
+  Result := @PluginInfoEx;
+end;
+
+// tell Miranda about supported interfaces
+function MirandaPluginInterfaces:PMUUID; cdecl;
+begin
+  Interfaces[0] := hppMUUID;
+  Interfaces[1] := MIID_LAST;
+  Result := @Interfaces;
+end;
+
 //load function called by miranda
-function Load(link:PPLUGINLINK):Integer;cdecl;
+function Load(link:PPLUGINLINK):Integer; cdecl;
 var
   pszVersion: array[0..55] of Char;
 begin
@@ -187,14 +213,14 @@ begin
 end;
 
 //unload
-function Unload:Integer;cdecl;
+function Unload:Integer; cdecl;
 begin
   // why unload is never called????
   Result:=0;
 end;
 
 //init plugin
-function OnModulesLoad(wParam{0},lParam{0}:DWord):integer;cdecl;
+function OnModulesLoad(wParam{0},lParam{0}:DWord):integer; cdecl;
 var
   i: integer;
   menuitem:TCLISTMENUITEM;
@@ -528,6 +554,8 @@ end;
 
 exports
   MirandaPluginInfo,
+  MirandaPluginInfoEx,
+  MirandaPluginInterfaces,
   Load,
   Unload;
 
