@@ -9,6 +9,17 @@ Changelog
 
 SVN Changelog: https://opensvn.csie.org/traccgi/historypp/log/?verbose=on
 
+1.5.0.114
+
+Added UUID {B92282AC-686B-4541-A12D-6E9971A253B7} for 0.8.x.x compability
+Added UIHISTORY interface
+Added minimal miranda version 0.4.0.0 checking
+Added "NoLogBorder" db setting (type:byte) to disable log border
+Fixed exception on multiple "Show bookmarks" button toggling
+Fixed inverse order of exported messages from external log
+Fixed unicode latin-1 chars dependence from font charset
+Optimized plugin loading
+
 1.5.0.113
 
 Added ability to set external log filter from context menu
