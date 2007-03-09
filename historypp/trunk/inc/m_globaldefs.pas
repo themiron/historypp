@@ -97,8 +97,8 @@ var
     { has to be returned via MirandaPluginInfo and has to be statically allocated,
     this means only one module can return info, you shouldn't be merging them anyway! }
 
-    PLUGININFO:   TPLUGININFO;
-    PLUGININFOEX: TPLUGININFOEX;
+    //PLUGININFO:   TPLUGININFO;
+    //PLUGININFOEX: TPLUGININFOEX;
 
 implementation
 
