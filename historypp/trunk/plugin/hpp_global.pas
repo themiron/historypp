@@ -100,7 +100,7 @@ const
   hppVerAlpha   = {$IFDEF ALPHA}True{$ELSE}False{$ENDIF};
   hppVersion    = hppVerMajor shl 24 + hppVerMinor shl 16 + hppVerRelease shl 8 + hppVerBuild;
 
-  hppMUUID: TMUUID = (guid:'{B92282AC-686B-4541-A12D-6E9971A253B7}');
+  MIID_HISTORYPP: TMUUID = (guid:'{B92282AC-686B-4541-A12D-6E9971A253B7}');
 
   hppDescription = 'Easy, fast and feature complete history viewer.';
   hppAuthor      = 'theMIROn, Art Fedorov';
