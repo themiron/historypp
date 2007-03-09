@@ -91,6 +91,33 @@ type
   end;
 
 const
+
+  PluginInfoEx: TPLUGININFOEX = (
+    cbSize: SizeOf(TPLUGININFOEX);
+    shortName: hppShortNameV;
+    version: hppVersion;
+    description: hppDescription;
+    author: hppAuthor;
+    authorEmail: hppAuthorEmail;
+    copyright: hppCopyright;
+    homepage: hppHomePageURL;
+    flags: 0{UNICODE_AWARE};
+    replacesDefaultModule: DEFMOD_UIHISTORY;
+  );
+
+  PluginInfo: TPLUGININFO = (
+    cbSize: SizeOf(TPLUGININFO);
+    shortName: hppShortNameV;
+    version: hppVersion;
+    description: hppDescription;
+    author: hppAuthor;
+    authorEmail: hppAuthorEmail;
+    copyright: hppCopyright;
+    homepage: hppHomePageURL;
+    flags: 0{UNICODE_AWARE};
+    replacesDefaultModule: DEFMOD_UIHISTORY;
+  );
+
   MenuHandles: array[0..2] of TMenuHandles = (
     (Handle:0; Count:-1; Name:'View &History'),
     (Handle:0; Count:-1; Name:'&System History'),
@@ -131,47 +158,20 @@ function OnPreshutdown(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 //Tell Miranda about this plugin
 function MirandaPluginInfo(mirandaVersion:DWORD): PPLUGININFO; cdecl;
 begin
-  Result := nil;
-  if mirandaVersion < $0400 then exit;
-  if PluginInfo.cbSize <> SizeOf(PluginInfo) then begin
-    PluginInfo.cbSize := SizeOf(PluginInfo);
-    PluginInfo.shortName := hppShortNameV;
-    PluginInfo.version := hppVersion;
-    PluginInfo.description := hppDescription;
-    PluginInfo.author := hppAuthor;
-    PluginInfo.authorEmail := hppAuthorEmail;
-    PluginInfo.copyright := hppCopyright;
-    PluginInfo.homepage := hppHomePageURL;
-    PluginInfo.flags := 0{UNICODE_AWARE};
-    PluginInfo.replacesDefaultModule := DEFMOD_UIHISTORY;
-  end;
-  Result := @PluginInfo;
+  if mirandaVersion >= $0400 then
+    Result := @PluginInfo else
+    Result := nil;
 end;
 
 //Tell Miranda about this plugin ExVersion
 function MirandaPluginInfoEx(mirandaVersion:DWORD): PPLUGININFOEX; cdecl;
 begin
-  if PluginInfoEx.cbSize <> SizeOf(PluginInfoEx) then begin
-    PluginInfoEx.cbSize := SizeOf(PluginInfoEx);
-    PluginInfoEx.shortName := hppShortNameV;
-    PluginInfoEx.version := hppVersion;
-    PluginInfoEx.description := hppDescription;
-    PluginInfoEx.author := hppAuthor;
-    PluginInfoEx.authorEmail := hppAuthorEmail;
-    PluginInfoEx.copyright := hppCopyright;
-    PluginInfoEx.homepage := hppHomePageURL;
-    PluginInfoEx.flags := 0{UNICODE_AWARE};
-    PluginInfoEx.replacesDefaultModule := DEFMOD_UIHISTORY;
-    PluginInfoEx.uuid.guid := hppMUUID.guid;
-  end;
   Result := @PluginInfoEx;
 end;
 
 // tell Miranda about supported interfaces
 function MirandaPluginInterfaces:PMUUID; cdecl;
 begin
-  PluginInterfaces[0] := MIID_UIHISTORY;
-  PluginInterfaces[1] := MIID_LAST;
   Result := @PluginInterfaces;
 end;
 
@@ -566,6 +566,12 @@ exports
   Unload;
 
 begin
+
+  // filling used plugin structures
+  PluginInfoEx.uuid   := MIID_HISTORYPP;
+  PluginInterfaces[0] := MIID_UIHISTORY;
+  PluginInterfaces[1] := MIID_LAST;
+
   // decreasing ref count to oleaut32.dll as said
   // in plugins doc
   FreeLibrary(GetModuleHandle('oleaut32.dll'));
