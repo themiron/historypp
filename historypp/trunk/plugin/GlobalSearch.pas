@@ -884,7 +884,8 @@ begin
   finally
     bnSearch.Enabled := True;
   end;
-  if edSearch.Visible then edSearch.SetFocus;
+  if not IsBookmarksMode then
+    edSearch.SetFocus;
 end;
 
 procedure TfmGlobalSearch.bnSearchClick(Sender: TObject);
@@ -2199,14 +2200,17 @@ begin
     tbBookmarks.Down := not tbBookmarks.Down;
   IsBookmarksMode := tbBookmarks.Down;
 
+  if IsSearching then StopSearching;
+
   paSearch.Visible := not IsBookmarksMode;
   tbAdvanced.Enabled := not IsBookmarksMode;
   ToggleAdvancedPanel(tbAdvanced.Down);
   tbRange.Enabled := not IsBookmarksMode;
   ToggleRangePanel(tbRange.Down);
 
-  if IsSearching then StopSearching;
-  if IsBookmarksMode then bnSearch.Click;
+  if IsBookmarksMode then
+    bnSearch.Click else
+    edSearch.SetFocus;
 end;
 
 initialization
