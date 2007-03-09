@@ -97,7 +97,7 @@ const
     (Handle:0; Count:-1; Name:'His&tory Search'));
 
 var
-  Interfaces: array[0..1] of TMUUID;
+  PluginInterfaces: array[0..1] of TMUUID;
   HookModulesLoad,
   HookOptInit,
   HookSettingsChanged,
@@ -129,44 +129,50 @@ function OnEventDeleted(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward
 function OnPreshutdown(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 
 //Tell Miranda about this plugin
-function MirandaPluginInfo(mirandaVersion:DWord):PPLUGININFO; cdecl;
+function MirandaPluginInfo(mirandaVersion:DWORD): PPLUGININFO; cdecl;
 begin
-  PluginInfo.cbSize := sizeof(TPLUGININFO);
-  PluginInfo.shortName := hppShortHame{$IFDEF ALPHA}+' [alpha '+{$I 'alpha.inc'}+']'{$ENDIF};
-  PluginInfo.version := hppVersion;
-  PluginInfo.description := 'Easy, fast and feature complete history viewer.';
-  PluginInfo.author := 'theMIROn, Art Fedorov';
-  PluginInfo.authorEmail := 'themiron@mail.ru, artemf@mail.ru';
-  PluginInfo.copyright := '© 2006-2007 theMIROn, 2003-2006 Art Fedorov. History+ parts © 2001 Christian Kastner';
-  PluginInfo.homepage := hppHomePageURL;
-  PluginInfo.flags := 0{UNICODE_AWARE};
-  PluginInfo.replacesDefaultModule := DEFMOD_UIHISTORY;
+  Result := nil;
+  if mirandaVersion < $0400 then exit;
+  if PluginInfo.cbSize <> SizeOf(PluginInfo) then begin
+    PluginInfo.cbSize := SizeOf(PluginInfo);
+    PluginInfo.shortName := hppShortNameV;
+    PluginInfo.version := hppVersion;
+    PluginInfo.description := hppDescription;
+    PluginInfo.author := hppAuthor;
+    PluginInfo.authorEmail := hppAuthorEmail;
+    PluginInfo.copyright := hppCopyright;
+    PluginInfo.homepage := hppHomePageURL;
+    PluginInfo.flags := 0{UNICODE_AWARE};
+    PluginInfo.replacesDefaultModule := DEFMOD_UIHISTORY;
+  end;
   Result := @PluginInfo;
 end;
 
 //Tell Miranda about this plugin ExVersion
-function MirandaPluginInfoEx(mirandaVersion:DWord):PPLUGININFOEX; cdecl;
+function MirandaPluginInfoEx(mirandaVersion:DWORD): PPLUGININFOEX; cdecl;
 begin
-  PluginInfoEx.cbSize := sizeof(TPLUGININFOEX);
-  PluginInfoEx.shortName := hppShortHame{$IFDEF ALPHA}+' [alpha '+{$I 'alpha.inc'}+']'{$ENDIF};
-  PluginInfoEx.version := hppVersion;
-  PluginInfoEx.description := 'Easy, fast and feature complete history viewer.';
-  PluginInfoEx.author := 'theMIROn, Art Fedorov';
-  PluginInfoEx.authorEmail := 'themiron@mail.ru, artemf@mail.ru';
-  PluginInfoEx.copyright := '© 2006-2007 theMIROn, 2003-2006 Art Fedorov. History+ parts © 2001 Christian Kastner';
-  PluginInfoEx.homepage := hppHomePageURL;
-  PluginInfoEx.flags := 0{UNICODE_AWARE};
-  PluginInfoEx.replacesDefaultModule := DEFMOD_UIHISTORY;
-  PluginInfoEx.uuid.guid := hppMUUID.guid;
+  if PluginInfoEx.cbSize <> SizeOf(PluginInfoEx) then begin
+    PluginInfoEx.cbSize := SizeOf(PluginInfoEx);
+    PluginInfoEx.shortName := hppShortNameV;
+    PluginInfoEx.version := hppVersion;
+    PluginInfoEx.description := hppDescription;
+    PluginInfoEx.author := hppAuthor;
+    PluginInfoEx.authorEmail := hppAuthorEmail;
+    PluginInfoEx.copyright := hppCopyright;
+    PluginInfoEx.homepage := hppHomePageURL;
+    PluginInfoEx.flags := 0{UNICODE_AWARE};
+    PluginInfoEx.replacesDefaultModule := DEFMOD_UIHISTORY;
+    PluginInfoEx.uuid.guid := hppMUUID.guid;
+  end;
   Result := @PluginInfoEx;
 end;
 
 // tell Miranda about supported interfaces
 function MirandaPluginInterfaces:PMUUID; cdecl;
 begin
-  Interfaces[0] := MIID_UIHISTORY;
-  Interfaces[1] := MIID_LAST;
-  Result := @Interfaces;
+  PluginInterfaces[0] := MIID_UIHISTORY;
+  PluginInterfaces[1] := MIID_LAST;
+  Result := @PluginInterfaces;
 end;
 
 //load function called by miranda
@@ -275,7 +281,7 @@ begin
   //Register in updater
   ZeroMemory(@upd,SizeOf(upd));
   upd.cpbVersion := SizeOf(upd);
-  upd.szComponentName := hppShortHame;
+  upd.szComponentName := hppShortName;
   upd.pbVersion := @hppVersionStr[1];
   upd.cpbVersion := Length(hppVersionStr);
 

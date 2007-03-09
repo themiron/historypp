@@ -90,7 +90,8 @@ type
 const
 
   hppName       = 'History++';
-  hppShortHame  = 'History++ (2in1)';
+  hppShortName  = 'History++ (2in1)';
+  hppShortNameV = hppShortName{$IFDEF ALPHA}+' [alpha '+{$I 'alpha.inc'}+']'{$ENDIF};
   hppDBName     = 'HistoryPlusPlus';
   hppVerMajor   = {MAJOR_VER}1{/MAJOR_VER};
   hppVerMinor   = {MINOR_VER}5{/MINOR_VER};
@@ -101,9 +102,14 @@ const
 
   hppMUUID: TMUUID = (guid:'{B92282AC-686B-4541-A12D-6E9971A253B7}');
 
+  hppDescription = 'Easy, fast and feature complete history viewer.';
+  hppAuthor      = 'theMIROn, Art Fedorov';
+  hppAuthorEmail = 'themiron@mail.ru, artemf@mail.ru';
+  hppCopyright   = '© 2006-2007 theMIROn, 2003-2006 Art Fedorov. History+ parts © 2001 Christian Kastner';
+
   hppFLUpdateURL    = 'http://addons.miranda-im.org/feed.php?dlfile=2995';
   hppFLVersionURL   = 'http://addons.miranda-im.org/details.php?action=viewfile&id=2995';
-  hppFLVersionPrefix= '<span class="fileNameHeader">'+hppShortHame+' ';
+  hppFLVersionPrefix= '<span class="fileNameHeader">'+hppShortName+' ';
   hppUpdateURL      = 'http://themiron.mirandaim.ru/historypp';
   hppVersionURL     = 'http://themiron.mirandaim.ru/version';
   hppVersionPrefix  = hppName+' version ';
