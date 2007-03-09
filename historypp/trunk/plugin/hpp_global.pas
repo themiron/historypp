@@ -96,7 +96,7 @@ const
   hppVerMajor   = {MAJOR_VER}1{/MAJOR_VER};
   hppVerMinor   = {MINOR_VER}5{/MINOR_VER};
   hppVerRelease = {SUB_VER}0{/SUB_VER};
-  hppVerBuild   = {BUILD}113{/BUILD};
+  hppVerBuild   = {BUILD}114{/BUILD};
   hppVerAlpha   = {$IFDEF ALPHA}True{$ELSE}False{$ENDIF};
   hppVersion    = hppVerMajor shl 24 + hppVerMinor shl 16 + hppVerRelease shl 8 + hppVerBuild;
 
