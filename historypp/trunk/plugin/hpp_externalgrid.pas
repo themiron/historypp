@@ -365,7 +365,8 @@ begin
       PrevTimestamp := GetEventTimestamp(Items[Index-1].hDBEvent);
     if IsEventInSession(Item.EventType) then
       Item.HasHeader := ((DWord(Item.Time) - PrevTimestamp) > SESSION_TIMEDIFF);
-    if (Item.MessageType = Grid.Items[Index-1].MessageType) then
+    if (not Item.Bookmarked) and
+       (Item.MessageType = Grid.Items[Index-1].MessageType) then
       Item.LinkedToPrev := ((DWord(Item.Time) - PrevTimestamp) < 60);
   end;
   if (not FUseHistoryRTLMode) and (Item.RTLMode <> hppRTLEnable) then
@@ -436,7 +437,7 @@ procedure TExternalGrid.ScrollToBottom;
 begin
   if Grid.State <> gsInline then begin
     Grid.ScrollToBottom;
-    Grid.Repaint;
+    Grid.Invalidate;
   end;
 end;
 
@@ -515,6 +516,8 @@ begin
   for i := 0 to Grid.Count-1 do
     if Items[i].hDBEvent = M.LParam then begin
       Grid.Bookmarked[i] := BookmarkServer[M.WParam].Bookmarked[M.LParam];
+      Grid.ResetItem(i);
+      Grid.Invalidate;
       exit;
     end;
 end;
