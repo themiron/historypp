@@ -6,7 +6,7 @@ interface
 
 uses
   Windows, Messages, Classes,
-  Controls, StdCtrls, ComCtrls, ExtCtrls, Buttons,
+  Controls, StdCtrls, ComCtrls, ExtCtrls, Buttons, {Dialogs,}
   TntControls, TntStdCtrls, TntComCtrls, TntExtCtrls, TntButtons;
 
 type
@@ -57,11 +57,24 @@ type
     {$ENDIF}
   end;
 
+  { //Saved for probably future use
+  THppSaveDialog = class(TSaveDialog)
+  private
+    FShowModal: Boolean;
+  public
+    constructor Create(AOwner: TComponent); override;
+  protected
+    function TaskModalDialog(DialogFunc: Pointer; var DialogData): Bool; override;
+  published
+    property ShowModal: Boolean read FShowModal write FShowModal;
+  end;
+  }
+
 procedure Register;
 
 implementation
 
-uses CommCtrl, Forms, Themes, TntSysUtils;
+uses CommCtrl, {CommDlg,} Forms, Themes, TntSysUtils;
 
 procedure Register;
 begin
@@ -71,6 +84,7 @@ begin
   RegisterComponents('History++', [THppSpeedButton]);
   RegisterComponents('History++', [THppToolBar]);
   RegisterComponents('History++', [THppToolButton]);
+  {RegisterComponents('History++', [THppSaveDialog]);}
 end;
 
 procedure TPasswordEdit.CreateParams(var Params: TCreateParams);
@@ -253,5 +267,120 @@ begin
   end;
 end;
 {$ENDIF}
+
+{ THppSaveDialog }
+{ //Saved for probably future use
+
+type
+  THackCommonDialog = class(TComponent)
+  protected
+    FCtl3D: Boolean;
+    FDefWndProc: Pointer;
+    FHelpContext: THelpContext;
+    FHandle: HWnd;
+    FObjectInstance: Pointer;
+    FTemplate: PChar;
+  end;
+var
+  sCreationControl: TCommonDialog = nil;
+
+procedure CenterWindow(Wnd: HWnd);
+var
+  Rect: TRect;
+  Monitor: TMonitor;
+begin
+  GetWindowRect(Wnd, Rect);
+  if Application.MainForm <> nil then
+  begin
+    if Assigned(Screen.ActiveForm) then
+      Monitor := Screen.ActiveForm.Monitor
+      else
+        Monitor := Application.MainForm.Monitor;
+  end
+  else
+    Monitor := Screen.Monitors[0];
+  SetWindowPos(Wnd, 0,
+    Monitor.Left + ((Monitor.Width - Rect.Right + Rect.Left) div 2),
+    Monitor.Top + ((Monitor.Height - Rect.Bottom + Rect.Top) div 3),
+    0, 0, SWP_NOACTIVATE or SWP_NOSIZE or SWP_NOZORDER);
+end;
+
+function DialogHook(Wnd: HWnd; Msg: UINT; WParam: WPARAM; LParam: LPARAM): UINT; stdcall;
+begin
+  Result := 0;
+  if Msg = WM_INITDIALOG then
+  begin
+    CenterWindow(Wnd);
+    THackCommonDialog(sCreationControl).FHandle := Wnd;
+    THackCommonDialog(sCreationControl).FDefWndProc := Pointer(SetWindowLong(Wnd, GWL_WNDPROC,
+      Longint(THackCommonDialog(sCreationControl).FObjectInstance)));
+    CallWindowProc(THackCommonDialog(sCreationControl).FObjectInstance, Wnd, Msg, WParam, LParam);
+    sCreationControl := nil;
+  end;
+end;
+
+function ExplorerHook(Wnd: HWnd; Msg: UINT; WParam: WPARAM; LParam: LPARAM): UINT; stdcall;
+begin
+  Result := 0;
+  if Msg = WM_INITDIALOG then
+  begin
+    THackCommonDialog(sCreationControl).FHandle := Wnd;
+    THackCommonDialog(sCreationControl).FDefWndProc := Pointer(SetWindowLong(Wnd, GWL_WNDPROC,
+      Longint(THackCommonDialog(sCreationControl).FObjectInstance)));
+    CallWindowProc(THackCommonDialog(sCreationControl).FObjectInstance, Wnd, Msg, WParam, LParam);
+    sCreationControl := nil;
+  end
+  else if (Msg = WM_NOTIFY) and (POFNotify(LParam)^.hdr.code = CDN_INITDONE) then
+    CenterWindow(GetWindowLong(Wnd, GWL_HWNDPARENT));
+end;
+
+constructor THppSaveDialog.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  FShowModal := False;
+end;
+
+function THppSaveDialog.TaskModalDialog(DialogFunc: Pointer; var DialogData): Bool;
+type
+  TDialogFunc = function(var DialogData): Bool stdcall;
+var
+  ActiveWindow: HWnd;
+  FPUControlWord: Word;
+  FocusState: TFocusState;
+  WasEnabled: Boolean;
+begin
+  if FShowModal then
+    Result := inherited TaskModalDialog(DialogFunc,DialogData)
+  else begin
+    if (ofOldStyleDialog in Options) or not NewStyleControls then
+      TOpenFilename(DialogData).lpfnHook := DialogHook else
+      TOpenFilename(DialogData).lpfnHook := ExplorerHook;
+    ActiveWindow := GetActiveWindow;
+    WasEnabled := IsWindowEnabled(ActiveWindow);
+    if WasEnabled then EnableWindow(ActiveWindow, False);
+    FocusState := SaveFocusState;
+    try
+      Application.HookMainWindow(MessageHook);
+      asm
+        // Avoid FPU control word change in NETRAP.dll, NETAPI32.dll, etc
+        FNSTCW  FPUControlWord
+      end;
+      try
+        sCreationControl := Self;
+        Result := TDialogFunc(DialogFunc)(DialogData);
+      finally
+        asm
+          FNCLEX
+          FLDCW FPUControlWord
+        end;
+        Application.UnhookMainWindow(MessageHook);
+      end;
+    finally
+      if WasEnabled then EnableWindow(ActiveWindow, True);
+      SetActiveWindow(ActiveWindow);
+      RestoreFocusState(FocusState);
+    end;
+  end;
+end;}
 
 end.
