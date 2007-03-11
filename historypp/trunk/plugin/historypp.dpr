@@ -140,7 +140,7 @@ var
   HookEventDeleted,
   HookPreshutdown: THandle;
 
-function OnModulesLoad(wParam,lParam:DWord):integer; cdecl; forward;
+function OnModulesLoad(wParam,lParam:DWORD):integer; cdecl; forward;
 function OnSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnSmAddSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnIconChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
@@ -226,7 +226,7 @@ begin
 end;
 
 //init plugin
-function OnModulesLoad(wParam{0},lParam{0}:DWord):integer; cdecl;
+function OnModulesLoad(wParam{0},lParam{0}:DWORD):integer; cdecl;
 var
   i: integer;
   menuitem:TCLISTMENUITEM;
@@ -262,12 +262,12 @@ begin
   //menuitem.hIcon := HistoryIcon;
   menuitem.hIcon := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
   menuitem.pszContactOwner := nil;    //all contacts
-  MenuHandles[0].Handle := PluginLink.CallService(MS_CLIST_ADDCONTACTMENUITEM,0,DWord(@menuItem));
+  MenuHandles[0].Handle := PluginLink.CallService(MS_CLIST_ADDCONTACTMENUITEM,0,DWORD(@menuItem));
   MenuHandles[0].Count := -1;
   //create menu item in main menu for system history
   menuitem.Position:=500060000;
   menuitem.pszName:=PChar(MenuHandles[1].Name);
-  MenuHandles[1].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWord(@menuitem));
+  MenuHandles[1].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWORD(@menuitem));
   MenuHandles[1].Count := -1;
   //create menu item in main menu for history search
   menuitem.Position:=500060001;
@@ -275,7 +275,7 @@ begin
   //menuitem.hIcon := GlobalSearchIcon;
   menuitem.hIcon := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
   menuitem.pszName:=PChar(MenuHandles[2].Name);
-  MenuHandles[2].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWord(@menuItem));
+  MenuHandles[2].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWORD(@menuItem));
   MenuHandles[2].Count := -1;
 
   //Register in updater
@@ -421,20 +421,18 @@ end;
 
 function OnOptInit(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
 var
-  odp: TOptionsDialogPage;
+  odp: TOPTIONSDIALOGPAGE;
 begin
-  ZeroMemory(@odp,sizeof(odp));
+  ZeroMemory(@odp,SizeOf(odp));
   odp.cbSize := sizeof(odp);
   odp.Position := 0;
   odp.hInstance := hInstance;
   odp.pszTemplate := MakeIntResource(IDD_OPT_HISTORYPP);
-  //odp.pszTitle := Translate(hppName{TRANSLATE-IGNORE});
-  //odp.pszGroup := Translate('History');
-  odp.pszTitle := Translate('History');
-  odp.pszGroup := nil;
+  odp.pszTitle.a := Translate('History');
+  odp.pszGroup.a := nil;
   odp.pfnDlgProc := @OptDialogProc;
   odp.flags := ODPF_BOLDGROUPS;
-  PluginLink.CallService(MS_OPT_ADDPAGE,wParam,dword(@odp));
+  PluginLink.CallService(MS_OPT_ADDPAGE,wParam,DWORD(@odp));
   Result:=0;
 end;
 
@@ -461,10 +459,10 @@ begin
   menuitem.cbSize := SizeOf(menuItem);
   menuitem.flags := CMIM_ICON;
   menuitem.hIcon := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
-  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0].Handle, DWord(@menuItem));
-  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[1].Handle, DWord(@menuItem));
+  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0].Handle, DWORD(@menuItem));
+  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[1].Handle, DWORD(@menuItem));
   menuitem.hIcon := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
-  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[2].Handle, DWord(@menuItem));
+  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[2].Handle, DWORD(@menuItem));
 end;
 
 //the context menu for a contact is about to be built     v0.1.0.1+
@@ -488,7 +486,7 @@ begin
       menuitem.flags := menuitem.flags or CMIM_NAME;
       menuitem.pszName := PChar(Format('%s [%u]',[MenuHandles[0].Name,count]))
     end;
-    if PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0].Handle, DWord(@menuItem)) = 0 then
+    if PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0].Handle, DWORD(@menuItem)) = 0 then
       MenuHandles[0].Count := count;
   end;
 end;
