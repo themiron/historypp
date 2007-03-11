@@ -26,7 +26,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 const
   MAXMODULELABELLENGTH  = 64;
-  UNICODE_AWARE = 1;
+
+{$IFDEF _UNICODE}
+  UNICODE_AWARE         = 1;
+{$ELSE}
+  UNICODE_AWARE         = 0;
+{$ENDIF}
 
 type
   PPLUGININFO = ^TPLUGININFO;
