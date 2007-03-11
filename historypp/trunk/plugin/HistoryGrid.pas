@@ -415,6 +415,7 @@ type
     FOnUrlPopup: TUrlEvent;
     FRich: THPPRichEdit;
     FRichInline: THPPRichEdit;
+    FItemInline: Integer;
     FRichSave: THPPRichEdit;
     FRichSaveItem: THPPRichEdit;
     FRichSaveOLECB: TRichEditOleCallback;
@@ -628,6 +629,7 @@ type
 
     procedure EditInline(Item: Integer);
     procedure CancelInline(DoSetFocus: boolean = true);
+    procedure AdjustInlineRichedit;
     property InlineRichEdit: THPPRichEdit read FRichInline write FRichInline;
     property RichEdit: THPPRichEdit read FRich write FRich;
 
@@ -909,6 +911,8 @@ begin
 
   FRichInline.Brush.Style := bsClear;
 
+  FItemInline := -1;
+
   {$ENDIF}
   FCodepage := CP_ACP;
   //FRTLMode := hppRTLDefault;
@@ -977,7 +981,8 @@ begin
   dc := GetDC(0);
   LogY := GetDeviceCaps(dc, LOGPIXELSY);
   ReleaseDC(0,dc);
-  VLineScrollSize := MulDiv(LogY,13*5,96);
+  //VLineScrollSize := MulDiv(LogY,13*5,96);
+  VLineScrollSize := MulDiv(LogY,13*3,96);
 
   FBorderStyle := bsSingle;
 
@@ -1416,9 +1421,9 @@ begin
 
   BeginUpdate;
   try
-  idx := VertScrollBar.Position;
-  ind := idx;
-  first := GetFirstVisible;
+    idx := VertScrollBar.Position;
+    ind := idx;
+    first := GetFirstVisible;
 
  {if FItems[first].Height > ClientRect.Bottom-ClientRect.Top then begin
     r := ClientRect;
@@ -1438,105 +1443,105 @@ begin
     exit;
     end;}
 
-  if Message.ScrollCode in [SB_LINEUP,SB_LINEDOWN,SB_PAGEDOWN,SB_PAGEUP] then begin
-    Message.Result := 0;
-    case Message.ScrollCode of
-      SB_LINEDOWN: ScrollGridBy(VLineScrollSize);
-      SB_LINEUP: ScrollGridBy(-VLineScrollSize);
-      SB_PAGEDOWN: ScrollGridBy(ClientHeight);
-      SB_PAGEUP: ScrollGridBy(-ClientHeight);
-    end;
-    exit;
+    if Message.ScrollCode in [SB_LINEUP,SB_LINEDOWN,SB_PAGEDOWN,SB_PAGEUP] then begin
+      Message.Result := 0;
+      case Message.ScrollCode of
+        SB_LINEDOWN: ScrollGridBy(VLineScrollSize);
+        SB_LINEUP: ScrollGridBy(-VLineScrollSize);
+        SB_PAGEDOWN: ScrollGridBy(ClientHeight);
+        SB_PAGEUP: ScrollGridBy(-ClientHeight);
+      end;
+      exit;
     end;
 
-  {$IFDEF CUST_SB}
-  if (Message.ScrollBar = 0) and VertScrollBar.Visible then
-    VertScrollBar.ScrollMessage(Message)
-  else
+    {$IFDEF CUST_SB}
+    if (Message.ScrollBar = 0) and VertScrollBar.Visible then
+      VertScrollBar.ScrollMessage(Message)
+    else
+      inherited;
+    {$ELSE}
     inherited;
-  {$ELSE}
-  inherited;
-  {$ENDIF}
+    {$ENDIF}
 
-  SBPos := VertScrollBar.Position;
-  off := SBPos - idx;
+    SBPos := VertScrollBar.Position;
+    off := SBPos - idx;
 
-  //if (VertScrollBar.Position > MaxSBPos) and (off=0) then begin
-  //  SetSBPos(VertScrollBar.Position);
-  //  exit;
-  //  end;
-  {if (off=0) and (VertScrollBar.Position > MaxSBPos) then begin
-    SetSBPos(VertScrollBar.Position);
-    Invalidate;
-    exit;
-  end;}
+    //if (VertScrollBar.Position > MaxSBPos) and (off=0) then begin
+    //  SetSBPos(VertScrollBar.Position);
+    //  exit;
+    //  end;
+    {if (off=0) and (VertScrollBar.Position > MaxSBPos) then begin
+      SetSBPos(VertScrollBar.Position);
+      Invalidate;
+      exit;
+    end;}
 
-  if not (VertScrollBar.Position > MaxSBPos) then TopItemOffset := 0;
-  if off = 0 then exit;
-  if off > 0 then begin
-    idx := GetNext(GetIdx(VertScrollBar.Position-1));
-    if (idx = first) and (idx <> -1) then begin
-      idx := GetNext(idx);
-      if idx = -1 then idx := first;
-    end;
-    if idx = -1 then begin
-      idx := GetPrev(GetIdx(VertScrollBar.Position+1));
-      if idx = -1 then
-        idx := ind;
-    end;
-  end;
-  if off < 0 then begin
-    idx := GetPrev(GetIdx(VertScrollBar.Position+1));
-    if (idx = first) and (idx <> -1) then begin
-      idx := GetPrev(idx);
-      //if idx := -1 then idx := Count-1;
-    end;
-    if (idx <> first) and (idx <> -1) then begin
-      first := idx;
-      idx := GetPrev(idx);
-      if idx <> -1 then idx := first
-      else idx := GetIdx(0);
-    end;
-    if idx = -1 then begin
+    if not (VertScrollBar.Position > MaxSBPos) then TopItemOffset := 0;
+    if off = 0 then exit;
+    if off > 0 then begin
       idx := GetNext(GetIdx(VertScrollBar.Position-1));
-      if idx = -1 then
-        idx := ind;
+      if (idx = first) and (idx <> -1) then begin
+        idx := GetNext(idx);
+        if idx = -1 then idx := first;
+      end;
+      if idx = -1 then begin
+        idx := GetPrev(GetIdx(VertScrollBar.Position+1));
+        if idx = -1 then
+          idx := ind;
+      end;
     end;
-  end;
-  { BUG HERE (not actually here, but..)
-  If you filter by (for example) files and you have several files
-  and large history, then when tracking throu files, you'll see
-  flicker, like constantly scrolling up & down by 1 event. That's
-  because when you scroll down by 1, this proc finds next event and
-  scrolls to it. But when you continue your move, your track
-  position becomes higher then current pos, and we search backwards,
-  and scroll to prev event. That's why flicker takes place. Need to
-  redesign some things to fix it }
-  // OXY 2006-03-05: THIS BUG FIXED!!!
-  // Now while thumbtracking we look if we are closer to next item
-  // than to original item. If we are closer, then scroll. If not, then
-  // don't change position and wait while user scrolls futher.
-  // With this we have ONE MORE bug: when user stops tracking,
-  // we leave thumb were it left, while we need to put it on the item
+    if off < 0 then begin
+      idx := GetPrev(GetIdx(VertScrollBar.Position+1));
+      if (idx = first) and (idx <> -1) then begin
+        idx := GetPrev(idx);
+        //if idx := -1 then idx := Count-1;
+      end;
+      if (idx <> first) and (idx <> -1) then begin
+        first := idx;
+        idx := GetPrev(idx);
+        if idx <> -1 then idx := first
+        else idx := GetIdx(0);
+      end;
+      if idx = -1 then begin
+        idx := GetNext(GetIdx(VertScrollBar.Position-1));
+        if idx = -1 then
+          idx := ind;
+      end;
+    end;
+    { BUG HERE (not actually here, but..)
+    If you filter by (for example) files and you have several files
+    and large history, then when tracking throu files, you'll see
+    flicker, like constantly scrolling up & down by 1 event. That's
+    because when you scroll down by 1, this proc finds next event and
+    scrolls to it. But when you continue your move, your track
+    position becomes higher then current pos, and we search backwards,
+    and scroll to prev event. That's why flicker takes place. Need to
+    redesign some things to fix it }
+    // OXY 2006-03-05: THIS BUG FIXED!!!
+    // Now while thumbtracking we look if we are closer to next item
+    // than to original item. If we are closer, then scroll. If not, then
+    // don't change position and wait while user scrolls futher.
+    // With this we have ONE MORE bug: when user stops tracking,
+    // we leave thumb were it left, while we need to put it on the item
 
-  Item1 := GetIdx(first);
-  Item2 := GetIdx(idx);
-  if not (Message.ScrollCode in [SB_THUMBTRACK,SB_THUMBPOSITION]) then
-    SetSBPos(Item2)
-  else begin
-    if (SBPos >= Item1) and (Item2 > MaxSBPos) then
+    Item1 := GetIdx(first);
+    Item2 := GetIdx(idx);
+    if not (Message.ScrollCode in [SB_THUMBTRACK,SB_THUMBPOSITION]) then
       SetSBPos(Item2)
-    else if Abs(Item1-SBPos) > Abs(Item2-SBPos) then
-      SetSBPos(Item2);
-  end;
+    else begin
+      if (SBPos >= Item1) and (Item2 > MaxSBPos) then
+        SetSBPos(Item2)
+      else if Abs(Item1-SBPos) > Abs(Item2-SBPos) then
+        SetSBPos(Item2);
+    end;
 
-  AdjustScrollBar;
+    AdjustScrollBar;
 
-  r := ClientRect;
-  InvalidateRect(Handle,@r,False);
-finally
-  EndUpdate;
-  Update;
+    r := ClientRect;
+    InvalidateRect(Handle,@r,False);
+  finally
+    EndUpdate;
+    Update;
   end;
 end;
 
@@ -2497,9 +2502,7 @@ begin
     end;
     AdjustScrollBar;
     Key := 0;
-  end;
-
-  if ssCtrl in ShiftState then exit;
+  end else
 
   if Key = VK_NEXT then begin //PAGE DOWN
     SearchPattern := '';
@@ -2555,32 +2558,40 @@ begin
   end else
 
   if Key = VK_UP then begin
-    SearchPattern := '';
-    if GetIdx(Item) > 0 then Item := GetPrev(Item);
-    if item = -1 then exit;
-    if (ssShift in ShiftState) and (MultiSelect) then begin
-      MakeSelectedTo(Item);
-      FSelected := Item;
-      MakeVisible(Selected);
-      Invalidate;
-    end else
-      Selected := Item;
-    AdjustScrollBar;
+    if ssCtrl in ShiftState then
+      ScrollGridBy(-VLineScrollSize)
+    else begin
+      SearchPattern := '';
+      if GetIdx(Item) > 0 then Item := GetPrev(Item);
+      if item = -1 then exit;
+      if (ssShift in ShiftState) and (MultiSelect) then begin
+        MakeSelectedTo(Item);
+        FSelected := Item;
+        MakeVisible(Selected);
+        Invalidate;
+      end else
+        Selected := Item;
+      AdjustScrollBar;
+    end;
     Key := 0;
   end else
 
   if Key = VK_DOWN then begin
-    SearchPattern := '';
-    if GetIdx(Item) < Count-1 then Item := GetNext(Item);
-    if Item = -1 then exit;
-    if (ssShift in ShiftState) and (MultiSelect) then begin
-      MakeSelectedTo(Item);
-      FSelected := Item;
-      MakeVisible(Item);
-      Invalidate;
-    end else
-      Selected := Item;
-    AdjustScrollBar;
+    if ssCtrl in ShiftState then
+      ScrollGridBy(VLineScrollSize)
+    else begin
+      SearchPattern := '';
+      if GetIdx(Item) < Count-1 then Item := GetNext(Item);
+      if Item = -1 then exit;
+      if (ssShift in ShiftState) and (MultiSelect) then begin
+        MakeSelectedTo(Item);
+        FSelected := Item;
+        MakeVisible(Item);
+        Invalidate;
+      end else
+        Selected := Item;
+      AdjustScrollBar;
+    end;
     Key := 0;
   end;
 
@@ -3066,6 +3077,20 @@ begin
   Result := (mtUnknown in FItems[Index].MessageType);
 end;
 
+procedure THistoryGrid.AdjustInlineRichedit;
+var
+  r: Trect;
+begin
+  if (State <> gsInline) or (FItemInline > Count) then exit;
+  r := GetRichEditRect(FItemInline);
+  if IsRectEmpty(r) then exit;
+  // variant 1: move richedit around
+  // variant 2: adjust TopItemOffset
+  // variant 3: made logic changes in adjust toolbar to respect TopItemOffset
+  //FRichInline.Top := r.top;
+  Inc(TopItemOffset,r.top-FRichInline.Top);
+end;
+
 procedure THistoryGrid.AdjustScrollBar;
 var
   maxidx,SumHeight,ind,idx: Integer;
@@ -3112,6 +3137,7 @@ begin
     MaxSBPos := GetIdx(maxidx);
     //if VertScrollBar.Position > MaxSBPos then
     SetSBPos(VertScrollBar.Position);
+    AdjustInlineRichedit;
     exit;
   end;
 
@@ -3472,6 +3498,13 @@ procedure THistoryGrid.ScrollGridBy(Offset: Integer; Update: Boolean = True);
 var
   previdx,idx,first: Integer;
   pos,SumHeight: Integer;
+
+  function SmoothScrollWindow(hWnd: HWND; XAmount, YAmount: Integer; Rect, ClipRect: PRect): BOOL;
+  begin
+    Result := ScrollWindow(hWnd,XAmount,YAmount,Rect,ClipRect);
+    UpdateWindow(Handle);
+  end;
+
 begin
   first := GetFirstVisible;
   if first = -1 then exit;
@@ -3500,10 +3533,8 @@ begin
       pos := GetIdx(idx);
       VertScrollBar.Position := pos;
       TopItemOffset := Offset - SumHeight;
-      if Update then begin
-        ScrollWindow(Handle,0,-Offset,nil,nil);
-        UpdateWindow(Handle);
-      end;
+      if Update then
+        SmoothScrollWindow(Handle,0,-Offset,nil,nil);
       break;
     end;
     Inc(SumHeight,FItems[idx].Height);
@@ -3517,24 +3548,22 @@ begin
       if GetUp(idx) = -1 then
         VertScrollBar.Position := 0;
       TopItemOffset := Offset - SumHeight;
-      if Update then begin
-        ScrollWindow(Handle,0,-Offset,nil,nil);
-        UpdateWindow(Handle);
-      end;
+      if Update then
+        SmoothScrollWindow(Handle,0,-Offset,nil,nil);
       break;
     end;
-  previdx := idx;
-  idx := GetUp(idx);
-  if idx = -1 then begin
-    VertScrollBar.Position := GetIdx(previdx);
-    TopItemOffset := 0;
-    // to lazy to calculate proper offset
-    if Update then
-      Repaint;
-    break;
-  end;
-  LoadItem(idx,True);
-  Dec(SumHeight,FItems[idx].Height);
+    previdx := idx;
+    idx := GetUp(idx);
+    if idx = -1 then begin
+      VertScrollBar.Position := GetIdx(previdx);
+      TopItemOffset := 0;
+      // to lazy to calculate proper offset
+      if Update then
+        Repaint;
+      break;
+    end;
+    LoadItem(idx,True);
+    Dec(SumHeight,FItems[idx].Height);
   end;
 end;
 
@@ -3838,7 +3867,7 @@ begin
   off := -(Message.WheelDelta div WHEEL_DELTA);
   if off > 0 then code := SB_LINEDOWN
              else code := SB_LINEUP;
-  if FState = gsInline then
+  if State = gsInline then
     FRichInline.Perform(EM_SCROLL,code,0)
   else
     Perform(WM_VSCROLL,code,0);
@@ -4320,8 +4349,8 @@ end;
 
 procedure THistoryGrid.CheckBusy;
 begin
-  if FState = gsInline then CancelInline;
-  if FState <> gsIdle then
+  if State = gsInline then CancelInline;
+  if State <> gsIdle then
     raise EAbort.Create('Grid is busy');
 end;
 
@@ -4808,6 +4837,7 @@ begin
   //State := gsInline;
 
   State := gsInline;
+  FItemInline := Item;
   ApplyItemToRich(Item, FRichInline);
   FRichInline.SelStart := 0;
   //cr.cpMin := 0;
@@ -4821,8 +4851,9 @@ end;
 procedure THistoryGrid.CancelInline(DoSetFocus: boolean = true);
 begin
   if State <> gsInline then exit;
-  State := gsIdle;
   FRichInline.Hide;
+  State := gsIdle;
+  FItemInline := -1;
   if DoSetFocus then Windows.SetFocus(Handle) ;
 end;
 
