@@ -1,29 +1,25 @@
-library historypp;
-
 (*
+    History++ plugin for Miranda IM: the free IM client for Microsoft* Windows*
 
-History++ Plugin
-Version 1.5.0 (build #79 at 2004-08-24 10:32:21)
-by Art Fedorov
-for Miranda IM
-written with Delphi 5 Pro
-(based on source code of History+ by Christian Kastner)
+    Copyright (Ñ) 2006-2007 theMIROn, 2003-2006 Art Fedorov.
+    History+ parts (C) 2001 Christian Kastner
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *)
+
+library historypp;
 
 {%ToDo 'historypp.todo'}
 {$R 'hpp_resource.res' 'hpp_resource.rc'}
