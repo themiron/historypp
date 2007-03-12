@@ -263,8 +263,8 @@ type
     destructor Destroy; override;
     procedure StartChange;
     procedure EndChange(const Forced: Boolean = False);
-    function AddItemOptions: integer;
-    function GetItemOptions(Mes: TMessageTypes; out textFont: TFont; out textColor: TColor): integer;
+    function AddItemOptions: Integer;
+    function GetItemOptions(Mes: TMessageTypes; out textFont: TFont; out textColor: TColor): Integer;
     property OnShowIcons: TOnShowIcons read FOnShowIcons write FOnShowIcons;
     property OnTextFormatting: TOnTextFormatting read FOnTextFormatting write FOnTextFormatting;
   published
@@ -390,7 +390,7 @@ type
     FItems: array of THistoryItem;
     FClient: TBitmap;
     FCanvas: TCanvas;
-    FContact: Integer;  // cose THandle defined as integer in m_globaldef
+    FContact: Integer;  // cose THandle defined as Integer in m_globaldef
     FProtocol: String;
     FLoadedCount: Integer;
     FContactName: WideString;
@@ -534,7 +534,7 @@ type
     procedure WriteWideString(fs: TFileStream; Text: WideString);
     procedure CheckBusy;
     function GetSelItems(Index: Integer): Integer;
-    procedure SetSelItems(Index: Integer; Item: integer);
+    procedure SetSelItems(Index: Integer; Item: Integer);
     procedure SetState(const Value: TGridState);
     procedure SetReversed(const Value: Boolean);
     procedure SetReversedHeader(const Value: Boolean);
@@ -649,8 +649,9 @@ type
     procedure UpdateFilter;
 
     procedure EditInline(Item: Integer);
-    procedure CancelInline(DoSetFocus: boolean = true);
+    procedure CancelInline(DoSetFocus: boolean = True);
     procedure AdjustInlineRichedit;
+    function GetItemInline: Integer;
     property InlineRichEdit: THPPRichEdit read FRichInline write FRichInline;
     property RichEdit: THPPRichEdit read FRich write FRich;
 
@@ -671,7 +672,7 @@ type
 
     property ControlID: Cardinal read FControlID write SetContolID;
   published
-    procedure SetRichRTL(RTL: Boolean; RichEdit: THPPRichEdit; ProcessTag: Boolean = true);
+    procedure SetRichRTL(RTL: Boolean; RichEdit: THPPRichEdit; ProcessTag: Boolean = True);
     function GetItemRTL(Item: Integer): Boolean;
 
     //procedure CopyToClipSelected(const Format: WideString; ACodepage: Cardinal = CP_ACP);
@@ -732,8 +733,9 @@ type
 
     property Reversed: Boolean read FReversed write SetReversed;
     property ReversedHeader: Boolean read FReversedHeader write SetReversedHeader;
-    property TopItem: integer read GetTopItem;
-    property BottomItem: integer read GetBottomItem;
+    property TopItem: Integer read GetTopItem;
+    property BottomItem: Integer read GetBottomItem;
+    property ItemInline: Integer read GetItemInline;
     property HideSelection: Boolean read FHideSelection write SetHideSelection default False;
     property Align;
     property Anchors;
@@ -1216,7 +1218,7 @@ var
   RTL: Boolean;
   RIconOffset,IconOffset, IconTop: Integer;
   TextOffset: Integer;
-  ArrIcon: Integer;
+  //ArrIcon: Integer;
   //BackColor: TColor;
   //TextFont: TFont;
 begin
@@ -1298,13 +1300,13 @@ var
 begin
   if FCodepage = Value then exit;
   FCodepage := Value;
-  DoChanges := false;
+  DoChanges := False;
   if Allocated then begin
     for i := 0 to Length(FItems) - 1 do
       if not IsUnknown(i) then begin
-        DoChanges := true;
+        DoChanges := True;
         // cose it's faster :)
-        //LoadItem(i,false,true);
+        //LoadItem(i,False,True);
         FItems[i].MessageType := [mtUnknown];
       end;
     if DoChanges then DoOptionsChanged;
@@ -1409,7 +1411,7 @@ procedure THistoryGrid.WMSize(var Message: TWMSize);
 begin
   if not FRichParamsSet then begin
     FRichCache.SetHandles;
-    FRichParamsSet := true;
+    FRichParamsSet := True;
     FRichInline.ParentWindow := Handle;
     //re_mask := SendMessage(FRichInline.Handle,EM_GETEVENTMASK,0,0);
     //SendMessage(FRichInline.Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK);
@@ -2114,13 +2116,13 @@ begin
     //backColor := ColorToRGB(Options.ColorSelected);
     textColor := Options.ColorSelectedText;
     backColor := Options.ColorSelected;
-    NoDefaultColors := false;
+    NoDefaultColors := False;
   end else begin
     //textColor := ColorToRGB(textFont.Color);
     //backColor := ColorToRGB(backColor);
     textColor := textFont.Color;
     backColor := backColor;
-    NoDefaultColors := true;
+    NoDefaultColors := True;
   end;
 
   UseTextFormatting := not (((State = gsInline) or ForceInline) and not Options.TextFormatting);
@@ -2149,11 +2151,11 @@ begin
     if GetItemRTL(Item) then RTF := RTF + '\rtlpar\ltrch\rtlch '
                         else RTF := RTF + '\ltrpar\rtlch\ltrch ';
     RTF := RTF + Format('\f0\b%d\i%d\ul%d\strike%d\fs%u',
-      [integer(fsBold in textFont.Style),
-       integer(fsItalic in textFont.Style),
-       integer(fsUnderline in textFont.Style),
-       integer(fsStrikeOut in textFont.Style),
-       integer(textFont.Size shl 1)]);
+      [Integer(fsBold in textFont.Style),
+       Integer(fsItalic in textFont.Style),
+       Integer(fsUnderline in textFont.Style),
+       Integer(fsStrikeOut in textFont.Style),
+       Integer(textFont.Size shl 1)]);
     Text := FormatString2RTF(FItems[Item].Text);
     {if FGroupLinked and FItems[Item].LinkedToPrev then
       Text := FormatString2RTF(GetTime(FItems[Item].Time)+': '+FItems[Item].Text)
@@ -2182,11 +2184,11 @@ begin
     RTF := RTF + Format('\red%u\green%u\blue%u;',[tsColor and $FF,(tsColor shr 8) and $FF,(tsColor shr 16) and $FF]);
     RTF := RTF + '}';
     RTF := RTF + Format('\f0\b%d\i%d\ul%d\strike%d\fs%u',
-      [integer(fsBold in textFont.Style),
-       integer(fsItalic in textFont.Style),
-       integer(fsUnderline in textFont.Style),
-       integer(fsStrikeOut in textFont.Style),
-       integer(textFont.Size shl 1)]);
+      [Integer(fsBold in textFont.Style),
+       Integer(fsItalic in textFont.Style),
+       Integer(fsUnderline in textFont.Style),
+       Integer(fsStrikeOut in textFont.Style),
+       Integer(textFont.Size shl 1)]);
     Text := FormatString2RTF(GetTime(
     FItems[Item].Time));
     RTF := RTF + Text + '\par }'+#0;
@@ -2209,7 +2211,7 @@ begin
       cf.dwMask := CFM_COLOR;
       cf.crTextColor := textColor;
       RichEdit.Perform(EM_SETBKGNDCOLOR, 0, backColor);
-      RichEdit.Perform(EM_SETCHARFORMAT, SCF_ALL, integer(@cf));
+      RichEdit.Perform(EM_SETCHARFORMAT, SCF_ALL, LPARAM(@cf));
     end;
   end;
   {$IFDEF DEBUG}
@@ -2452,7 +2454,7 @@ begin
     mf.msg := Message.Msg;
     mf.wParam := Message.WParam;
     mf.lParam := Message.LParam;
-    SendMessage(ParentWindow,WM_NOTIFY,FControlID,LParam(@mf));
+    SendMessage(ParentWindow,WM_NOTIFY,FControlID,LPARAM(@mf));
   end;
 end;
 
@@ -2908,7 +2910,7 @@ end;
 
 function THistoryGrid.GetDown(Item: Integer): Integer;
 begin
-  Result := GetNext(Item,false);
+  Result := GetNext(Item,False);
 end;
 
 function THistoryGrid.GetItems(Index: Integer): THistoryItem;
@@ -3098,12 +3100,19 @@ begin
   Result := (mtUnknown in FItems[Index].MessageType);
 end;
 
+function THistoryGrid.GetItemInline: Integer;
+begin
+  if State = gsInline then
+    Result := FItemInline else
+    Result := -1;
+end;
+
 procedure THistoryGrid.AdjustInlineRichedit;
 var
   r: Trect;
 begin
-  if (State <> gsInline) or (FItemInline > Count) then exit;
-  r := GetRichEditRect(FItemInline);
+  if (ItemInline = -1) or (ItemInline > Count) then exit;
+  r := GetRichEditRect(ItemInline);
   if IsRectEmpty(r) then exit;
   // variant 1: move richedit around
   // variant 2: adjust TopItemOffset
@@ -3239,7 +3248,7 @@ begin
   {REV}
   if not Force then
     if Reversed then begin
-      Result := GetPrev(Item,true);
+      Result := GetPrev(Item,True);
       exit;
     end;
   Inc(Item);
@@ -3318,7 +3327,7 @@ begin
     Inc(SumHeight,FItems[idx].height);
     idx := GetNext(idx);
     if idx = -1 then break;
-    LoadItem(idx,true);
+    LoadItem(idx,True);
   end;
 end;
 
@@ -3869,6 +3878,8 @@ begin
   FItems[0].Text := '';
   // change selected here
   if Selected <> -1 then Inc(FSelected);
+  // change inline edited item
+  if ItemInline <> -1 then Inc(FItemInline);
   for i := 0 to SelCount-1 do begin
     Inc(FSelItems[i]);
   end;
@@ -3876,7 +3887,7 @@ begin
   AdjustScrollBar;
   // or window in background isn't repainted. weired
   //if IsVisible(0) then begin
-    Invalidate;
+  Invalidate;
   //end;
 end;
 
@@ -3933,6 +3944,12 @@ begin
       Move(FSelItems[SelIdx+1],FSelItems[SelIdx],(High(FSelItems)-SelIdx)*SizeOf(FSelItems[0]));
     SetLength(FSelItems,High(FSelItems));
   end;
+
+  // move/delete inline edited item
+  if ItemInline = Item then
+    FItemInline := -1 else
+  if ItemInline > Item then
+    Dec(FItemInline);
 
   // tell others they should clear up that item too
   if Assigned(FItemDelete) then
@@ -4068,7 +4085,7 @@ var
   procedure SaveHTML;
   var
     title,head1,head2: String;
-    i: integer;
+    i: Integer;
   begin
   title := UTF8Encode(WideFormat('%s [%s] - [%s]',[Caption,ProfileName,ContactName]));
   head1 := UTF8Encode(WideFormat('%s',[Caption]));
@@ -4159,8 +4176,8 @@ var
 
 begin
   Proto :=  AnsiToWideString(Protocol,Codepage);
-  ProfileId := AnsiToWideString(GetContactID(0,Protocol,false),Codepage);
-  ContactID := AnsiToWideString(GetContactID(Contact,Protocol,true),Codepage);
+  ProfileId := AnsiToWideString(GetContactID(0,Protocol,False),Codepage);
+  ContactID := AnsiToWideString(GetContactID(Contact,Protocol,True),Codepage);
   case SaveFormat of
     sfHTML: SaveHTML;
     sfXML: SaveXML;
@@ -4217,17 +4234,17 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
 
   procedure MesTypeToStyle(mt: TMessageTypes; out mes_id,type_id: String);
   var
-    i: integer;
+    i: Integer;
     found:boolean;
   begin
     mes_id := 'unknown';
     if mtIncoming in mt then type_id := 'inc'
                         else type_id := 'out';
     i := 0;
-    found := false;
+    found := False;
     while (not found) and (i <= High(Options.ItemOptions)) do
       if (MessageTypesToDWord(Options.ItemOptions[i].MessageType) and MessageTypesToDWord(mt)) >= MessageTypesToDWord(mt) then
-        found := true
+        found := True
       else Inc(i);
     mes_id := 'event'+intToStr(i);
   end;
@@ -4341,10 +4358,10 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
                                               else Text := ProfileName;
     Text := Text + ' ['+GetTime(FItems[Item].Time)+']:';
     RTFStream := '{\rtf1\par\b1 '+FormatString2RTF(Text)+'\b0\par}';
-    SetRichRTF(FRichSave.Handle,RTFStream,true,false,false);
-    ApplyItemToRich(Item,FRichSaveItem,false,false);
-    GetRichRTF(FRichSaveItem.Handle,RTFStream,false,false,false,false);
-    SetRichRTF(FRichSave.Handle,RTFStream,true,false,false);
+    SetRichRTF(FRichSave.Handle,RTFStream,True,False,False);
+    ApplyItemToRich(Item,FRichSaveItem,False,False);
+    GetRichRTF(FRichSaveItem.Handle,RTFStream,False,False,False,False);
+    SetRichRTF(FRichSave.Handle,RTFStream,True,False,False);
   end;
 
 begin
@@ -4428,7 +4445,7 @@ begin
   Update;
 end;
 
-procedure THistoryGrid.SetRichRTL(RTL: Boolean; RichEdit: THPPRichEdit; ProcessTag: Boolean = true);
+procedure THistoryGrid.SetRichRTL(RTL: Boolean; RichEdit: THPPRichEdit; ProcessTag: Boolean = True);
 var
   pf: PARAFORMAT2;
   ExStyle: DWord;
@@ -4449,7 +4466,7 @@ begin
     ExStyle := ExStyle or WS_EX_RIGHT;
     pf.wReserved := 0;
   end;
-  RichEdit.Perform(EM_SETPARAFORMAT,0,integer(@pf));
+  RichEdit.Perform(EM_SETPARAFORMAT,0,LPARAM(@pf));
   SetWindowLong(Richedit.Handle, GWL_EXSTYLE, ExStyle);
   if ProcessTag then
     RichEdit.Tag := Integer(RTL);
@@ -4485,7 +4502,7 @@ end;
 
 procedure THistoryGrid.DoOptionsChanged;
 var
-  i: integer;
+  i: Integer;
   ch,ph,pth,cth,sh: Integer;
   //pf: PARAFORMAT2;
 begin
@@ -4514,10 +4531,10 @@ begin
     // redundant, we do it PaintItem
     // Canvas.TextFlags := Canvas.TextFlags and not ETO_RTLREADING;
   end;}
-  //SendMessage(FRich.Handle,EM_SETPARAFORMAT,0,integer(@pf));
-  //SendMessage(FRichInline.Handle,EM_SETPARAFORMAT,0,integer(@pf));
-  //FRich.Perform(EM_SETPARAFORMAT,0,integer(@pf));
-  //FRichInline.Perform(EM_SETPARAFORMAT,0,integer(@pf));
+  //SendMessage(FRich.Handle,EM_SETPARAFORMAT,0,Integer(@pf));
+  //SendMessage(FRichInline.Handle,EM_SETPARAFORMAT,0,Integer(@pf));
+  //FRich.Perform(EM_SETPARAFORMAT,0,Integer(@pf));
+  //FRichInline.Perform(EM_SETPARAFORMAT,0,Integer(@pf));
 
   Canvas.Font := Options.FontProfile;
   ph := WideCanvasTextHeight(Canvas,'Wy');
@@ -4869,7 +4886,7 @@ begin
   FRichInline.SetFocus;
 end;
 
-procedure THistoryGrid.CancelInline(DoSetFocus: boolean = true);
+procedure THistoryGrid.CancelInline(DoSetFocus: boolean = True);
 begin
   if State <> gsInline then exit;
   FRichInline.Hide;
@@ -5195,9 +5212,9 @@ begin
   DoChange;
 end;
 
-function TGridOptions.AddItemOptions: integer;
+function TGridOptions.AddItemOptions: Integer;
 var
-  i: integer;
+  i: Integer;
 begin
   i := Length(FItemOptions);
   SetLength(FItemOptions,i+1);
@@ -5208,9 +5225,9 @@ begin
   Result := i;
 end;
 
-function TGridOptions.GetItemOptions(Mes: TMessageTypes; out textFont: TFont; out textColor: TColor): integer;
+function TGridOptions.GetItemOptions(Mes: TMessageTypes; out textFont: TFont; out textColor: TColor): Integer;
 var
-  i: integer;
+  i: Integer;
 begin
   i := 0;
   while i <= High(FItemOptions) do
@@ -5279,7 +5296,7 @@ end;
 
 procedure TGridOptions.SetTextFormatting(const Value: Boolean);
 var
-  i: integer;
+  i: Integer;
 begin
   if FTextFormatting = Value then exit;
   FTextFormatting := Value;
