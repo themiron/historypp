@@ -87,6 +87,7 @@ type
   end;
 
 const
+  UnicodeFlag: array[Boolean] of Byte = (0,UNICODE_AWARE);
 
   PluginInfoEx: TPLUGININFOEX = (
     cbSize: SizeOf(TPLUGININFOEX);
@@ -97,7 +98,6 @@ const
     authorEmail: hppAuthorEmail;
     copyright: hppCopyright;
     homepage: hppHomePageURL;
-    flags: 0{UNICODE_AWARE};
     replacesDefaultModule: DEFMOD_UIHISTORY;
   );
 
@@ -110,7 +110,6 @@ const
     authorEmail: hppAuthorEmail;
     copyright: hppCopyright;
     homepage: hppHomePageURL;
-    flags: 0{UNICODE_AWARE};
     replacesDefaultModule: DEFMOD_UIHISTORY;
   );
 
@@ -150,6 +149,7 @@ function OnBuildContactMenu(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; for
 function OnEventAdded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnEventDeleted(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnPreshutdown(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
+function CoreCheck(const pzsVerzion: PChar): Boolean; forward;
 
 //Tell Miranda about this plugin
 function MirandaPluginInfo(mirandaVersion:DWORD): PPLUGININFO; cdecl;
@@ -159,7 +159,7 @@ begin
     Result := nil;
 end;
 
-//Tell Miranda about this plugin ExVersion
+// tell Miranda about this plugin ExVersion
 function MirandaPluginInfoEx(mirandaVersion:DWORD): PPLUGININFOEX; cdecl;
 begin
   Result := @PluginInfoEx;
@@ -171,25 +171,30 @@ begin
   Result := @PluginInterfaces;
 end;
 
-//load function called by miranda
+// load function called by miranda
 function Load(link:PPLUGINLINK):Integer; cdecl;
 var
   pszVersion: array[0..55] of Char;
 begin
   PluginLink := Pointer(link);
+  PluginLink.CallService(MS_SYSTEM_GETVERSIONTEXT,SizeOf(pszVersion),LPARAM(@pszVersion));
+  StrLower(@pszVersion);
+  // Checking if what core we are running under
+  if not CoreCheck(pszVersion) then begin
+    Result := 1;
+    exit;
+  end;
   // Checking if core is unicode
-  PluginLink.CallService(MS_SYSTEM_GETVERSIONTEXT,SizeOf(pszVersion),integer(@pszVersion));
-  hppCoreUnicode := StrPos(pszVersion,'Unicode') <> nil;
+  hppCoreUnicode := (StrPos(pszVersion,'unicode') <> nil);
   // Getting langpack codepage for ansi translation
   hppCodepage := PluginLink.CallService(MS_LANGPACK_GETCODEPAGE,0,0);
   if (hppCodepage = CALLSERVICE_NOTFOUND) or
      (hppCodepage = CP_ACP) then hppCodepage := GetACP();
   // Checking if richedit 2.0 or 3.0 availible
-  if not IsRichEdit20Available and (IDYES <>
-    // single line to translation script
-    hppMessagebox(0,
+  if not IsRichEdit20Available and (IDYES <> hppMessagebox(0,
+      // single line to translation script
       TranslateWideW('History++ module could not be loaded, riched20.dll is missing. Press Yes to continue loading Miranda.'),
-      TranslateWideW('Information'), MB_YESNO or MB_ICONINFORMATION)) then begin
+      hppName+' Information', MB_YESNO or MB_ICONINFORMATION)) then begin
     Result := 1;
     exit;
   end;
@@ -214,14 +219,26 @@ begin
   Result := 0;
 end;
 
-//unload
+// unload
 function Unload:Integer; cdecl;
 begin
   // why unload is never called????
   Result:=0;
 end;
 
-//init plugin
+// checking miranda core
+function CoreCheck(const pzsVerzion: PChar): Boolean;
+begin
+  Result := (StrPos(pzsVerzion,'coffee') = nil);
+  if not Result then begin
+    hppMessagebox(0,FormatCString(
+      // single line to translation script
+      TranslateWideW('HotCoffee project violates GNU GPL.\nUsing History++ plugin is prohibited.')),
+      hppName+' Error', MB_OK or MB_ICONERROR);
+  end;
+end;
+
+// init plugin
 function OnModulesLoad(wParam{0},lParam{0}:DWORD):integer; cdecl;
 var
   i: integer;
@@ -548,7 +565,9 @@ begin
 
   except
     on E: Exception do
-      HppMessageBox(0,'Error while closing '+hppName+':'+#10#13+E.Message,hppName+' Error',MB_OK or MB_ICONERROR);
+      HppMessageBox(0,
+        'Error while closing '+hppName+':'+#10#13+E.Message,
+        hppName+' Error',MB_OK or MB_ICONERROR);
   end;
 end;
 
@@ -562,6 +581,8 @@ exports
 begin
 
   // filling used plugin structures
+  PluginInfo.flags    := UnicodeFlag[hppOSUnicode];
+  PluginInfoEx.flags  := UnicodeFlag[hppOSUnicode];
   PluginInfoEx.uuid   := MIID_HISTORYPP;
   PluginInterfaces[0] := MIID_UIHISTORY;
   PluginInterfaces[1] := MIID_LAST;
