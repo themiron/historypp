@@ -169,6 +169,7 @@ var
   FontServiceEnabled: Boolean;
   SmileyAddEnabled: Boolean;
   MathModuleEnabled: Boolean;
+  MetaContactsEnabled: Boolean;
   ShowHistoryCount: Boolean;
   hppIcons: array of ThppIntIconsRec;
   skinIcons: array of ThppIntIconsRec;
@@ -537,6 +538,7 @@ begin
   end;}
   // Register in MathModule
   MathModuleEnabled := Boolean(PluginLink.ServiceExists(MATH_RTF_REPLACE_FORMULAE));
+  MetaContactsEnabled := Boolean(PluginLink.ServiceExists(MS_MC_GETDEFAULTCONTACT));
 end;
 
 initialization

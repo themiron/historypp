@@ -123,15 +123,14 @@ type
     procedure ETextMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
   private
-    //FRowIdx: integer;
     FParentForm: THistoryFrm;
     FItem: Integer;
-
     FRichHeight: Integer;
     FOverURL: Boolean;
     SavedLinkUrl: String;
+    hSubContactFrom,hSubContactTo: THandle;
+    FNameFrom,FNameTo: WideString;
 
-//    procedure SetRowIdx(const Value: integer);
     procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
     procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
     procedure WMNotify(var Message: TWMNotify); message WM_NOTIFY;
@@ -153,8 +152,7 @@ type
     property PrevItem: Integer read GetPrevItem;
     property NextItem: Integer read GetNextItem;
   public
-    TOhContact:THandle;
-    FROMhContact:THandle;
+    hContactTo,hContactFrom:THandle;
     property ParentForm:THistoryFrm read FParentForm write fParentForm;
 //   property RowIdx:integer read FRowIdx write SetRowIdx; //line of grid, whoms details should be shown
     property Item: Integer read FItem write SetItem;
@@ -217,12 +215,12 @@ end;
 
 procedure TEventDetailsFrm.EFromMoreClick(Sender: TObject);
 begin
-  PluginLink.CallService(MS_USERINFO_SHOWDIALOG,FROMhContact,0);
+  PluginLink.CallService(MS_USERINFO_SHOWDIALOG,hContactFrom,0);
 end;
 
 procedure TEventDetailsFrm.EToMoreClick(Sender: TObject);
 begin
-  PluginLink.CallService(MS_USERINFO_SHOWDIALOG,TOhContact,0);
+  PluginLink.CallService(MS_USERINFO_SHOWDIALOG,hContactTo,0);
 end;
 
 procedure TEventDetailsFrm.FormDestroy(Sender: TObject);
@@ -341,26 +339,32 @@ begin
   FromContact := false;
   ToContact := false;
   if mtIncoming in FParentForm.hg.Items[FItem].MessageType then begin
-    FROMhContact := FParentForm.hContact;
-    if FROMhContact = 0 then FromContact := true;
-    TOhContact:=0;
+    hContactFrom    := FParentForm.hContact;
+    hSubContactFrom := FParentForm.hSubContact;
+    hContactTo      := 0;
+    hSubContactTo   := 0;
+    FNameFrom       := FParentForm.hg.ContactName;
+    FNameTo         := FParentForm.hg.ProfileName;
+    FromContact     := (hContactFrom = 0);
   end else begin
-    TOhContact := FParentForm.hContact;
-    if TOhContact = 0 then ToContact := true;
-    FromhContact:=0;
+    hContactFrom    := 0;
+    hSubContactFrom := 0;
+    hContactTo      := FParentForm.hContact;
+    hSubContactTo   := FParentForm.hSubContact;
+    FNameFrom       := FParentForm.hg.ProfileName;
+    FNameTo         := FParentForm.hg.ContactName;
+    ToContact       := (hContactTo = 0);
   end;
 
   LoadMessageIcons;
 
   EFromMore.Enabled := not FromContact;
   EToMore.Enabled := not ToContact;
-  EFrom.Text := GetContactDisplayName(FROMhContact,FParentForm.Protocol,FromContact)+
-                ' ('+
-                AnsiToWideString(FParentForm.Protocol+': '+GetContactID(FROMhContact,FParentForm.Protocol,FromContact),ParentForm.UserCodepage)+
+  EFrom.Text := FNameFrom + ' (' +
+                AnsiToWideString(FParentForm.SubProtocol+': '+GetContactID(hSubContactFrom,FParentForm.SubProtocol,FromContact),ParentForm.UserCodepage)+
                 ')';
-  ETo.Text   := GetContactDisplayName(TOhContact,FParentForm.Protocol,ToContact)+
-                ' ('+
-                AnsiToWideString(FParentForm.Protocol+': '+GetContactID(TOhContact,FParentForm.Protocol,ToContact),ParentForm.UserCodepage)+
+  ETo.Text   := FNameTo + ' (' +
+                AnsiToWideString(FParentForm.SubProtocol+': '+GetContactID(hSubContactTo,FParentForm.SubProtocol,ToContact),ParentForm.UserCodepage)+
                 ')';
 
   EText.Lines.BeginUpdate;
@@ -576,7 +580,7 @@ end;
 
 procedure TEventDetailsFrm.HMEventDeleted(var Message: TMessage);
 begin
-  if Message.WParam = ParentForm.History[ParentForm.GridIndexToHistory(FItem)] then
+  if Cardinal(Message.WParam) = ParentForm.History[ParentForm.GridIndexToHistory(FItem)] then
     Close;
 end;
 

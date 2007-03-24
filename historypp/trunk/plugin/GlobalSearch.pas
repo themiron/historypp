@@ -369,13 +369,15 @@ uses hpp_options, PassForm, hpp_itemprocess, hpp_messages,
 function TfmGlobalSearch.AddContact(hContact: Integer): TContactInfo;
 var
   ci: TContactInfo;
+  SubContact: THandle;
+  SubProtocol: String;
 begin
   ci := TContactInfo.Create;
   ci.Handle := hContact;
-  ci.Proto := GetContactProto(CurContact);
+  ci.Proto := GetContactProto(CurContact,SubContact,SubProtocol);
   ci.Codepage := GetContactCodePage(hContact,ci.Proto);
-  ci.Name := GetContactDisplayName(ci.Handle,ci.Proto,true);
-  ci.ProfileName := GetContactDisplayName(0,ci.Proto);
+  ci.Name := GetContactDisplayName(ci.Handle,ci.Proto,True);
+  ci.ProfileName := GetContactDisplayName(0,SubProtocol);
   ci.RTLMode := GetContactRTLModeTRTL(ci.handle,ci.Proto);
   ContactList.Add(ci);
   Result := ci;
