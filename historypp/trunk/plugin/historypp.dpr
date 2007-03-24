@@ -149,7 +149,6 @@ function OnBuildContactMenu(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; for
 function OnEventAdded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnEventDeleted(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnPreshutdown(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
-function CoreCheck(const pzsVerzion: PChar): Boolean; forward;
 
 //Tell Miranda about this plugin
 function MirandaPluginInfo(mirandaVersion:DWORD): PPLUGININFO; cdecl;
@@ -179,11 +178,6 @@ begin
   PluginLink := Pointer(link);
   PluginLink.CallService(MS_SYSTEM_GETVERSIONTEXT,SizeOf(pszVersion),LPARAM(@pszVersion));
   StrLower(@pszVersion);
-  // Checking if what core we are running under
-  if not CoreCheck(pszVersion) then begin
-    Result := 1;
-    exit;
-  end;
   // Checking if core is unicode
   hppCoreUnicode := (StrPos(pszVersion,'unicode') <> nil);
   // Getting langpack codepage for ansi translation
@@ -224,18 +218,6 @@ function Unload:Integer; cdecl;
 begin
   // why unload is never called????
   Result:=0;
-end;
-
-// checking miranda core
-function CoreCheck(const pzsVerzion: PChar): Boolean;
-begin
-  Result := (StrPos(pzsVerzion,'coffee') = nil);
-  if not Result then begin
-    hppMessagebox(0,FormatCString(
-      // single line to translation script
-      TranslateWideW('HotCoffee project violates GNU GPL.\nUsing History++ plugin is prohibited.')),
-      hppName+' Error', MB_OK or MB_ICONERROR);
-  end;
 end;
 
 // init plugin
