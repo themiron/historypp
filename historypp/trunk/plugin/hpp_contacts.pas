@@ -54,7 +54,8 @@ uses
   hpp_database;
 
 function GetContactDisplayName(hContact: THandle; Proto: String = ''; Contact: boolean = false): WideString;
-function GetContactProto(hContact: THandle): String;
+function GetContactProto(hContact: THandle): String; overload;
+function GetContactProto(hContact: THandle; var SubContact: THandle; var SubProtocol: String): String; overload;
 function GetContactID(hContact: THandle; Proto: String = ''; Contact: boolean = false): String;
 function GetContactCodePage(hContact: THandle; Proto: String = ''): Cardinal; overload;
 function GetContactCodePage(hContact: THandle; Proto: String; var UsedDefault: Boolean): Cardinal; overload;
@@ -65,7 +66,7 @@ function WriteContactRTLMode(hContact: THandle; RTLMode: TRTLMode; Proto: String
 
 implementation
 
-uses TntSystem, TntSysUtils;
+uses TntSystem, TntSysUtils, hpp_options;
 
 {$I m_database.inc}
 {$I m_clist.inc}
@@ -74,6 +75,20 @@ uses TntSystem, TntSysUtils;
 function GetContactProto(hContact: THandle): String;
 begin
   Result := PChar(PluginLink.CallService(MS_PROTO_GETCONTACTBASEPROTO,hContact,0));
+end;
+
+function GetContactProto(hContact: THandle;
+                         var SubContact: THandle;
+                         var SubProtocol: String): String;
+begin
+  Result := PChar(PluginLink.CallService(MS_PROTO_GETCONTACTBASEPROTO,hContact,0));
+  if MetaContactsEnabled and (Result = 'MetaContacts') then begin
+    SubContact := CallService(MS_MC_GETMOSTONLINECONTACT,hContact,0);
+    SubProtocol := PChar(CallService(MS_PROTO_GETCONTACTBASEPROTO,SubContact,0));
+  end else begin
+    SubContact := hContact;
+    SubProtocol := Result;
+  end;
 end;
 
 function GetContactDisplayName(hContact: THandle; Proto: String = ''; Contact: boolean = false): WideString;
@@ -93,9 +108,9 @@ begin
       ci.szProto := PChar(Proto);
       if hppCoreUnicode then ci.dwFlag := CNF_DISPLAY + CNF_UNICODE
                         else ci.dwFlag := CNF_DISPLAY;
-      if PluginLink.CallService(MS_CONTACT_GETCONTACTINFO,0,Integer(@ci)) = 0 then begin
+      if PluginLink.CallService(MS_CONTACT_GETCONTACTINFO,0,LPARAM(@ci)) = 0 then begin
         if hppCoreUnicode then begin
-          RetPWideChar := PWideChar(ci.retval.pszVal);
+          RetPWideChar := ci.retval.pwszVal;
           UW := TranslateW('''(Unknown Contact)'''{TRANSLATE-IGNORE});
           if WideCompareText(RetPWideChar,UW) = 0 then
             Result := AnsiToWideString(GetContactID(hContact,Proto),CP_ACP)
@@ -129,11 +144,11 @@ begin
   if not ((hContact = 0) and Contact) then begin
     if Proto = '' then Proto := GetContactProto(hContact);
     uid := PChar(CallProtoService(PChar(Proto),PS_GETCAPS,PFLAG_UNIQUEIDSETTING,0));
-    if (cardinal(uid) <> CALLSERVICE_NOTFOUND) and (uid <> nil) then begin
+    if (Cardinal(uid) <> CALLSERVICE_NOTFOUND) and (uid <> nil) then begin
       cgs.szModule := PChar(Proto);
       cgs.szSetting := uid;
       cgs.pValue := @dbv;
-      if PluginLink^.CallService(MS_DB_CONTACT_GETSETTING, hContact, lParam(@cgs)) = 0 then begin
+      if PluginLink^.CallService(MS_DB_CONTACT_GETSETTING,hContact,LPARAM(@cgs)) = 0 then begin
         case dbv.type_ of
           DBVT_BYTE:
             Result := intToStr(dbv.bVal);
@@ -152,16 +167,8 @@ begin
         end;
         // free variant
         DBFreeVariant(@dbv);
-      // since 08.08.2006 ghazan fixed it in jabber proto, hack should be removed
-      //end else begin
-      //  if not Contact and (uid = 'jid') then begin
-      //    Result := GetDBStr(Proto,'LoginName','');
-      //    if Result <> '' then
-      //      Result := Result+'@'+GetDBStr(Proto,'LoginServer','')
-      //  end;
       end;
     end;
-    //Result := PCharToWideString(PChar(Translate('Unknown id')),CP_ACP);
   end;
 end;
 

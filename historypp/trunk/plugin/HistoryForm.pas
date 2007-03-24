@@ -335,7 +335,8 @@ type
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
     EndTimestamp: DWord;
-    FhContact: THandle;
+    FhContact,FhSubContact: THandle;
+    FProtocol,FSubProtocol: String;
     FPasswordMode: Boolean;
     SavedLinkUrl: String;
     HotFilterString: WideString;
@@ -373,6 +374,12 @@ type
     procedure SetPanel(const Value: THistoryPanels);
     procedure ToggleMainMenu(Enabled: Boolean);
 
+  protected
+    procedure LoadPendingHeaders(rowidx: integer; count: integer);
+    property SearchMode: TSearchMode read FSearchMode write SetSearchMode;
+    property Panel: THistoryPanels read FPanel write SetPanel;
+    procedure WndProc(var Message: TMessage); override;
+
   public
     UserCodepage: Cardinal;
     UseDefaultCP: boolean;
@@ -385,7 +392,6 @@ type
     WindowList:TList;
     History:array of THandle;
     HistoryLength:integer;
-    Protocol: String;
     RecentFormat: TSaveFormat;
     SessThread: TSessionsThread;
     Sessions: TSessArray;
@@ -429,16 +435,14 @@ type
 
     procedure FillBookmarks;
     procedure HMBookmarkChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
-  protected
-    procedure LoadPendingHeaders(rowidx: integer; count: integer);
-    property SearchMode: TSearchMode read FSearchMode write SetSearchMode;
-    property Panel: THistoryPanels read FPanel write SetPanel;
-    procedure WndProc(var Message: TMessage); override;
-  published
-    procedure AlignControls(Control: TControl; var ARect: TRect); override;
-  public
+
     property PasswordMode: Boolean read FPasswordMode write SetPasswordMode;
     property hContact: THandle read FhContact write SethContact;
+    property Protocol: String read FProtocol;
+    property hSubContact: THandle read FhSubContact;
+    property SubProtocol: String read FSubProtocol;
+  published
+    procedure AlignControls(Control: TControl; var ARect: TRect); override;
   end;
 
 var
@@ -601,15 +605,16 @@ procedure THistoryFrm.LoadHistory(Sender: TObject);
   end;
 begin
   FastLoadHandles;
-  if hContact = 0 then Protocol := 'ICQ'
-                  else Protocol := GetContactProto(hContact);
+
   hg.Contact := hContact;
   hg.Protocol := Protocol;
-  hg.ProfileName := GetContactDisplayName(0, Protocol);
-  hg.ContactName := GetContactDisplayName(hContact, Protocol, true);
+  // hContact,hSubContact,Protocol,SubProtocol should be
+  // already filled by calling hContact := Value;
+  hg.ProfileName := GetContactDisplayName(0, SubProtocol);
+  hg.ContactName := GetContactDisplayName(hContact, Protocol, True);
   UserCodepage := GetContactCodePage(hContact,Protocol,UseDefaultCP);
   hg.Codepage := UserCodepage;
-  hg.RTLMode := GetContactRTLModeTRTL(hContact, Protocol);
+  hg.RTLMode := GetContactRTLModeTRTL(hContact,Protocol);
   UnknownCodepage.Tag := Integer(UserCodepage);
   UnknownCodepage.Caption := WideFormat(
         TranslateWideW('Unknown codepage %u'),
@@ -985,7 +990,6 @@ end;
 procedure THistoryFrm.HMBookmarkChanged(var M: TMessage);
 var
   i: integer;
-  //r: TRect;
 begin
   if M.WParam <> hContact then exit;
   for i := 0 to hg.Count-1 do
@@ -2220,7 +2224,7 @@ begin
   if mtIncoming in hg.Items[Index].MessageType then
     Item.ID := GetContactID(hContact, Protocol, true)
   else
-    Item.ID := GetContactID(0, Protocol);
+    Item.ID := GetContactID(0, SubProtocol);
   if Item.ID = '' then
     Item.ID := '&UNK;'
   else
@@ -2531,7 +2535,7 @@ end;
 procedure THistoryFrm.ProcessPassword;
 begin
   if IsPasswordBlank(GetPassword) then exit;
-  if IsUserProtected(hContact) then
+  if IsUserProtected(hContact) or isUserProtected(hSubContact) then
     PasswordMode := True;
 end;
 
@@ -2947,22 +2951,18 @@ begin
 end;
 
 procedure THistoryFrm.SethContact(const Value: THandle);
-//var
-//  i: integer;
 begin
+  //if FhContact = Value then exit;
   FhContact := Value;
-  {i := DBGetContactSettingByte(hContact,hppDBName,'RTL',255);
-  case i of
-    0: hg.RTLMode := hppRTLDisable;
-    1: hg.RTLMode := hppRTLEnable;
-    else
-       hg.RTLMode := hppRTLDefault;
+  if FhContact = 0 then begin
+    FhSubContact := 0;
+    FProtocol := 'ICQ';
+    FSubProtocol := FProtocol;
+  end else begin
+    FProtocol := GetContactProto(hContact,FhSubContact,FSubProtocol);
   end;
-  if Value = 0 then
-    UserCodepage := hppCodepage
-  else
-    UserCodepage := DBGetContactSettingWord(hContact,hppDBName,'CodePage',CP_ACP);}
 end;
+
 
 {procedure THistoryFrm.AddMenu(M: TMenuItem; FromM,ToM: TPopupMenu; Index: integer);
 //var

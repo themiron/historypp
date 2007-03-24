@@ -70,6 +70,8 @@ type
     FGridState: TGridState;
     SaveDialog: TSaveDialog;
     RecentFormat: TSaveFormat;
+    FSubContact: THandle;
+    FSubProtocol: String;
 
     function GetGridHandle: HWND;
     procedure SetUseHistoryRTLMode(const Value: Boolean);
@@ -170,7 +172,7 @@ begin
   Items[High(Items)].RTLMode := RTLMode;
   if Grid.Contact <> hContact then begin
     Grid.Contact := hContact;
-    Grid.Protocol := GetContactProto(hContact);
+    Grid.Protocol := GetContactProto(hContact,FSubContact,FSubProtocol);
     FExternalRTLMode := RTLMode;
     UseHistoryRTLMode := GetDBBool(Grid.Contact,Grid.Protocol,'UseHistoryRTLMode',FUseHistoryRTLMode);
     FExternalCodepage := Codepage;
@@ -199,7 +201,7 @@ begin
   Items[High(Items)].RTLMode := RTLMode;
   if Grid.Contact <> hContact then begin
     Grid.Contact := hContact;
-    Grid.Protocol := GetContactProto(hContact);
+    Grid.Protocol := GetContactProto(hContact,FSubContact,FSubProtocol);
     FExternalRTLMode := RTLMode;
     UseHistoryRTLMode := GetDBBool(Grid.Contact,Grid.Protocol,'UseHistoryRTLMode',FUseHistoryRTLMode);
     FExternalCodepage := Codepage;
@@ -417,8 +419,11 @@ procedure TExternalGrid.GridNameData(Sender: TObject; Index: Integer; var Name: 
 begin
   if Name = '' then begin
     if Grid.Protocol = '' then begin
-      if Items[Index].hContact = 0 then Grid.Protocol := 'ICQ'
-      else Grid.Protocol := GetContactProto(Items[Index].hContact);
+      if Items[Index].hContact = 0 then begin
+        Grid.Protocol := 'ICQ';
+        FSubProtocol := Grid.Protocol;
+      end else
+        Grid.Protocol := GetContactProto(Items[Index].hContact,FSubContact,FSubProtocol);
     end;
     if Items[Index].Custom then
       Name := Items[Index].CustomEvent.Nick
@@ -427,7 +432,7 @@ begin
       Grid.ContactName := GetContactDisplayName(Items[Index].hContact,Grid.Protocol,true);
       Name := Grid.ContactName;
     end else begin
-      Grid.ProfileName := GetContactDisplayName(0, Grid.Protocol);
+      Grid.ProfileName := GetContactDisplayName(0, FSubProtocol);
       Name := Grid.ProfileName;
     end;
   end;
