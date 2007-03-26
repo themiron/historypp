@@ -446,8 +446,6 @@ Password and Confirm fields should be similar
 ;; Text found in ..\plugin\historypp.pas:
 [History++ module could not be loaded, riched20.dll is missing. Press Yes to continue loading Miranda.]
 History++ module could not be loaded, riched20.dll is missing. Press Yes to continue loading Miranda.
-[HotCoffee project violates GNU GPL.\nUsing History++ plugin is prohibited.]
-HotCoffee project violates GNU GPL.\nUsing History++ plugin is prohibited.
 [History]
 History
 
@@ -456,8 +454,6 @@ History
 ;; Text found in ..\plugin\hpp_contacts.pas:
 [Server]
 Server
-[Unknown id]
-Unknown id
 
 ;; hpp_events.trans.txt file
 
