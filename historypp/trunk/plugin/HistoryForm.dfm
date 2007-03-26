@@ -701,6 +701,7 @@ object HistoryFrm: THistoryFrm
     end
     object N13: TTntMenuItem
       Caption = '-'
+      Visible = False
     end
     object SelectAll1: TTntMenuItem
       Caption = 'Select &All'

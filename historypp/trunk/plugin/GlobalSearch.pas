@@ -177,6 +177,8 @@ type
     tbBookmarks: THppToolButton;
     TntToolButton1: THppToolButton;
     TopPanel: THppPanel;
+    N5: TTntMenuItem;
+    SelectAll1: TTntMenuItem;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -253,6 +255,7 @@ type
     procedure mmToolbarClick(Sender: TObject);
     procedure pmEventsFilterPopup(Sender: TObject);
     procedure tbBookmarksClick(Sender: TObject);
+    procedure SelectAll1Click(Sender: TObject);
   private
     UsedPassword: String;
     UserMenu: hMenu;
@@ -2234,6 +2237,13 @@ begin
   if IsBookmarksMode then
     bnSearch.Click else
     edSearch.SetFocus;
+end;
+
+procedure TfmGlobalSearch.SelectAll1Click(Sender: TObject);
+begin
+  if hg.Count = 0 then exit;
+  hg.MakeRangeSelected(0,hg.Count-1);
+  hg.Invalidate;
 end;
 
 initialization
