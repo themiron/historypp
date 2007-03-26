@@ -738,6 +738,13 @@ var
   butt_str,tb_str,str: String;
 begin
   tb_str := GetDBStr(hppDBName,'HistoryToolbar',DEF_HISTORY_TOOLBAR);
+
+  if (tb_str = '') then begin // toolbar is disabled
+    Toolbar.Visible := False;
+    // should add "else T.Visible := True" to make it dynamic in run-time, but I will ignore it
+    // you can never know which Toolbar bugs & quirks you'll trigger with it :)
+  end;
+
   if hContact = 0 then begin
     tb_str := StringReplace(tb_str,'[SESS]','',[rfReplaceAll]);
     //tb_str := StringReplace(tb_str,'[BOOK]','',[rfReplaceAll]);
