@@ -43,6 +43,7 @@ Reply &Quoted
 Copy &Text
 &Delete
 &Save Selected...
+Select &All
 Save History
 &Customize...
 &Copy
