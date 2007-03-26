@@ -2424,12 +2424,12 @@ procedure THistoryFrm.edSearchKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if SearchMode = smFilter then begin
-    if Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR] then begin
+    if Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR, VK_END, VK_HOME] then begin
       SendMessage(hg.Handle,WM_KEYDOWN,Key,0);
       Key := 0;
     end;
   end else begin
-    if (Shift = []) and (Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR]) then begin
+    if (Shift = []) and (Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR, VK_END, VK_HOME]) then begin
       SendMessage(hg.Handle,WM_KEYDOWN,Key,0);
       Key := 0;
       exit;
