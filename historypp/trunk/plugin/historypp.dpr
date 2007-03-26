@@ -273,27 +273,6 @@ begin
   MenuHandles[2].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWORD(@menuItem));
   MenuHandles[2].Count := -1;
 
-  //Register in updater
-  ZeroMemory(@upd,SizeOf(upd));
-  upd.cpbVersion := SizeOf(upd);
-  upd.szComponentName := hppShortName;
-  upd.pbVersion := @hppVersionStr[1];
-  upd.cpbVersion := Length(hppVersionStr);
-
-  upd.szUpdateURL := hppFLUpdateURL;
-  upd.szVersionURL := hppFLVersionURL;
-  upd.pbVersionPrefix := hppFLVersionPrefix;
-  upd.cpbVersionPrefix := Length(hppFLVersionPrefix);
-
-  upd.szBetaUpdateURL := hppUpdateURL;
-  upd.szBetaVersionURL := hppVersionURL;
-  upd.pbBetaVersionPrefix := hppVersionPrefix;
-  upd.cpbBetaVersionPrefix := Length(hppVersionPrefix);
-
-  upd.szBetaChangelogURL := hppChangelogURL;
-
-  PluginLink.CallService(MS_UPDATE_REGISTER, 0, integer(@upd));
-
   LoadGridOptions;
 
   HookSettingsChanged := PluginLink.HookEvent(ME_DB_CONTACT_SETTINGCHANGED,OnSettingsChanged);
@@ -311,6 +290,30 @@ begin
     HookIcon2Changed := PluginLink.HookEvent(ME_SKIN2_ICONSCHANGED,OnIcon2Changed);
   if FontServiceEnabled then
     HookFSChanged := PluginLink.HookEvent(ME_FONT_RELOAD,OnFSChanged);
+
+  // Register in updater
+  if Boolean(PluginLink.ServiceExists(MS_UPDATE_REGISTER)) then begin
+    ZeroMemory(@upd,SizeOf(upd));
+    upd.cpbVersion := SizeOf(upd);
+    upd.szComponentName := hppShortName;
+    upd.pbVersion := @hppVersionStr[1];
+    upd.cpbVersion := Length(hppVersionStr);
+
+    upd.szUpdateURL := hppFLUpdateURL;
+    upd.szVersionURL := hppFLVersionURL;
+    upd.pbVersionPrefix := hppFLVersionPrefix;
+    upd.cpbVersionPrefix := Length(hppFLVersionPrefix);
+
+    upd.szBetaUpdateURL := hppUpdateURL;
+    upd.szBetaVersionURL := hppVersionURL;
+    upd.pbBetaVersionPrefix := hppVersionPrefix;
+    upd.cpbBetaVersionPrefix := Length(hppVersionPrefix);
+    upd.szBetaChangelogURL := hppChangelogURL;
+    PluginLink.CallService(MS_UPDATE_REGISTER, 0, DWORD(@upd));
+  end;
+
+  // Register in dbeditor
+  PluginLink.CallService(MS_DBEDIT_REGISTERSINGLEMODULE, DWORD(PChar(hppDBName)), 0);
 
   // return successfully
   Result:=0;

@@ -77,6 +77,7 @@ uses
     {$include m_flash.inc}
     {$include m_dataasmessage.inc}
     {$include m_metacontacts.inc}
+    {$include m_dbeditorpp.inc}
 
     {$define M_API_UNIT}
     {$include m_helpers.inc}
