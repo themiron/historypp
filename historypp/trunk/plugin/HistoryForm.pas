@@ -3550,6 +3550,7 @@ end;
 
 procedure THistoryFrm.SelectAll1Click(Sender: TObject);
 begin
+  if hg.Count = 0 then exit;
   hg.MakeRangeSelected(0,hg.Count-1);
   hg.Invalidate;
 end;

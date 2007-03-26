@@ -615,7 +615,6 @@ object fmGlobalSearch: TfmGlobalSearch
     end
     object N2: TTntMenuItem
       Caption = '-'
-      Visible = False
     end
     object Copy1: TTntMenuItem
       Caption = '&Copy'
@@ -641,6 +640,16 @@ object fmGlobalSearch: TfmGlobalSearch
       ShortCut = 16467
       Visible = False
       OnClick = SaveSelected1Click
+    end
+    object N5: TTntMenuItem
+      Caption = '-'
+      Visible = False
+    end
+    object SelectAll1: TTntMenuItem
+      Caption = 'Select &All'
+      ShortCut = 16449
+      Visible = False
+      OnClick = SelectAll1Click
     end
   end
   object ilContacts: TImageList
