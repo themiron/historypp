@@ -103,10 +103,11 @@ const
   MIID_TRANSLATOR: TMUUID     = (a:$cfb637b0; b:$7217; c:$4c1e; d:($b2,$2a,$d9,$22,$32,$3a,$5d,$0b));
   MIID_TOOLTIPS: TMUUID       = (a:$bcbda043; b:$2716; c:$4404; d:($b0,$fa,$3d,$2d,$93,$81,$9e,$03));
   MIID_POPUPS: TMUUID         = (a:$33299069; b:$1919; c:$4ff8; d:($b1,$31,$1d,$07,$21,$78,$a7,$66));
+  MIID_LOGWINDOW: TMUUID      = (a:$c53afb90; b:$fa44; c:$4304; d:($bc,$9d,$6a,$84,$1c,$39,$05,$f5));
 
 { Special exception interface for protocols.
-   This interface allows more than one plugin to implement it at the same time }
-  MIID_PROTOCOL: TMUUID    = (a:$2a3c815e; b:$a7d9; c:$424b; d:($ba,$30,$02,$d0,$83,$22,$90,$85));
+  This interface allows more than one plugin to implement it at the same time }
+  MIID_PROTOCOL: TMUUID = (a:$2a3c815e; b:$a7d9; c:$424b; d:($ba,$30,$02,$d0,$83,$22,$90,$85));
 
 type
   PPLUGININFOEX = ^TPLUGININFOEX;
