@@ -29,7 +29,7 @@ uses
   hpp_global, hpp_events, hpp_contacts, hpp_services, hpp_forms, hpp_bookmarks,
   hpp_richedit, hpp_messages, hpp_eventfilters, hpp_database, hpp_itemprocess,
   HistoryGrid,
-  RichEdit, Menus, TntMenus, TntSysUtils;
+  RichEdit, Menus, TntMenus, TntSysUtils, ShellAPI;
 
 type
   TExGridMode = (gmNative, gmIEView);
@@ -57,7 +57,8 @@ type
     Grid: THistoryGrid;
     FParentWindow: HWND;
     FSelection: Pointer;
-    SavedLinkUrl: AnsiString;
+    SavedLinkUrl: String;
+    SavedFileDir: String;
     pmGrid: TTntPopupMenu;
     pmLink: TTntPopupMenu;
     miEventsFilter: TTntMenuItem;
@@ -82,6 +83,7 @@ type
     procedure PrepareSaveDialog(var SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
     procedure CreateEventsFilterMenu;
     procedure SetEventFilter(FilterIndex: Integer = -1);
+    function IsFileEvent(Index: Integer): Boolean;
   protected
     procedure GridItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
     procedure GridTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
@@ -115,6 +117,8 @@ type
     procedure OnCodepageHistoryClick(Sender: TObject);
     procedure OnSaveSelectedClick(Sender: TObject);
     procedure OnEventsFilterItemClick(Sender: TObject);
+    procedure OnBrowseReceivedFilesClick(Sender: TObject);
+    procedure OnOpenFileFolderClick(Sender: TObject);
   public
     constructor Create(AParentWindow: HWND; ControlID: Cardinal = 0);
     destructor Destroy; override;
@@ -304,6 +308,12 @@ begin
   pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN4'));
   pmGrid.Items.Add(WideNewItem('&Save Selected...',TextToShortCut('Ctrl+S'),false,true,OnSaveSelectedClick,0,'pmSaveSelected'));
   pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN5'));
+  pmGrid.Items.Add(WideNewSubMenu('&File Actions',0,'pmFileActions',[
+    WideNewItem('&Browse Received Files',0,false,true,OnBrowseReceivedFilesClick,0,'pmBrowseReceivedFiles',),
+    WideNewItem('&Open file folder',0,false,true,OnOpenFileFolderClick,0,'pmOpenFileFolder',),
+    WideNewItem('-',0,false,true,nil,0,'pmN7'),
+    WideNewItem('&Copy Filename',0,false,true,OnCopyLinkClick,0,'pmCopyLink',)
+  ],true));
   pmGrid.Items.Add(WideNewSubMenu('Text direction',0,'pmBidiMode',[
     RadioItem(true,WideNewItem('Log default',0,true,true,OnBidiModeLogClick,0,'pmBidiModeLog',)),
     RadioItem(true,WideNewItem('History default',0,false,true,OnBidiModeHistoryClick,0,'pmBidiModeHistory'))
@@ -595,6 +605,15 @@ begin
   end;
 end;
 
+function TExternalGrid.IsFileEvent(Index: Integer): Boolean;
+begin
+  Result := (Index <> -1) and (mtFile in Grid.Items[Index].MessageType);
+  if Result then begin
+    SavedLinkUrl := ExtractFileName(Grid.Items[Index].Extended);
+    SavedFileDir := ExtractFileDir(Grid.Items[Index].Extended);
+  end;
+end;
+
 procedure TExternalGrid.GridPopup(Sender: TObject);
 var
   GridSelected: Boolean;
@@ -626,13 +645,16 @@ begin
       TTntMenuItem(pmGrid.Items[10]).Caption := TranslateWideW('Set &Bookmark');
   end;
   pmGrid.Items[12].Visible := (Grid.SelCount > 1);
-  pmGrid.Items[14].Visible := (Grid.State = gsIdle);
-  pmGrid.Items[14].Items[0].Checked := not FUseHistoryRTLMode;
-  pmGrid.Items[14].Items[1].Checked := FUseHistoryRTLMode;
+  pmGrid.Items[14].Visible := GridSelected and IsFileEvent(Grid.Selected);
+  if pmGrid.Items[14].Visible then
+    pmGrid.Items[14].Items[1].Visible := (SavedFileDir <> '');
   pmGrid.Items[15].Visible := (Grid.State = gsIdle);
-  pmGrid.Items[15].Items[0].Checked := not FUseHistoryCodepage;
-  pmGrid.Items[15].Items[1].Checked := FUseHistoryCodepage;
-  pmGrid.Items[17].Visible := (Grid.State = gsIdle);
+  pmGrid.Items[15].Items[0].Checked := not FUseHistoryRTLMode;
+  pmGrid.Items[15].Items[1].Checked := FUseHistoryRTLMode;
+  pmGrid.Items[16].Visible := (Grid.State = gsIdle);
+  pmGrid.Items[16].Items[0].Checked := not FUseHistoryCodepage;
+  pmGrid.Items[16].Items[1].Checked := FUseHistoryCodepage;
+  pmGrid.Items[18].Visible := (Grid.State = gsIdle);
   pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
 end;
 
@@ -1064,6 +1086,22 @@ begin
     if i = ShowAllEventsIndex then mi.Default := True;
     miEventsFilter.Insert(i,mi);
   end;
+end;
+
+procedure TExternalGrid.OnBrowseReceivedFilesClick(Sender: TObject);
+var
+  Path: Array[0..MAX_PATH] of Char;
+begin
+  if Grid.Selected = -1 then exit;
+  PluginLink.CallService(MS_FILE_GETRECEIVEDFILESFOLDER,Items[Grid.Selected].hContact,LPARAM(@Path));
+  ShellExecute(0,'open',Path,0,0,SW_SHOW);
+end;
+
+procedure TExternalGrid.OnOpenFileFolderClick(Sender: TObject);
+begin
+  if SavedFileDir = '' then exit;
+  ShellExecute(0,'open',PChar(SavedFileDir),0,0,SW_SHOW);
+  SavedFileDir := '';
 end;
 
 end.
