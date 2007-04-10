@@ -119,7 +119,7 @@ const
     (Handle:0; Count:-1; Name:'His&tory Search'));
 
 var
-  PluginInterfaces: array[0..1] of TMUUID;
+  PluginInterfaces: array[0..2] of TMUUID;
   HookModulesLoad,
   HookOptInit,
   HookSettingsChanged,
@@ -570,7 +570,8 @@ begin
   PluginInfoEx.flags  := UnicodeFlag[hppOSUnicode];
   PluginInfoEx.uuid   := MIID_HISTORYPP;
   PluginInterfaces[0] := MIID_UIHISTORY;
-  PluginInterfaces[1] := MIID_LAST;
+  PluginInterfaces[1] := MIID_LOGWINDOW;
+  PluginInterfaces[2] := MIID_LAST;
 
   // decreasing ref count to oleaut32.dll as said
   // in plugins doc
@@ -581,7 +582,7 @@ begin
   TntSystem.InstallTntSystemUpdates;
   // shadow is back again...
   Forms.HintWindowClass := THppHintWindow;
-  
+
   {$IFDEF REPORT_LEAKS}
   // TThemeServices leaks on exit, looks like it's ok
   // to leave it leaking, just ignore the leak report
