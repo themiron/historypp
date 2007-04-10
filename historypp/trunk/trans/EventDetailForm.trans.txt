@@ -12,6 +12,9 @@ To:
 Show sender information
 Show receiver information
 Message direction
+&Browse Received Files
+&Open file folder
+&Copy Filename
 Open in &new window
 &Open in existing window
 &Copy Link
