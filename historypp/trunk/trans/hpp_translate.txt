@@ -90,6 +90,12 @@ Show sender information
 Show receiver information
 [Message direction]
 Message direction
+[&Browse Received Files]
+&Browse Received Files
+[&Open file folder]
+&Open file folder
+[&Copy Filename]
+&Copy Filename
 [Open in &new window]
 Open in &new window
 [&Open in existing window]
@@ -194,6 +200,8 @@ Toolbar
 Service
 [Hide Menu]
 Hide Menu
+[&File Actions]
+&File Actions
 ;; Text found in ..\plugin\GlobalSearch.pas:
 [%.0n items in %d contacts found. Searched for %.1f sec in %.0n items.]
 %.0n items in %d contacts found. Searched for %.1f sec in %.0n items.

@@ -58,6 +58,10 @@ Open in &new window
 Toolbar
 Service
 Hide Menu
+&File Actions
+&Browse Received Files
+&Open file folder
+&Copy Filename
 ;; Text found in ..\plugin\GlobalSearch.pas:
 Search
 %.0n items in %d contacts found. Searched for %.1f sec in %.0n items.

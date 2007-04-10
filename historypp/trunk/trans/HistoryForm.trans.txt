@@ -86,6 +86,10 @@ Send &Message
 Toolbar
 Service
 Hide Menu
+&File Actions
+&Browse Received Files
+&Open file folder
+&Copy Filename
 ;; Text found in ..\plugin\HistoryForm.pas:
 Unknown codepage %u
 System History
