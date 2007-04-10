@@ -157,7 +157,7 @@ object HistoryFrm: THistoryFrm
         object edSearch: THppEdit
           Left = 47
           Top = 3
-          Width = 447
+          Width = 443
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
@@ -968,6 +968,33 @@ object HistoryFrm: THistoryFrm
         Caption = '--'
         ShortCut = 16450
         OnClick = Bookmark1Click
+      end
+    end
+  end
+  object pmFile: TTntPopupMenu
+    BiDiMode = bdLeftToRight
+    ParentBiDiMode = False
+    Left = 368
+    Top = 294
+    object N10: TTntMenuItem
+      Caption = '-'
+    end
+    object FileActions: TTntMenuItem
+      Caption = '&File Actions'
+      object BrowseReceivedFiles: TTntMenuItem
+        Caption = '&Browse Received Files'
+        OnClick = BrowseReceivedFilesClick
+      end
+      object OpenFileFolder: TTntMenuItem
+        Caption = '&Open file folder'
+        OnClick = OpenFileFolderClick
+      end
+      object N9: TTntMenuItem
+        Caption = '-'
+      end
+      object CopyFilename: TTntMenuItem
+        Caption = '&Copy Filename'
+        OnClick = CopyLinkClick
       end
     end
   end

@@ -61,7 +61,7 @@ object fmGlobalSearch: TfmGlobalSearch
       object edSearch: THppEdit
         Left = 70
         Top = 6
-        Width = 378
+        Width = 374
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 0
@@ -71,7 +71,7 @@ object fmGlobalSearch: TfmGlobalSearch
         OnKeyPress = edSearchKeyPress
       end
       object bnSearch: TTntButton
-        Left = 454
+        Left = 450
         Top = 5
         Width = 89
         Height = 23
@@ -98,7 +98,7 @@ object fmGlobalSearch: TfmGlobalSearch
       object laProgress: TTntLabel
         Left = 12
         Top = 7
-        Width = 523
+        Width = 519
         Height = 13
         Alignment = taCenter
         Anchors = [akLeft, akTop, akRight]
@@ -109,7 +109,7 @@ object fmGlobalSearch: TfmGlobalSearch
       object pb: TProgressBar
         Left = 12
         Top = 29
-        Width = 523
+        Width = 519
         Height = 16
         Anchors = [akLeft, akRight, akBottom]
         Position = 34
@@ -131,7 +131,7 @@ object fmGlobalSearch: TfmGlobalSearch
       object bePassword: TTntBevel
         Left = 12
         Top = 10
-        Width = 523
+        Width = 519
         Height = 5
         Anchors = [akLeft, akTop, akRight]
         Shape = bsTopLine
@@ -158,7 +158,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Transparent = False
       end
       object sbPasswordClose: THppSpeedButton
-        Left = 525
+        Left = 521
         Top = 2
         Width = 18
         Height = 17
@@ -304,7 +304,7 @@ object fmGlobalSearch: TfmGlobalSearch
         object edFilter: THppEdit
           Left = 52
           Top = 4
-          Width = 323
+          Width = 319
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
@@ -329,7 +329,7 @@ object fmGlobalSearch: TfmGlobalSearch
       object beAdvanced: TTntBevel
         Left = 16
         Top = 10
-        Width = 519
+        Width = 515
         Height = 5
         Anchors = [akLeft, akTop, akRight]
         Shape = bsTopLine
@@ -349,7 +349,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Transparent = False
       end
       object sbAdvancedClose: THppSpeedButton
-        Left = 525
+        Left = 521
         Top = 2
         Width = 18
         Height = 17
@@ -418,7 +418,7 @@ object fmGlobalSearch: TfmGlobalSearch
       object beRange: TTntBevel
         Left = 16
         Top = 10
-        Width = 519
+        Width = 515
         Height = 5
         Anchors = [akLeft, akTop, akRight]
         Shape = bsTopLine
@@ -438,7 +438,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Transparent = False
       end
       object sbRangeClose: THppSpeedButton
-        Left = 525
+        Left = 521
         Top = 2
         Width = 18
         Height = 17
@@ -773,6 +773,33 @@ object fmGlobalSearch: TfmGlobalSearch
         Caption = '--'
         ShortCut = 16450
         OnClick = Bookmark1Click
+      end
+    end
+  end
+  object pmFile: TTntPopupMenu
+    BiDiMode = bdLeftToRight
+    ParentBiDiMode = False
+    Left = 244
+    Top = 302
+    object N7: TTntMenuItem
+      Caption = '-'
+    end
+    object FileActions: TTntMenuItem
+      Caption = '&File Actions'
+      object BrowseReceivedFiles: TTntMenuItem
+        Caption = '&Browse Received Files'
+        OnClick = BrowseReceivedFilesClick
+      end
+      object OpenFileFolder: TTntMenuItem
+        Caption = '&Open file folder'
+        OnClick = OpenFileFolderClick
+      end
+      object N6: TTntMenuItem
+        Caption = '-'
+      end
+      object CopyFilename: TTntMenuItem
+        Caption = '&Copy Filename'
+        OnClick = CopyLinkClick
       end
     end
   end

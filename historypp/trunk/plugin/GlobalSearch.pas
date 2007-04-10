@@ -64,7 +64,7 @@ uses
   hpp_global, hpp_events, hpp_services, hpp_contacts,  hpp_database,  hpp_searchthread,
   hpp_eventfilters, hpp_bookmarks, hpp_richedit, RichEdit,
   ImgList, HistoryControls, Buttons, TntButtons, Math, CommCtrl,
-  Contnrs, TntMenus, hpp_forms, ToolWin;
+  Contnrs, TntMenus, hpp_forms, ToolWin, ShellAPI;
 
 const
   HM_SRCH_CONTACTICONCHANGED = HM_SRCH_BASE + 3;
@@ -179,6 +179,13 @@ type
     TopPanel: THppPanel;
     N5: TTntMenuItem;
     SelectAll1: TTntMenuItem;
+    pmFile: TTntPopupMenu;
+    FileActions: TTntMenuItem;
+    BrowseReceivedFiles: TTntMenuItem;
+    OpenFileFolder: TTntMenuItem;
+    N6: TTntMenuItem;
+    CopyFilename: TTntMenuItem;
+    N7: TTntMenuItem;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -256,6 +263,8 @@ type
     procedure pmEventsFilterPopup(Sender: TObject);
     procedure tbBookmarksClick(Sender: TObject);
     procedure SelectAll1Click(Sender: TObject);
+    procedure OpenFileFolderClick(Sender: TObject);
+    procedure BrowseReceivedFilesClick(Sender: TObject);
   private
     UsedPassword: String;
     UserMenu: hMenu;
@@ -279,6 +288,7 @@ type
     HotFilterString: WideString;
     FormState: TGridState;
     SavedLinkUrl: String;
+    SavedFileDir: String;
 
     procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
     procedure WMSysColorChange(var Message: TMessage); message WM_SYSCOLORCHANGE;
@@ -323,6 +333,8 @@ type
     procedure LoadPosition;
     procedure SavePosition;
     procedure WndProc(var Message: TMessage); override;
+
+    function IsFileEvent(Index: Integer): Boolean;
 
     procedure ToggleAdvancedPanel(Show: Boolean);
     procedure ToggleRangePanel(Show: Boolean);
@@ -436,6 +448,10 @@ begin
   LoadContactsIcons;
 
   TranslateForm;
+
+  // File actions from context menu support
+  AddMenuArray(pmGrid,[FileActions],-1);
+
   LoadAccMenu; // load accessability menu before LoadToolbar
                // put here because we want to translate everything
                // before copying to menu
@@ -829,6 +845,7 @@ begin
   TranslateMenu(pmGrid.Items);
   TranslateMenu(pmInline.Items);
   TranslateMenu(pmLink.Items);
+  TranslateMenu(pmFile.Items);
   TranslateMenu(pmEventsFilter.Items);
 
   hg.TxtFullLog := TranslateWideW(hg.txtFullLog);
@@ -1527,6 +1544,15 @@ begin
   SetEventFilter(TTntMenuItem(Sender).Tag);
 end;
 
+function TfmGlobalSearch.IsFileEvent(Index: Integer): Boolean;
+begin
+  Result := (Index <> -1) and (mtFile in hg.Items[Index].MessageType);
+  if Result then begin
+    SavedLinkUrl := ExtractFileName(hg.Items[Index].Extended);
+    SavedFileDir := ExtractFileDir(hg.Items[Index].Extended);
+  end;
+end;
+
 procedure TfmGlobalSearch.hgPopup(Sender: TObject);
 begin
   //SaveSelected1.Visible := False;
@@ -1539,6 +1565,9 @@ begin
       Bookmark1.Caption := TranslateWideW('Remove &Bookmark')
     else
       Bookmark1.Caption := TranslateWideW('Set &Bookmark');
+    FileActions.Visible := isFileEvent(hg.Selected);
+    if FileActions.Visible then
+      OpenFileFolder.Visible := (SavedFileDir <> '');
     pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
   end;
 end;
@@ -2244,6 +2273,25 @@ begin
   if hg.Count = 0 then exit;
   hg.MakeRangeSelected(0,hg.Count-1);
   hg.Invalidate;
+end;
+
+procedure TfmGlobalSearch.OpenFileFolderClick(Sender: TObject);
+var
+  Path: String;
+begin
+  if SavedFileDir = '' then exit;
+  ShellExecute(0,'open',PChar(SavedFileDir),0,0,SW_SHOW);
+  SavedFileDir := '';
+end;
+
+procedure TfmGlobalSearch.BrowseReceivedFilesClick(Sender: TObject);
+var
+  Path: Array[0..MAX_PATH] of Char;
+  hContact: THandle;
+begin
+  hContact := GetSearchItem(hg.Selected).Contact.Handle;
+  PluginLink.CallService(MS_FILE_GETRECEIVEDFILESFOLDER,hContact,LPARAM(@Path));
+	ShellExecute(0,'open',Path,0,0,SW_SHOW);
 end;
 
 initialization
