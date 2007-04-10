@@ -2276,8 +2276,6 @@ begin
 end;
 
 procedure TfmGlobalSearch.OpenFileFolderClick(Sender: TObject);
-var
-  Path: String;
 begin
   if SavedFileDir = '' then exit;
   ShellExecute(0,'open',PChar(SavedFileDir),0,0,SW_SHOW);
