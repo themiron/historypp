@@ -64,6 +64,9 @@ procedure BringFormToFront(Form: TForm);
 procedure MakeFontsParent(Control: TControl);
 procedure MakeDoubleBufferedParent(Control: TWinControl);
 
+//procedure AddMenu(M: TMenuItem; FromM,ToM: TPopupMenu; Index: integer);
+procedure AddMenuArray(Menu: TTntPopupMenu; List: Array of TTntMenuItem; Index: integer);
+
 procedure TranslateMenu(mi: TMenuItem);
 procedure TranslateToolbar(const tb: TTntToolBar);
 
@@ -80,6 +83,33 @@ uses hpp_global, hpp_services, hpp_opt_dialog, hpp_database,
   {$IFNDEF NO_EXTERNALGRID}hpp_external,{$ENDIF}
   CustomizeFiltersForm, CustomizeToolbar,
   TntSysUtils;
+
+{procedure AddMenu(M: TMenuItem; FromM,ToM: TPopupMenu; Index: integer);
+//var
+//  i: integer;
+//  mi: TMenuItem;
+begin
+  if ToM.FindItem(M.Handle,fkHandle) = nil then begin
+    if FromM.FindItem(M.Handle,fkHandle) <> nil then
+      FromM.Items.Remove(M);
+    if Index = -1 then ToM.Items.Add(M)
+                  else ToM.Items.Insert(Index,M);
+  end;
+end;}
+
+procedure AddMenuArray(Menu: TTntPopupMenu; List: Array of TTntMenuItem; Index: integer);
+var
+  i: integer;
+begin
+  for i := 0 to High(List) do begin
+    if List[i].Parent <> nil then begin
+      if List[i].GetParentMenu = Menu then continue;
+      List[i].Parent.Remove(List[i]);
+    end;
+    if Index = -1 then Menu.Items.Add(List[i])
+                  else Menu.Items.Insert(Index+i,List[i]);
+  end;
+end;
 
 function IsFormShortCut(List: Array of TComponent; Key: DWord; ShiftState: TShiftState): Boolean;
 var

@@ -73,7 +73,7 @@ uses
   hpp_global, hpp_database, hpp_messages, hpp_events, hpp_contacts, hpp_itemprocess,
   hpp_bookmarks, hpp_forms, hpp_richedit, hpp_sessionsthread,
   HistoryGrid, Checksum, DateUtils,
-  ImgList, HistoryControls, CommCtrl, ToolWin, Themes;
+  ImgList, HistoryControls, CommCtrl, ToolWin, ShellAPI, Themes;
 
 type
 
@@ -212,6 +212,13 @@ type
     paHolder: THppPanel;
     spBook: TTntSplitter;
     UnknownCodepage: TTntMenuItem;
+    OpenFileFolder: TTntMenuItem;
+    BrowseReceivedFiles: TTntMenuItem;
+    N9: TTntMenuItem;
+    CopyFilename: TTntMenuItem;
+    FileActions: TTntMenuItem;
+    N10: TTntMenuItem;
+    pmFile: TTntPopupMenu;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -276,8 +283,6 @@ type
     procedure hgProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
     procedure hgSearchItem(Sender: TObject; Item, ID: Integer; var Found: Boolean);
     procedure hgKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-    //procedure AddMenu(M: TMenuItem; FromM,ToM: TPopupMenu; Index: integer);
-    procedure AddMenuArray(Menu: TTntPopupMenu; List: Array of TTntMenuItem; Index: integer);
     procedure ContactRTLmode1Click(Sender: TObject);
     procedure SendMessage1Click(Sender: TObject);
     procedure ReplyQuoted1Click(Sender: TObject);
@@ -331,6 +336,8 @@ type
     procedure spBookMoved(Sender: TObject);
     procedure pmToolbarPopup(Sender: TObject);
     procedure hgFilterChange(Sender: TObject);
+    procedure OpenFileFolderClick(Sender: TObject);
+    procedure BrowseReceivedFilesClick(Sender: TObject);
   private
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
@@ -339,6 +346,7 @@ type
     FProtocol,FSubProtocol: String;
     FPasswordMode: Boolean;
     SavedLinkUrl: String;
+    SavedFileDir: String;
     HotFilterString: WideString;
     FormState: TGridState;
     PreHotSearchMode: TSearchMode;
@@ -367,6 +375,7 @@ type
 
     procedure SethContact(const Value: THandle);
     procedure LoadInOptions();
+    function IsFileEvent(Index: Integer): Boolean;
 
     procedure PreLoadHistory;
     procedure PostLoadHistory;
@@ -669,6 +678,9 @@ begin
   end;
 
   TranslateForm;
+
+  // File actions from context menu support
+  AddMenuArray(pmGrid,[FileActions],-1);
 
   LoadAccMenu; // load accessability menu before LoadToolbar
                // put here because we want to translate everything
@@ -1548,7 +1560,6 @@ begin
 end;
 
 procedure THistoryFrm.hgPopup(Sender: TObject);
-
 begin
   Delete1.Visible := False;
   SaveSelected1.Visible := False;
@@ -1564,7 +1575,9 @@ begin
       Details1.Caption := TranslateWideW('&Open');
     if hg.SelCount > 1 then
       SaveSelected1.Visible := True;
-    //AddMenuArray(pmGrid,[Options1,ANSICodepage1,ContactRTLmode1,N11,ConversationLog1],-1);
+    FileActions.Visible := isFileEvent(hg.Selected);
+    if FileActions.Visible then
+      OpenFileFolder.Visible := (SavedFileDir <> '');
     pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
   end;
 end;
@@ -2640,6 +2653,7 @@ begin
   TranslateMenu(pmInline.Items);
 
   TranslateMenu(pmLink.Items);
+  TranslateMenu(pmFile.Items);
   TranslateMenu(pmHistory.Items);
   TranslateMenu(pmEventsFilter.Items);
   TranslateMenu(pmSessions.Items);
@@ -2891,6 +2905,15 @@ begin
   end;
 end;
 
+function THistoryFrm.IsFileEvent(Index: Integer): Boolean;
+begin
+  Result := (Index <> -1) and (mtFile in hg.Items[Index].MessageType);
+  if Result then begin
+    SavedLinkUrl := ExtractFileName(hg.Items[Index].Extended);
+    SavedFileDir := ExtractFileDir(hg.Items[Index].Extended);
+  end;
+end;
+
 procedure THistoryFrm.LoadInOptions();
 var
   i: integer;
@@ -2967,34 +2990,6 @@ begin
     FSubProtocol := FProtocol;
   end else begin
     FProtocol := GetContactProto(hContact,FhSubContact,FSubProtocol);
-  end;
-end;
-
-
-{procedure THistoryFrm.AddMenu(M: TMenuItem; FromM,ToM: TPopupMenu; Index: integer);
-//var
-//  i: integer;
-//  mi: TMenuItem;
-begin
-  if ToM.FindItem(M.Handle,fkHandle) = nil then begin
-    if FromM.FindItem(M.Handle,fkHandle) <> nil then
-      FromM.Items.Remove(M);
-    if Index = -1 then ToM.Items.Add(M)
-                  else ToM.Items.Insert(Index,M);
-  end;
-end;}
-
-procedure THistoryFrm.AddMenuArray(Menu: TTntPopupMenu; List: Array of TTntMenuItem; Index: integer);
-var
-  i: integer;
-begin
-  for i := 0 to High(List) do begin
-    if List[i].Parent <> nil then begin
-      if List[i].GetParentMenu = Menu then continue;
-      List[i].Parent.Remove(List[i]);
-    end;
-    if Index = -1 then Menu.Items.Add(List[i])
-                  else Menu.Items.Insert(Index+i,List[i]);
   end;
 end;
 
@@ -3715,6 +3710,23 @@ procedure THistoryFrm.hgFilterChange(Sender: TObject);
 begin
   if Assigned(EventDetailForm) then
     TEventDetailsFrm(EventDetailForm).Item := TEventDetailsFrm(EventDetailForm).Item;
+end;
+
+procedure THistoryFrm.OpenFileFolderClick(Sender: TObject);
+var
+  Path: String;
+begin
+  if SavedFileDir = '' then exit;
+  ShellExecute(0,'open',PChar(SavedFileDir),0,0,SW_SHOW);
+  SavedFileDir := '';
+end;
+
+procedure THistoryFrm.BrowseReceivedFilesClick(Sender: TObject);
+var
+  Path: Array[0..MAX_PATH] of Char;
+begin
+  PluginLink.CallService(MS_FILE_GETRECEIVEDFILESFOLDER,hContact,LPARAM(@Path));
+  ShellExecute(0,'open',Path,0,0,SW_SHOW);
 end;
 
 end.

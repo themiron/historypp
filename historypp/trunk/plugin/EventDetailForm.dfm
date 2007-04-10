@@ -130,7 +130,7 @@ object EventDetailsFrm: TEventDetailsFrm
         Transparent = True
       end
       object EFromMore: THppSpeedButton
-        Left = 424
+        Left = 420
         Top = 56
         Width = 20
         Height = 20
@@ -141,7 +141,7 @@ object EventDetailsFrm: TEventDetailsFrm
         OnClick = EFromMoreClick
       end
       object EToMore: THppSpeedButton
-        Left = 424
+        Left = 420
         Top = 76
         Width = 20
         Height = 20
@@ -152,7 +152,7 @@ object EventDetailsFrm: TEventDetailsFrm
         OnClick = EToMoreClick
       end
       object imDirection: TTntImage
-        Left = 426
+        Left = 422
         Top = 18
         Width = 16
         Height = 16
@@ -164,7 +164,7 @@ object EventDetailsFrm: TEventDetailsFrm
       object EMsgType: THppEdit
         Left = 80
         Top = 16
-        Width = 341
+        Width = 337
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -175,7 +175,7 @@ object EventDetailsFrm: TEventDetailsFrm
       object EFrom: THppEdit
         Left = 80
         Top = 56
-        Width = 341
+        Width = 337
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -186,7 +186,7 @@ object EventDetailsFrm: TEventDetailsFrm
       object ETo: THppEdit
         Left = 80
         Top = 76
-        Width = 341
+        Width = 337
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -197,7 +197,7 @@ object EventDetailsFrm: TEventDetailsFrm
       object EDateTime: THppEdit
         Left = 80
         Top = 36
-        Width = 341
+        Width = 337
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         BorderStyle = bsNone
@@ -239,9 +239,23 @@ object EventDetailsFrm: TEventDetailsFrm
     OnPopup = pmETextPopup
     Left = 68
     Top = 173
+    object BrowseReceivedFiles: TTntMenuItem
+      Caption = '&Browse Received Files'
+      OnClick = BrowseReceivedFilesClick
+    end
+    object OpenFileFolder: TTntMenuItem
+      Caption = '&Open file folder'
+      OnClick = OpenFileFolderClick
+    end
+    object CopyFilename: TTntMenuItem
+      Caption = '&Copy Filename'
+      OnClick = CopyLinkClick
+    end
+    object N3: TTntMenuItem
+      Caption = '-'
+    end
     object OpenLinkNW: TTntMenuItem
       Caption = 'Open in &new window'
-      Default = True
       OnClick = OpenLinkNWClick
     end
     object OpenLink: TTntMenuItem

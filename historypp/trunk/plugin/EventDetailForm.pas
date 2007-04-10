@@ -59,7 +59,7 @@ uses
   m_globaldefs, m_api, hpp_messages,
   hpp_global, hpp_contacts, hpp_events, hpp_forms, hpp_richedit,
   TntExtCtrls, ComCtrls,
-  Menus, TntMenus, RichEdit, Buttons, TntButtons, HistoryControls;
+  Menus, TntMenus, RichEdit, Buttons, TntButtons, HistoryControls, ShellAPI;
 
 type
 
@@ -98,6 +98,10 @@ type
     CopyLink: TTntMenuItem;
     N4: TTntMenuItem;
     imDirection: TTntImage;
+    N3: TTntMenuItem;
+    BrowseReceivedFiles: TTntMenuItem;
+    OpenFileFolder: TTntMenuItem;
+    CopyFilename: TTntMenuItem;
     procedure PrevBtnClick(Sender: TObject);
     procedure NextBtnClick(Sender: TObject);
     procedure EFromMoreClick(Sender: TObject);
@@ -122,12 +126,16 @@ type
     procedure CopyLinkClick(Sender: TObject);
     procedure ETextMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
+    procedure BrowseReceivedFilesClick(Sender: TObject);
+    procedure OpenFileFolderClick(Sender: TObject);
   private
     FParentForm: THistoryFrm;
     FItem: Integer;
     FRichHeight: Integer;
     FOverURL: Boolean;
     SavedLinkUrl: String;
+    FOverFile: Boolean;
+    SavedFileDir: String;
     hSubContactFrom,hSubContactTo: THandle;
     FNameFrom,FNameTo: WideString;
 
@@ -148,6 +156,7 @@ type
     procedure HMEventDeleted(var Message: TMessage); message HM_MIEV_EVENTDELETED;
     function GetPrevItem: Integer;
     function GetNextItem: Integer;
+    function IsFileEvent: Boolean;
   protected
     property PrevItem: Integer read GetPrevItem;
     property NextItem: Integer read GetNextItem;
@@ -383,6 +392,8 @@ begin
   NextBtn.Enabled := (NextItem <> -1);
   PrevBtn.Enabled := (PrevItem <> -1);
 
+  FOverFile := IsFileEvent;
+
   if FParentForm.hg.Selected <> FItem then
     FParentForm.hg.Selected := FItem;
 end;
@@ -419,6 +430,9 @@ begin
   OpenLinkNW.Visible := FOverURL;
   OpenLink.Visible := FOverURL;
   CopyLink.Visible := FOverURL;
+  BrowseReceivedFiles.Visible := FOverFile and not FOverURL;
+  OpenFileFolder.Visible := FOverFile and not FOverURL and (SavedFileDir <> '');
+  CopyFilename.Visible := FOverFile and not FOverURL;
 end;
 
 procedure TEventDetailsFrm.SelectAllClick(Sender: TObject);
@@ -630,6 +644,33 @@ begin
   if Assigned(FParentForm) then
     Result := FParentForm.hg.GetNext(FItem) else
     Result := -1;
+end;
+
+function TEventDetailsFrm.IsFileEvent: Boolean;
+begin
+  Result := Assigned(FParentForm) and
+            (mtFile in FParentForm.hg.Items[FItem].MessageType);
+  if Result then begin
+    SavedLinkUrl := ExtractFileName(FParentForm.hg.Items[FItem].Extended);
+    SavedFileDir := ExtractFileDir(FParentForm.hg.Items[FItem].Extended);
+  end;
+end;
+
+procedure TEventDetailsFrm.OpenFileFolderClick(Sender: TObject);
+var
+  Path: String;
+begin
+  if SavedFileDir = '' then exit;
+  ShellExecute(0,'open',PChar(SavedFileDir),0,0,SW_SHOW);
+  SavedFileDir := '';
+end;
+
+procedure TEventDetailsFrm.BrowseReceivedFilesClick(Sender: TObject);
+var
+  Path: Array[0..MAX_PATH] of Char;
+begin
+  PluginLink.CallService(MS_FILE_GETRECEIVEDFILESFOLDER,FParentForm.hContact,LPARAM(@Path));
+  ShellExecute(0,'open',Path,0,0,SW_SHOW);
 end;
 
 end.
