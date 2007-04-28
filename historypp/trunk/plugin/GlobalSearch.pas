@@ -954,14 +954,14 @@ begin
       else begin
         if CheckPassword(edPass.Text) then begin
           SearchProtected := True;
-          laPassNote.Caption := 'Searching all contacts';
+          laPassNote.Caption := TranslateWideW('Searching all contacts');
         end
         else begin
           HppMessageBox(Handle,TranslateWideW('You have entered the wrong password.'),
             TranslateWideW('History++ Password Protection'), MB_OK or MB_DEFBUTTON1 or MB_ICONSTOP);
           edPass.SetFocus;
           edPass.SelectAll;
-          laPassNote.Caption := 'Wrong password';
+          laPassNote.Caption := TranslateWideW('Wrong password');
           exit;
         end;
       end;
