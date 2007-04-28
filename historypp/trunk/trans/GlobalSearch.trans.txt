@@ -74,8 +74,10 @@ Preparing search...
 Searching... %.0n items in %d contacts found
 History is not protected, searching all contacts
 Searching unprotected contacts only
+Searching all contacts
 You have entered the wrong password.
 History++ Password Protection
+Wrong password
 Please wait while closing the window...
 Partial History [%s] - [%s]
 Remove &Bookmark
