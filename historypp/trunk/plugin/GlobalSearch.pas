@@ -1287,7 +1287,7 @@ begin
   ToggleRangePanel(GetDBBool(hppDBName,'GlobalSearchWindow.ShowRange',False));
   dtRange1.Date := Trunc(GetDBDateTime(hppDBName,'GlobalSearchWindow.RangeFrom',Now));
   dtRange2.Date := Trunc(GetDBDateTime(hppDBName,'GlobalSearchWindow.RangeTo',Now));
-  edSearch.Text := AnsiToWideString(GetDBStr(hppDBName,'GlobalSearchWindow.LastSearch',DEFAULT_SEARCH_TEXT),hppCodepage);
+  edSearch.Text := GetDBWideStr(hppDBName,'GlobalSearchWindow.LastSearch',DEFAULT_SEARCH_TEXT);
 end;
 
 procedure TfmGlobalSearch.LoadToolbarIcons;
@@ -1477,8 +1477,6 @@ begin
 end;
 
 procedure TfmGlobalSearch.SavePosition;
-var
-  LastSearch: WideString;
 begin
   //Utils_SaveWindowPosition(Self.Handle,0,'HistoryPlusPlus','GlobalSearchWindow.');
   Utils_SaveFormPosition(Self,0,hppDBName,'GlobalSearchWindow.');
@@ -1493,23 +1491,21 @@ begin
 
   WriteDBBool(hppDBName,'GlobalSearchWindow.ShowAdvanced',paAdvanced.Visible);
   if rbAny.Checked then
-    WriteDBInt(hppDBName,'GlobalSearchWindow.AdvancedOptions',0)
-  else if rbAll.Checked then
-    WriteDBInt(hppDBName,'GlobalSearchWindow.AdvancedOptions',1)
-  else
+    WriteDBInt(hppDBName,'GlobalSearchWindow.AdvancedOptions',0) else
+  if rbAll.Checked then
+    WriteDBInt(hppDBName,'GlobalSearchWindow.AdvancedOptions',1) else
     WriteDBInt(hppDBName,'GlobalSearchWindow.AdvancedOptions',2);
 
   WriteDBBool(hppDBName,'GlobalSearchWindow.ShowRange',paRange.Visible);
+
   if Trunc(dtRange1.Date) = Trunc(Now) then
-    DBDelete(hppDBName,'GlobalSearchWindow.RangeFrom')
-  else
+    DBDelete(hppDBName,'GlobalSearchWindow.RangeFrom') else
     WriteDBDateTime(hppDBName,'GlobalSearchWindow.RangeFrom',Trunc(dtRange1.Date));
   if Trunc(dtRange2.Date) = Trunc(Now) then
-    DBDelete(hppDBName,'GlobalSearchWindow.RangeTo')
-  else
+    DBDelete(hppDBName,'GlobalSearchWindow.RangeTo') else
     WriteDBDateTime(hppDBName,'GlobalSearchWindow.RangeTo',Trunc(dtRange2.Date));
-  LastSearch := WideToAnsiString(edSearch.Text,hppCodepage);
-  WriteDBWideStr(hppDBName,'GlobalSearchWindow.LastSearch',LastSearch);
+
+  WriteDBWideStr(hppDBName,'GlobalSearchWindow.LastSearch',edSearch.Text);
 end;
 
 procedure TfmGlobalSearch.edSearchKeyPress(Sender: TObject; var Key: Char);
