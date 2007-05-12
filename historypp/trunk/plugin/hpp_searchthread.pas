@@ -467,8 +467,9 @@ var
 begin
   if Terminated then exit;
   Inc(BufCount);
-  if FirstBatch then CurBuf := ST_FIRST_BATCH
-  else CurBuf := ST_BATCH;
+  if FirstBatch then
+    CurBuf := ST_FIRST_BATCH else
+    CurBuf := ST_BATCH;
   Buffer[BufCount-1] := hDBEvent;
   if BufCount = CurBuf then SendBatch;
 end;
