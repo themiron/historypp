@@ -353,6 +353,7 @@ type
     FSearchMode: TSearchMode;
     UserMenu: hMenu;
     FPanel: THistoryPanels;
+    IsLoadingSessions: Boolean;
 
     procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
     procedure CMShowingChanged(var Message: TMessage); message CM_SHOWINGCHANGED;
@@ -418,6 +419,7 @@ type
     procedure OpenPassword;
     procedure EmptyHistory;
 
+    procedure SMPrepare(var M: TMessage); message HM_SESS_PREPARE;
     procedure SMItemsFound(var M: TMessage); message HM_SESS_ITEMSFOUND;
     procedure SMFinished(var M: TMessage); message HM_SESS_FINISHED;
     procedure AddEventToSessions(hDBEvent: THandle);
@@ -661,6 +663,8 @@ begin
   MakeDoubleBufferedParent(Self);
   TopPanel.DoubleBuffered := False;
   hg.DoubleBuffered := False;
+
+  IsLoadingSessions := False;
 
   FormState := gsIdle;
 
@@ -1175,17 +1179,18 @@ var
   AppSysMenu: THandle;
 begin
   CanClose := (hg.State in [gsIdle,gsInline]);
-  if CanClose and (SessThread <> nil) then begin
+  if CanClose and IsLoadingSessions then begin
     // disable close button
-    AppSysMenu:=GetSystemMenu(Handle,False);
-    Flag:=MF_GRAYED;
+    AppSysMenu := GetSystemMenu(Handle,False);
+    Flag := MF_GRAYED;
     EnableMenuItem(AppSysMenu,SC_CLOSE,MF_BYCOMMAND or Flag);
     sb.SimpleText := TranslateWideW('Please wait while closing the window...');
     // terminate thread
     SessThread.Terminate(tpHigher);
-    while SessThread <> nil do
-      Application.ProcessMessages;
+    while IsLoadingSessions do Application.ProcessMessages;
   end;
+  if CanClose and Assigned(SessThread) then
+    FreeAndNil(SessThread);
 end;
 
 procedure THistoryFrm.Load;
@@ -2410,12 +2415,6 @@ begin
   EndHotFilterTimer;
 end;
 
-procedure THistoryFrm.SMFinished(var M: TMessage);
-begin
-  SessThread.WaitFor;
-  FreeAndNil(SessThread);
-end;
-
 procedure THistoryFrm.bnPassClick(Sender: TObject);
 begin
 if DigToBase(HashString(edPass.Text)) = GetPassword then
@@ -2544,7 +2543,7 @@ begin
   SessThread := nil;
   if tbSessions.Enabled then begin
     SessThread := TSessionsThread.Create(True);
-    SessThread.ParentHandle := Self.Handle;
+    SessThread.ParentHandle := Handle;
     SessThread.Contact := hContact;
     SessThread.Priority := tpLower;
     SessThread.Resume;
@@ -2673,7 +2672,7 @@ var
   Index,i: Integer;
   Event: THandle;
 begin
-  if SessThread <> nil then exit;
+  if IsLoadingSessions then exit;
   if Node = nil then exit;
   if Node.Level <> 2 then begin
     Node := Node.getFirstChild;
@@ -3016,6 +3015,12 @@ begin
   WriteContactRTLMode(hContact,hg.RTLMode,Protocol);
 end;
 
+procedure THistoryFrm.SMPrepare(var M: TMessage);
+begin
+  if tvSess.Visible then tvSess.Enabled := False;
+  IsLoadingSessions := True;
+end;
+
 procedure THistoryFrm.SMItemsFound(var M: TMessage);
 var
   ti: TtntTreeNode;
@@ -3069,6 +3074,12 @@ begin
     tvSess.Items.EndUpdate;
   end;
 {$RANGECHECKS ON}
+end;
+
+procedure THistoryFrm.SMFinished(var M: TMessage);
+begin
+  if not tvSess.Enabled then tvSess.Enabled := True;
+  IsLoadingSessions := False;
 end;
 
 procedure THistoryFrm.SendMessage1Click(Sender: TObject);
@@ -3369,7 +3380,7 @@ begin
 end;
 
 begin
-  if SessThread <> nil then exit;
+  if IsLoadingSessions then Exit;
   BuildIndexesFromSession(tvSess.Selected);
   hg.Selected := Items[0];
   hg.MakeRangeSelected(Items[0],Items[High(Items)]);

@@ -62,6 +62,9 @@ uses
   hpp_global, m_api, hpp_events, TntSysUtils, hpp_forms;
 
 type
+  TSendMethod = (smSend,smPost);
+
+  PSess = ^TSess;
   TSess = record
     hDBEventFirst: THandle;
     TimestampFirst: DWord;
@@ -82,9 +85,9 @@ type
     FSearchTime: Cardinal;
     SearchStart: Cardinal;
     FContact: THandle;
-    procedure DoMessage(Message: DWord; wParam: WPARAM; lParam: LPARAM);
-    procedure SendItem(hDBEvent,Timestamp, LastEvent, LastTimestamp, Count: DWord);
-    procedure SendBatch;
+    function DoMessage(Message: DWord; wParam: WPARAM; lParam: LPARAM; Method: TSendMethod = smSend): Boolean;
+    function SendItem(hDBEvent,Timestamp, LastEvent, LastTimestamp, Count: DWord): Boolean;
+    function SendBatch: Boolean;
 
   protected
     procedure Execute; override;
@@ -151,10 +154,22 @@ begin
   SetLength(Buffer,0);
 end;
 
-procedure TSessionsThread.DoMessage(Message: DWord; wParam: WPARAM; lParam: LPARAM);
+function TSessionsThread.DoMessage(Message: DWord; wParam: WPARAM; lParam: LPARAM; Method: TSendMethod = smSend): Boolean;
+var
+  Tries: integer;
 begin
-  while not PostMessage(ParentHandle,Message,wParam,lParam) do
-    Sleep(5);
+  Result := True;
+  case Method of
+    smSend: SendMessage(ParentHandle,Message,wParam,lParam);
+    smPost: begin
+      Tries := 5;
+      while (Tries > 0) and not PostMessage(ParentHandle,Message,wParam,lParam) do begin
+        Dec(Tries);
+        Sleep(5);
+      end;
+      Result := (Tries > 0);
+    end;
+  end;
 end;
 
 procedure TSessionsThread.Execute;
@@ -206,8 +221,6 @@ begin
     SendBatch;
   finally
     FSearchTime := GetTickCount - SearchStart;
-    // only Post..., not Send... because we wait for this thread
-    // to die in this message
     DoMessage(HM_SESS_FINISHED,0,0);
   end;
 end;
@@ -219,28 +232,33 @@ begin
   inherited Terminate;
 end;
 
-procedure TSessionsThread.SendItem(hDBEvent,Timestamp, LastEvent, LastTimestamp, Count: DWord);
+function TSessionsThread.SendItem(hDBEvent,Timestamp, LastEvent, LastTimestamp, Count: DWord): Boolean;
 begin
+  Result := True;
   if Terminated then exit;
-  SetLength(Buffer,Length(Buffer)+1);
   BufCount := Length(Buffer);
-  Buffer[BufCount-1].hDBEventFirst := hDBevent;
-  Buffer[BufCount-1].TimestampFirst := Timestamp;
-  Buffer[BufCount-1].hDBEventLast := LastEvent;
-  Buffer[BufCount-1].TimestampLast := LastTimestamp;
-  Buffer[BufCount-1].ItemsCount := Count;
+  SetLength(Buffer,BufCount+1);
+  Buffer[BufCount].hDBEventFirst := hDBevent;
+  Buffer[BufCount].TimestampFirst := Timestamp;
+  Buffer[BufCount].hDBEventLast := LastEvent;
+  Buffer[BufCount].TimestampLast := LastTimestamp;
+  Buffer[BufCount].ItemsCount := Count;
+  Inc(BufCount);
 end;
 
-procedure TSessionsThread.SendBatch;
+function TSessionsThread.SendBatch: Boolean;
 var
   Batch: PSessArray;
 begin
+  Result := True;
   if Terminated then exit;
   {$RANGECHECKS OFF}
   if Length(Buffer) > 0 then begin
     GetMem(Batch,SizeOf(Buffer));
     CopyMemory(Batch,@Buffer,SizeOf(Buffer));
-    DoMessage(HM_SESS_ITEMSFOUND,WPARAM(Batch),Length(Buffer));
+    Result := DoMessage(HM_SESS_ITEMSFOUND,WPARAM(Batch),Length(Buffer));
+    if not Result then FreeMem(Batch,SizeOf(Buffer));
+    SetLength(Buffer,0);
     BufCount := 0;
     FirstBatch := False;
   end;
