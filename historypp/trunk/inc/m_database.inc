@@ -33,8 +33,8 @@ const
     DBVT_DWORD              = 4;        // dVal, lVal are valid
     DBVT_ASCIIZ             = 255;      // pszVal is valid
     DBVT_BLOB               = 254;      // cpbVal and pbVal are valid
-    DBVT_UTF8               = 253;      //pszVal is valid
-    DBVT_WCHAR              = 252;      //pszVal is valid
+    DBVT_UTF8               = 253;      // pszVal is valid
+    DBVT_WCHAR              = 252;      // pszVal is valid
     DBVTF_VARIABLELENGTH    = $80;      // ?
 
 type
