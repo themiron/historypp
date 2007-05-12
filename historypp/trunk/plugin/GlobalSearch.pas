@@ -2274,7 +2274,7 @@ end;
 procedure TfmGlobalSearch.OpenFileFolderClick(Sender: TObject);
 begin
   if SavedFileDir = '' then exit;
-  ShellExecute(0,'open',PChar(SavedFileDir),0,0,SW_SHOW);
+  ShellExecute(0,'open',PChar(SavedFileDir),nil,nil,SW_SHOW);
   SavedFileDir := '';
 end;
 
@@ -2285,7 +2285,7 @@ var
 begin
   hContact := GetSearchItem(hg.Selected).Contact.Handle;
   PluginLink.CallService(MS_FILE_GETRECEIVEDFILESFOLDER,hContact,LPARAM(@Path));
-	ShellExecute(0,'open',Path,0,0,SW_SHOW);
+  ShellExecute(0,'open',Path,nil,nil,SW_SHOW);
 end;
 
 initialization

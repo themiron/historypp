@@ -1088,20 +1088,20 @@ begin
   end;
 end;
 
+procedure TExternalGrid.OnOpenFileFolderClick(Sender: TObject);
+begin
+  if SavedFileDir = '' then exit;
+  ShellExecute(0,'open',PChar(SavedFileDir),nil,nil,SW_SHOW);
+  SavedFileDir := '';
+end;
+
 procedure TExternalGrid.OnBrowseReceivedFilesClick(Sender: TObject);
 var
   Path: Array[0..MAX_PATH] of Char;
 begin
   if Grid.Selected = -1 then exit;
   PluginLink.CallService(MS_FILE_GETRECEIVEDFILESFOLDER,Items[Grid.Selected].hContact,LPARAM(@Path));
-  ShellExecute(0,'open',Path,0,0,SW_SHOW);
-end;
-
-procedure TExternalGrid.OnOpenFileFolderClick(Sender: TObject);
-begin
-  if SavedFileDir = '' then exit;
-  ShellExecute(0,'open',PChar(SavedFileDir),0,0,SW_SHOW);
-  SavedFileDir := '';
+  ShellExecute(0,'open',Path,nil,nil,SW_SHOW);
 end;
 
 end.

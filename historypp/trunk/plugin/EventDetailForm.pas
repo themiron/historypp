@@ -659,7 +659,7 @@ end;
 procedure TEventDetailsFrm.OpenFileFolderClick(Sender: TObject);
 begin
   if SavedFileDir = '' then exit;
-  ShellExecute(0,'open',PChar(SavedFileDir),0,0,SW_SHOW);
+  ShellExecute(0,'open',PChar(SavedFileDir),nil,nil,SW_SHOW);
   SavedFileDir := '';
 end;
 
@@ -668,7 +668,7 @@ var
   Path: Array[0..MAX_PATH] of Char;
 begin
   PluginLink.CallService(MS_FILE_GETRECEIVEDFILESFOLDER,FParentForm.hContact,LPARAM(@Path));
-  ShellExecute(0,'open',Path,0,0,SW_SHOW);
+  ShellExecute(0,'open',Path,nil,nil,SW_SHOW);
 end;
 
 end.
