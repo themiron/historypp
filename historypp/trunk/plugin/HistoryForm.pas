@@ -665,6 +665,7 @@ begin
   hg.DoubleBuffered := False;
 
   IsLoadingSessions := False;
+  SessThread := nil;
 
   FormState := gsIdle;
 
@@ -1187,7 +1188,9 @@ begin
     sb.SimpleText := TranslateWideW('Please wait while closing the window...');
     // terminate thread
     SessThread.Terminate(tpHigher);
-    while IsLoadingSessions do Application.ProcessMessages;
+    repeat
+      Application.ProcessMessages
+    until not IsLoadingSessions;
   end;
   if CanClose and Assigned(SessThread) then
     FreeAndNil(SessThread);
@@ -2540,7 +2543,6 @@ begin
     Customize2.Enabled := False; // disable toolbar customization
   end;
 
-  SessThread := nil;
   if tbSessions.Enabled then begin
     SessThread := TSessionsThread.Create(True);
     SessThread.ParentHandle := Handle;
