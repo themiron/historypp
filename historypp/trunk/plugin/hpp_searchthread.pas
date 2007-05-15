@@ -106,9 +106,9 @@ type
     procedure SearchContact(Contact: THandle);
     procedure SearchBookmarks(Contact: THandle);
 
-    procedure DoMessage(Message: DWord; wParam, lParam: DWord);
-    procedure SendItem(hDBEvent: Integer);
-    procedure SendBatch;
+    function DoMessage(Message: DWord; wParam: WPARAM; lParam: LPARAM): Boolean;
+    function SendItem(hDBEvent: Integer): Boolean;
+    function SendBatch: Boolean;
 
     function GetContactsCount: Integer;
     function GetItemsCount(hContact: THandle): Integer;
@@ -293,10 +293,9 @@ begin
   inherited;
 end;
 
-procedure TSearchThread.DoMessage(Message, wParam, lParam: DWord);
+function TSearchThread.DoMessage(Message: DWord; wParam: WPARAM; lParam: LPARAM): Boolean;
 begin
-  while not PostMessage(ParentHandle,Message,wParam,lParam) do
-    Sleep(5);
+  Result := PassMessage(ParentHandle,Message,wParam,lParam,smSend);
 end;
 
 procedure TSearchThread.Execute;
@@ -407,7 +406,7 @@ begin
   if Terminated then exit;
   CurContactCP := GetContactCodePage(Contact);
   CurContact := Contact;
-  DoMessage(HM_STRD_NEXTCONTACT, Contact, GetContactsCount);
+  DoMessage(HM_STRD_NEXTCONTACT,WPARAM(Contact),LPARAM(GetContactsCount));
   hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDLAST,Contact,0);
   while (hDBEvent <> 0) and (not Terminated) do begin
     if SearchEvent(hDBEvent) then SendItem(hDBEvent);
@@ -421,7 +420,7 @@ var
   i: Integer;
 begin
   if Terminated then exit;
-  DoMessage(HM_STRD_NEXTCONTACT, Contact, GetContactsCount);
+  DoMessage(HM_STRD_NEXTCONTACT,WPARAM(Contact),LPARAM(GetContactsCount));
   for i := 0 to BookmarkServer[Contact].Count-1 do begin
     if Terminated then exit;
     Inc(AllEvents);
@@ -461,28 +460,34 @@ begin
 end;
 
 
-procedure TSearchThread.SendItem(hDBEvent: Integer);
+function TSearchThread.SendItem(hDBEvent: Integer): Boolean;
 var
   CurBuf: Integer;
 begin
+  Result := True;
   if Terminated then exit;
   Inc(BufCount);
   if FirstBatch then
     CurBuf := ST_FIRST_BATCH else
     CurBuf := ST_BATCH;
   Buffer[BufCount-1] := hDBEvent;
-  if BufCount = CurBuf then SendBatch;
+  if BufCount = CurBuf then Result := SendBatch;
 end;
 
-procedure TSearchThread.SendBatch;
+function TSearchThread.SendBatch;
 var
   Batch: PDBArray;
 begin
+  Result := True;
   if Terminated then exit;
   if BufCount > 0 then begin
     GetMem(Batch,SizeOf(Batch^));
     CopyMemory(Batch,@Buffer,SizeOf(Buffer));
-    DoMessage(HM_STRD_ITEMSFOUND,DWord(Batch),DWord(BufCount));
+    Result := DoMessage(HM_STRD_ITEMSFOUND,WPARAM(Batch),LPARAM(BufCount));
+    if not Result then begin
+      FreeMem(Batch,SizeOf(Batch^));
+      Terminate(tpHigher);
+    end;
     BufCount := 0;
     FirstBatch := False;
   end;
@@ -494,7 +499,7 @@ begin
   if CurProgress > MaxProgress then
     MaxProgress := CurProgress;
   if (CurProgress mod 1000 = 0) or (CurProgress = MaxProgress) then
-    DoMessage(HM_STRD_PROGRESS,CurProgress,MaxProgress);
+    DoMessage(HM_STRD_PROGRESS,WPARAM(CurProgress),LPARAM(MaxProgress));
 end;
 
 

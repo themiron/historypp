@@ -62,8 +62,6 @@ uses
   hpp_global, m_api, hpp_events, TntSysUtils, hpp_forms;
 
 type
-  TSendMethod = (smSend,smPost);
-
   PSess = ^TSess;
   TSess = record
     hDBEventFirst: THandle;
@@ -85,7 +83,7 @@ type
     FSearchTime: Cardinal;
     SearchStart: Cardinal;
     FContact: THandle;
-    function DoMessage(Message: DWord; wParam: WPARAM; lParam: LPARAM; Method: TSendMethod = smSend): Boolean;
+    function DoMessage(Message: DWord; wParam: WPARAM; lParam: LPARAM): Boolean;
     function SendItem(hDBEvent,Timestamp, LastEvent, LastTimestamp, Count: DWord): Boolean;
     function SendBatch: Boolean;
 
@@ -154,22 +152,9 @@ begin
   SetLength(Buffer,0);
 end;
 
-function TSessionsThread.DoMessage(Message: DWord; wParam: WPARAM; lParam: LPARAM; Method: TSendMethod = smSend): Boolean;
-var
-  Tries: integer;
+function TSessionsThread.DoMessage(Message: DWord; wParam: WPARAM; lParam: LPARAM): Boolean;
 begin
-  Result := True;
-  case Method of
-    smSend: SendMessage(ParentHandle,Message,wParam,lParam);
-    smPost: begin
-      Tries := 5;
-      while (Tries > 0) and not PostMessage(ParentHandle,Message,wParam,lParam) do begin
-        Dec(Tries);
-        Sleep(5);
-      end;
-      Result := (Tries > 0);
-    end;
-  end;
+  Result := PassMessage(ParentHandle,Message,wParam,lParam,smSend);
 end;
 
 procedure TSessionsThread.Execute;
@@ -257,7 +242,10 @@ begin
     GetMem(Batch,SizeOf(Buffer));
     CopyMemory(Batch,@Buffer,SizeOf(Buffer));
     Result := DoMessage(HM_SESS_ITEMSFOUND,WPARAM(Batch),Length(Buffer));
-    if not Result then FreeMem(Batch,SizeOf(Buffer));
+    if not Result then begin
+      FreeMem(Batch,SizeOf(Buffer));
+      Terminate(tpHigher);
+    end;
     SetLength(Buffer,0);
     BufCount := 0;
     FirstBatch := False;
