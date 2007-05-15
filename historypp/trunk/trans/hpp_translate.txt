@@ -170,18 +170,22 @@ F4
 Limit search range
 [F5]
 F5
-[Search protected contacts]
-Search protected contacts
 [F6]
 F6
-[Bookmarks]
-Bookmarks
+[Search protected contacts]
+Search protected contacts
 [F7]
 F7
+[Bookmarks]
+Bookmarks
 [tbSearch]
 tbSearch
 [tbFilter]
 tbFilter
+[Search messages matched to]
+Search messages matched to
+[Limit Event Types]
+Limit Event Types
 [Sh&ow in context]
 Sh&ow in context
 [Set &Bookmark]

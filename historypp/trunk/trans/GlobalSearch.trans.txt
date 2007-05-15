@@ -27,14 +27,18 @@ Advanced search options
 Limit search range
 F5
 Limit search range
-Search protected contacts
 F6
+Limit Search Range
+Search protected contacts
+F7
 Search protected contacts
 Bookmarks
 F7
 Bookmarks
 tbSearch
 tbFilter
+Search messages matched to
+Limit Event Types
 Sh&ow in context
 Set &Bookmark
 Send &Message
@@ -78,6 +82,7 @@ Searching all contacts
 You have entered the wrong password.
 History++ Password Protection
 Wrong password
+Please wait while closing the window...
 Please wait while closing the window...
 Partial History [%s] - [%s]
 Remove &Bookmark
