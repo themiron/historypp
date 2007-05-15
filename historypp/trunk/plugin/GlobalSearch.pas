@@ -189,7 +189,7 @@ type
     paEvents: THppPanel;
     laEvents: TTntLabel;
     beEvents: TTntBevel;
-    lbEventsHead: TTntLabel;
+    laEventsHead: TTntLabel;
     sbEventsClose: THppSpeedButton;
     tbEvents: THppToolButton;
     cbEvents: TTntComboBox;
@@ -860,6 +860,7 @@ begin
   laRange1.Caption := TranslateWideW(laRange1.Caption);
   laRange2.Caption := TranslateWideW(laRange2.Caption);
 
+  laEventsHead.Caption := TranslateWideW(laEventsHead.Caption);
   laEvents.Caption := TranslateWideW(laEvents.Caption);
   cbEvents.Left := laEvents.Left + laEvents.Width + 10;
 
