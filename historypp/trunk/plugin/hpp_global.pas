@@ -108,6 +108,8 @@ type
   TWideStrArray = array of WideString;
   TIntArray = array of Integer;
 
+  TSendMethod = (smSend,smPost);
+
 const
 
   hppName       = 'History++';
@@ -221,7 +223,6 @@ const
 
   SkinIconsCount             = 4;
 
-
 var
   hppVersionStr: String;
   //hppVersionPrefix: String;
@@ -273,6 +274,7 @@ function GetMessageRecord(MesType: TMessageTypes): PEventRecord;
 function MakeTextXMLedA(Text: String): String;
 function MakeTextXMLedW(Text: WideString): WideString;
 function FormatCString(Text: WideString): WideString;
+function PassMessage(Handle: THandle; Message: DWord; wParam: WPARAM; lParam: LPARAM; Method: TSendMethod = smSend): Boolean;
 
 implementation
 
@@ -513,6 +515,24 @@ begin
     inc(inpos);
   end;
   SetLength(Result,outpos);
+end;
+
+function PassMessage(Handle: THandle; Message: DWord; wParam: WPARAM; lParam: LPARAM; Method: TSendMethod = smSend): Boolean;
+var
+  Tries: integer;
+begin
+  Result := True;
+  case Method of
+    smSend: SendMessage(Handle,Message,wParam,lParam);
+    smPost: begin
+      Tries := 5;
+      while (Tries > 0) and not PostMessage(Handle,Message,wParam,lParam) do begin
+        Dec(Tries);
+        Sleep(5);
+      end;
+      Result := (Tries > 0);
+    end;
+  end;
 end;
 
 begin
