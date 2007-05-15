@@ -26,15 +26,15 @@ object fmGlobalSearch: TfmGlobalSearch
     Left = 0
     Top = 0
     Width = 551
-    Height = 498
+    Height = 496
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 2
     TabOrder = 0
     object spContacts: TTntSplitter
       Left = 157
-      Top = 202
-      Height = 240
+      Top = 248
+      Height = 192
       ResizeStyle = rsUpdate
       Visible = False
     end
@@ -84,7 +84,7 @@ object fmGlobalSearch: TfmGlobalSearch
     end
     object paProgress: THppPanel
       Left = 2
-      Top = 442
+      Top = 440
       Width = 547
       Height = 54
       Align = alBottom
@@ -118,7 +118,7 @@ object fmGlobalSearch: TfmGlobalSearch
     end
     object paPassword: THppPanel
       Left = 2
-      Top = 156
+      Top = 202
       Width = 547
       Height = 46
       Align = alTop
@@ -185,9 +185,9 @@ object fmGlobalSearch: TfmGlobalSearch
     end
     object paContacts: THppPanel
       Left = 2
-      Top = 202
+      Top = 248
       Width = 155
-      Height = 240
+      Height = 192
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 2
@@ -196,7 +196,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Left = 0
         Top = 0
         Width = 155
-        Height = 240
+        Height = 192
         Align = alClient
         Columns = <
           item
@@ -218,9 +218,9 @@ object fmGlobalSearch: TfmGlobalSearch
     end
     object paHistory: THppPanel
       Left = 160
-      Top = 202
+      Top = 248
       Width = 389
-      Height = 240
+      Height = 192
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 4
@@ -228,7 +228,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Left = 0
         Top = 0
         Width = 389
-        Height = 212
+        Height = 164
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         ShowBottomAligned = False
@@ -276,7 +276,7 @@ object fmGlobalSearch: TfmGlobalSearch
       end
       object paFilter: THppPanel
         Left = 0
-        Top = 212
+        Top = 164
         Width = 389
         Height = 28
         Align = alBottom
@@ -387,7 +387,7 @@ object fmGlobalSearch: TfmGlobalSearch
     end
     object paRange: THppPanel
       Left = 2
-      Top = 110
+      Top = 156
       Width = 547
       Height = 46
       Align = alTop
@@ -509,23 +509,31 @@ object fmGlobalSearch: TfmGlobalSearch
           Style = tbsCheck
           OnClick = tbRangeClick
         end
-        object tbPassword: THppToolButton
+        object tbEvents: THppToolButton
           Left = 46
           Top = 0
-          Hint = 'Search protected contacts'
           HelpKeyword = 'F6'
+          Caption = 'tbEvents'
+          Style = tbsCheck
+          OnClick = tbEventsClick
+        end
+        object tbPassword: THppToolButton
+          Left = 69
+          Top = 0
+          Hint = 'Search protected contacts'
+          HelpKeyword = 'F7'
           Caption = 'Search protected contacts'
           Style = tbsCheck
           OnClick = tbPasswordClick
         end
         object TntToolButton1: THppToolButton
-          Left = 69
+          Left = 92
           Top = 0
           Width = 8
           Style = tbsSeparator
         end
         object tbBookmarks: THppToolButton
-          Left = 77
+          Left = 100
           Top = 0
           Hint = 'Bookmarks'
           HelpKeyword = 'F7'
@@ -534,13 +542,13 @@ object fmGlobalSearch: TfmGlobalSearch
           OnClick = tbBookmarksClick
         end
         object TntToolButton2: THppToolButton
-          Left = 100
+          Left = 123
           Top = 0
           Width = 8
           Style = tbsSeparator
         end
         object tbSearch: THppToolButton
-          Left = 108
+          Left = 131
           Top = 0
           Caption = 'tbSearch'
           Grouped = True
@@ -548,7 +556,7 @@ object fmGlobalSearch: TfmGlobalSearch
           Visible = False
         end
         object tbFilter: THppToolButton
-          Left = 131
+          Left = 154
           Top = 0
           Caption = 'tbFilter'
           Grouped = True
@@ -556,14 +564,14 @@ object fmGlobalSearch: TfmGlobalSearch
           Visible = False
         end
         object TntToolButton3: THppToolButton
-          Left = 154
+          Left = 177
           Top = 0
           Width = 8
           Style = tbsSeparator
           Visible = False
         end
         object tbEventsFilter: THppSpeedButton
-          Left = 162
+          Left = 185
           Top = 0
           Width = 110
           Height = 22
@@ -577,10 +585,76 @@ object fmGlobalSearch: TfmGlobalSearch
         end
       end
     end
+    object paEvents: THppPanel
+      Left = 2
+      Top = 110
+      Width = 547
+      Height = 46
+      Align = alTop
+      BevelOuter = bvNone
+      TabOrder = 8
+      Visible = False
+      DesignSize = (
+        547
+        46)
+      object laEvents: TTntLabel
+        Left = 8
+        Top = 25
+        Width = 145
+        Height = 13
+        AutoSize = False
+        Caption = 'Search messages matched to'
+        Transparent = True
+      end
+      object beEvents: TTntBevel
+        Left = 16
+        Top = 10
+        Width = 515
+        Height = 5
+        Anchors = [akLeft, akTop, akRight]
+        Shape = bsTopLine
+      end
+      object lbEventsHead: TTntLabel
+        Left = 4
+        Top = 4
+        Width = 102
+        Height = 13
+        Caption = 'Limit Event Types'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        Transparent = False
+      end
+      object sbEventsClose: THppSpeedButton
+        Left = 521
+        Top = 2
+        Width = 18
+        Height = 17
+        Anchors = [akTop, akRight]
+        Flat = True
+        Transparent = False
+        OnClick = sbEventsCloseClick
+      end
+      object cbEvents: TTntComboBox
+        Left = 159
+        Top = 21
+        Width = 214
+        Height = 21
+        AutoCloseUp = True
+        Style = csDropDownList
+        BiDiMode = bdLeftToRight
+        ItemHeight = 13
+        ParentBiDiMode = False
+        TabOrder = 0
+      end
+    end
   end
   object sb: TTntStatusBar
     Left = 0
-    Top = 498
+    Top = 496
     Width = 551
     Height = 19
     Panels = <>
@@ -677,7 +751,7 @@ object fmGlobalSearch: TfmGlobalSearch
   end
   object pmEventsFilter: TTntPopupMenu
     OnPopup = pmEventsFilterPopup
-    Left = 306
+    Left = 362
     Top = 2
     object N4: TTntMenuItem
       Caption = '-'
@@ -752,7 +826,7 @@ object fmGlobalSearch: TfmGlobalSearch
     end
   end
   object mmAcc: TTntMainMenu
-    Left = 338
+    Left = 394
     Top = 2
     object mmToolbar: TTntMenuItem
       Caption = 'Toolbar'

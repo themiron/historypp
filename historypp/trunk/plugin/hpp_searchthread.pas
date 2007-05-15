@@ -60,7 +60,7 @@ interface
 uses
   Windows, SysUtils, TntSysUtils, Controls, Messages, HistoryGrid, Classes,
   m_GlobalDefs, m_api,
-  hpp_global, hpp_events, hpp_forms, hpp_bookmarks;
+  hpp_global, hpp_events, hpp_forms, hpp_bookmarks, hpp_eventfilters;
 
 
 const
@@ -71,7 +71,7 @@ type
   PDBArray = ^TDBArray;
   TDBArray = array[0..ST_BATCH-1] of Integer;
 
-  TSearchMethod = (smNoText, smExact, smAnyWord, smAllWords, smBookmarks);
+  TSearchMethod = set of (smExact, smAnyWord, smAllWords, smBookmarks, smRange, smEvents);
 
   TContactRec = record
     hContact: THandle;
@@ -94,13 +94,14 @@ type
     FSearchText: WideString;
     FSearchMethod: TSearchMethod;
     FSearchProtected: Boolean;
-    FSearchRange: Boolean;
     FSearchRangeTo: TDateTime;
     FSearchRangeFrom: TDateTime;
+    FSearchEvents: TMessageTypes;
 
     procedure GenerateSearchWords;
     procedure SetSearchRangeFrom(const Value: TDateTime);
     procedure SetSearchRangeTo(const Value: TDateTime);
+    procedure SetSearchEvents(const Value: TMessageTypes);
 
     function SearchEvent(DBEvent: THandle): Boolean;
     procedure SearchContact(Contact: THandle);
@@ -129,9 +130,9 @@ type
     property SearchProtectedContacts: Boolean read FSearchProtected write FSearchProtected;
     property SearchText: WideString read FSearchText write FSearchText;
     property SearchMethod: TSearchMethod read FSearchMethod write FSearchMethod;
-    property SearchRange: Boolean read FSearchRange write FSearchRange;
     property SearchRangeFrom: TDateTime read FSearchRangeFrom write SetSearchRangeFrom;
     property SearchRangeTo: TDateTime read FSearchRangeTo write SetSearchRangeTo;
+    property SearchEvents: TMessageTypes read FSearchEvents write SetSearchEvents;
     property SearchStart: Cardinal read FSearchStart;
     property ParentHandle: Hwnd read FParentHandle write FParentHandle;
 
@@ -282,7 +283,7 @@ begin
   inherited Create(CreateSuspended);
   AllContacts := 0;
   AllEvents := 0;
-  SearchMethod := smExact;
+  SearchMethod := [smExact];
   SearchProtectedContacts := True;
 end;
 
@@ -315,13 +316,13 @@ begin
     CalcMaxProgress;
     SetProgress(0);
 
-    BookmarksMode := (SearchMethod = smBookmarks);
+    BookmarksMode := (smBookmarks in SearchMethod);
 
     // search within contacts
     if not BookmarksMode then begin
       // make it case-insensitive
       SearchText := Tnt_WideUpperCase(SearchText);
-      if SearchMethod in [smAnyWord, smAllWords] then
+      if SearchMethod * [smAnyWord, smAllWords] <> [] then
         GenerateSearchWords;
     end;
 
@@ -433,32 +434,35 @@ end;
 function TSearchThread.SearchEvent(DBEvent: THandle): Boolean;
 var
   hi: THistoryItem;
-  InRange: Boolean;
+  Passed: Boolean;
   EventDate: TDateTime;
 begin
   Result := False;
   if Terminated then exit;
-  Inc(AllEvents);
-  if SearchRange then begin
+  Passed := True;
+  if smRange in SearchMethod then begin
     EventDate := Trunc(GetEventDateTime(DBEvent));
-    InRange := ((SearchRangeFrom <= EventDate) and (SearchRangeTo >= EventDate));
-  end else InRange := true;
-  if InRange then begin
-    if SearchMethod = smNoText then begin
-      Result := True;
-    end else begin
+    Passed := ((SearchRangeFrom <= EventDate) and (SearchRangeTo >= EventDate));
+  end;
+  if Passed then begin
+    if SearchMethod * [smExact,smAnyWord,smAllWords,smEvents] <> [] then begin
       hi := ReadEvent(DBEvent, CurContactCP);
-      case SearchMethod of
-        smAnyWord:  Result := SearchTextAnyWord(Tnt_WideUpperCase(hi.Text),SearchWords);
-        smAllWords: Result := SearchTextAllWords(Tnt_WideUpperCase(hi.Text),SearchWords);
-      else // smExact
-        Result := SearchTextExact(Tnt_WideUpperCase(hi.Text),SearchText);
+      if smEvents in SearchMethod then
+        Passed := ((MessageTypesToDWord(FSearchEvents) and MessageTypesToDWord(hi.MessageType)) >= MessageTypesToDWord(hi.MessageType));
+      if Passed then begin
+        if smExact in SearchMethod then
+          Passed := SearchTextExact(Tnt_WideUpperCase(hi.Text),SearchText) else
+        if smAnyWord in SearchMethod then
+          Passed := SearchTextAnyWord(Tnt_WideUpperCase(hi.Text),SearchWords) else
+        if smAllWords in SearchMethod then
+          Passed := SearchTextAllWords(Tnt_WideUpperCase(hi.Text),SearchWords);
       end;
     end;
   end;
+  Inc(AllEvents);
   IncProgress;
+  Result := Passed;
 end;
-
 
 function TSearchThread.SendItem(hDBEvent: Integer): Boolean;
 var
@@ -502,7 +506,6 @@ begin
     DoMessage(HM_STRD_PROGRESS,WPARAM(CurProgress),LPARAM(MaxProgress));
 end;
 
-
 procedure TSearchThread.SetSearchRangeFrom(const Value: TDateTime);
 begin
   FSearchRangeFrom := Trunc(Value);
@@ -511,6 +514,11 @@ end;
 procedure TSearchThread.SetSearchRangeTo(const Value: TDateTime);
 begin
   FSearchRangeTo := Trunc(Value);
+end;
+
+procedure TSearchThread.SetSearchEvents(const Value: TMessageTypes);
+begin
+  FSearchEvents := Value;
 end;
 
 end.
