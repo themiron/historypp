@@ -186,6 +186,13 @@ type
     N6: TTntMenuItem;
     CopyFilename: TTntMenuItem;
     N7: TTntMenuItem;
+    paEvents: THppPanel;
+    laEvents: TTntLabel;
+    beEvents: TTntBevel;
+    lbEventsHead: TTntLabel;
+    sbEventsClose: THppSpeedButton;
+    tbEvents: THppToolButton;
+    cbEvents: TTntComboBox;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -265,6 +272,8 @@ type
     procedure SelectAll1Click(Sender: TObject);
     procedure OpenFileFolderClick(Sender: TObject);
     procedure BrowseReceivedFilesClick(Sender: TObject);
+    procedure tbEventsClick(Sender: TObject);
+    procedure sbEventsCloseClick(Sender: TObject);
   private
     UsedPassword: String;
     UserMenu: hMenu;
@@ -338,6 +347,7 @@ type
 
     procedure ToggleAdvancedPanel(Show: Boolean);
     procedure ToggleRangePanel(Show: Boolean);
+    procedure ToggleEventsPanel(Show: Boolean);
     procedure TogglePasswordPanel(Show: Boolean);
     procedure OrganizePanels;
     procedure ToggleMainMenu(Enabled: Boolean);
@@ -768,6 +778,21 @@ begin
   end;
 end;
 
+procedure TfmGlobalSearch.ToggleEventsPanel(Show: Boolean);
+var
+  Lock: Boolean;
+begin
+  if Visible then Lock := LockWindowUpdate(Handle);
+  try
+    tbEvents.Down := Show;
+    paEvents.Visible := Show and tbEvents.Enabled;
+    edSearchChange(Self);
+    OrganizePanels;
+  finally
+    if Visible and Lock then LockWindowUpdate(0);
+  end;
+end;
+
 procedure TfmGlobalSearch.mmToolbarClick(Sender: TObject);
 var
   i,n: Integer;
@@ -823,6 +848,9 @@ begin
 
   laSearch.Caption := TranslateWideW(laSearch.Caption);
   bnSearch.Caption := TranslateWideW(bnSearch.Caption);
+  edSearch.Left := laSearch.Left + laSearch.Width + 5;
+  edSearch.Width := bnSearch.Left - edSearch.Left - 5;
+
   laAdvancedHead.Caption := TranslateWideW(laAdvancedHead.Caption);
   rbAny.Caption := TranslateWideW(rbAny.Caption);
   rbAll.Caption := TranslateWideW(rbAll.Caption);
@@ -832,8 +860,13 @@ begin
   laRange1.Caption := TranslateWideW(laRange1.Caption);
   laRange2.Caption := TranslateWideW(laRange2.Caption);
 
+  laEvents.Caption := TranslateWideW(laEvents.Caption);
+  cbEvents.Left := laEvents.Left + laEvents.Width + 10;
+
   laPasswordHead.Caption := TranslateWideW(laPasswordHead.Caption);
   laPass.Caption := TranslateWideW(laPass.Caption);
+  edPass.Left := laPass.Left + laPass.Width + 10;
+
   sbClearFilter.Hint := TranslateWideW(sbClearFilter.Hint);
 
   SaveDialog.Title := Translate(PAnsiChar(SaveDialog.Title));
@@ -855,11 +888,6 @@ begin
   hg.TxtPartLog := TranslateWideW(hg.TxtPartLog);
   hg.TxtStartUp := TranslateWideW(hg.TxtStartUp);
   hg.TxtSessions := TranslateWideW(hg.TxtSessions);
-
-  edSearch.Left := laSearch.Left + laSearch.Width + 5;
-  edSearch.Width := bnSearch.Left - edSearch.Left - 5;
-
-  edPass.Left := laPass.Left + laPass.Width + 10;
 end;
 
 procedure TfmGlobalSearch.FilterOnContact(hContact: Integer);
@@ -970,20 +998,25 @@ begin
   SearchThread := TSearchThread.Create(True);
 
   if IsBookmarksMode then
-    SearchThread.SearchMethod := smBookmarks
-  else if edSearch.text = '' then
-    SearchThread.SearchMethod := smNoText
+    SearchThread.SearchMethod := [smBookmarks]
+  else if edSearch.Text = '' then
+    SearchThread.SearchMethod := []
   else if rbAny.Checked then
-    SearchThread.SearchMethod := smAnyWord
+    SearchThread.SearchMethod := [smAnyWord]
   else if rbAll.Checked then
-    SearchThread.SearchMethod := smAllWords
+    SearchThread.SearchMethod := [smAllWords]
   else
-    SearchThread.SearchMethod := smExact;
+    SearchThread.SearchMethod := [smExact];
 
-  SearchThread.SearchRange := paRange.Visible;
-  if SearchThread.SearchRange then begin
+  if paRange.Visible then begin
+    SearchThread.SearchMethod := SearchThread.SearchMethod + [smRange];
     SearchThread.SearchRangeFrom := dtRange1.Date;
     SearchThread.SearchRangeTo := dtRange2.Date;
+  end;
+
+  if paEvents.Visible and (cbEvents.ItemIndex <> -1) then begin
+    SearchThread.SearchMethod := SearchThread.SearchMethod + [smEvents];
+    SearchThread.SearchEvents := hppEventFilters[cbEvents.ItemIndex].Events;
   end;
 
   SearchThread.Priority := tpLower;
@@ -1117,7 +1150,7 @@ end;
 
 procedure TfmGlobalSearch.edSearchChange(Sender: TObject);
 begin
-  bnSearch.Enabled := (edSearch.Text <> '') or paRange.Visible;
+  bnSearch.Enabled := (edSearch.Text <> '') or paRange.Visible or paEvents.Visible;
 end;
 
 procedure TfmGlobalSearch.edSearchEnter(Sender: TObject);
@@ -1178,6 +1211,14 @@ begin
       hppIcons[HPP_ICON_SESS_HIDE].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
   with sbRangeClose.Glyph do begin
+    Width := 16;
+    Height := 16;
+    Canvas.Brush.Color := clBtnFace;
+    Canvas.FillRect(Canvas.ClipRect);
+    DrawiconEx(Canvas.Handle,0,0,
+      hppIcons[HPP_ICON_SESS_HIDE].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+  end;
+  with sbEventsClose.Glyph do begin
     Width := 16;
     Height := 16;
     Canvas.Brush.Color := clBtnFace;
@@ -1287,8 +1328,8 @@ begin
   else
     rbAny.Checked := True;
   end;
-
   ToggleRangePanel(GetDBBool(hppDBName,'GlobalSearchWindow.ShowRange',False));
+  ToggleEventsPanel(GetDBBool(hppDBName,'GlobalSearchWindow.ShowEvents',False));
   dtRange1.Date := Trunc(GetDBDateTime(hppDBName,'GlobalSearchWindow.RangeFrom',Now));
   dtRange2.Date := Trunc(GetDBDateTime(hppDBName,'GlobalSearchWindow.RangeTo',Now));
   edSearch.Text := GetDBWideStr(hppDBName,'GlobalSearchWindow.LastSearch',DEFAULT_SEARCH_TEXT);
@@ -1311,6 +1352,8 @@ begin
   tbAdvanced.ImageIndex := ii;
   ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_SEARCHRANGE].Handle);
   tbRange.ImageIndex := ii;
+  ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_HOTFILTER].Handle);
+  tbEvents.ImageIndex := ii;
   ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_SEARCHPROTECTED].Handle);
   tbPassword.ImageIndex := ii;
   ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_BOOKMARK].Handle);
@@ -1405,6 +1448,10 @@ begin
   if paRange.Visible then begin
     paRange.Top := PrevPanel.Top+PrevPanel.Width;
     PrevPanel := paRange;
+  end;
+  if paEvents.Visible then begin
+    paEvents.Top := PrevPanel.Top+PrevPanel.Width;
+    PrevPanel := paEvents;
   end;
   if paPassword.Visible then begin
     paPassword.Top := PrevPanel.Top+PrevPanel.Width;
@@ -1501,6 +1548,7 @@ begin
     WriteDBInt(hppDBName,'GlobalSearchWindow.AdvancedOptions',2);
 
   WriteDBBool(hppDBName,'GlobalSearchWindow.ShowRange',paRange.Visible);
+  WriteDBBool(hppDBName,'GlobalSearchWindow.ShowEvents',paEvents.Visible);
 
   if Trunc(dtRange1.Date) = Trunc(Now) then
     DBDelete(hppDBName,'GlobalSearchWindow.RangeFrom') else
@@ -2062,9 +2110,10 @@ begin
   for i := pmEventsFilter.Items.Count - 1 downto 0 do
     if pmEventsFilter.Items[i].RadioItem then
       pmEventsFilter.Items.Delete(i);
+  cbEvents.Items.Clear;
 
   ShowAllEventsIndex := GetShowAllEventsIndex;
-  for i := 0 to Length(hppEventFilters) - 1 do begin
+  for i := 0 to High(hppEventFilters) do begin
     mi := TTntMenuItem.Create(pmEventsFilter);
     mi.Caption := Tnt_WideStringReplace(hppEventFilters[i].Name,'&','&&',[rfReplaceAll]);
     mi.GroupIndex := 1;
@@ -2073,7 +2122,11 @@ begin
     mi.OnClick := EventsFilterItemClick;
     if i = ShowAllEventsIndex then mi.Default := True;
     pmEventsFilter.Items.Insert(i,mi);
+    cbEvents.Items.Insert(i,mi.Caption);
   end;
+
+  cbEvents.DropDownCount := Length(hppEventFilters);
+  cbEvents.ItemIndex := ShowAllEventsIndex;
 end;
 
 procedure TfmGlobalSearch.Customize1Click(Sender: TObject);
@@ -2263,6 +2316,8 @@ begin
   ToggleAdvancedPanel(tbAdvanced.Down);
   tbRange.Enabled := not IsBookmarksMode;
   ToggleRangePanel(tbRange.Down);
+  tbEvents.Enabled := not IsBookmarksMode;
+  ToggleEventsPanel(tbEvents.Down);
 
   if IsBookmarksMode then
     bnSearch.Click else
@@ -2291,6 +2346,18 @@ begin
   hContact := GetSearchItem(hg.Selected).Contact.Handle;
   PluginLink.CallService(MS_FILE_GETRECEIVEDFILESFOLDER,hContact,LPARAM(@Path));
   ShellExecute(0,'open',Path,nil,nil,SW_SHOW);
+end;
+
+procedure TfmGlobalSearch.tbEventsClick(Sender: TObject);
+begin
+  if Sender <> tbEvents then
+    tbEvents.Down := not tbEvents.Down;
+  ToggleEventsPanel(tbEvents.Down);
+end;
+
+procedure TfmGlobalSearch.sbEventsCloseClick(Sender: TObject);
+begin
+  ToggleEventsPanel(False);
 end;
 
 initialization
