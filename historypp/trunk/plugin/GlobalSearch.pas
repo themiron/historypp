@@ -280,7 +280,7 @@ type
     History: array of TSearchItem;
     FilterHistory: array of Integer;
     CurContact: THandle;
-    st: TSearchThread;
+    SearchThread: TSearchThread;
     stime: DWord;
     ContactsFound: Integer;
     AllItems: Integer;
@@ -462,11 +462,9 @@ procedure TfmGlobalSearch.SMFinished(var M: TMessage);
 var
   sbt: WideString;
 begin
-  stime := GetTickCount - st.SearchStart;
-  AllContacts := st.AllContacts;
-  AllItems := st.AllEvents;
-  st.WaitFor;
-  FreeAndNil(st);
+  stime := GetTickCount - SearchThread.SearchStart;
+  AllContacts := SearchThread.AllContacts;
+  AllItems := SearchThread.AllEvents;
   IsSearching := False;
   bnSearch.Caption := TranslateWideW('Search');
   paProgress.Hide;
@@ -921,14 +919,12 @@ procedure TfmGlobalSearch.StopSearching;
 begin
   bnSearch.Enabled := False;
   try
-    st.Terminate;
-    while IsSearching do
-      Application.ProcessMessages;
+    SearchThread.Terminate(tpHigher);
+    while IsSearching do Application.ProcessMessages;
   finally
     bnSearch.Enabled := True;
+    if edSearch.CanFocus then edSearch.SetFocus;
   end;
-  if not IsBookmarksMode then
-    edSearch.SetFocus;
 end;
 
 procedure TfmGlobalSearch.bnSearchClick(Sender: TObject);
@@ -969,30 +965,32 @@ begin
   end;
 
   UsedPassword := edPass.Text;
-  st := TSearchThread.Create(True);
+
+  if Assigned(SearchThread) then FreeAndNil(SearchThread);
+  SearchThread := TSearchThread.Create(True);
 
   if IsBookmarksMode then
-    st.SearchMethod := smBookmarks
+    SearchThread.SearchMethod := smBookmarks
   else if edSearch.text = '' then
-    st.SearchMethod := smNoText
+    SearchThread.SearchMethod := smNoText
   else if rbAny.Checked then
-    st.SearchMethod := smAnyWord
+    SearchThread.SearchMethod := smAnyWord
   else if rbAll.Checked then
-    st.SearchMethod := smAllWords
+    SearchThread.SearchMethod := smAllWords
   else
-    st.SearchMethod := smExact;
+    SearchThread.SearchMethod := smExact;
 
-  st.SearchRange := paRange.Visible;
-  if st.SearchRange then begin
-    st.SearchRangeFrom := dtRange1.Date;
-    st.SearchRangeTo := dtRange2.Date;
+  SearchThread.SearchRange := paRange.Visible;
+  if SearchThread.SearchRange then begin
+    SearchThread.SearchRangeFrom := dtRange1.Date;
+    SearchThread.SearchRangeTo := dtRange2.Date;
   end;
 
-  st.Priority := tpLower;
-  st.ParentHandle := Handle;
-  st.SearchText := edSearch.text;
-  st.SearchProtectedContacts := SearchProtected;
-  st.Resume;
+  SearchThread.Priority := tpLower;
+  SearchThread.ParentHandle := Handle;
+  SearchThread.SearchText := edSearch.Text;
+  SearchThread.SearchProtectedContacts := SearchProtected;
+  SearchThread.Resume;
 end;
 
 
@@ -1048,13 +1046,19 @@ begin
     AppSysMenu:=GetSystemMenu(Handle,False);
     Flag:=MF_GRAYED;
     EnableMenuItem(AppSysMenu,SC_CLOSE,MF_BYCOMMAND or Flag);
-    laProgress.Caption := TranslateWideW('Please wait while closing the window...');
-    laProgress.Font.Style := [fsBold];
-    pb.Visible := False;
-    st.Terminate(tpHigher);
-    while IsSearching do
-      Application.ProcessMessages;
+    //laProgress.Caption := TranslateWideW('Please wait while closing the window...');
+    //laProgress.Font.Style := [fsBold];
+    //pb.Visible := False;
+    if paProgress.Visible then paProgress.Hide;
+    sb.SimpleText := TranslateWideW('Please wait while closing the window...');
+    // terminate thread
+    SearchThread.Terminate(tpHigher);
+    repeat
+      Application.ProcessMessages
+    until not IsSearching;
   end;
+  if CanClose and Assigned(SearchThread) then
+    FreeAndNil(SearchThread);
 end;
 
 procedure TfmGlobalSearch.hgItemData(Sender: TObject; Index: Integer;
@@ -1642,6 +1646,7 @@ begin
   ShowContacts(False);
 
   IsSearching := False;
+  SearchThread := nil;
   
   hg.Codepage := hppCodepage;
   hg.RTLMode := hppRTLDefault;
@@ -2261,7 +2266,7 @@ begin
 
   if IsBookmarksMode then
     bnSearch.Click else
-    edSearch.SetFocus;
+    if edSearch.CanFocus then edSearch.SetFocus;
 end;
 
 procedure TfmGlobalSearch.SelectAll1Click(Sender: TObject);
