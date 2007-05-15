@@ -513,7 +513,7 @@ object fmGlobalSearch: TfmGlobalSearch
           Left = 46
           Top = 0
           HelpKeyword = 'F6'
-          Caption = 'tbEvents'
+          Caption = 'Limit Search Range'
           Style = tbsCheck
           OnClick = tbEventsClick
         end
@@ -614,7 +614,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Anchors = [akLeft, akTop, akRight]
         Shape = bsTopLine
       end
-      object lbEventsHead: TTntLabel
+      object laEventsHead: TTntLabel
         Left = 4
         Top = 4
         Width = 102
@@ -728,15 +728,15 @@ object fmGlobalSearch: TfmGlobalSearch
   end
   object ilContacts: TImageList
     ShareImages = True
-    Left = 174
-    Top = 214
+    Left = 470
+    Top = 262
   end
   object SaveDialog: TSaveDialog
     FilterIndex = 0
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofShareAware, ofEnableSizing]
     Title = 'Save History'
-    Left = 218
-    Top = 204
+    Left = 506
+    Top = 260
   end
   object tiFilter: TTimer
     Enabled = False
