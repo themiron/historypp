@@ -1019,7 +1019,7 @@ destructor THistoryGrid.Destroy;
 begin
   FState := gsClose;
   {$IFDEF CUST_SB}
-  VertScrollBar.Free;
+  FVertScrollBar.Free;
   {$ENDIF}
   {$IFDEF RENDER_RICH}
   // it gets deleted autmagically because FRich.Owner = Self
@@ -1108,9 +1108,9 @@ begin
   {$IFDEF CUST_SB}
     {$IFDEF PAGE_SIZE}
       //VertScrollBar.Visible := True;
-      VertScrollBar.Range := ItemsCount + VertScrollBar.PageSize-1;
+      FVertScrollBar.Range := ItemsCount + FVertScrollBar.PageSize-1;
     {$ELSE}
-      VertScrollBar.Range := ItemsCount+ClientHeight-1;
+      FVertScrollBar.Range := ItemsCount+ClientHeight-1;
     {$ENDIF}
   {$ELSE}
     VertScrollBar.Range := ItemsCount+ClientHeight-1;
@@ -1478,8 +1478,8 @@ begin
     end;
 
     {$IFDEF CUST_SB}
-    if (Message.ScrollBar = 0) and VertScrollBar.Visible then
-      VertScrollBar.ScrollMessage(Message)
+    if (Message.ScrollBar = 0) and FVertScrollBar.Visible then
+      FVertScrollBar.ScrollMessage(Message)
     else
       inherited;
     {$ELSE}
