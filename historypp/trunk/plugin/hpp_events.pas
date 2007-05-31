@@ -369,20 +369,28 @@ var
 begin
   msgA := PChar(EventInfo.pBlob);
   msglen := lstrlenA(PChar(EventInfo.pBlob))+1;
-  LenW := 0;
-  if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
-    msgW := PWideChar(msgA+msglen);
-    for i := 0 to ((EventInfo.cbBlob-msglen) div SizeOf(WideChar))-1 do
-      if msgW[i] = #0 then begin
-        LenW := i;
-        break;
-      end;
-    UseUnicode := (lenW < msglen) and (lenW > 0);
-  end else UseUnicode := false;
-  if UseUnicode then
-    SetString(hi.Text,msgW,lenW)
-  else
-    hi.Text := AnsiToWideString(msgA,hi.Codepage);
+  if Boolean(EventInfo.flags and DBEF_UTF) then begin
+    SetLength(hi.Text,msglen);
+    msgW := PWideChar(hi.Text);
+    i := Utf8ToUnicode(msgW,msglen,msgA,msglen);
+    if i > 0 then
+      SetLength(hi.Text,i-1) else
+      hi.Text := AnsiToWideString(msgA,hi.Codepage);
+  end else begin
+    lenW := 0;
+    if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
+      msgW := PWideChar(msgA+msglen);
+      for i := 0 to ((EventInfo.cbBlob-msglen) div SizeOf(WideChar))-1 do
+        if msgW[i] = #0 then begin
+          LenW := i;
+          break;
+        end;
+      UseUnicode := (lenW < msglen) and (lenW > 0);
+    end else UseUnicode := false;
+    if UseUnicode then
+      SetString(hi.Text,msgW,lenW) else
+      hi.Text := AnsiToWideString(msgA,hi.Codepage);
+  end;
   if (hi.MessageType = [mtMessage]) and TextHasUrls(hi.Text) then
     hi.MessageType := [mtUrl];
 end;
