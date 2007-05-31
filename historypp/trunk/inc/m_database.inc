@@ -305,7 +305,8 @@ const
     DBEF_FIRST = 1;     // internally only, do not use
     DBEF_SENT  = 2;     // if set, the event was sent by the user, otherwise it was received
     DBEF_READ  = 4;     // event has been read by the user -- only needed for history
-    DBEF_RTL   = 8;     //event contains the right-to-left aligned text
+    DBEF_RTL   = 8;     // event contains the right-to-left aligned text
+    DBEF_UTF   = 16;    // event contains a text in utf-8
 
     EVENTTYPE_MESSAGE       = 0;
     EVENTTYPE_URL           = 1;
@@ -343,16 +344,16 @@ const
     {
         wParam : Handle to the contact
         lParam : HDBEVENT handle to delete
-        affects: Removes a single event from the database for the given contact
-        returns: 0 on success, nonzero on failure
-        notes  : Triggers DB/Event/Deleted just before the event *is* deleted
+        Affects: Removes a single event from the database for the given contact
+        Returns: 0 on success, nonzero on failure
+        Notes  : Triggers DB/Event/Deleted just before the event *is* deleted
     }
     MS_DB_EVENT_DELETE              = 'DB/Event/Delete';
 
     {
         wParam : Handle to DB event
         lParam : 0
-        returns: Returns the space in bytes requried to store the blob in HDBEVENT
+        Returns: Returns the space in bytes requried to store the blob in HDBEVENT
                  given by HDBEVENT(wParam) -- or -1 on error
     }
     MS_DB_EVENT_GETBLOBSIZE         = 'DB/Event/GetBlobSize';
@@ -360,12 +361,12 @@ const
     {
         wParam : Handle to a DB event
         lParam : Pointer to a TDBEVENTINFO structure which must be initialised
-        affects: Returns all the information about an DB event handle to a TDBEVENTINFO
+        Affects: Returns all the information about an DB event handle to a TDBEVENTINFO
                  structure which must be initalised, DBEI.cbSize, DBEI.pBlob and DBEI.cbSize
                  before calling this service, the size can be assertained with
                  GetBlobSize() service, see notes
-        returns: Returns 0 on success, non zero on failure
-        notes  : The correct value dbe.cbBlob can be got using db/event/getblobsize
+        Returns: Returns 0 on success, non zero on failure
+        Notes  : The correct value dbe.cbBlob can be got using db/event/getblobsize
                  If successful, all the fields of dbe are filled. dbe.cbBlob is set to the
                  actual number of bytes retrieved and put in dbe.pBlob
                  If dbe.cbBlob is too small, dbe.pBlob is filled up to the size of dbe.cbBlob
@@ -374,6 +375,19 @@ const
                  own internal list of modules. Look but don't touch.
     }
     MS_DB_EVENT_GET                 = 'DB/Event/Get';
+
+    {
+        wParam : Pointer to a TDBEVENTINFO structure which must be initialised
+        lParam : DBVT_WCHAR or DBVT_ASCIIZ
+        Affects: Retrieves the event's text
+        Returns: Returns pointer to a string in the required format.
+        Notes  : TDBEVENTINFO structure should be the valid database event
+                 read via MS_DB_EVENT_GET
+                 Only events of type EVENTTYPE_MESSAGE are supported.
+                 This string should be freed by a call of mir_free
+        Version: 0.7.0+
+    }
+    MS_DB_EVENT_GETTEXT             = 'DB/Event/GetText';
 
     {
         wParam : HCONTACT
@@ -627,5 +641,13 @@ const
                  original service all, so don't change any of it's fields
     }
     ME_DB_CONTACT_SETTINGCHANGED    = 'DB/Contact/SettingChanged';
+
+    {
+        wParam : (WPARAM)(BOOL)bIsResident
+        lParam : Pointer to pszSettingName
+        Affect : Disables a setting saving to the database.
+        Version: 0.6+
+    }
+    MS_DB_SETSETTINGRESIDENT        = 'DB/SetSettingResident';
 
 {$ENDIF}
