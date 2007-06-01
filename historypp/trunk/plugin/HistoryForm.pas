@@ -867,8 +867,6 @@ begin
     end;
   end;
 
-  n := 0;
-
   // move buttons in reverse order and set parent afterwards
   // thanks Luu Tran for this tip
   // http://groups.google.com/group/borland.public.delphi.vcl.components.using/browse_thread/thread/da4e4da814baa745/c1ce8b671c1dac20
@@ -967,7 +965,7 @@ procedure THistoryFrm.HMEventAdded(var Message: TMessage);
 //new message added to history (wparam=hcontact, lparam=hdbevent)
 begin
   //if for this contact
-  if dword(message.wParam)=hContact then begin
+  if Cardinal(message.wParam)=hContact then begin
     //receive message from database
     AddHistoryItem(message.lParam);
     hgState(hg,hg.State);
@@ -980,9 +978,9 @@ var
 begin
   {wParam - hContact; lParam - hDBEvent}
   if hg.State = gsDelete then exit;
-  if WPARAM(message.wParam) <> hContact then exit;
+  if Cardinal(message.wParam) <> hContact then exit;
   for i := 0 to hg.Count - 1 do
-    if (History[GridIndexToHistory(i)] = Message.lParam) then begin
+    if (History[GridIndexToHistory(i)] = Cardinal(Message.lParam)) then begin
       hg.Delete(i);
       hgState(hg,hg.State);
       exit;
@@ -1015,9 +1013,9 @@ procedure THistoryFrm.HMBookmarkChanged(var M: TMessage);
 var
   i: integer;
 begin
-  if M.WParam <> hContact then exit;
+  if Cardinal(M.WParam) <> hContact then exit;
   for i := 0 to hg.Count-1 do
-    if History[GridIndexToHistory(i)] = M.LParam then begin
+    if History[GridIndexToHistory(i)] = Cardinal(M.LParam) then begin
       hg.Bookmarked[i] := BookmarkServer[hContact].Bookmarked[M.LParam];
       break;
     end;
@@ -1031,7 +1029,7 @@ end;
 
 procedure THistoryFrm.HMContactDeleted(var Message: TMessage);
 begin
-  if hContact <> Message.wParam then exit;
+  if Cardinal(Message.wParam) <> hContact then exit;
   Close;
 end;
 
@@ -1720,8 +1718,7 @@ begin
   Application.ProcessMessages;
 end;
 
-procedure THistoryFrm.hgItemFilter(Sender: TObject; Index: Integer;
-  var Show: Boolean);
+procedure THistoryFrm.hgItemFilter(Sender: TObject; Index: Integer; var Show: Boolean);
 begin
 
   // if we have string filter
@@ -2882,7 +2879,7 @@ end;
 
 procedure THistoryFrm.hgSearchItem(Sender: TObject; Item, ID: Integer; var Found: Boolean);
 begin
-  Found := (ID = History[GridIndexToHistory(Item)]);
+  Found := (Cardinal(ID) = History[GridIndexToHistory(Item)]);
 end;
 
 procedure THistoryFrm.hgKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
