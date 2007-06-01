@@ -13,6 +13,8 @@ Authorization request granted by %s (%d): %s
 Authorization request denied by %s (%d): %s
 User %s (%d) removed himself from your contact list: %s
 Authorization future request by %s (%d): %s
+User %s (%d) changed icq client: %s
+Status request by %s (%d):%s
 Broadcast message from %s (%s): %s
 WATrack: information request
 Artist: %s\r\nTitle: %s\r\nAlbum: %s
