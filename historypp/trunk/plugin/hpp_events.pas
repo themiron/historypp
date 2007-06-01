@@ -106,6 +106,8 @@ procedure GetEventTextForICQAuthGranted(EventInfo: TDBEventInfo; var Hi: THistor
 procedure GetEventTextForICQAuthDenied(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextForICQSelfRemove(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextForICQFutureAuth(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForICQClientChange(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForICQCheckStatus(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextForICQBroadcast(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextWATrackRequest(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextWATrackAnswer(EventInfo: TDBEventInfo; var Hi: THistoryItem);
@@ -136,7 +138,7 @@ const
 
 var
 
-  EventTable: array[0..24] of TEventTableItem = (
+  EventTable: array[0..26] of TEventTableItem = (
     // must be the first item in array for unknown events
     (EventType: MaxWord; MessageType: mtOther; TextFunction: GetEventTextForOther),
     // events definitions
@@ -158,6 +160,8 @@ var
     (EventType: ICQEVENTTYPE_AUTH_DENIED; MessageType: mtSystem; TextFunction: GetEventTextForICQAuthDenied),
     (EventType: ICQEVENTTYPE_SELF_REMOVE; MessageType: mtSystem; TextFunction: GetEventTextForICQSelfRemove),
     (EventType: ICQEVENTTYPE_FUTURE_AUTH; MessageType: mtSystem; TextFunction: GetEventTextForICQFutureAuth),
+    (EventType: ICQEVENTTYPE_CLIENT_CHANGE; MessageType: mtSystem; TextFunction: GetEventTextForICQClientChange),
+    (EventType: ICQEVENTTYPE_CHECK_STATUS; MessageType: mtSystem; TextFunction: GetEventTextForICQCheckStatus),
     (EventType: ICQEVENTTYPE_BROADCAST; MessageType: mtSystem; TextFunction: GetEventTextForICQBroadcast),
     (EventType: EVENTTYPE_CONTACTLEFTCHANNEL; MessageType: mtStatus; TextFunction: GetEventTextForMessage),
     (EventType: EVENTTYPE_WAT_REQUEST; MessageType: mtWATrack; TextFunction: GetEventTextWATrackRequest),
@@ -588,7 +592,7 @@ begin
   end;
 end;
 
-function GetEventTextForICQAuth(EventInfo: TDBEventInfo; Template: WideString): WideString;
+function GetEventTextForICQSystem(EventInfo: TDBEventInfo; Template: WideString): WideString;
 var
   BytePos: LongWord;
   Body: String;
@@ -606,26 +610,38 @@ end;
 
 procedure GetEventTextForICQAuthGranted(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 begin
-  hi.Text := GetEventTextForICQAuth(EventInfo,
+  hi.Text := GetEventTextForICQSystem(EventInfo,
     TranslateWideW('Authorization request granted by %s (%d): %s'));
 end;
 
 procedure GetEventTextForICQAuthDenied(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 begin
-  hi.Text := GetEventTextForICQAuth(EventInfo,
+  hi.Text := GetEventTextForICQSystem(EventInfo,
     TranslateWideW('Authorization request denied by %s (%d): %s'));
 end;
 
 procedure GetEventTextForICQSelfRemove(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 begin
-  hi.Text := GetEventTextForICQAuth(EventInfo,
+  hi.Text := GetEventTextForICQSystem(EventInfo,
     TranslateWideW('User %s (%d) removed himself from your contact list: %s'));
 end;
 
 procedure GetEventTextForICQFutureAuth(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 begin
-  hi.Text := GetEventTextForICQAuth(EventInfo,
+  hi.Text := GetEventTextForICQSystem(EventInfo,
     TranslateWideW('Authorization future request by %s (%d): %s'));
+end;
+
+procedure GetEventTextForICQClientChange(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+begin
+  hi.Text := GetEventTextForICQSystem(EventInfo,
+    TranslateWideW('User %s (%d) changed icq client: %s'));
+end;
+
+procedure GetEventTextForICQCheckStatus(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+begin
+  hi.Text := GetEventTextForICQSystem(EventInfo,
+    TranslateWideW('Status request by %s (%d):%s'));
 end;
 
 procedure GetEventTextForICQBroadcast(EventInfo: TDBEventInfo; var Hi: THistoryItem);
