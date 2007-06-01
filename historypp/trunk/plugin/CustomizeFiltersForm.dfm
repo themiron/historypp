@@ -14,9 +14,9 @@ object fmCustomizeFilters: TfmCustomizeFilters
   KeyPreview = True
   OldCreateOrder = False
   Position = poOwnerFormCenter
-  OnClose = TntFormClose
+  OnClose = FormClose
   OnCreate = FormCreate
-  OnDestroy = TntFormDestroy
+  OnDestroy = FormDestroy
   OnKeyDown = TntFormKeyDown
   DesignSize = (
     370
@@ -47,15 +47,15 @@ object fmCustomizeFilters: TfmCustomizeFilters
   end
   object gbFilter: TTntGroupBox
     Left = 8
-    Top = 167
+    Top = 152
     Width = 354
-    Height = 265
+    Height = 281
     Anchors = [akLeft, akTop, akRight, akBottom]
     Caption = 'Filter Properties'
     TabOrder = 1
     DesignSize = (
       354
-      265)
+      281)
     object laFilterName: TTntLabel
       Left = 12
       Top = 23
@@ -78,7 +78,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Left = 12
       Top = 92
       Width = 332
-      Height = 164
+      Height = 153
       OnClickCheck = clEventsClickCheck
       Anchors = [akLeft, akTop, akRight, akBottom]
       ItemHeight = 13
@@ -94,7 +94,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Show all except selected events'
       TabOrder = 2
-      OnClick = rbIncludeClick
+      OnClick = rbPropertyClick
     end
     object rbInclude: TTntRadioButton
       Left = 12
@@ -104,7 +104,27 @@ object fmCustomizeFilters: TfmCustomizeFilters
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Show only selected events'
       TabOrder = 1
-      OnClick = rbIncludeClick
+      OnClick = rbPropertyClick
+    end
+    object edCustomEvent: THppEdit
+      Left = 259
+      Top = 250
+      Width = 85
+      Height = 21
+      Anchors = [akRight, akBottom]
+      MaxLength = 63
+      TabOrder = 4
+      OnChange = edCustomEventChange
+    end
+    object cbCustomEvent: TTntCheckBox
+      Left = 12
+      Top = 250
+      Width = 241
+      Height = 21
+      Anchors = [akLeft, akRight, akBottom]
+      Caption = 'Include custom event type (0-65535)'
+      TabOrder = 5
+      OnClick = cbCustomEventClick
     end
   end
   object bnReset: TTntButton
@@ -121,18 +141,18 @@ object fmCustomizeFilters: TfmCustomizeFilters
     Left = 8
     Top = 8
     Width = 354
-    Height = 149
+    Height = 137
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Filters'
     TabOrder = 0
     DesignSize = (
       354
-      149)
+      137)
     object lbFilters: TTntListBox
       Left = 12
-      Top = 18
+      Top = 20
       Width = 241
-      Height = 119
+      Height = 105
       Style = lbOwnerDrawFixed
       Anchors = [akLeft, akTop, akRight, akBottom]
       DragMode = dmAutomatic
@@ -145,7 +165,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
     end
     object bnDown: TTntButton
       Left = 259
-      Top = 94
+      Top = 102
       Width = 85
       Height = 23
       Anchors = [akTop, akRight]
@@ -155,7 +175,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
     end
     object bnUp: TTntButton
       Left = 259
-      Top = 71
+      Top = 74
       Width = 85
       Height = 23
       Anchors = [akTop, akRight]
@@ -165,7 +185,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
     end
     object bnDelete: TTntButton
       Left = 259
-      Top = 41
+      Top = 47
       Width = 85
       Height = 23
       Anchors = [akTop, akRight]
@@ -175,7 +195,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
     end
     object bnAdd: TTntButton
       Left = 259
-      Top = 18
+      Top = 20
       Width = 85
       Height = 23
       Anchors = [akTop, akRight]

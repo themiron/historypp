@@ -46,10 +46,12 @@ type
     bnDelete: TTntButton;
     bnAdd: TTntButton;
     laFilterName: TTntLabel;
+    edCustomEvent: THppEdit;
+    cbCustomEvent: TTntCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure bnOKClick(Sender: TObject);
-    procedure TntFormClose(Sender: TObject; var Action: TCloseAction);
-    procedure TntFormDestroy(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormDestroy(Sender: TObject);
     procedure lbFiltersClick(Sender: TObject);
     procedure edFilterNameChange(Sender: TObject);
     procedure bnAddClick(Sender: TObject);
@@ -59,7 +61,7 @@ type
     procedure bnDeleteClick(Sender: TObject);
     procedure clEventsClickCheck(Sender: TObject);
     procedure bnResetClick(Sender: TObject);
-    procedure rbIncludeClick(Sender: TObject);
+    procedure rbPropertyClick(Sender: TObject);
     procedure lbFiltersDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure lbFiltersDragOver(Sender, Source: TObject; X, Y: Integer;
       State: TDragState; var Accept: Boolean);
@@ -69,6 +71,8 @@ type
       Rect: TRect; State: TOwnerDrawState);
     procedure TntFormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure cbCustomEventClick(Sender: TObject);
+    procedure edCustomEventChange(Sender: TObject);
   private
     LocalFilters: ThppEventFilterArray;
 
@@ -136,7 +140,7 @@ begin
   lbFilters.Items.Add(NewName);
   lbFilters.ItemIndex := i;
   lbFiltersClick(Self);
-  edFilterName.SetFocus;
+  if edFilterName.CanFocus then edFilterName.SetFocus;
 end;
 
 procedure TfmCustomizeFilters.bnCancelClick(Sender: TObject);
@@ -209,8 +213,7 @@ begin
   if EventsWrong or IncOutWrong then exit;
   n := lbFilters.ItemIndex;
   if rbInclude.Checked then
-    LocalFilters[n].filMode := FM_INCLUDE
-  else
+    LocalFilters[n].filMode := FM_INCLUDE else
     LocalFilters[n].filMode := FM_EXCLUDE;
   LocalFilters[n].filEvents := [];
   for i := 0 to clEvents.Count - 1 do begin
@@ -218,6 +221,8 @@ begin
     if clEvents.Checked[i] then
       Include(LocalFilters[n].filEvents,TMessageType(Integer(clEvents.Items.Objects[i])));
   end;
+  if cbCustomEvent.Checked then
+    LocalFilters[n].filEvents := LocalFilters[n].filEvents + CustomEvent;
   LocalFilters[n].Events := GenerateEvents(LocalFilters[n].filMode,LocalFilters[n].filEvents);
 end;
 
@@ -275,6 +280,7 @@ var
   mt_name, pretty_name: WideString;
   i: Integer;
 begin
+  clEvents.Items.BeginUpdate;
   clEvents.Items.Clear;
 
   // add all types except mtOther (we'll add it at the end) and
@@ -316,17 +322,20 @@ begin
   //  end;
   pretty_name := TranslateWideW(EventRecords[mt].Name{TRANSLATE-IGNORE});
   clEvents.Items.AddObject(pretty_name,Pointer(Ord(mt)));
+  clEvents.Items.EndUpdate;
 end;
 
 procedure TfmCustomizeFilters.FillFiltersList;
 var
   i: Integer;
 begin
+  lbFilters.Items.BeginUpdate;
   lbFilters.Items.Clear;
   for i := 0 to Length(LocalFilters) - 1 do begin
     lbFilters.Items.Add(LocalFilters[i].Name);
   end;
   //meEvents.Lines.Clear;
+  lbFilters.Items.EndUpdate;
 end;
 
 procedure TfmCustomizeFilters.FormCreate(Sender: TObject);
@@ -335,6 +344,9 @@ begin
 
   DesktopFont := True;
   MakeFontsParent(Self);
+  DoubleBuffered := True;
+  MakeDoubleBufferedParent(Self);
+
   TranslateForm;
 
   LoadLocalFilters;
@@ -349,25 +361,36 @@ end;
 procedure TfmCustomizeFilters.lbFiltersClick(Sender: TObject);
 var
   i: Integer;
+  Lock: Boolean;
 begin
   if lbFilters.ItemIndex = -1 then exit;
-  rbInclude.Checked := (LocalFilters[lbFilters.ItemIndex].filMode = FM_INCLUDE);
-  rbExclude.Checked := (LocalFilters[lbFilters.ItemIndex].filMode = FM_EXCLUDE);
-  for i := 0 to clEvents.Items.Count - 1 do begin
-    if clEvents.Header[i] then continue;
-    clEvents.Checked[i] := TMessageType(Pointer(clEvents.Items.Objects[i])) in LocalFilters[lbFilters.ItemIndex].filEvents;
+  if Visible then Lock := LockWindowUpdate(Handle);
+  try
+    rbInclude.Checked := (LocalFilters[lbFilters.ItemIndex].filMode = FM_INCLUDE);
+    rbExclude.Checked := (LocalFilters[lbFilters.ItemIndex].filMode = FM_EXCLUDE);
+    for i := 0 to clEvents.Items.Count - 1 do begin
+      if clEvents.Header[i] then continue;
+      clEvents.Checked[i] := TMessageType(Pointer(clEvents.Items.Objects[i])) in LocalFilters[lbFilters.ItemIndex].filEvents;
+    end;
+
+    cbCustomEvent.Checked := (LocalFilters[lbFilters.ItemIndex].filEvents*CustomEvent = CustomEvent);
+    edCustomEvent.Text := IntToStr(LocalFilters[lbFilters.ItemIndex].filCustom);
+
+    edFilterName.Text := lbFilters.Items[lbFilters.ItemIndex];
+
+    edFilterName.Enabled := (lbFilters.ItemIndex <> GetShowAllEventsIndex(LocalFilters));
+    laFilterName.Enabled := edFilterName.Enabled;
+    rbInclude.Enabled := edFilterName.Enabled;
+    rbExclude.Enabled := edFilterName.Enabled;
+    clEvents.Enabled := edFilterName.Enabled;
+    cbCustomEvent.Enabled := edFilterName.Enabled;
+    edCustomEvent.Enabled := edFilterName.Enabled and cbCustomEvent.Checked;
+    bnDelete.Enabled := edFilterName.Enabled;
+  finally
+    UpdateUpDownButtons;
+    UpdateEventsState;
+    if Visible and Lock then LockWindowUpdate(0);
   end;
-  edFilterName.Text := lbFilters.Items[lbFilters.ItemIndex];
-
-  edFilterName.Enabled := (lbFilters.ItemIndex <> GetShowAllEventsIndex(LocalFilters));
-  laFilterName.Enabled := edFilterName.Enabled;
-  rbInclude.Enabled := edFilterName.Enabled;
-  rbExclude.Enabled := edFilterName.Enabled;
-  clEvents.Enabled := edFilterName.Enabled;
-  bnDelete.Enabled := edFilterName.Enabled;
-
-  UpdateUpDownButtons;
-  UpdateEventsState;
 end;
 
 procedure TfmCustomizeFilters.lbFiltersDragDrop(Sender, Source: TObject; X,
@@ -464,7 +487,7 @@ begin
   UpdateUpDownButtons;
 end;
 
-procedure TfmCustomizeFilters.rbIncludeClick(Sender: TObject);
+procedure TfmCustomizeFilters.rbPropertyClick(Sender: TObject);
 var
   n: Integer;
 begin
@@ -472,8 +495,7 @@ begin
   UpdateEventsState;
   if IncOutWrong or EventsWrong then exit;
   if rbInclude.Checked then
-    LocalFilters[n].filMode := FM_INCLUDE
-  else
+    LocalFilters[n].filMode := FM_INCLUDE else
     LocalFilters[n].filMode := FM_EXCLUDE;
   LocalFilters[n].Events := GenerateEvents(LocalFilters[n].filMode,LocalFilters[n].filEvents);
 end;
@@ -484,13 +506,12 @@ begin
   WriteEventFilters;
 end;
 
-procedure TfmCustomizeFilters.TntFormClose(Sender: TObject;
-  var Action: TCloseAction);
+procedure TfmCustomizeFilters.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Action := caFree;
 end;
 
-procedure TfmCustomizeFilters.TntFormDestroy(Sender: TObject);
+procedure TfmCustomizeFilters.FormDestroy(Sender: TObject);
 begin
   fmCustomizeFilters := nil;
   try
@@ -542,6 +563,7 @@ begin
   laFilterName.Caption := TranslateWideW(laFilterName.Caption);
   rbInclude.Caption := TranslateWideW(rbInclude.Caption);
   rbExclude.Caption := TranslateWideW(rbExclude.Caption);
+  cbCustomEvent.Caption := TranslateWideW(cbCustomEvent.Caption);
   bnOK.Caption := TranslateWideW(bnOK.Caption);
   bnCancel.Caption := TranslateWideW(bnCancel.Caption);
   bnReset.Caption := TranslateWideW(bnReset.Caption);
@@ -575,8 +597,7 @@ begin
       if InsideIncOut then begin
         HeadEvents := i;
         InsideEvents := True;
-      end
-      else
+      end else
         InsideIncOut := True;
       continue;
     end;
@@ -597,6 +618,11 @@ begin
 
   end;
 
+  if EventsChecked and not cbCustomEvent.Checked then
+    EventsChecked := False;
+  if EventsUnchecked and cbCustomEvent.Checked then
+    EventsUnchecked := False;
+
   if rbInclude.Checked then begin
     EventsWrong := EventsUnchecked;
     IncOutWrong := IncOutUnchecked;
@@ -605,7 +631,6 @@ begin
     EventsWrong := EventsChecked;
     IncOutWrong := IncOutChecked;
   end;
-
 
   // we probably need some help text to show why the filter selection is wrong
   // explanation is given in comments below
@@ -633,6 +658,30 @@ procedure TfmCustomizeFilters.UpdateUpDownButtons;
 begin
   bnUp.Enabled := (lbFilters.ItemIndex <> 0);
   bnDown.Enabled := (lbFilters.ItemIndex <> lbFilters.Count-1);
+end;
+
+procedure TfmCustomizeFilters.cbCustomEventClick(Sender: TObject);
+begin
+  edCustomEvent.Enabled := cbCustomEvent.Checked;
+  if lbFilters.ItemIndex = -1 then exit;
+  edCustomEvent.Text := IntToStr(LocalFilters[lbFilters.ItemIndex].filCustom);
+  clEvents.OnClickCheck(Self);
+end;
+
+procedure TfmCustomizeFilters.edCustomEventChange(Sender: TObject);
+var
+  CustomType: Integer;
+begin
+  if lbFilters.ItemIndex = -1 then exit;
+  if not ((edCustomEvent.Text <> '') and
+     TryStrToInt(edCustomEvent.Text,CustomType)) then CustomType := -1;
+  if CustomType > $FFFF then CustomType := -1;
+  if CustomType >= 0 then begin
+    LocalFilters[lbFilters.ItemIndex].filCustom := Word(CustomType);
+    edCustomEvent.Color := clWindow;
+  end else
+    edCustomEvent.Color := $008080FF;
+  bnOk.Enabled := (CustomType >= 0);
 end;
 
 end.
