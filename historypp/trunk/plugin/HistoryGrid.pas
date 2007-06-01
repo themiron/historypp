@@ -979,8 +979,8 @@ begin
 
   LockCount := 0;
 
-  // fill all events including AlwaysExclude
-  FFilter := GenerateEvents(FM_EXCLUDE,[])+AlwaysExclude;
+  // fill all events with unknown to force filter reset
+  FFilter := GenerateEvents(FM_EXCLUDE,[])+[mtUnknown];
 
   FSelected := -1;
   FContact := 0;
