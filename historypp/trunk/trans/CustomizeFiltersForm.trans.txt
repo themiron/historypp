@@ -6,6 +6,7 @@ Filter Properties
 &Name:
 Show all except selected events
 Show only selected events
+Include custom event type (0-65535)
 R&eset to Default
 Filters
 &Down

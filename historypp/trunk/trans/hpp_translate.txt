@@ -24,6 +24,8 @@ Filter Properties
 Show all except selected events
 [Show only selected events]
 Show only selected events
+[Include custom event type (0-65535)]
+Include custom event type (0-65535)
 [R&eset to Default]
 R&eset to Default
 [Filters]
@@ -502,6 +504,10 @@ Authorization request denied by %s (%d): %s
 User %s (%d) removed himself from your contact list: %s
 [Authorization future request by %s (%d): %s]
 Authorization future request by %s (%d): %s
+[User %s (%d) changed icq client: %s]
+User %s (%d) changed icq client: %s
+[Status request by %s (%d):%s]
+Status request by %s (%d):%s
 [Broadcast message from %s (%s): %s]
 Broadcast message from %s (%s): %s
 [WATrack: information request]
