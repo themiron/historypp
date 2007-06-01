@@ -23,7 +23,7 @@ unit hpp_eventfilters;
 
 interface
 
-uses SysUtils, Windows, Classes, TntSysUtils, m_api, hpp_global;
+uses Types, SysUtils, Windows, Classes, TntSysUtils, m_api, hpp_global;
 
 const
   // filter modes
@@ -39,17 +39,10 @@ type
     Events: TMessageTypes; // resulting events mask generated from filMode and filEvents, filled in runtime
     filMode: Byte; // FM_* consts
     filEvents: TMessageTypes; // filter events which are combined with filMode
+    filCustom: Word; // filter events which are combined with filMode
   end;
 
   ThppEventFilterArray = array of ThppEventFilter;
-
-  ThppEventFilterRec = packed record
-    Name: array[0..MAX_FILTER_NAME_LENGTH-1] of WideChar;
-    filMode: Byte;
-    filEvents: DWord;
-    filFlags: Byte; // reserved for future use (??) added this field to make record byte-align
-  end;
-  PhppEventFilterRec = ^ThppEventFilterRec;
 
 var
   hppEventFilters: ThppEventFilterArray;
@@ -71,7 +64,8 @@ var
 
 const
   AlwaysInclude: TMessageTypes = [];
-  AlwaysExclude: TMessageTypes = [mtUnknown];
+  AlwaysExclude: TMessageTypes = [mtUnknown,mtCustom];
+  CustomEvent: TMessageTypes = [mtCustom];
 
 implementation
 
@@ -132,8 +126,7 @@ end;
 function GenerateEvents(filMode: Byte; filEvents: TMessageTypes): TMessageTypes;
 begin
   if filMode = FM_INCLUDE then
-    Result := filEvents
-  else
+    Result := filEvents else
     Result := filterAll - filEvents;
   Result := Result - AlwaysExclude + AlwaysInclude;
 end;
@@ -157,6 +150,7 @@ begin
     Dest[i].Events := Src[i].Events;
     Dest[i].filMode := Src[i].filMode;
     Dest[i].filEvents := Src[i].filEvents;
+    Dest[i].filCustom := Src[i].filCustom;
   end;
 end;
 
@@ -197,11 +191,10 @@ procedure ReadEventFilters;
 var
   i: Integer;
   FilterStr: WideString;
-  hex3,hex2,hex1: String;
-  idx: Integer;
+  hexs: TWideStringDynArray;
   filEvents: DWord;
   filMode: Byte;
-  filFlags: Byte;
+  filCustom: Word;
 begin
   SetLength(hppEventFilters,0);
   try
@@ -209,43 +202,29 @@ begin
     while True do begin
       if not DBExists(hppDBName,'EventFilter'+IntToStr(i)) then begin
         if Length(hppEventFilters) = 0 then
-          raise EAbort.Create('No filters')
-        else
-          break;
+          raise EAbort.Create('No filters');
+        break;
       end;
       FilterStr := GetDBWideStr(hppDBName,'EventFilter'+IntToStr(i),'');
       if FilterStr = '' then break;
       SetLength(hppEventFilters,Length(hppEventFilters)+1);
       // parse string
-      idx := WideLastDelimiter(',',FilterStr);
-      if (idx = 0) or (FilterStr[idx] <> ',') then
+      hexs := ExtractStringsFromStringArray(PWideChar(FilterStr),',');
+      if Length(hexs) < 4 then
         raise EAbort.Create('Wrong filter ('+IntToStr(i)+') format');
-      hex3 := Copy(FilterStr,idx+1,Length(FilterStr));
-      Delete(FilterStr,idx,Length(FilterStr));
-      idx := WideLastDelimiter(',',FilterStr);
-      if (idx = 0) or (FilterStr[idx] <> ',') then
-        raise EAbort.Create('Wrong filter ('+IntToStr(i)+') format');
-      hex2 := Copy(FilterStr,idx+1,Length(FilterStr));
-      Delete(FilterStr,idx,Length(FilterStr));
-      idx := WideLastDelimiter(',',FilterStr);
-      if (idx = 0) or (FilterStr[idx] <> ',') then
-        raise EAbort.Create('Wrong filter ('+IntToStr(i)+') format');
-      hex1 := Copy(FilterStr,idx+1,Length(FilterStr));
-      Delete(FilterStr,idx,Length(FilterStr));
-
-      if Length(FilterStr) = 0 then
-        raise EAbort.Create('Wrong filter ('+IntToStr(i)+') format, name can not be empty');
-
-      hppEventFilters[i-1].Name := FilterStr;
       filMode := 0;
       filEvents := 0;
-      filFlags := 0;
-      HexToBin(PChar(hex1),@filMode,SizeOf(filMode));
-      HexToBin(PChar(hex2),@filEvents,SizeOf(filEvents));
-      //HexToBin(PChar(hex3),@filFlags,SizeOf(filFlags));
+      filCustom := 0;
+      hppEventFilters[i-1].Name := hexs[0];
+      // read filMode
+      HexToBin(PChar(AnsiString(hexs[1])),@filMode,SizeOf(filMode));
       hppEventFilters[i-1].filMode := filMode;
+      // read filEvents
+      HexToBin(PChar(AnsiString(hexs[2])),@filEvents,SizeOf(filEvents));
       hppEventFilters[i-1].filEvents := DWordToMessageTypes(filEvents);
-
+      // read filCustom
+      HexToBin(PChar(AnsiString(hexs[3])),@filEvents,SizeOf(filCustom));
+      hppEventFilters[i-1].filCustom := filCustom;
       Inc(i);
     end;
     GenerateEventFilters(hppEventFilters);
@@ -281,10 +260,9 @@ begin
     SetLength(hex,SizeOf(hppEventFilters[i].filEvents)*2);
     BinToHex(@hppEventFilters[i].filEvents,@hex[1],SizeOf(hppEventFilters[i].filEvents));
     FilterStr := FilterStr + ','+hex;
-    // add filFlags
-    //SetLength(hex,SizeOf(Byte)*2);
-    //BinToHex(@hppEventFilters[i].filFlags,@hex[1],SizeOf(hppEventFilters[i].filFlags));
-    hex := '00';
+    // add filCustom
+    SetLength(hex,SizeOf(hppEventFilters[i].filCustom)*2);
+    BinToHex(@hppEventFilters[i].filCustom,@hex[1],SizeOf(hppEventFilters[i].filCustom));
     FilterStr := FilterStr + ','+hex;
     WriteDBWideStr(hppDBName,'EventFilter'+IntToStr(i+1),FilterStr);
   end;
@@ -308,6 +286,7 @@ begin
     hppDefEventFilters[i].Name := Copy(TranslateWideW(hppIntDefEventFilters[i].Name),1,MAX_FILTER_NAME_LENGTH{TRANSLATE-IGNORE});
     hppDefEventFilters[i].filMode := hppIntDefEventFilters[i].filMode;
     hppDefEventFilters[i].filEvents := hppIntDefEventFilters[i].filEvents;
+    hppDefEventFilters[i].filCustom := hppIntDefEventFilters[i].filCustom;
   end;
 
   filterAll := [];
