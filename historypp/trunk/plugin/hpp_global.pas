@@ -66,9 +66,10 @@ type
                   mtMessage, mtUrl, mtFile, mtSystem,
                   mtContacts, mtSMS, mtWebPager, mtEmailExpress, mtStatus, mtSMTPSimple,
                   mtOther,
-                  mtNickChange,mtAvatarChange,mtWATrack,mtStatusMessage,mtVoiceCall);
-  TMessageTypes = set of TMessageType;
+                  mtNickChange,mtAvatarChange,mtWATrack,mtStatusMessage,mtVoiceCall,mtCustom);
+
   PMessageTypes = ^TMessageTypes;
+  TMessageTypes = set of TMessageType;
 
   TRTLMode = (hppRTLDefault,hppRTLEnable,hppRTLDisable);
 
@@ -256,7 +257,8 @@ const
     (Name:'Avatar changes'; XML:'AVACNG'; i:HPP_ICON_EVENT_AVATAR; iName:'hppevn_avatar'; iSkin:-1),
     (Name:'WATrack notify'; XML:'WATRACK'; i:HPP_ICON_EVENT_WATRACK; iName:'hppevn_watrack'; iSkin:-1),
     (Name:'Status message changes'; XML:'STATUSMSGCHG'; i:HPP_ICON_EVENT_STATUSMES; iName:'hppevn_statuschng'; iSkin:-1),
-    (Name:'Voice call'; XML:'VCALL'; i:HPP_ICON_EVENT_VOICECALL; iName:'hppevn_vcall'; iSkin:-1)
+    (Name:'Voice call'; XML:'VCALL'; i:HPP_ICON_EVENT_VOICECALL; iName:'hppevn_vcall'; iSkin:-1),
+    (Name:'Custom'; XML:''; i:-1)
   );
 
 {$I m_historypp.inc}
