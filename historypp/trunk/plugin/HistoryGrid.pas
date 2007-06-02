@@ -1661,15 +1661,10 @@ begin
     end;
 
     if Options.ShowIcons then begin
-      {if (mtFile in FItems[Index].MessageType) then
-        ic := Options.IconFile.Handle
-      else if (mtUrl in FItems[Index].MessageType) then
-        ic := Options.IconUrl.Handle
-      else if (mtMessage in FItems[Index].MessageType) then
-        ic := Options.IconMessage.Handle
-      else if (mtOther in FItems[Index].MessageType) then
-        ic := Options.IconOther.Handle;}
       er := GetMessageRecord(FItems[Index].MessageType);
+      if er.i = -1 then
+        ic := 0
+      else
       if er.iSkin = -1 then
         ic := hppIcons[er.i].handle
       else

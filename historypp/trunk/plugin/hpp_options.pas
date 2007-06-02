@@ -497,7 +497,7 @@ begin
     end;
   end;
   for mt := Low(EventRecords) to High(EventRecords) do begin
-    if mt = mtUnknown then continue;
+    if EventRecords[mt].i = -1 then continue;
     if EventRecords[mt].iSkin = -1 then begin
       if IcoLibEnabled then begin
         hppIcons[EventRecords[mt].i].name := EventRecords[mt].iName;
