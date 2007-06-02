@@ -554,6 +554,9 @@ var
   er: PEventRecord;
 begin
   er := GetMessageRecord(FParentForm.hg.Items[FItem].MessageType);
+  if er.i = -1 then
+    ic := 0
+  else
   if er.iSkin = -1 then
     ic := hppIcons[er.i].handle
   else
