@@ -54,6 +54,13 @@ type
     {$ENDIF}
   end;
 
+  THppToolBar = class(TTntToolBar)
+  private
+    procedure AddToolButtonStyle(const Control: TControl; var Style: Byte);
+  protected
+    procedure WndProc(var Message: TMessage); override;
+  end;
+
   THppToolButton = class(TTntToolButton)
   private
     FWholeDropDown: Boolean; // ignored unless Style = tbsDropDown is set
@@ -62,19 +69,34 @@ type
     property WholeDropDown: Boolean read FWholeDropDown write SetWholeDropDown default False;
   end;
 
-  THppToolBar = class(TTntToolBar)
-  private
-    procedure AddToolButtonStyle(const Control: TControl; var Style: Byte);
-  protected
-    procedure WndProc(var Message: TMessage); override;
-  end;
-
   THppSpeedButton = class(TTntSpeedButton)
   protected
     procedure PaintButton; override;
     {$IFDEF COMPILER_7}
     procedure UpdateTracking;
     procedure WndProc(var Message: TMessage); override;
+    {$ENDIF}
+  end;
+
+  THppButton = class(TTntButton)
+  private
+    {$IFDEF COMPILER_7}
+    procedure CNCtlColorStatic(var Message: TWMCtlColorStatic); message CN_CTLCOLORSTATIC;
+    procedure CNCtlColorBtn(var Message: TWMCtlColorBtn); message CN_CTLCOLORBTN;
+    {$ENDIF}
+  end;
+
+  THppRadioButton = class(TTntRadioButton)
+  private
+    {$IFDEF COMPILER_7}
+    procedure CNCtlColorStatic(var Message: TWMCtlColorStatic); message CN_CTLCOLORSTATIC;
+    {$ENDIF}
+  end;
+
+  THppCheckBox = class(TTntCheckBox)
+  private
+    {$IFDEF COMPILER_7}
+    procedure CNCtlColorStatic(var Message: TWMCtlColorStatic); message CN_CTLCOLORSTATIC;
     {$ENDIF}
   end;
 
@@ -102,9 +124,12 @@ begin
   RegisterComponents('History++', [TPasswordEdit]);
   RegisterComponents('History++', [THppEdit]);
   RegisterComponents('History++', [THppPanel]);
-  RegisterComponents('History++', [THppSpeedButton]);
   RegisterComponents('History++', [THppToolBar]);
   RegisterComponents('History++', [THppToolButton]);
+  RegisterComponents('History++', [THppSpeedButton]);
+  RegisterComponents('History++', [THppButton]);
+  RegisterComponents('History++', [THppRadioButton]);
+  RegisterComponents('History++', [THppCheckBox]);
   {RegisterComponents('History++', [THppSaveDialog]);}
 end;
 
@@ -173,20 +198,6 @@ begin
 end;
 {$ENDIF}
 
-{ THppToolButton }
-
-// Note: ignored unless Style = tbsDropDown is set
-procedure THppToolButton.SetWholeDropDown(const Value: Boolean);
-begin
-  if FWholeDropDown = Value then exit;
-  FWholeDropDown := Value;
-  RefreshControl;
-  // Trick: resize tool buttons.
-  // TODO: refresh only when theme is loaded.
-  if Assigned(FToolBar) then FToolBar.Invalidate;
-  Width := 1;
-end;
-
 { THppToolBar }
 
 procedure THppToolBar.AddToolButtonStyle(const Control: TControl; var Style: Byte);
@@ -215,6 +226,20 @@ begin
     end;
   end;
   inherited;
+end;
+
+{ THppToolButton }
+
+// Note: ignored unless Style = tbsDropDown is set
+procedure THppToolButton.SetWholeDropDown(const Value: Boolean);
+begin
+  if FWholeDropDown = Value then exit;
+  FWholeDropDown := Value;
+  RefreshControl;
+  // Trick: resize tool buttons.
+  // TODO: refresh only when theme is loaded.
+  if Assigned(FToolBar) then FToolBar.Invalidate;
+  Width := 1;
 end;
 
 { THppSpeedButton }
@@ -286,6 +311,52 @@ begin
     WM_LBUTTONUP,WM_RBUTTONUP,WM_MBUTTONUP,WM_CONTEXTMENU:
       UpdateTracking;
   end;
+end;
+{$ENDIF}
+
+{ THppButton }
+
+{$IFDEF DELPHI_7}
+// hack to make Button really ParentBackground'ed.
+// VCL bug. http://qc.borland.com/wc/qcmain.aspx?d=2537
+procedure THppButton.CNCtlColorStatic(var Message: TWMCtlColorStatic);
+begin
+  if Assigned(Parent) and Parent.DoubleBuffered then
+    PerformEraseBackground(Self, Message.ChildDC) else
+    inherited;
+end;
+
+procedure THppButton.CNCtlColorBtn(var Message: TWMCtlColorBtn);
+begin
+  if Assigned(Parent) and Parent.DoubleBuffered then
+    PerformEraseBackground(Self, Message.ChildDC) else
+    inherited;
+end;
+{$ENDIF}
+
+{ THppRadioButton }
+
+{$IFDEF DELPHI_7}
+// hack to make RadioButton really ParentBackground'ed.
+// VCL bug. http://qc.borland.com/wc/qcmain.aspx?d=2537
+procedure THppRadioButton.CNCtlColorStatic(var Message: TWMCtlColorStatic);
+begin
+  if Assigned(Parent) and Parent.DoubleBuffered then
+    PerformEraseBackground(Self, Message.ChildDC) else
+    inherited;
+end;
+{$ENDIF}
+
+{ THppCheckBox }
+
+{$IFDEF DELPHI_7}
+// hack to make CheckBox really ParentBackground'ed.
+// VCL bug. http://qc.borland.com/wc/qcmain.aspx?d=2537
+procedure THppCheckBox.CNCtlColorStatic(var Message: TWMCtlColorStatic);
+begin
+  if Assigned(Parent) and Parent.DoubleBuffered then
+    PerformEraseBackground(Self, Message.ChildDC) else
+    inherited;
 end;
 {$ENDIF}
 
