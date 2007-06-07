@@ -224,7 +224,7 @@ begin
       Include(LocalFilters[n].filEvents,TMessageType(Integer(clEvents.Items.Objects[i])));
   end;
   if cbCustomEvent.Checked then
-    LocalFilters[n].filEvents := LocalFilters[n].filEvents + CustomEvent;
+    LocalFilters[n].filEvents := LocalFilters[n].filEvents + EventsCustom;
   LocalFilters[n].Events := GenerateEvents(LocalFilters[n].filMode,LocalFilters[n].filEvents);
 end;
 
@@ -288,7 +288,7 @@ begin
   // add all types except mtOther (we'll add it at the end) and
   // message types in AlwaysExclude and AlwaysInclude
   for mt := Low(TMessageType) to High(TMessageType) do begin
-    if (mt in AlwaysExclude) or (mt in AlwaysInclude) or (mt in IgnoreEvents) then continue;
+    if (mt in EventsExclude) or (mt in EventsInclude) or (mt in IgnoreEvents) then continue;
     if mt = mtOther then continue; // we'll add mtOther at the end
     if mt in [mtIncoming,mtMessage] then begin // insert header before incoming and message
       if mt = mtIncoming then
@@ -375,7 +375,7 @@ begin
       clEvents.Checked[i] := TMessageType(Pointer(clEvents.Items.Objects[i])) in LocalFilters[lbFilters.ItemIndex].filEvents;
     end;
 
-    cbCustomEvent.Checked := (LocalFilters[lbFilters.ItemIndex].filEvents*CustomEvent = CustomEvent);
+    cbCustomEvent.Checked := (LocalFilters[lbFilters.ItemIndex].filEvents*EventsCustom = EventsCustom);
     edCustomEvent.Text := IntToStr(LocalFilters[lbFilters.ItemIndex].filCustom);
 
     edFilterName.Text := lbFilters.Items[lbFilters.ItemIndex];
