@@ -314,12 +314,15 @@ type
     procedure HMEventDeleted(var M: TMessage); message HM_MIEV_EVENTDELETED;
     procedure HMPreShutdown(var M: TMessage); message HM_MIEV_PRESHUTDOWN;
     procedure HMContactDeleted(var M: TMessage); message HM_MIEV_CONTACTDELETED;
+    //procedure HMMetaDefaultChanged(var M: TMessage); message HM_MIEV_METADEFCHANGED;
+
     procedure HMContactIconChanged(var M: TMessage); message HM_SRCH_CONTACTICONCHANGED;
 
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
     procedure HMBookmarksChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
     procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED;
     procedure HMAccChanged(var M: TMessage); message HM_NOTF_ACCCHANGED;
+    procedure HMNickChanged(var M: TMessage); message HM_NOTF_NICKCHANGED;
     procedure TranslateForm;
 
     procedure HookEvents;
@@ -362,6 +365,8 @@ type
     procedure AlignControls(Control: TControl; var ARect: TRect); override;
 
     function GetSearchItem(GridIndex: Integer): TSearchItem;
+    function GetContactInfo(hContact: Integer): TContactInfo;
+
     procedure DisableFilter;
     procedure FilterOnContact(hContact: Integer);
 
@@ -1728,11 +1733,57 @@ begin
     Result :=  History[FilterHistory[GridIndex]];
 end;
 
+function TfmGlobalSearch.GetContactInfo(hContact: Integer): TContactInfo;
+var
+  i: Integer;
+begin
+  Result := nil;
+  for i := 0 to ContactList.Count - 1 do
+    if hContact = TContactInfo(ContactList.Items[i]).Handle then begin
+      Result := TContactInfo(ContactList.Items[i]);
+      break;
+    end;
+end;
+
 procedure TfmGlobalSearch.HMContactDeleted(var M: TMessage);
+var
+  ci: TContactInfo;
+  i: Integer;
 begin
   {wParam - hContact; lParam - zero}
   // do here something because the contact is deleted
   if IsSearching then exit;
+  // need to remove contact 
+  //ci := GetContactInfo(M.WParam);
+  //if ci = nil then exit;
+  //for i := 1 to lvContacts.Items.Count - 1 do
+  //  if ci.Handle = Integer(lvContacts.Items[i].Data) then begin
+  //    lvContacts.Items.Delete(i);
+  //    break;
+  //  end;
+  //ContactList.Remove(ci);
+end;
+
+procedure TfmGlobalSearch.HMNickChanged(var M: TMessage);
+var
+  ci: TContactInfo;
+  i: Integer;
+  SubContact: THandle;
+  SubProtocol: String;
+begin
+  {wParam - hContact; lParam - zero}
+  if IsSearching then exit;
+  ci := GetContactInfo(M.WParam);
+  if ci = nil then exit;
+  GetContactProto(CurContact,SubContact,SubProtocol);
+  ci.ProfileName := GetContactDisplayName(0,SubProtocol);
+  ci.Name := GetContactDisplayName(ci.Handle,ci.Proto,True);
+  for i := 1 to lvContacts.Items.Count - 1 do
+    if M.WParam = Integer(lvContacts.Items[i].Data) then begin
+      lvContacts.Items[i].Caption := ci.Name;
+      break;
+    end;
+  hg.Invalidate;
 end;
 
 procedure TfmGlobalSearch.HMContactIconChanged(var M: TMessage);
@@ -1749,7 +1800,6 @@ begin
       break;
     end;
   end;
-
 end;
 
 procedure TfmGlobalSearch.HMEventDeleted(var M: TMessage);
@@ -2053,9 +2103,7 @@ procedure TfmGlobalSearch.hgSelect(Sender: TObject; Item, OldItem: Integer);
 {var
   i,hCont,Index: Integer;}
 begin
-if hg.HotString = '' then begin
-  hgState(hg,gsIdle);
-  end;
+  if hg.HotString = '' then hgState(hg,gsIdle);
 
   {  if Item = -1 then exit;
   index := -1;
