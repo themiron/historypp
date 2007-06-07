@@ -12,22 +12,22 @@
 ;; Text found in ..\plugin\CustomizeFiltersForm.dfm:
 [Customize Filters]
 Customize Filters
-[OK]
-OK
 [&Cancel]
 &Cancel
+[OK]
+OK
+[R&eset to Default]
+R&eset to Default
 [Filter Properties]
 Filter Properties
 [&Name:]
 &Name:
-[Show all except selected events]
-Show all except selected events
-[Show only selected events]
-Show only selected events
 [Include custom event type (0-65535)]
 Include custom event type (0-65535)
-[R&eset to Default]
-R&eset to Default
+[Show only selected events]
+Show only selected events
+[Show all except selected events]
+Show all except selected events
 [Filters]
 Filters
 [&Down]

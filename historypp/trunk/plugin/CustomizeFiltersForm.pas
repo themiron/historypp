@@ -27,7 +27,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,Dialogs,
   HistoryControls,
   TntForms, StdCtrls, TntStdCtrls, CheckLst, TntCheckLst, TntGraphics, TntWindows,
-  hpp_global, hpp_eventfilters;
+  hpp_global, hpp_eventfilters, ExtCtrls, TntExtCtrls;
 
 type
   TfmCustomizeFilters = class(TTntForm)
@@ -37,17 +37,18 @@ type
     edFilterName: THppEdit;
     clEvents: TTntCheckListBox;
     bnReset: TTntButton;
-    rbExclude: TTntRadioButton;
-    rbInclude: TTntRadioButton;
+    rbExclude: THppRadioButton;
+    rbInclude: THppRadioButton;
     gbFilters: TTntGroupBox;
     lbFilters: TTntListBox;
-    bnDown: TTntButton;
-    bnUp: TTntButton;
-    bnDelete: TTntButton;
-    bnAdd: TTntButton;
+    bnDown: THppButton;
+    bnUp: THppButton;
+    bnDelete: THppButton;
+    bnAdd: THppButton;
     laFilterName: TTntLabel;
     edCustomEvent: THppEdit;
-    cbCustomEvent: TTntCheckBox;
+    cbCustomEvent: THppCheckBox;
+    paClient: THppPanel;
     procedure FormCreate(Sender: TObject);
     procedure bnOKClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -73,6 +74,7 @@ type
       Shift: TShiftState);
     procedure cbCustomEventClick(Sender: TObject);
     procedure edCustomEventChange(Sender: TObject);
+    procedure edEditKeyPress(Sender: TObject; var Key: Char);
   private
     LocalFilters: ThppEventFilterArray;
 
@@ -682,6 +684,14 @@ begin
   end else
     edCustomEvent.Color := $008080FF;
   bnOk.Enabled := (CustomType >= 0);
+end;
+
+procedure TfmCustomizeFilters.edEditKeyPress(Sender: TObject; var Key: Char);
+begin
+  // to prevent ** BLING ** when press Enter
+  // to prevent ** BLING ** when press Tab
+  // to prevent ** BLING ** when press Esc
+  if Ord(Key) in [VK_RETURN,VK_TAB,VK_ESCAPE] then Key := #0;
 end;
 
 end.
