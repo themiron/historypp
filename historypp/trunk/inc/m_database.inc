@@ -36,6 +36,7 @@ const
     DBVT_UTF8               = 253;      // pszVal is valid
     DBVT_WCHAR              = 252;      // pszVal is valid
     DBVTF_VARIABLELENGTH    = $80;      // ?
+    DBVTF_DENYUNICODE       = $10000;   // disable Unicode in MS_DB_EVENT_GETTEXT
 
 type
 
@@ -339,8 +340,6 @@ const
 
     MS_DB_EVENT_ADD                 = 'DB/Event/Add';
 
-
-
     {
         wParam : Handle to the contact
         lParam : HDBEVENT handle to delete
@@ -377,8 +376,8 @@ const
     MS_DB_EVENT_GET                 = 'DB/Event/Get';
 
     {
-        wParam : Pointer to a TDBEVENTINFO structure which must be initialised
-        lParam : DBVT_WCHAR or DBVT_ASCIIZ
+        wParam : 0
+        lParam : Pointer to TDBEVENTGETTEXT structure which must be initialised
         Affects: Retrieves the event's text
         Returns: Returns pointer to a string in the required format.
         Notes  : TDBEVENTINFO structure should be the valid database event
@@ -387,6 +386,21 @@ const
                  This string should be freed by a call of mir_free
         Version: 0.7.0+
     }
+
+type
+
+    PDBEVENTGETTEXT = ^TDBEVENTGETTEXT;
+    TDBEVENTGETTEXT = record
+	{ pointer to a TDBEVENTINFO structure which must be initialised }
+        dbei: PDBEVENTINFO;
+        { required format of a string, one of DBVT_ constatnts}
+        datatype: int;
+        { required ANSI codepage used in unicode-ansi translation }
+        codepage: int;
+    end;
+
+const
+
     MS_DB_EVENT_GETTEXT             = 'DB/Event/GetText';
 
     {
@@ -463,8 +477,6 @@ const
     }
     MS_DB_EVENT_FINDPREV            = 'DB/Event/FindPrev';
 
-
-
     {
         wParam : size in bytes of string buffer (including null term)
         lParam : pointer to string buffer
@@ -485,8 +497,6 @@ const
         notes  : Reverses the operation done by MS_DB_CRYPT_ENCODINGSTRING
     }
     MS_DB_CRYPT_DECODESTRING        = 'DB/Crypt/DecodeString';
-
-
 
     {
         wParam : timestamp (DWORD)
@@ -537,8 +547,6 @@ const
 
     MS_DB_TIME_TIMESTAMPTOSTRING    = 'DB/Time/TimestampToString';
 
-
-
     {
         wParam : newSetting (BOOLEAN)
         lParam : 0
@@ -576,12 +584,12 @@ const
                  prior to v0.1.2.1 you can not pass a value to the enumeration because
                  of a bug -- which is fixed, but hey :) -- [sam]
     }
+
 type
     TDBMODULEENUMPROC = function(const szModule: PChar; ofsModuleName: DWORD; lParam: LPARAM): int; cdecl;
+
 const
     MS_DB_MODULES_ENUM              = 'DB/Modules/Enum';
-
-
 
     {
         wParam : HCONTACT
@@ -605,8 +613,6 @@ const
                  but it will as usual stop other hooks being called
     }
     ME_DB_EVENT_DELETED             = 'DB/Event/Deleted';
-
-
 
     {
         wParam : HCONTACT
