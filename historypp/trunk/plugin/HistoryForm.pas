@@ -365,10 +365,12 @@ type
     procedure HMEventDeleted(var Message: TMessage); message HM_MIEV_EVENTDELETED;
     procedure HMPreShutdown(var Message: TMessage); message HM_MIEV_PRESHUTDOWN;
     procedure HMContactDeleted(var Message: TMessage); message HM_MIEV_CONTACTDELETED;
+    procedure HMMetaDefaultChanged(var M: TMessage); message HM_MIEV_METADEFCHANGED;
 
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
     procedure HMAccChanged(var M: TMessage); message HM_NOTF_ACCCHANGED;
     procedure HMNickChanged(var M: TMessage); message HM_NOTF_NICKCHANGED;
+
 
     procedure OpenDetails(Item: Integer);
     procedure SetPasswordMode(const Value: Boolean);
@@ -1041,39 +1043,41 @@ begin
 end;
 
 procedure THistoryFrm.HMNickChanged(var M: TMessage);
+begin
+  hg.BeginUpdate;
+  if M.WParam = 0 then
+    hg.ProfileName := GetContactDisplayName(0, SubProtocol)
+  else
+  if Cardinal(M.WParam) = hContact then begin
+    hg.ProfileName := GetContactDisplayName(0, SubProtocol);
+    hg.ContactName := GetContactDisplayName(hContact, Protocol, True);
+    Caption := WideFormat(TranslateWideW('%s - History++'),[hg.ContactName]);
+  end;
+  hg.EndUpdate;
+  hg.Invalidate;
+  if Assigned(EventDetailForm) then
+    TEventDetailsFrm(EventDetailForm).ResetItem;
+end;
+
+procedure THistoryFrm.HMMetaDefaultChanged(var M: TMessage);
 var
-  newProfileName: WideString;
-  newContactName: WideString;
   newSubContact: THandle;
   newSubProtocol: String;
-  DoUpdate: Boolean;
 begin
-  DoUpdate := False;
-  if M.WParam = 0 then begin
-    if GridOptions.ForceProfileName then exit;
-    newProfileName := GetContactDisplayName(0, SubProtocol);
-    if hg.ProfileName <> newProfileName then begin
-      hg.ProfileName := newProfileName;
-      DoUpdate := True;
-    end;
-  end else begin
-    if Cardinal(M.WParam) <> hContact then exit;
-    GetContactProto(hContact,newSubContact,newSubProtocol);
-    if GridOptions.ForceProfileName then
-      newProfileName := hg.ProfileName else
-      newProfileName := GetContactDisplayName(0, newSubProtocol);
-    newContactName := GetContactDisplayName(hContact, Protocol, True);
-    if (hSubContact <> newSubContact) or (SubProtocol <> newSubProtocol) or
-       (hg.ProfileName <> newProfileName) or (hg.ContactName <> newContactName) then begin
-      FhSubContact := newSubContact;
-      FSubProtocol := newSubProtocol;
-      hg.ProfileName := newProfileName;
-      hg.ContactName := newContactName;
-      Caption := WideFormat(TranslateWideW('%s - History++'),[newContactName]);
-      DoUpdate := True;
-    end;
+  if Cardinal(M.WParam) <> hContact then exit;
+  GetContactProto(hContact,newSubContact,newSubProtocol);
+  if (hSubContact <> newSubContact) or (SubProtocol <> newSubProtocol) then begin
+    hg.BeginUpdate;
+    FhSubContact := newSubContact;
+    FSubProtocol := newSubProtocol;
+    hg.ProfileName := GetContactDisplayName(0, newSubProtocol);
+    hg.ContactName := GetContactDisplayName(hContact, Protocol, True);
+    Caption := WideFormat(TranslateWideW('%s - History++'),[hg.ContactName]);
+    hg.EndUpdate;
+    hg.Invalidate;
+    if Assigned(EventDetailForm) then
+      TEventDetailsFrm(EventDetailForm).ResetItem;
   end;
-  if DoUpdate then hg.Update([guOptions]);
 end;
 
 {Unfortunatly when you make a form from a dll this form won't become the
@@ -3547,7 +3551,7 @@ procedure THistoryFrm.tvSessKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if IsFormShortCut([pmBook],Key,Shift) then
-    Key := 0;  
+    Key := 0;
 end;
 
 procedure THistoryFrm.hgRTLEnabled(Sender: TObject; BiDiMode: TBiDiMode);
@@ -3556,7 +3560,7 @@ begin
   edSearch.BiDiMode := BiDiMode;
   //tvSess.BiDiMode := BiDiMode;
   if Assigned(EventDetailForm) then
-    TEventDetailsFrm(EventDetailForm).Item := TEventDetailsFrm(EventDetailForm).Item;
+    TEventDetailsFrm(EventDetailForm).ResetItem;
 end;
 
 procedure THistoryFrm.Bookmark1Click(Sender: TObject);
@@ -3644,7 +3648,7 @@ end;
 procedure THistoryFrm.hgProcessInlineChange(Sender: TObject; Enabled: Boolean);
 begin
   if Assigned(EventDetailForm) then
-    TEventDetailsFrm(EventDetailForm).Item := TEventDetailsFrm(EventDetailForm).Item;
+    TEventDetailsFrm(EventDetailForm).ResetItem;
 end;
 
 procedure THistoryFrm.hgInlinePopup(Sender: TObject);
@@ -3761,7 +3765,7 @@ end;
 procedure THistoryFrm.hgFilterChange(Sender: TObject);
 begin
   if Assigned(EventDetailForm) then
-    TEventDetailsFrm(EventDetailForm).Item := TEventDetailsFrm(EventDetailForm).Item;
+    TEventDetailsFrm(EventDetailForm).ResetItem;
 end;
 
 procedure THistoryFrm.OpenFileFolderClick(Sender: TObject);

@@ -96,6 +96,7 @@ System History
 %s - History++
 Error
 %s - History++
+%s - History++
 Please wait while closing the window...
 &Pseudo-edit
 &Open

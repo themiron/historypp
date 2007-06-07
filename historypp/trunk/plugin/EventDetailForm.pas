@@ -163,9 +163,9 @@ type
   public
     hContactTo,hContactFrom:THandle;
     property ParentForm:THistoryFrm read FParentForm write fParentForm;
-//   property RowIdx:integer read FRowIdx write SetRowIdx; //line of grid, whoms details should be shown
     property Item: Integer read FItem write SetItem;
     procedure ProcessRichEdit(const FItem: Integer);
+    procedure ResetItem;
   end;
 
 var
@@ -396,6 +396,11 @@ begin
 
   if FParentForm.hg.Selected <> FItem then
     FParentForm.hg.Selected := FItem;
+end;
+
+procedure TEventDetailsFrm.ResetItem;
+begin
+  SetItem(FItem);
 end;
 
 procedure TEventDetailsFrm.bnReplyClick(Sender: TObject);
