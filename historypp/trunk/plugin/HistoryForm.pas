@@ -1041,17 +1041,39 @@ begin
 end;
 
 procedure THistoryFrm.HMNickChanged(var M: TMessage);
+var
+  newProfileName: WideString;
+  newContactName: WideString;
+  newSubContact: THandle;
+  newSubProtocol: String;
+  DoUpdate: Boolean;
 begin
-  if M.WParam = 0 then
-    hg.ProfileName := GetContactDisplayName(0, SubProtocol)
-  else begin
+  DoUpdate := False;
+  if M.WParam = 0 then begin
+    if GridOptions.ForceProfileName then exit;
+    newProfileName := GetContactDisplayName(0, SubProtocol);
+    if hg.ProfileName <> newProfileName then begin
+      hg.ProfileName := newProfileName;
+      DoUpdate := True;
+    end;
+  end else begin
     if Cardinal(M.WParam) <> hContact then exit;
-    FProtocol := GetContactProto(hContact,FhSubContact,FSubProtocol);
-    hg.ProfileName := GetContactDisplayName(0, FSubProtocol);
-    hg.ContactName := GetContactDisplayName(hContact, Protocol, True);
-    Caption := WideFormat(TranslateWideW('%s - History++'),[hg.ContactName]);
+    GetContactProto(hContact,newSubContact,newSubProtocol);
+    if GridOptions.ForceProfileName then
+      newProfileName := hg.ProfileName else
+      newProfileName := GetContactDisplayName(0, newSubProtocol);
+    newContactName := GetContactDisplayName(hContact, Protocol, True);
+    if (hSubContact <> newSubContact) or (SubProtocol <> newSubProtocol) or
+       (hg.ProfileName <> newProfileName) or (hg.ContactName <> newContactName) then begin
+      FhSubContact := newSubContact;
+      FSubProtocol := newSubProtocol;
+      hg.ProfileName := newProfileName;
+      hg.ContactName := newContactName;
+      Caption := WideFormat(TranslateWideW('%s - History++'),[newContactName]);
+      DoUpdate := True;
+    end;
   end;
-  hg.Update([guOptions]);
+  if DoUpdate then hg.Update([guOptions]);
 end;
 
 {Unfortunatly when you make a form from a dll this form won't become the

@@ -362,7 +362,7 @@ begin
   if wParam = 0 then begin
     // check for own nick changed
     if (StrPos('Nick,yahoo_id',cws.szSetting) <> nil) then begin
-      NotifyAllForms(HM_NOTF_NICKCHANGED,0,DWord(cws.szModule))
+      NotifyAllForms(HM_NOTF_NICKCHANGED,0,0)
     end else
     // check for history++ setings changed
     if StrComp(cws.szModule,hppDBName) = 0 then begin
@@ -401,9 +401,14 @@ begin
   if (StrComp(cws.szModule,'MetaContacts') = 0) and
      (StrComp(cws.szSetting,'Nick') = 0) then exit;
 
-  // check for contact nick or meta's mos online subcontact changed
+  // check for contact nick or default subcontact changed
   if (StrPos('MyHandle,Nick,Default',cws.szSetting) <> nil) then
-    NotifyAllForms(HM_NOTF_NICKCHANGED,wParam,DWord(cws.szModule))
+    NotifyAllForms(HM_NOTF_NICKCHANGED,wParam,0)
+  else
+  // check for meta's subcontact's status changed
+  if (StrLen(cws.szSetting) > 6) and
+     (StrLComp(cws.szSetting,'Status',6) = 0) then
+    NotifyAllForms(HM_NOTF_NICKCHANGED,wParam,0)
 end;
 
 // Called when smilayadd settings have changed
