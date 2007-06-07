@@ -572,7 +572,8 @@ type
     procedure OnInlineOnMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 
     function GetProfileName: WideString;
-
+    procedure SetProfileName(const Value: WideString);
+    procedure SetContactName(const Value: WideString);
   protected
     DownHitTests: TGridHitTests;
     HintHitTests: TGridHitTests;
@@ -702,8 +703,8 @@ type
     property TxtGenHist2: WideString read FTxtGenHist2 write FTxtGenHist2;
     property TxtSessions: WideString read FTxtSessions write FTxtSessions;
     //property Filter: TMessageTypes read FFilter write SetFilter;
-    property ProfileName: WideString read GetProfileName write FProfileName;
-    property ContactName: WideString read FContactName write FContactName;
+    property ProfileName: WideString read GetProfileName write SetProfileName;
+    property ContactName: WideString read FContactName write SetContactName;
     property OnDblClick: TNotifyEvent read FDblClick write FDblClick;
     property OnItemData: TGetItemData read FGetItemData write FGetItemData;
     property OnNameData: TGetNameData read FGetNameData write FGetNameData;
@@ -5091,9 +5092,23 @@ end;
 function THistoryGrid.GetProfileName: WideString;
 begin
   if Assigned(Options) and Options.ForceProfileName then
-    Result := Options.ProfileName
-  else
+    Result := Options.ProfileName else
     Result := FProfileName;
+end;
+
+procedure THistoryGrid.SetProfileName(const Value: WideString);
+begin
+  if FProfileName = Value then exit;
+  FProfileName := Value;
+  if Assigned(Options) and Options.ForceProfileName then exit;
+  Update;
+end;
+
+procedure THistoryGrid.SetContactName(const Value: WideString);
+begin
+  if FContactName = Value then exit;
+  FContactName := Value;
+  Update;
 end;
 
 { TGridOptions }

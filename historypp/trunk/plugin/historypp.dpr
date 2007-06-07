@@ -133,7 +133,7 @@ var
   HookBuildMenu,
   HookEventAdded,
   HookEventDeleted,
-  //HookMetaDefaultChanged,
+  HookMetaDefaultChanged,
   HookPreshutdown: THandle;
 
 function OnModulesLoad(wParam,lParam:DWORD):integer; cdecl; forward;
@@ -149,7 +149,7 @@ function OnTTBLoaded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnBuildContactMenu(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnEventAdded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnEventDeleted(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
-//function OnMetaDefaultChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
+function OnMetaDefaultChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnPreshutdown(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 
 //Tell Miranda about this plugin
@@ -292,8 +292,8 @@ begin
     HookIcon2Changed := PluginLink.HookEvent(ME_SKIN2_ICONSCHANGED,OnIcon2Changed);
   if FontServiceEnabled then
     HookFSChanged := PluginLink.HookEvent(ME_FONT_RELOAD,OnFSChanged);
-  //if MetaContactsEnabled then
-  //  HookMetaDefaultChanged := PluginLink.HookEvent(ME_MC_DEFAULTTCHANGED,OnMetaDefaultChanged);
+  if MetaContactsEnabled then
+    HookMetaDefaultChanged := PluginLink.HookEvent(ME_MC_DEFAULTTCHANGED,OnMetaDefaultChanged);
 
   // Register in updater
   if Boolean(PluginLink.ServiceExists(MS_UPDATE_REGISTER)) then begin
@@ -401,14 +401,9 @@ begin
   if (StrComp(cws.szModule,'MetaContacts') = 0) and
      (StrComp(cws.szSetting,'Nick') = 0) then exit;
 
-  // check for contact nick or default subcontact changed
-  if (StrPos('MyHandle,Nick,Default',cws.szSetting) <> nil) then
-    NotifyAllForms(HM_NOTF_NICKCHANGED,wParam,0)
-  else
-  // check for meta's subcontact's status changed
-  if (StrLen(cws.szSetting) > 6) and
-     (StrLComp(cws.szSetting,'Status',6) = 0) then
-    NotifyAllForms(HM_NOTF_NICKCHANGED,wParam,0)
+  // check for contact nick changed
+  if (StrPos('MyHandle,Nick',cws.szSetting) <> nil) then
+    NotifyAllForms(HM_NOTF_NICKCHANGED,wParam,0);
 end;
 
 // Called when smilayadd settings have changed
@@ -543,11 +538,11 @@ end;
 //wParam : hMetaContact
 //lParam : hDefaultContact
 //Affect : Called when a metacontact's default contact changes
-//function OnMetaDefaultChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
-//begin
-//  Result := 0;
-//  NotifyAllForms(HM_MIEV_METADEFCHANGED,wParam,lParam);
-//end;
+function OnMetaDefaultChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
+begin
+  Result := 0;
+  NotifyAllForms(HM_MIEV_METADEFCHANGED,wParam,lParam);
+end;
 
 //wParam=0
 //lParam=0
@@ -576,8 +571,8 @@ begin
       PluginLink.UnhookEvent(HookIcon2Changed);
     if FontServiceEnabled then
       PluginLink.UnhookEvent(HookFSChanged);
-    //if MetaContactsEnabled then
-    //  PluginLink.UnhookEvent(HookMetaDefaultChanged);
+    if MetaContactsEnabled then
+      PluginLink.UnhookEvent(HookMetaDefaultChanged);
 
     // destroy messages chatcher
     hppUnregisterMessagesCatcher;
