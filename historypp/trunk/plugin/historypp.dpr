@@ -133,6 +133,7 @@ var
   HookBuildMenu,
   HookEventAdded,
   HookEventDeleted,
+  //HookMetaDefaultChanged,
   HookPreshutdown: THandle;
 
 function OnModulesLoad(wParam,lParam:DWORD):integer; cdecl; forward;
@@ -148,6 +149,7 @@ function OnTTBLoaded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnBuildContactMenu(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnEventAdded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnEventDeleted(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
+//function OnMetaDefaultChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnPreshutdown(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 
 //Tell Miranda about this plugin
@@ -290,6 +292,8 @@ begin
     HookIcon2Changed := PluginLink.HookEvent(ME_SKIN2_ICONSCHANGED,OnIcon2Changed);
   if FontServiceEnabled then
     HookFSChanged := PluginLink.HookEvent(ME_FONT_RELOAD,OnFSChanged);
+  //if MetaContactsEnabled then
+  //  HookMetaDefaultChanged := PluginLink.HookEvent(ME_MC_DEFAULTTCHANGED,OnMetaDefaultChanged);
 
   // Register in updater
   if Boolean(PluginLink.ServiceExists(MS_UPDATE_REGISTER)) then begin
@@ -347,38 +351,59 @@ end;
 // Called when setting in DB have changed
 // wParam = hContact, lParam = PDbContactWriteSetting
 function OnSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
+var
+  cws: PDBContactWriteSetting;
+  szProto: PChar;
 begin
   Result := 0;
   //Log('OnSettChanged','Started. wParam: '+IntToStr(wParam)+', lParam: '+IntToStr(lParam));
-  if wParam <> 0 then exit;
-  if GridOptions.Locked then exit;
-  if PDBContactWriteSetting(lParam).szModule <> hppDBName then exit;
-  // place our db settings reading here
-  //
-  if (PDBContactWriteSetting(lParam).szSetting = 'FormatCopy') then
-    GridOptions.ClipCopyFormat := GetDBWideStr(hppDBName,'FormatCopy',DEFFORMAT_CLIPCOPY)
-  else
-  if (PDBContactWriteSetting(lParam).szSetting = 'FormatCopyText') then
-    GridOptions.ClipCopyTextFormat := GetDBWideStr(hppDBName,'FormatCopyText',DEFFORMAT_CLIPCOPYTEXT)
-  else
-  if (PDBContactWriteSetting(lParam).szSetting = 'FormatReplyQuoted') then
-    GridOptions.ReplyQuotedFormat := GetDBWideStr(hppDBName,'FormatReplyQuoted',DEFFORMAT_REPLYQUOTED)
-  else
-  if (PDBContactWriteSetting(lParam).szSetting = 'FormatReplyQuotedText') then
-    GridOptions.ReplyQuotedTextFormat := GetDBWideStr(hppDBName,'FormatReplyQuotedText',DEFFORMAT_REPLYQUOTED)
-  else
-  if (PDBContactWriteSetting(lParam).szSetting = 'FormatSelection') then
-    GridOptions.SelectionFormat := GetDBWideStr(hppDBName,'FormatSelection',DEFFORMAT_SELECTION)
-  else
-  if (PDBContactWriteSetting(lParam).szSetting = 'ProfileName') then
-    GridOptions.ProfileName := GetDBWideStr(hppDBName,'ProfileName','')
-  else
-  if (PDBContactWriteSetting(lParam).szSetting = 'DateTimeFormat') then
-    GridOptions.DateTimeFormat := GetDBStr(hppDBName,'DateTimeFormat',DEFFORMAT_DATETIME)
-  else
-  if (PDBContactWriteSetting(lParam).szSetting = 'ShowHistoryCount') then
-    ShowHistoryCount := GetDBBool(hppDBName,'ShowHistoryCount',false);
-  //LoadDefaultGridOptions;
+  cws := PDBContactWriteSetting(lParam);
+
+  if wParam = 0 then begin
+    // check for own nick changed
+    if (StrPos('Nick,yahoo_id',cws.szSetting) <> nil) then begin
+      NotifyAllForms(HM_NOTF_NICKCHANGED,0,DWord(cws.szModule))
+    end else
+    // check for history++ setings changed
+    if StrComp(cws.szModule,hppDBName) = 0 then begin
+      if GridOptions.Locked then exit;
+      if StrComp(cws.szSetting,'FormatCopy',) = 0 then
+        GridOptions.ClipCopyFormat := GetDBWideStr(hppDBName,'FormatCopy',DEFFORMAT_CLIPCOPY)
+      else
+      if StrComp(cws.szSetting,'FormatCopyText') = 0 then
+        GridOptions.ClipCopyTextFormat := GetDBWideStr(hppDBName,'FormatCopyText',DEFFORMAT_CLIPCOPYTEXT)
+      else
+      if StrComp(cws.szSetting,'FormatReplyQuoted') = 0 then
+        GridOptions.ReplyQuotedFormat := GetDBWideStr(hppDBName,'FormatReplyQuoted',DEFFORMAT_REPLYQUOTED)
+      else
+      if StrComp(cws.szSetting,'FormatReplyQuotedText') = 0 then
+        GridOptions.ReplyQuotedTextFormat := GetDBWideStr(hppDBName,'FormatReplyQuotedText',DEFFORMAT_REPLYQUOTED)
+      else
+      if StrComp(cws.szSetting,'FormatSelection') = 0 then
+        GridOptions.SelectionFormat := GetDBWideStr(hppDBName,'FormatSelection',DEFFORMAT_SELECTION)
+      else
+      if StrComp(cws.szSetting,'ProfileName') = 0 then
+        GridOptions.ProfileName := GetDBWideStr(hppDBName,'ProfileName','')
+      else
+      if StrComp(cws.szSetting,'DateTimeFormat') = 0 then
+        GridOptions.DateTimeFormat := GetDBStr(hppDBName,'DateTimeFormat',DEFFORMAT_DATETIME)
+      else
+      if StrComp(cws.szSetting,'ShowHistoryCount') = 0 then
+        ShowHistoryCount := GetDBBool(hppDBName,'ShowHistoryCount',false);
+    end;
+    exit;
+  end;
+
+  szProto := PChar(CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0));
+  if (StrComp(cws.szModule,'CList') <> 0) and
+     ((szProto = nil) or (StrComp(cws.szModule,szProto) <> 0)) then exit;
+
+  if (StrComp(cws.szModule,'MetaContacts') = 0) and
+     (StrComp(cws.szSetting,'Nick') = 0) then exit;
+
+  // check for contact nick or meta's mos online subcontact changed
+  if (StrPos('MyHandle,Nick,Default',cws.szSetting) <> nil) then
+    NotifyAllForms(HM_NOTF_NICKCHANGED,wParam,DWord(cws.szModule))
 end;
 
 // Called when smilayadd settings have changed
@@ -510,6 +535,15 @@ begin
   NotifyAllForms(HM_MIEV_EVENTDELETED,wParam,lParam);
 end;
 
+//wParam : hMetaContact
+//lParam : hDefaultContact
+//Affect : Called when a metacontact's default contact changes
+//function OnMetaDefaultChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
+//begin
+//  Result := 0;
+//  NotifyAllForms(HM_MIEV_METADEFCHANGED,wParam,lParam);
+//end;
+
 //wParam=0
 //lParam=0
 //This hook is fired just before the thread unwind stack is used,
@@ -537,6 +571,8 @@ begin
       PluginLink.UnhookEvent(HookIcon2Changed);
     if FontServiceEnabled then
       PluginLink.UnhookEvent(HookFSChanged);
+    //if MetaContactsEnabled then
+    //  PluginLink.UnhookEvent(HookMetaDefaultChanged);
 
     // destroy messages chatcher
     hppUnregisterMessagesCatcher;
