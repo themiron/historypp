@@ -363,7 +363,7 @@ type
     function GetItemRichBitmap(GridItem: Integer): TBitmap;
   end;
 
-  TGridUpdate = (guSize, guAllocate, guFilter);
+  TGridUpdate = (guSize, guAllocate, guFilter, guOptions);
   TGridUpdates = set of TGridUpdate;
 
   THistoryGrid = class(TScrollingWinControl)
@@ -626,6 +626,7 @@ type
     procedure MakeSelected(Value: Integer);
     procedure BeginUpdate;
     procedure EndUpdate;
+    procedure Update(Updates: TGridUpdates); overload;
     function IsVisible(Item: Integer; Partially: Boolean = True): Boolean;
     procedure Delete(Item: Integer);
     procedure DeleteSelected;
@@ -663,6 +664,7 @@ type
     procedure MakeTopmost(Item: Integer);
     procedure ScrollToBottom;
     procedure ResetItem(Item: Integer);
+    procedure ResetAllItems;
 
     procedure IntFormatItem(Item: Integer; var Tokens: TWideStrArray; var SpecialTokens: TIntArray);
     procedure PrePaintWindow;
@@ -1294,23 +1296,10 @@ begin
 end;
 
 procedure THistoryGrid.SetCodepage(const Value: Cardinal);
-var
-  i: Integer;
-  DoChanges: Boolean;
 begin
   if FCodepage = Value then exit;
   FCodepage := Value;
-  DoChanges := False;
-  if Allocated then begin
-    for i := 0 to Length(FItems) - 1 do
-      if not IsUnknown(i) then begin
-        DoChanges := True;
-        // cose it's faster :)
-        //LoadItem(i,False,True);
-        FItems[i].MessageType := [mtUnknown];
-      end;
-    if DoChanges then DoOptionsChanged;
-  end;
+  ResetAllItems;
 end;
 
 procedure THistoryGrid.SetContact(const Value: Integer);
@@ -1409,6 +1398,7 @@ procedure THistoryGrid.WMSize(var Message: TWMSize);
 //var
 //  re_mask: Longint;
 begin
+  BeginUpdate;
   if not FRichParamsSet then begin
     FRichCache.SetHandles;
     FRichParamsSet := True;
@@ -1418,10 +1408,9 @@ begin
     //SendMessage(FRichInline.Handle,EM_AUTOURLDETECT,1,0);
     //SendMessage(FRichInline.Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
   end;
-  BeginUpdate;
-  GridUpdates := GridUpdates + [guSize];
-  EndUpdate;
   //Update;
+  Update([guSize]);
+  EndUpdate;
 end;
 
 procedure THistoryGrid.SetPadding(Value: Integer);
@@ -2836,11 +2825,18 @@ begin
   end;
   if LockCount > 0 then exit;
   try
-    if guSize in GridUpdates then
-      GridUpdateSize;
+    if guSize in GridUpdates then GridUpdateSize;
+    if guOptions in GridUpdates then DoOptionsChanged;
   finally
     GridUpdates := [];
   end;
+end;
+
+procedure THistoryGrid.Update(Updates: TGridUpdates);
+begin
+  BeginUpdate;
+  GridUpdates := GridUpdates + Updates;
+  EndUpdate;
 end;
 
 function THistoryGrid.GetTime(Time: DWord): WideString;
@@ -4131,7 +4127,7 @@ var
     enc := 'utf-8';
     messages := '';
     for mt := Low(EventRecords) to High(EventRecords) do begin
-      if not (mt in [mtIncoming,mtOutgoing,mtUnknown]) then
+      if not (mt in EventsDirection+EventsExclude) then
         messages := messages + Format('<!ENTITY %s "%s">'+#13#10,
           [EventRecords[mt].XML,
           UTF8Encode(TranslateWideW(EventRecords[mt].Name))]{TRANSLATE-IGNORE});
@@ -4564,6 +4560,7 @@ end;
 { ThgVertScrollBar }
 procedure THistoryGrid.SetOptions(const Value: TGridOptions);
 begin
+  BeginUpdate;
   { disconnect from options }
   if Assigned(Options) then
     Options.DeleteGrid(Self);
@@ -4571,7 +4568,8 @@ begin
   { connect to options }
   if Assigned(Options) then
     Options.AddGrid(Self);
-  DoOptionsChanged;
+  Update([guOptions]);
+  EndUpdate;
 end;
 
 procedure THistoryGrid.SetRTLMode(const Value: TRTLMode);
@@ -4907,6 +4905,24 @@ begin
   FRichCache.ResetItem(Item);
 end;
 
+procedure THistoryGrid.ResetAllItems;
+var
+  DoChanges: Boolean;
+  i: Integer;
+begin
+  if not Allocated then exit;
+  BeginUpdate;
+  DoChanges := False;
+  for i := 0 to Length(FItems) - 1 do
+    if not IsUnknown(i) then begin
+      DoChanges := True;
+      // cose it's faster :)
+      FItems[i].MessageType := [mtUnknown];
+    end;
+  if DoChanges then Update([guOptions]);
+  EndUpdate;
+end;
+
 procedure THistoryGrid.OnInlineOnExit(Sender: TObject);
 begin
   CancelInline;
@@ -5190,7 +5206,7 @@ begin
   Inc(Changed);
   if FLocks > 0 then exit;
   for i := 0 to Length(Grids)-1 do
-    Grids[i].DoOptionsChanged;
+    Grids[i].Update([guOptions]);
   Changed := 0;
 end;
 
