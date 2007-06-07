@@ -63,9 +63,10 @@ var
   procedure GenerateEventFilters(var Filters: array of ThppEventFilter);
 
 const
-  AlwaysInclude: TMessageTypes = [];
-  AlwaysExclude: TMessageTypes = [mtUnknown,mtCustom];
-  CustomEvent: TMessageTypes = [mtCustom];
+  EventsInclude:   TMessageTypes = [];
+  EventsDirection: TMessageTypes = [mtIncoming,mtOutgoing];
+  EventsExclude:   TMessageTypes = [mtUnknown,mtCustom];
+  EventsCustom:    TMessageTypes = [mtCustom];
 
 implementation
 
@@ -128,7 +129,7 @@ begin
   if filMode = FM_INCLUDE then
     Result := filEvents else
     Result := filterAll - filEvents;
-  Result := Result - AlwaysExclude + AlwaysInclude;
+  Result := Result - EventsExclude + EventsInclude;
 end;
 
 procedure GenerateEventFilters(var Filters: array of ThppEventFilter);
