@@ -138,6 +138,7 @@ type
     //procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
     procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED; 
     procedure HMEventDeleted(var M: TMessage); message HM_MIEV_EVENTDELETED;
+    procedure HMNickChanged(var M: TMessage); message HM_NOTF_NICKCHANGED;
     procedure BeginUpdate;
     procedure EndUpdate;
     property ShowHeaders: Boolean write SetShowHeaders;
@@ -174,7 +175,7 @@ begin
   if RTL then RTLMode := hppRTLEnable
          else RTLMode := hppRTLDefault;
   Items[High(Items)].RTLMode := RTLMode;
-  if Grid.Contact <> hContact then begin
+  if Cardinal(Grid.Contact) <> hContact then begin
     Grid.Contact := hContact;
     Grid.Protocol := GetContactProto(hContact,FSubContact,FSubProtocol);
     FExternalRTLMode := RTLMode;
@@ -203,7 +204,7 @@ begin
   if RTL then RTLMode := hppRTLEnable
          else RTLMode := hppRTLDefault;
   Items[High(Items)].RTLMode := RTLMode;
-  if Grid.Contact <> hContact then begin
+  if Cardinal(Grid.Contact) <> hContact then begin
     Grid.Contact := hContact;
     Grid.Protocol := GetContactProto(hContact,FSubContact,FSubProtocol);
     FExternalRTLMode := RTLMode;
@@ -454,9 +455,13 @@ var
 begin
   ZeroMemory(@ItemRenderDetails,SizeOf(ItemRenderDetails));
   ItemRenderDetails.cbSize := SizeOf(ItemRenderDetails);
-  ItemRenderDetails.hContact := Items[Item].hContact;
+  // use meta's subcontact info, if available
+  //ItemRenderDetails.hContact := Items[Item].hContact;
+  ItemRenderDetails.hContact := FSubContact;
   ItemRenderDetails.hDBEvent := Items[Item].hDBEvent;
-  ItemRenderDetails.pProto := PChar(Grid.Items[Item].Proto);
+  // use meta's subcontact info, if available
+  //ItemRenderDetails.pProto := PChar(Grid.Items[Item].Proto);
+  ItemRenderDetails.pProto := PChar(FSubProtocol);
   ItemRenderDetails.pModule := PChar(Grid.Items[Item].Module);
   ItemRenderDetails.pText := nil;
   ItemRenderDetails.pExtended := PChar(Grid.Items[Item].Extended);
@@ -550,7 +555,7 @@ var
 begin
   if M.WParam <> Grid.Contact then exit;
   for i := 0 to Grid.Count-1 do
-    if Items[i].hDBEvent = M.LParam then begin
+    if Items[i].hDBEvent = Cardinal(M.LParam) then begin
       Grid.Bookmarked[i] := BookmarkServer[M.WParam].Bookmarked[M.LParam];
       Grid.ResetItem(i);
       Grid.Invalidate;
@@ -755,7 +760,6 @@ end;
 
 procedure TExternalGrid.OnOpenClick(Sender: TObject);
 var
-  hContact,hDBEvent: THandle;
   oep: TOpenEventParams;
 begin
   if Grid.Selected = -1 then exit;
@@ -789,9 +793,6 @@ begin
 end;
 
 procedure TExternalGrid.GridItemDelete(Sender: TObject; Index: Integer);
-var
-  idx: Integer;
-  hDBEvent: DWord;
 begin
   if (FGridState = gsDelete) and
      (Items[Index].hDBEvent <> 0) and
@@ -888,13 +889,26 @@ var
   i: integer;
 begin
   if Grid.State = gsDelete then exit;
-  if Grid.Contact <> Cardinal(M.WParam) then exit;
+  if Grid.Contact <> M.WParam then exit;
   for i := 0 to Grid.Count - 1 do begin
-    if (Items[i].hDBEvent = M.LParam) then begin
+    if (Items[i].hDBEvent = Cardinal(M.LParam)) then begin
       Grid.Delete(i);
       exit;
     end;
   end;
+end;
+
+procedure TExternalGrid.HMNickChanged(var M: TMessage);
+begin
+  if M.WParam = 0 then
+    Grid.ProfileName := GetContactDisplayName(0, FSubProtocol)
+  else begin
+    if Grid.Contact <> M.WParam then exit;
+    Grid.Protocol := GetContactProto(Grid.Contact,FSubContact,FSubProtocol);
+    Grid.ProfileName := GetContactDisplayName(0, FSubProtocol);
+    Grid.ContactName := GetContactDisplayName(Grid.Contact,Grid.Protocol,true);
+  end;
+  Grid.Update([guOptions]);
 end;
 
 var
@@ -974,7 +988,6 @@ procedure TExternalGrid.GridXMLData(Sender: TObject; Index: Integer; var Item: T
 var
   tmp: string;
   dt: TDateTime;
-  er: TEventRecord;
   mes: WideString;
 begin
   dt := TimestampToDateTime(Grid.Items[Index].Time);
