@@ -542,7 +542,7 @@ begin
   // Register in MathModule
   MathModuleEnabled := Boolean(PluginLink.ServiceExists(MATH_RTF_REPLACE_FORMULAE));
   // Checking MetaContacts
-  MetaContactsEnabled := Boolean(PluginLink.ServiceExists(MS_MC_GETDEFAULTCONTACT));
+  MetaContactsEnabled := Boolean(PluginLink.ServiceExists(MS_MC_GETMOSTONLINECONTACT));
   // Checking MS_DB_EVENT_GETTEXT database service
   DatabaseNewAPI := Boolean(PluginLink.ServiceExists(MS_DB_EVENT_GETTEXT));
 end;
