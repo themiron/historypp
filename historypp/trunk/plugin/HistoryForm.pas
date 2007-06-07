@@ -368,6 +368,7 @@ type
 
     procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
     procedure HMAccChanged(var M: TMessage); message HM_NOTF_ACCCHANGED;
+    procedure HMNickChanged(var M: TMessage); message HM_NOTF_NICKCHANGED;
 
     procedure OpenDetails(Item: Integer);
     procedure SetPasswordMode(const Value: Boolean);
@@ -630,8 +631,9 @@ begin
   UnknownCodepage.Caption := WideFormat(
         TranslateWideW('Unknown codepage %u'),
         [UserCodepage]);
-  if hContact = 0 then Caption := TranslateWideW('System History')
-                  else Caption := WideFormat(Caption,[hg.ContactName]);
+  if hContact = 0 then
+    Caption := TranslateWideW('System History') else
+    Caption := WideFormat(TranslateWideW('%s - History++'),[hg.ContactName]);
   hg.Allocate(HistoryLength);
 end;
 
@@ -1036,6 +1038,20 @@ end;
 procedure THistoryFrm.HMToolbarChanged(var M: TMessage);
 begin
   LoadToolbar;
+end;
+
+procedure THistoryFrm.HMNickChanged(var M: TMessage);
+begin
+  if M.WParam = 0 then
+    hg.ProfileName := GetContactDisplayName(0, SubProtocol)
+  else begin
+    if Cardinal(M.WParam) <> hContact then exit;
+    FProtocol := GetContactProto(hContact,FhSubContact,FSubProtocol);
+    hg.ProfileName := GetContactDisplayName(0, FSubProtocol);
+    hg.ContactName := GetContactDisplayName(hContact, Protocol, True);
+    Caption := WideFormat(TranslateWideW('%s - History++'),[hg.ContactName]);
+  end;
+  hg.Update([guOptions]);
 end;
 
 {Unfortunatly when you make a form from a dll this form won't become the
@@ -2857,9 +2873,13 @@ begin
     end;
   ZeroMemory(@ItemRenderDetails,SizeOf(ItemRenderDetails));
   ItemRenderDetails.cbSize := SizeOf(ItemRenderDetails);
-  ItemRenderDetails.hContact := hContact;
+  // use meta's subcontact info, if available
+  //ItemRenderDetails.hContact := hContact;
+  ItemRenderDetails.hContact := Self.FhSubContact;
   ItemRenderDetails.hDBEvent := History[GridIndexToHistory(Item)];
-  ItemRenderDetails.pProto := PChar(hg.Items[Item].Proto);
+  // use meta's subcontact info, if available
+  //ItemRenderDetails.pProto := PChar(hg.Items[Item].Proto);
+  ItemRenderDetails.pProto := PChar(Self.FSubProtocol);
   ItemRenderDetails.pModule := PChar(hg.Items[Item].Module);
   ItemRenderDetails.pText := nil;
   ItemRenderDetails.pExtended := PChar(hg.Items[Item].Extended);
