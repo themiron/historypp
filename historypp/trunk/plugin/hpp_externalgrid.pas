@@ -136,9 +136,10 @@ type
     function Perform(Msg: Cardinal; WParam, LParam: Longint): Longint;
     procedure HMBookmarkChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
     //procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
-    procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED; 
-    procedure HMEventDeleted(var M: TMessage); message HM_MIEV_EVENTDELETED;
+    procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED;
     procedure HMNickChanged(var M: TMessage); message HM_NOTF_NICKCHANGED;
+    procedure HMEventDeleted(var M: TMessage); message HM_MIEV_EVENTDELETED;
+    procedure HMMetaDefaultChanged(var M: TMessage); message HM_MIEV_METADEFCHANGED;
     procedure BeginUpdate;
     procedure EndUpdate;
     property ShowHeaders: Boolean write SetShowHeaders;
@@ -899,38 +900,36 @@ begin
 end;
 
 procedure TExternalGrid.HMNickChanged(var M: TMessage);
+begin
+  Grid.BeginUpdate;
+  if M.WParam = 0 then
+    Grid.ProfileName := GetContactDisplayName(0, FSubProtocol)
+  else
+  if Grid.Contact = M.WParam then begin
+    Grid.ProfileName := GetContactDisplayName(0, FSubProtocol);
+    Grid.ContactName := GetContactDisplayName(Grid.Contact,Grid.Protocol,True)
+  end;
+  Grid.EndUpdate;
+  Grid.Invalidate;
+end;
+
+procedure TExternalGrid.HMMetaDefaultChanged(var M: TMessage);
 var
-  newProfileName: WideString;
-  newContactName: WideString;
   newSubContact: THandle;
   newSubProtocol: String;
-  DoUpdate: Boolean;
 begin
-  DoUpdate := False;
-  if M.WParam = 0 then begin
-    if GridOptions.ForceProfileName then exit;
-    newProfileName := GetContactDisplayName(0, FSubProtocol);
-    if Grid.ProfileName <> newProfileName then begin
-      Grid.ProfileName := newProfileName;
-      DoUpdate := True;
-    end;
-  end else begin
-    if Grid.Contact <> M.WParam then exit;
-    GetContactProto(Grid.Contact,newSubContact,newSubProtocol);
-    if GridOptions.ForceProfileName then
-      newProfileName := Grid.ProfileName else
-      newProfileName := GetContactDisplayName(0, newSubProtocol);
-    newContactName := GetContactDisplayName(Grid.Contact,Grid.Protocol,True);
-    if (FSubContact <> newSubContact) or (FSubProtocol <> newSubProtocol) or
-       (Grid.ProfileName <> newProfileName) or (Grid.ContactName <> newContactName) then begin
-      FSubContact := newSubContact;
-      FSubProtocol := newSubProtocol;
-      Grid.ProfileName := newProfileName;
-      Grid.ContactName := newContactName;
-      DoUpdate := True;
-    end;
+  if Grid.Contact <> M.WParam then exit;
+  GetContactProto(Grid.Contact,newSubContact,newSubProtocol);
+  if (FSubContact <> newSubContact) or (FSubProtocol <> newSubProtocol) then begin
+    Grid.BeginUpdate;
+    FSubContact := newSubContact;
+    FSubProtocol := newSubProtocol;
+    Grid.ProfileName := GetContactDisplayName(0, FSubProtocol);
+    Grid.ContactName := GetContactDisplayName(Grid.Contact,Grid.Protocol,True);
+    Grid.Update([guOptions]);
+    Grid.EndUpdate;
+    //Grid.Invalidate;
   end;
-  if DoUpdate then Grid.Update([guOptions]);
 end;
 
 var
