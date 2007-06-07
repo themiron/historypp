@@ -321,15 +321,19 @@ end;
 // VCL bug. http://qc.borland.com/wc/qcmain.aspx?d=2537
 procedure THppButton.CNCtlColorStatic(var Message: TWMCtlColorStatic);
 begin
-  if Assigned(Parent) and Parent.DoubleBuffered then
-    PerformEraseBackground(Self, Message.ChildDC) else
+  if Assigned(Parent) and Parent.DoubleBuffered then begin
+    PerformEraseBackground(Self, Message.ChildDC);
+    Message.Result := GetStockObject(NULL_BRUSH);
+  end else
     inherited;
 end;
 
 procedure THppButton.CNCtlColorBtn(var Message: TWMCtlColorBtn);
 begin
-  if Assigned(Parent) and Parent.DoubleBuffered then
-    PerformEraseBackground(Self, Message.ChildDC) else
+  if Assigned(Parent) and Parent.DoubleBuffered then begin
+    PerformEraseBackground(Self, Message.ChildDC);
+    Message.Result := GetStockObject(NULL_BRUSH);
+  end else
     inherited;
 end;
 {$ENDIF}
@@ -341,8 +345,10 @@ end;
 // VCL bug. http://qc.borland.com/wc/qcmain.aspx?d=2537
 procedure THppRadioButton.CNCtlColorStatic(var Message: TWMCtlColorStatic);
 begin
-  if Assigned(Parent) and Parent.DoubleBuffered then
-    PerformEraseBackground(Self, Message.ChildDC) else
+  if Assigned(Parent) and Parent.DoubleBuffered then begin
+    PerformEraseBackground(Self, Message.ChildDC);
+    Message.Result := GetStockObject(NULL_BRUSH);
+  end else
     inherited;
 end;
 {$ENDIF}
@@ -354,8 +360,10 @@ end;
 // VCL bug. http://qc.borland.com/wc/qcmain.aspx?d=2537
 procedure THppCheckBox.CNCtlColorStatic(var Message: TWMCtlColorStatic);
 begin
-  if Assigned(Parent) and Parent.DoubleBuffered then
-    PerformEraseBackground(Self, Message.ChildDC) else
+  if Assigned(Parent) and Parent.DoubleBuffered then begin
+    PerformEraseBackground(Self, Message.ChildDC);
+    Message.Result := GetStockObject(NULL_BRUSH);
+  end else
     inherited;
 end;
 {$ENDIF}
