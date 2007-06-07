@@ -93,7 +93,9 @@ Hide Menu
 ;; Text found in ..\plugin\HistoryForm.pas:
 Unknown codepage %u
 System History
+%s - History++
 Error
+%s - History++
 Please wait while closing the window...
 &Pseudo-edit
 &Open
