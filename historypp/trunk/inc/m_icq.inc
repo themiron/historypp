@@ -90,6 +90,7 @@ const
     ICQEVENTTYPE_FUTURE_AUTH    = 2008;    //database event type
     ICQEVENTTYPE_CLIENT_CHANGE  = 2009;    //database event type
     ICQEVENTTYPE_CHECK_STATUS   = 2010;    //database event type
+    ICQEVENTTYPE_IGNORECHECK_STATUS = 2011;//database event type
 
     //broadcast from server
     //ASCIIZ    text
