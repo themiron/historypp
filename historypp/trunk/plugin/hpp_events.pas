@@ -57,7 +57,7 @@ uses
   Windows, TntSystem, SysUtils, TntSysUtils,
   {$IFDEF COMPILER_10}WideStrUtils,{$ENDIF} TntWideStrUtils,
   m_globaldefs, m_api, TntWindows,
-  hpp_global, hpp_contacts;
+  hpp_global, hpp_contacts, hpp_miranda_mmi;
 
 type
 
@@ -108,6 +108,7 @@ procedure GetEventTextForICQSelfRemove(EventInfo: TDBEventInfo; var Hi: THistory
 procedure GetEventTextForICQFutureAuth(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextForICQClientChange(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextForICQCheckStatus(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForICQIgnoreCheckStatus(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextForICQBroadcast(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextWATrackRequest(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextWATrackAnswer(EventInfo: TDBEventInfo; var Hi: THistoryItem);
@@ -138,7 +139,7 @@ const
 
 var
 
-  EventTable: array[0..26] of TEventTableItem = (
+  EventTable: array[0..27] of TEventTableItem = (
     // must be the first item in array for unknown events
     (EventType: MaxWord; MessageType: mtOther; TextFunction: GetEventTextForOther),
     // events definitions
@@ -162,6 +163,7 @@ var
     (EventType: ICQEVENTTYPE_FUTURE_AUTH; MessageType: mtSystem; TextFunction: GetEventTextForICQFutureAuth),
     (EventType: ICQEVENTTYPE_CLIENT_CHANGE; MessageType: mtSystem; TextFunction: GetEventTextForICQClientChange),
     (EventType: ICQEVENTTYPE_CHECK_STATUS; MessageType: mtSystem; TextFunction: GetEventTextForICQCheckStatus),
+    (EventType: ICQEVENTTYPE_IGNORECHECK_STATUS; MessageType: mtSystem; TextFunction: GetEventTextForICQIgnoreCheckStatus),
     (EventType: ICQEVENTTYPE_BROADCAST; MessageType: mtSystem; TextFunction: GetEventTextForICQBroadcast),
     (EventType: EVENTTYPE_CONTACTLEFTCHANNEL; MessageType: mtStatus; TextFunction: GetEventTextForMessage),
     (EventType: EVENTTYPE_WAT_REQUEST; MessageType: mtWATrack; TextFunction: GetEventTextWATrackRequest),
@@ -370,30 +372,43 @@ var
   msglen,lenW: Cardinal;
   i: integer;
   UseUnicode: boolean;
+  dbegt: TDBEVENTGETTEXT;
 begin
-  msgA := PChar(EventInfo.pBlob);
-  msglen := lstrlenA(PChar(EventInfo.pBlob))+1;
-  if Boolean(EventInfo.flags and DBEF_UTF) then begin
-    SetLength(hi.Text,msglen);
-    msgW := PWideChar(hi.Text);
-    i := Utf8ToUnicode(msgW,msglen,msgA,msglen);
-    if i > 0 then
-      SetLength(hi.Text,i-1) else
-      hi.Text := AnsiToWideString(msgA,hi.Codepage);
-  end else begin
-    lenW := 0;
-    if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
-      msgW := PWideChar(msgA+msglen);
-      for i := 0 to ((EventInfo.cbBlob-msglen) div SizeOf(WideChar))-1 do
-        if msgW[i] = #0 then begin
-          LenW := i;
-          break;
-        end;
-      UseUnicode := (lenW < msglen) and (lenW > 0);
-    end else UseUnicode := false;
-    if UseUnicode then
-      SetString(hi.Text,msgW,lenW) else
-      hi.Text := AnsiToWideString(msgA,hi.Codepage);
+  if DatabaseNewAPI then begin
+    dbegt.dbei := @EventInfo;
+    dbegt.datatype := DBVT_WCHAR;
+    dbegt.codepage := hi.Codepage;
+    msgW := PWideChar(PluginLink.CallService(MS_DB_EVENT_GETTEXT,0,LPARAM(@dbegt)));
+    if msgW <> nil then begin
+      hi.Text := WideString(msgW);
+      MirandaFree(msgW);
+    end;
+  end else msgW := nil;
+  if msgW = nil then begin
+    msgA := PChar(EventInfo.pBlob);
+    msglen := lstrlenA(PChar(EventInfo.pBlob))+1;
+    if Boolean(EventInfo.flags and DBEF_UTF) then begin
+      SetLength(hi.Text,msglen);
+      msgW := PWideChar(hi.Text);
+      i := Utf8ToUnicode(msgW,msglen,msgA,msglen);
+      if i > 0 then
+        SetLength(hi.Text,i-1) else
+        hi.Text := AnsiToWideString(msgA,hi.Codepage);
+    end else begin
+      lenW := 0;
+      if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
+        msgW := PWideChar(msgA+msglen);
+        for i := 0 to ((EventInfo.cbBlob-msglen) div SizeOf(WideChar))-1 do
+          if msgW[i] = #0 then begin
+            LenW := i;
+            break;
+          end;
+        UseUnicode := (lenW < msglen) and (lenW > 0);
+      end else UseUnicode := false;
+      if UseUnicode then
+        SetString(hi.Text,msgW,lenW) else
+        hi.Text := AnsiToWideString(msgA,hi.Codepage);
+    end;
   end;
   if (hi.MessageType = [mtMessage]) and TextHasUrls(hi.Text) then
     hi.MessageType := [mtUrl];
@@ -642,6 +657,12 @@ procedure GetEventTextForICQCheckStatus(EventInfo: TDBEventInfo; var Hi: THistor
 begin
   hi.Text := GetEventTextForICQSystem(EventInfo,
     TranslateWideW('Status request by %s (%d):%s'));
+end;
+
+procedure GetEventTextForICQIgnoreCheckStatus(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+begin
+  hi.Text := GetEventTextForICQSystem(EventInfo,
+    TranslateWideW('Ignored status request by %s (%d):%s'));
 end;
 
 procedure GetEventTextForICQBroadcast(EventInfo: TDBEventInfo; var Hi: THistoryItem);

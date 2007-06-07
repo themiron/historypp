@@ -508,6 +508,8 @@ Authorization future request by %s (%d): %s
 User %s (%d) changed icq client: %s
 [Status request by %s (%d):%s]
 Status request by %s (%d):%s
+[Ignored status request by %s (%d):%s]
+Ignored status request by %s (%d):%s
 [Broadcast message from %s (%s): %s]
 Broadcast message from %s (%s): %s
 [WATrack: information request]
