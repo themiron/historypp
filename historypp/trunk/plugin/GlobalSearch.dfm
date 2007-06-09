@@ -26,7 +26,7 @@ object fmGlobalSearch: TfmGlobalSearch
     Left = 0
     Top = 0
     Width = 551
-    Height = 496
+    Height = 498
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 2
@@ -34,7 +34,7 @@ object fmGlobalSearch: TfmGlobalSearch
     object spContacts: TTntSplitter
       Left = 157
       Top = 248
-      Height = 192
+      Height = 194
       ResizeStyle = rsUpdate
       Visible = False
     end
@@ -84,7 +84,7 @@ object fmGlobalSearch: TfmGlobalSearch
     end
     object paProgress: THppPanel
       Left = 2
-      Top = 440
+      Top = 442
       Width = 547
       Height = 54
       Align = alBottom
@@ -187,7 +187,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Left = 2
       Top = 248
       Width = 155
-      Height = 192
+      Height = 194
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 2
@@ -196,7 +196,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Left = 0
         Top = 0
         Width = 155
-        Height = 192
+        Height = 194
         Align = alClient
         Columns = <
           item
@@ -220,7 +220,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Left = 160
       Top = 248
       Width = 389
-      Height = 192
+      Height = 194
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 4
@@ -228,7 +228,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Left = 0
         Top = 0
         Width = 389
-        Height = 164
+        Height = 166
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         ShowBottomAligned = False
@@ -276,7 +276,7 @@ object fmGlobalSearch: TfmGlobalSearch
       end
       object paFilter: THppPanel
         Left = 0
-        Top = 164
+        Top = 166
         Width = 389
         Height = 28
         Align = alBottom
@@ -512,8 +512,9 @@ object fmGlobalSearch: TfmGlobalSearch
         object tbEvents: THppToolButton
           Left = 46
           Top = 0
+          Hint = 'Limit event types'
           HelpKeyword = 'F6'
-          Caption = 'Limit Search Range'
+          Caption = 'Limit event types'
           Style = tbsCheck
           OnClick = tbEventsClick
         end
@@ -536,7 +537,7 @@ object fmGlobalSearch: TfmGlobalSearch
           Left = 100
           Top = 0
           Hint = 'Bookmarks'
-          HelpKeyword = 'F7'
+          HelpKeyword = 'F9'
           Caption = 'Bookmarks'
           Style = tbsCheck
           OnClick = tbBookmarksClick
@@ -550,7 +551,7 @@ object fmGlobalSearch: TfmGlobalSearch
         object tbSearch: THppToolButton
           Left = 131
           Top = 0
-          Caption = 'tbSearch'
+          Caption = 'Find'
           Grouped = True
           Style = tbsCheck
           Visible = False
@@ -558,7 +559,7 @@ object fmGlobalSearch: TfmGlobalSearch
         object tbFilter: THppToolButton
           Left = 154
           Top = 0
-          Caption = 'tbFilter'
+          Caption = 'Filter'
           Grouped = True
           Style = tbsCheck
           Visible = False
@@ -582,6 +583,36 @@ object fmGlobalSearch: TfmGlobalSearch
           Spacing = -5
           Transparent = False
           OnClick = tbEventsFilterClick
+        end
+        object TntToolButton4: TTntToolButton
+          Left = 295
+          Top = 0
+          Width = 8
+          Style = tbsSeparator
+        end
+        object tbCopy: TTntToolButton
+          Left = 303
+          Top = 0
+          Hint = 'Copy'
+          HelpKeyword = 'Ctrl+C'
+          Caption = 'Copy'
+          OnClick = tbCopyClick
+        end
+        object tbDelete: TTntToolButton
+          Left = 326
+          Top = 0
+          Hint = 'Delete'
+          HelpKeyword = 'Del'
+          Caption = 'Delete'
+          OnClick = bDeleteClick
+        end
+        object tbSave: TTntToolButton
+          Left = 349
+          Top = 0
+          Hint = 'Save'
+          HelpKeyword = 'Ctrl+S'
+          Caption = 'Save'
+          OnClick = tbSaveClick
         end
       end
     end
@@ -654,7 +685,7 @@ object fmGlobalSearch: TfmGlobalSearch
   end
   object sb: TTntStatusBar
     Left = 0
-    Top = 496
+    Top = 498
     Width = 551
     Height = 19
     Panels = <>
@@ -693,7 +724,7 @@ object fmGlobalSearch: TfmGlobalSearch
     object Copy1: TTntMenuItem
       Caption = '&Copy'
       ShortCut = 16451
-      OnClick = Copy1Click
+      OnClick = tbCopyClick
     end
     object CopyText1: TTntMenuItem
       Caption = 'Copy &Text'
@@ -703,7 +734,7 @@ object fmGlobalSearch: TfmGlobalSearch
     object Delete1: TTntMenuItem
       Caption = '&Delete'
       ShortCut = 46
-      OnClick = Delete1Click
+      OnClick = bDeleteClick
     end
     object N1: TTntMenuItem
       Caption = '-'
@@ -713,7 +744,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Caption = '&Save Selected...'
       ShortCut = 16467
       Visible = False
-      OnClick = SaveSelected1Click
+      OnClick = tbSaveClick
     end
     object N5: TTntMenuItem
       Caption = '-'
@@ -751,7 +782,7 @@ object fmGlobalSearch: TfmGlobalSearch
   end
   object pmEventsFilter: TTntPopupMenu
     OnPopup = pmEventsFilterPopup
-    Left = 362
+    Left = 450
     Top = 2
     object N4: TTntMenuItem
       Caption = '-'
@@ -826,7 +857,7 @@ object fmGlobalSearch: TfmGlobalSearch
     end
   end
   object mmAcc: TTntMainMenu
-    Left = 394
+    Left = 482
     Top = 2
     object mmToolbar: TTntMenuItem
       Caption = 'Toolbar'
