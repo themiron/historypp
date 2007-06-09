@@ -193,6 +193,10 @@ type
     sbEventsClose: THppSpeedButton;
     tbEvents: THppToolButton;
     cbEvents: TTntComboBox;
+    TntToolButton4: TTntToolButton;
+    tbCopy: TTntToolButton;
+    tbDelete: TTntToolButton;
+    tbSave: TTntToolButton;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -201,7 +205,7 @@ type
     procedure edSearchKeyPress(Sender: TObject; var Key: Char);
     procedure hgItemDelete(Sender: TObject; Index: Integer);
     procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
-    procedure SaveSelected1Click(Sender: TObject);
+    procedure tbSaveClick(Sender: TObject);
     procedure hgPopup(Sender: TObject);
     procedure ReplyQuoted1Click(Sender: TObject);
     procedure SendMessage1Click(Sender: TObject);
@@ -236,9 +240,9 @@ type
     procedure edPassKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure hgSelect(Sender: TObject; Item, OldItem: Integer);
-    procedure Copy1Click(Sender: TObject);
+    procedure tbCopyClick(Sender: TObject);
     procedure CopyText1Click(Sender: TObject);
-    procedure Delete1Click(Sender: TObject);
+    procedure bDeleteClick(Sender: TObject);
     procedure hgRTLEnabled(Sender: TObject; BiDiMode: TBiDiMode);
     procedure Bookmark1Click(Sender: TObject);
     procedure hgBookmarkClick(Sender: TObject; Item: Integer);
@@ -1370,6 +1374,13 @@ begin
   ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_HOTSEARCH].Handle);
   tbSearch.ImageIndex := ii;
 
+  ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_COPY].Handle);
+  tbCopy.ImageIndex := ii;
+  ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_DELETE].Handle);
+  tbDelete.ImageIndex := ii;
+  ii := ImageList_AddIcon(il,hppIcons[HPP_ICON_TOOL_SAVE].Handle);
+  tbSave.ImageIndex := ii;
+
   LoadEventFilterButton;
 end;
 
@@ -1508,12 +1519,13 @@ begin
   end;
 end;
 
-procedure TfmGlobalSearch.SaveSelected1Click(Sender: TObject);
+procedure TfmGlobalSearch.tbSaveClick(Sender: TObject);
 var
   t,t1: String;
   SaveFormat: TSaveFormat;
   RecentFormat: TSaveFormat;
 begin
+  if hg.Selected = -1 then exit;
   RecentFormat := TSaveFormat(GetDBInt(hppDBName,'ExportFormat',0));
   SaveFormat := RecentFormat;
   PrepareSaveDialog(SaveDialog,SaveFormat,True);
@@ -1701,16 +1713,16 @@ begin
 
   IsSearching := False;
   SearchThread := nil;
-  
-  hg.Codepage := hppCodepage;
-  hg.RTLMode := hppRTLDefault;
-
-  hg.TxtStartup := TranslateWideW('Ready to search')+
-    #10#13#10#13+TranslateWideW('Click Search button to start');
 
   PassMode := GetPassMode;
   if (PassMode = PASSMODE_PROTALL) then
     TogglePasswordPanel(True);
+
+  hg.Codepage := hppCodepage;
+  hg.RTLMode := hppRTLDefault;
+  hg.TxtStartup := TranslateWideW('Ready to search')+
+    #10#13#10#13+TranslateWideW('Click Search button to start');
+  hg.Allocate(0);
 
   LoadPosition;
 
@@ -1718,8 +1730,8 @@ begin
 
   edSearch.SetFocus;
   edSearch.SelectAll;
-
   edSearchChange(Self);
+
   CreateEventsFilterMenu;
   //SetEventFilter(0);
   SetEventFilter(GetShowAllEventsIndex);
@@ -2103,7 +2115,14 @@ procedure TfmGlobalSearch.hgSelect(Sender: TObject; Item, OldItem: Integer);
 {var
   i,hCont,Index: Integer;}
 begin
-  if hg.HotString = '' then hgState(hg,gsIdle);
+  tbCopy.Enabled := (Item <> -1);
+  tbDelete.Enabled := (Item <> -1);
+  tbSave.Enabled := (hg.SelCount > 1);
+
+  if hg.HotString = '' then begin
+    // redraw status bar
+    hgState(hg,gsIdle);
+  end;
 
   {  if Item = -1 then exit;
   index := -1;
@@ -2138,7 +2157,7 @@ begin
   sb.SimpleText := t;
 end;
 
-procedure TfmGlobalSearch.Copy1Click(Sender: TObject);
+procedure TfmGlobalSearch.tbCopyClick(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
   CopyToClip(hg.FormatSelected(GridOptions.ClipCopyFormat),Handle,GetSearchItem(hg.Selected).Contact.Codepage);
@@ -2189,7 +2208,7 @@ begin
   end;
 end;
 
-procedure TfmGlobalSearch.Delete1Click(Sender: TObject);
+procedure TfmGlobalSearch.bDeleteClick(Sender: TObject);
 begin
   if hg.SelCount = 0 then exit;
   if hg.SelCount > 1 then begin
