@@ -28,10 +28,13 @@ Filter
 Ctrl+E
 Filter
 Copy
+Ctrl+C
 Copy
 Delete
+Del
 Delete
 Save
+Ctrl+S
 Save
 History Actions
 History Actions
