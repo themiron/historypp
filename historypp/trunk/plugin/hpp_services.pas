@@ -143,8 +143,9 @@ begin
     wHistory.ShowAllEvents;
     wHistory.hg.Selected := index;
   end;
-  if NewWindow then wHistory.Show
-  else BringFormToFront(wHistory); // restore even if minimized
+  if NewWindow then
+    wHistory.Show else
+    BringFormToFront(wHistory); // restore even if minimized
   Result := wHistory;
 end;
 
@@ -171,8 +172,8 @@ begin
     fmGlobalSearch := TfmGlobalSearch.Create(nil);
     fmGlobalSearch.hg.Options := GridOptions;
     fmGlobalSearch.Show;
-  end;
-  BringFormToFront(fmGlobalSearch);
+  end else
+    BringFormToFront(fmGlobalSearch);
   Result := 0;
 end;
 
