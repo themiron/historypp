@@ -172,6 +172,8 @@ F4
 Limit search range
 [F5]
 F5
+[Limit event types]
+Limit event types
 [F6]
 F6
 [Search protected contacts]
@@ -180,10 +182,24 @@ Search protected contacts
 F7
 [Bookmarks]
 Bookmarks
-[tbSearch]
-tbSearch
-[tbFilter]
-tbFilter
+[F9]
+F9
+[Find]
+Find
+[Filter]
+Filter
+[Copy]
+Copy
+[Ctrl+C]
+Ctrl+C
+[Delete]
+Delete
+[Del]
+Del
+[Save]
+Save
+[Ctrl+S]
+Ctrl+S
 [Search messages matched to]
 Search messages matched to
 [Limit Event Types]
@@ -273,8 +289,6 @@ Do you really want to delete selected items (%.0f)?
 Delete Selected
 [Do you really want to delete selected item?]
 Do you really want to delete selected item?
-[Delete]
-Delete
 
 ;; HistoryForm.trans.txt file
 
@@ -293,18 +307,10 @@ Ctrl+I
 User Menu
 [Conversations]
 Conversations
-[Find]
-Find
 [Ctrl+F]
 Ctrl+F
-[Filter]
-Filter
 [Ctrl+E]
 Ctrl+E
-[Copy]
-Copy
-[Save]
-Save
 [History Actions]
 History Actions
 [History Search]

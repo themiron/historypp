@@ -27,16 +27,26 @@ Advanced search options
 Limit search range
 F5
 Limit search range
+Limit event types
 F6
-Limit Search Range
+Limit event types
 Search protected contacts
 F7
 Search protected contacts
 Bookmarks
-F7
+F9
 Bookmarks
-tbSearch
-tbFilter
+Find
+Filter
+Copy
+Ctrl+C
+Copy
+Delete
+Del
+Delete
+Save
+Ctrl+S
+Save
 Search messages matched to
 Limit Event Types
 Sh&ow in context
