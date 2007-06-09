@@ -356,13 +356,15 @@ object HistoryFrm: THistoryFrm
           Left = 277
           Top = 0
           Hint = 'Copy'
+          HelpKeyword = 'Ctrl+C'
           Caption = 'Copy'
-          OnClick = Copy1Click
+          OnClick = tbCopyClick
         end
         object tbDelete: THppToolButton
           Left = 300
           Top = 0
           Hint = 'Delete'
+          HelpKeyword = 'Del'
           Caption = 'Delete'
           OnClick = tbDeleteClick
         end
@@ -370,8 +372,9 @@ object HistoryFrm: THistoryFrm
           Left = 323
           Top = 0
           Hint = 'Save'
+          HelpKeyword = 'Ctrl+S'
           Caption = 'Save'
-          Visible = False
+          OnClick = tbSaveClick
         end
         object TntToolButton5: THppToolButton
           Left = 346
@@ -679,7 +682,7 @@ object HistoryFrm: THistoryFrm
     object Copy1: TTntMenuItem
       Caption = '&Copy'
       ShortCut = 16451
-      OnClick = Copy1Click
+      OnClick = tbCopyClick
     end
     object CopyText1: TTntMenuItem
       Caption = 'Copy &Text'
@@ -689,7 +692,7 @@ object HistoryFrm: THistoryFrm
     object Delete1: TTntMenuItem
       Caption = '&Delete'
       ShortCut = 46
-      OnClick = Delete1Click
+      OnClick = tbDeleteClick
     end
     object N2: TTntMenuItem
       Caption = '-'
@@ -697,7 +700,7 @@ object HistoryFrm: THistoryFrm
     object SaveSelected1: TTntMenuItem
       Caption = '&Save Selected...'
       ShortCut = 16467
-      OnClick = SaveSelected1Click
+      OnClick = tbSaveClick
     end
     object N13: TTntMenuItem
       Caption = '-'
@@ -756,7 +759,7 @@ object HistoryFrm: THistoryFrm
     Top = 20
     object SaveSelected2: TTntMenuItem
       Caption = '&Save Selected...'
-      OnClick = SaveSelected1Click
+      OnClick = tbSaveClick
     end
     object N4: TTntMenuItem
       Caption = '-'

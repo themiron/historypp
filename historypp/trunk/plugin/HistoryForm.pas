@@ -260,10 +260,9 @@ type
 
     procedure hgSearchFinished(Sender: TObject; Text: WideString; Found: Boolean);
     procedure hgDblClick(Sender: TObject);
-    procedure SaveSelected1Click(Sender: TObject);
+    procedure tbSaveClick(Sender: TObject);
     procedure hgItemDelete(Sender: TObject; Index: Integer);
-    procedure Delete1Click(Sender: TObject);
-    procedure Copy1Click(Sender: TObject);
+    procedure tbCopyClick(Sender: TObject);
     procedure Details1Click(Sender: TObject);
     procedure hgKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure hgState(Sender: TObject; State: TGridState);
@@ -1688,11 +1687,12 @@ begin
     hg.EditInline(hg.Selected);
 end;
 
-procedure THistoryFrm.SaveSelected1Click(Sender: TObject);
+procedure THistoryFrm.tbSaveClick(Sender: TObject);
 var
   t: String;
   SaveFormat: TSaveFormat;
 begin
+  if hg.Selected = -1 then exit;
   RecentFormat := TSaveFormat(GetDBInt(hppDBName,'ExportFormat',0));
   SaveFormat := RecentFormat;
   PrepareSaveDialog(SaveDialog,SaveFormat,True);
@@ -1783,7 +1783,7 @@ begin
   end;
 end;
 
-procedure THistoryFrm.Delete1Click(Sender: TObject);
+procedure THistoryFrm.tbDeleteClick(Sender: TObject);
 begin
   if hg.SelCount = 0 then exit;
   if hg.SelCount > 1 then begin
@@ -1826,7 +1826,7 @@ begin
   NotifyAllForms(HM_NOTF_ACCCHANGED,DWord(False),0);
 end;
 
-procedure THistoryFrm.Copy1Click(Sender: TObject);
+procedure THistoryFrm.tbCopyClick(Sender: TObject);
 begin
   if hg.Selected = -1 then exit;
   CopyToClip(hg.FormatSelected(GridOptions.ClipCopyFormat),Handle,UserCodePage);
@@ -2039,9 +2039,9 @@ end;
 
 procedure THistoryFrm.hgSelect(Sender: TObject; Item, OldItem: Integer);
 begin
+  tbCopy.Enabled := (Item <> -1);
   tbDelete.Enabled := (Item <> -1);
   tbSave.Enabled := (hg.SelCount > 1);
-  tbCopy.Enabled := (Item <> -1);
 
   if hg.HotString = '' then begin
     LastHotIdx := -1;
@@ -3269,11 +3269,6 @@ begin
     Panel := Panel + [hpBookmarks]
   else
     Panel := Panel - [hpBookmarks];
-end;
-
-procedure THistoryFrm.tbDeleteClick(Sender: TObject);
-begin
-  Delete1.Click;
 end;
 
 procedure THistoryFrm.tbEventsFilterClick(Sender: TObject);
