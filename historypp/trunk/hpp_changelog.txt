@@ -9,6 +9,46 @@ Changelog
 
 SVN Changelog: https://opensvn.csie.org/traccgi/historypp/log/?verbose=on
 
+1.5.0.115
+
+Added ability to search history by message types
+Added ability to open file folder & received files folder from context menu
+Added ability to read UTF8 messages from 0.7.xx profile
+Added ability to read messages with MS_DB_EVENT_GETTEXT service
+Added ability to select all messages with Ctrl+A combo
+Added grid smooth scrolling by Ctrl+Up/Down combo
+Added Copy, Delete and Save tool buttons to history search form
+Added "Save selected" item to history search form context menu
+Added profile/contact nicks instant tracking
+Added smileypack changing on meta's subcontact switching
+Added ICQEVENTTYPE_IGNORECHECK_STATUS event support (from IcqOscarJ Plus Mod)
+Added ICQEVENTTYPE_CLIENT_CHANGE event support (from IcqOscarJ Plus Mod)
+Added ICQEVENTTYPE_CHECK_STATUS event support (from IcqOscarJ Plus Mod)
+Added UI to set custom event types
+Added WebPager and Email Express events customization
+Added ansi/unicode OS reflection in verison info
+Made HistoryPlusPlus module as known in dbeditor++
+Improved session loading
+Changed bookmark shortcut key to F9
+Enabled END and HOME buttons in search/filter edit field
+Reintroduced save button functionality in history window
+Mass improvements of customize filter form drawing
+Disabled grouping for bookmarked log events
+Hide hide toolbar completely if toolbar string is empty
+Fixed possible deadlocks on history close
+Fixed grid scrolling on event added in pseudo-edit mode
+Fixed export with multiple profile/contact names from history search form
+Fixed incorrect tool button hints in history search
+Fixed opening history search form as top-most window
+Fixed drawing glitches for buttons and check boxes
+Fixed blinking while switching from edits by tab key
+Fixed SMS, WebPager and Email Express events was treated as other
+Fixed unicode loss of history search substing while saving/reading
+Plugin API optimization
+Mass code cleanup
+Translation changes
+Other changes and fixes i don't remember
+
 1.5.0.114
 
 Added UUID {B92282AC-686B-4541-A12D-6E9971A253B7} for 0.8.x.x compability

@@ -1,6 +1,6 @@
 ;;
 ;; History++ plugin translation
-;; Part of 1.5.0.114 distribution
+;; Part of 1.5.0.115 distribution
 ;; 
 ;; Project: http://themiron.mirandaim.ru/
 ;; SVN: http://opensvn.csie.org/historypp/
