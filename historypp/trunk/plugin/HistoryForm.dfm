@@ -30,7 +30,7 @@ object HistoryFrm: THistoryFrm
     Left = 0
     Top = 0
     Width = 578
-    Height = 378
+    Height = 376
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 2
@@ -38,7 +38,7 @@ object HistoryFrm: THistoryFrm
     object spHolder: TTntSplitter
       Left = 158
       Top = 32
-      Height = 319
+      Height = 317
       AutoSnap = False
       MinSize = 100
       ResizeStyle = rsUpdate
@@ -48,7 +48,7 @@ object HistoryFrm: THistoryFrm
       Left = 161
       Top = 32
       Width = 415
-      Height = 319
+      Height = 317
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
@@ -56,7 +56,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 0
         Width = 415
-        Height = 319
+        Height = 317
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         ShowBottomAligned = False
@@ -113,7 +113,7 @@ object HistoryFrm: THistoryFrm
     end
     object paSearch: THppPanel
       Left = 2
-      Top = 351
+      Top = 349
       Width = 574
       Height = 25
       Align = alBottom
@@ -406,7 +406,7 @@ object HistoryFrm: THistoryFrm
       Left = 2
       Top = 32
       Width = 156
-      Height = 319
+      Height = 317
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 3
@@ -429,7 +429,7 @@ object HistoryFrm: THistoryFrm
         Left = 0
         Top = 153
         Width = 156
-        Height = 166
+        Height = 164
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 0
@@ -472,7 +472,7 @@ object HistoryFrm: THistoryFrm
           Left = 0
           Top = 21
           Width = 156
-          Height = 145
+          Height = 143
           Align = alClient
           BevelInner = bvNone
           BevelOuter = bvNone
@@ -563,7 +563,7 @@ object HistoryFrm: THistoryFrm
   end
   object sb: TTntStatusBar
     Left = 0
-    Top = 378
+    Top = 376
     Width = 578
     Height = 19
     Panels = <>

@@ -464,7 +464,6 @@ var
 const
   DEF_HISTORY_TOOLBAR='[SESS][BOOK] [SEARCH][FILTER] [EVENTS] [COPY][DELETE] [HISTORY]';
 
-procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
 //function ParseUrlItem(Item: THistoryItem; out Url,Mes: WideString): Boolean;
 //function ParseFileItem(Item: THistoryItem; out FileName,Mes: WideString): Boolean;
 
@@ -1705,16 +1704,12 @@ begin
 // why SaveDialog.FileName shows '' here???
 // who knows? In debugger FFileName shows right file, but
 // FileName property returns ''
-  case SaveDialog.FilterIndex of
-    1: SaveFormat := sfHtml;
-    2: SaveFormat := sfXml;
-    3: SaveFormat := sfRTF;
-    4: SaveFormat := sfUnicode;
-    5: SaveFormat := sfText;
-  end;
-  RecentFormat := SaveFormat;
-  hg.SaveSelected(SaveDialog.Files[0],SaveFormat);
-  //hg.SaveSelected(SaveDialog.FileName,SaveFormat);
+  for SaveFormat := High(SaveFormats) downto Low(SaveFormats) do
+    if SaveDialog.FilterIndex = SaveFormats[SaveFormat].Index then
+      break;
+  if SaveFormat <> sfAll then RecentFormat := SaveFormat;
+  //hg.SaveSelected(SaveDialog.FileName,RecentFormat);
+  hg.SaveSelected(SaveDialog.Files[0],RecentFormat);
   WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
 end;
 
@@ -2152,48 +2147,6 @@ procedure THistoryFrm.ReplyQuoted(Item: Integer);
 begin
   if (hContact = 0) or (hg.SelCount = 0) then exit;
   SendMessageTo(hContact,hg.FormatSelected(GridOptions.ReplyQuotedFormat));
-end;
-
-var
-  HtmlFilter: String = 'HTML file (*.html; *.htm)|*.html;*.htm';
-  XmlFilter: String = 'XML file (*.xml)|*.xml';
-  RtfFilter: String = 'RTF file (*.rtf)|*.rtf';
-  UnicodeFilter: String = 'Unicode text file (*.txt)|*.txt';
-  TextFilter: String = 'Text file (*.txt)|*.txt';
-  AllFilter: String = 'All files (*.*)|*.*';
-  HtmlDef: String = '.html';
-  XmlDef: String = '.xml';
-  RtfDef: String = '.rtf';
-  TextDef: String = '.txt';
-
-procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
-begin
-  if AllFormats then begin
-    SaveDialog.Filter := HtmlFilter+'|'+XmlFilter+'|'+RtfFilter+'|'+UnicodeFilter+'|'+TextFilter+'|'+AllFilter;
-    case SaveFormat of
-      sfHTML: SaveDialog.FilterIndex := 1;
-      sfXML: SaveDialog.FilterIndex := 2;
-      sfRTF: SaveDialog.FilterIndex := 3;
-      sfUnicode: SaveDialog.FilterIndex := 4;
-      sfText: SaveDialog.FilterIndex := 5;
-    end;
-  end else begin
-    case SaveFormat of
-      sfHTML: begin SaveDialog.Filter := HtmlFilter; SaveDialog.FilterIndex := 1; end;
-      sfXML:  begin SaveDialog.Filter := XmlFilter; SaveDialog.FilterIndex := 1; end;
-      sfRTF:  begin SaveDialog.Filter := RtfFilter; SaveDialog.FilterIndex := 1; end;
-      sfUnicode: begin SaveDialog.Filter := UnicodeFilter+'|'+TextFilter; SaveDialog.FilterIndex := 1; end;
-      sfText: begin SaveDialog.Filter := UnicodeFilter+'|'+TextFilter; SaveDialog.FilterIndex := 2; end;
-    end;
-    SaveDialog.Filter := SaveDialog.Filter + '|' + AllFilter;
-  end;
-  case SaveFormat of
-    sfHTML: SaveDialog.DefaultExt := HtmlDef;
-    sfXML: SaveDialog.DefaultExt := XmlDef;
-    sfRTF: SaveDialog.DefaultExt := RtfDef;
-    sfUnicode: SaveDialog.DefaultExt := TextDef;
-    sfText: SaveDialog.DefaultExt := TextDef;
-  end;
 end;
 
 procedure THistoryFrm.SaveasXML2Click(Sender: TObject);
@@ -2699,13 +2652,6 @@ begin
   TranslateMenu(pmSessions.Items);
   TranslateMenu(pmToolbar.Items);
   TranslateMenu(pmBook.Items);
-
-  HtmlFilter := Translate(PChar(HtmlFilter));
-  XmlFilter := Translate(PChar(XmlFilter));
-  RtfFilter := Translate(PChar(RtfFilter));
-  UnicodeFilter := Translate(PChar(UnicodeFilter));
-  TextFilter := Translate(PChar(TextFilter));
-  AllFilter := Translate(PChar(AllFilter));
 end;
 
 procedure THistoryFrm.tvSessChange(Sender: TObject; Node: TTreeNode);

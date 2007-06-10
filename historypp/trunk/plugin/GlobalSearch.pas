@@ -396,7 +396,7 @@ var
 implementation
 
 uses hpp_options, PassForm, hpp_itemprocess, hpp_messages,
-  HistoryForm, CustomizeFiltersForm;
+  CustomizeFiltersForm;
 
 {$R *.DFM}
 
@@ -1534,14 +1534,11 @@ begin
   t := MakeFileName(WideToAnsiString(t1,hppCodepage));
   SaveDialog.FileName := t;
   if not SaveDialog.Execute then exit;
-  case SaveDialog.FilterIndex of
-    1: SaveFormat := sfHtml;
-    2: SaveFormat := sfXml;
-    3: SaveFormat := sfUnicode;
-    4: SaveFormat := sfText;
-  end;
-  RecentFormat := SaveFormat;
-  hg.SaveSelected(SaveDialog.Files[0],SaveFormat);
+  for SaveFormat := High(SaveFormats) downto Low(SaveFormats) do
+    if SaveDialog.FilterIndex = SaveFormats[SaveFormat].Index then
+      break;
+  if SaveFormat <> sfAll then RecentFormat := SaveFormat;
+  hg.SaveSelected(SaveDialog.Files[0],RecentFormat);
   WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
 end;
 

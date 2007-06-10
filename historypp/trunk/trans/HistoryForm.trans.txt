@@ -141,9 +141,3 @@ Set &Bookmark
 ;; Text from variables in ..\plugin\HistoryForm.pas:
 Search Up (Ctrl+Up)
 Search Down (Ctrl+Down)
-HTML file (*.html; *.htm)|*.html;*.htm
-XML file (*.xml)|*.xml
-RTF file (*.rtf)|*.rtf
-Unicode text file (*.txt)|*.txt
-Text file (*.txt)|*.txt
-All files (*.*)|*.*
