@@ -232,6 +232,8 @@ begin
 
   // register
   hppRegisterGridOptions;
+  // pretranslate strings
+  hppPrepareTranslation;
 
   LoadIcons;
   LoadIcons2;
