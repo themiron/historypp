@@ -48,7 +48,7 @@ unit hpp_options;
 interface
 
 uses
-  Graphics, Classes, SysUtils, Windows,
+  Graphics, Classes, SysUtils, Windows, Dialogs,
   m_globaldefs, m_api,
   HistoryGrid, {OptionsForm, }PassForm, PassCheckForm,
   hpp_global, hpp_contacts;
@@ -80,6 +80,14 @@ type
     size: Integer;
     color: TColor;
     back: TColor;
+  end;
+
+  TSaveFilter = record
+    Index: Integer;
+    Filter: String;
+    DefaultExt: String;
+    Owned: TSaveFormats;
+    OwnedIndex: Integer;
   end;
 
 const
@@ -163,6 +171,14 @@ const
     (_type:[hppFont,hppColor]; name: 'EMail Express message'; Mes: [mtEmailExpress,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF)
     );
 
+  SaveFormatsDef: array[TSaveFormat] of TSaveFilter = (
+    (Index: -1; Filter:'All files'; DefaultExt:'*.*'; Owned:[]; OwnedIndex: -1),
+    (Index: 1;  Filter:'HTML file'; DefaultExt:'*.html'; Owned:[]; OwnedIndex: -1),
+    (Index: 2;  Filter:'XML file'; DefaultExt:'*.xml'; Owned:[]; OwnedIndex: -1),
+    (Index: 3;  Filter:'RTF file'; DefaultExt:'*.rtf'; Owned:[]; OwnedIndex: -1),
+    (Index: 4;  Filter:'Unicode text file'; DefaultExt:'*.txt'; Owned:[sfUnicode,sfText]; OwnedIndex: 1),
+    (Index: 5;  Filter:'Text file'; DefaultExt:'*.txt'; Owned:[sfUnicode,sfText]; OwnedIndex: 2));
+
 var
   GridOptions: TGridOptions;
   PassFm: TfmPass;
@@ -176,6 +192,7 @@ var
   ShowHistoryCount: Boolean;
   hppIcons: array of ThppIntIconsRec;
   skinIcons: array of ThppIntIconsRec;
+  SaveFormats: array[TSaveFormat] of TSaveFilter;
 
 procedure LoadGridOptions;
 procedure SaveGridOptions;
@@ -185,6 +202,8 @@ procedure LoadIntIcons;
 procedure OnShowIcons;
 procedure OnTextFormatting(Value: Boolean);
 procedure hppRegisterGridOptions;
+procedure hppPrepareTranslation;
+procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
 
 implementation
 
@@ -545,6 +564,44 @@ begin
   MetaContactsEnabled := Boolean(PluginLink.ServiceExists(MS_MC_GETMOSTONLINECONTACT));
   // Checking MS_DB_EVENT_GETTEXT database service
   DatabaseNewAPI := Boolean(PluginLink.ServiceExists(MS_DB_EVENT_GETTEXT));
+end;
+
+procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
+var
+  sf: TSaveFormat;
+begin
+  SaveDialog.Filter := '';
+  if SaveFormat = sfAll then SaveFormat := Succ(SaveFormat);
+  if AllFormats then begin
+    for sf := Low(SaveFormats) to High(SaveFormats) do
+      if sf <> sfAll then
+        SaveDialog.Filter := SaveDialog.Filter + SaveFormats[sf].Filter+'|';
+    SaveDialog.FilterIndex := SaveFormats[SaveFormat].Index;
+  end else begin
+    if SaveFormats[SaveFormat].Owned = [] then begin
+      SaveDialog.Filter := SaveFormats[SaveFormat].Filter+'|';
+      SaveDialog.Filter := SaveDialog.Filter+SaveFormats[sfAll].Filter;
+      SaveDialog.FilterIndex := 1;
+    end else begin
+      for sf := Low(SaveFormats) to High(SaveFormats) do
+        if sf in SaveFormats[SaveFormat].Owned then
+          SaveDialog.Filter := SaveDialog.Filter + SaveFormats[sf].Filter+'|';
+      SaveDialog.FilterIndex := SaveFormats[SaveFormat].OwnedIndex;
+    end;
+  end;
+  SaveDialog.DefaultExt := SaveFormats[SaveFormat].DefaultExt;
+end;
+
+procedure hppPrepareTranslation;
+var
+  sf: TSaveFormat;
+begin
+  for sf := Low(SaveFormatsDef) to High(SaveFormatsDef) do begin
+    SaveFormats[sf] := SaveFormatsDef[sf];
+    SaveFormats[sf].Filter := Format('%s (%s)|%s',
+      [TranslateString(SaveFormatsDef[sf].Filter{TRANSLATE-IGNORE}),
+       SaveFormatsDef[sf].DefaultExt,SaveFormatsDef[sf].DefaultExt]);
+  end;
 end;
 
 initialization
