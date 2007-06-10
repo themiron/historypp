@@ -1616,11 +1616,9 @@ begin
   if hg.Selected <> -1 then begin
     Delete1.Visible := True;
     if GridOptions.OpenDetailsMode then
-      Details1.Caption := TranslateWideW('&Pseudo-edit')
-    else
+      Details1.Caption := TranslateWideW('&Pseudo-edit') else
       Details1.Caption := TranslateWideW('&Open');
-    if hg.SelCount > 1 then
-      SaveSelected1.Visible := True;
+    SaveSelected1.Visible := (hg.SelCount > 1);
     FileActions.Visible := isFileEvent(hg.Selected);
     if FileActions.Visible then
       OpenFileFolder.Visible := (SavedFileDir <> '');
@@ -2308,34 +2306,32 @@ end;
 
 procedure THistoryFrm.SetPasswordMode(const Value: Boolean);
 var
-enb: Boolean;
+  enb: Boolean;
 begin
-FPasswordMode := Value;
-enb := not Value;
-hgState(hg,hg.State);
-hg.Enabled := enb;
-hg.Visible := enb;
-paClient.Enabled := enb;
-paClient.Visible := enb;
+  FPasswordMode := Value;
+  enb := not Value;
+  hgState(hg,hg.State);
+  hg.Enabled := enb;
+  hg.Visible := enb;
+  paClient.Enabled := enb;
+  paClient.Visible := enb;
 
-if Value then paPassHolder.Align := alClient;
-paPassHolder.Enabled := not enb;
-paPassHolder.Visible := not enb;
-if value = true then begin
-  paPassword.Left := (paPassHolder.ClientWidth-paPassword.Width) div 2;
-  paPassword.Top := (paPassHolder.ClientHeight - paPassword.Height) div 2;
-  if Self.Visible then
-    edPass.SetFocus
-  else
-    Self.ActiveControl := edPass;
-  end
-else begin
-  ToggleMainMenu(GetDBBool(hppDBName,'Accessability', False));
-  hg.MakeVisible(hg.Selected);
-  if Self.Visible then
-    hg.SetFocus
-  else
-    Self.ActiveControl := hg;
+  if Value then paPassHolder.Align := alClient;
+  paPassHolder.Enabled := not enb;
+  paPassHolder.Visible := not enb;
+  if Value then begin
+    paPassword.Left := (paPassHolder.ClientWidth-paPassword.Width) div 2;
+    paPassword.Top := (paPassHolder.ClientHeight - paPassword.Height) div 2;
+    if Self.Visible then
+      edPass.SetFocus else
+      Self.ActiveControl := edPass;
+  end else begin
+    ToggleMainMenu(GetDBBool(hppDBName,'Accessability', False));
+    // reset selected
+    hg.Selected := hg.Selected;
+    if Self.Visible then
+      hg.SetFocus else
+      Self.ActiveControl := hg;
   end;
 end;
 
@@ -2602,7 +2598,7 @@ end;
 
 procedure THistoryFrm.paPassHolderResize(Sender: TObject);
 begin
-  if PasswordMode = true then begin
+  if PasswordMode then begin
     paPassword.Left := (ClientWidth-paPassword.Width) div 2;
     paPassword.Top := (ClientHeight - paPassword.Height) div 2;
   end;
@@ -3368,9 +3364,7 @@ end;
 begin
   if IsLoadingSessions then Exit;
   BuildIndexesFromSession(tvSess.Selected);
-  hg.Selected := Items[0];
-  hg.MakeRangeSelected(Items[0],Items[High(Items)]);
-  hg.Invalidate;
+  hg.SelectRange(Items[0],Items[High(Items)]);
   //w := w + hg.Items[i].Text+#13#10+'--------------'+#13#10;
   //CopyToClip(w,Handle,UserCodepage);
   SetLength(Items,0);
@@ -3549,9 +3543,7 @@ end;
 
 procedure THistoryFrm.SelectAll1Click(Sender: TObject);
 begin
-  if hg.Count = 0 then exit;
-  hg.MakeRangeSelected(0,hg.Count-1);
-  hg.Invalidate;
+  hg.SelectAll;
 end;
 
 procedure THistoryFrm.lvBookContextPopup(Sender: TObject; MousePos: TPoint;

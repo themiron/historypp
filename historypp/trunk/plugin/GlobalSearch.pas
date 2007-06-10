@@ -1618,15 +1618,17 @@ end;
 
 procedure TfmGlobalSearch.hgPopup(Sender: TObject);
 begin
-  //SaveSelected1.Visible := False;
+  Delete1.Visible := False;
+  SaveSelected1.Visible := False;
   if hg.Selected <> -1 then begin
+    Delete1.Visible := True;
+    SaveSelected1.Visible := (hg.SelCount > 1);
     if GetSearchItem(hg.Selected).Contact.Handle = 0 then begin
       SendMessage1.Visible := False;
       ReplyQuoted1.Visible := False;
     end;
     if hg.Items[hg.Selected].Bookmarked then
-      Bookmark1.Caption := TranslateWideW('Remove &Bookmark')
-    else
+      Bookmark1.Caption := TranslateWideW('Remove &Bookmark') else
       Bookmark1.Caption := TranslateWideW('Set &Bookmark');
     FileActions.Visible := isFileEvent(hg.Selected);
     if FileActions.Visible then
@@ -2391,9 +2393,7 @@ end;
 
 procedure TfmGlobalSearch.SelectAll1Click(Sender: TObject);
 begin
-  if hg.Count = 0 then exit;
-  hg.MakeRangeSelected(0,hg.Count-1);
-  hg.Invalidate;
+  hg.SelectAll;
 end;
 
 procedure TfmGlobalSearch.OpenFileFolderClick(Sender: TObject);

@@ -522,7 +522,10 @@ type
     procedure SetSelected(const Value: Integer);
     procedure AddSelected(Item: Integer);
     procedure RemoveSelected(Item: Integer);
+    procedure MakeRangeSelected(FromItem,ToItem: Integer);
     procedure MakeSelectedTo(Item: Integer);
+    procedure MakeVisible(Item: Integer);
+    procedure MakeSelected(Value: Integer);
     function GetSelCount: Integer;
     procedure SetFilter(const Value: TMessageTypes);
     function GetTime(Time: DWord): WideString;
@@ -622,8 +625,6 @@ type
     function FindItemAt(x,y: Integer): Integer; overload;
     function GetItemRect(Item: Integer): TRect;
     function IsSelected(Item: Integer): Boolean;
-    procedure MakeVisible(Item: Integer);
-    procedure MakeSelected(Value: Integer);
     procedure BeginUpdate;
     procedure EndUpdate;
     procedure Update(Updates: TGridUpdates); overload;
@@ -631,9 +632,11 @@ type
     procedure Delete(Item: Integer);
     procedure DeleteSelected;
     procedure DeleteAll;
+    procedure SelectRange(FromItem,ToItem: Integer);
+    procedure SelectAll;
     property Items[Index: Integer]: THistoryItem read GetItems;
     property Bookmarked[Index: Integer]: Boolean read GetBookmarked write SetBookmarked;
-    property SelItems[Index: Integer]: Integer read GetSelItems write SetSelItems;
+    property SelectedItems[Index: Integer]: Integer read GetSelItems write SetSelItems;
     function Search(Text: WideString; CaseSensitive: Boolean; FromStart: Boolean = False; SearchAll: Boolean = False; FromNext: Boolean = False; Down: Boolean = True): Integer;
     function SearchItem(ItemID: Integer): Integer;
     procedure AddItem;
@@ -683,7 +686,6 @@ type
     function FormatItem(Item: Integer; Format: WideString): WideString;
     function FormatItems(ItemList: array of Integer; Format: WideString): WideString;
     function FormatSelected(const Format: WideString): WideString;
-    procedure MakeRangeSelected(FromItem,ToItem: Integer);
 
     property ShowBottomAligned: Boolean read FShowBottomAligned write FShowBottomAligned;
     property ShowBookmarks: Boolean read FShowBookmarks write FShowBookmarks;
@@ -1732,31 +1734,27 @@ procedure THistoryGrid.MakeSelected(Value: Integer);
 var
   OldSelected: Integer;
 begin
-  FRichCache.ResetItem(FSelected);
   OldSelected := FSelected;
   FSelected := Value;
-  FRichCache.ResetItem(FSelected);
-  if FSelected <> -1 then begin
-    FRichCache.ResetItems(FSelItems);
-    SetLength(FSelItems,1);
-    FSelItems[0] := FSelected;
-  end
-  else begin
-    FRichCache.ResetItems(FSelItems);
-    SetLength(FSelItems,0);
-  end;
-  if FSelected <> -1 then begin
-    MakeVisible(Selected);
-  end;
+  if FSelected <> -1 then MakeVisible(Selected);
   if Assigned(FOnSelect) then
     FOnSelect(Self,Selected,OldSelected);
-  Invalidate;
-  Update;
 end;
 
 procedure THistoryGrid.SetSelected(const Value: Integer);
 begin
+  //if IsSelected(Value) then exit;
+  FRichCache.ResetItem(Value);
+  //FRichCache.ResetItem(FSelected);
+  FRichCache.ResetItems(FSelItems);
+  if Value <> -1 then begin
+    SetLength(FSelItems,1);
+    FSelItems[0] := Value;
+  end else
+    SetLength(FSelItems,0);
   MakeSelected(Value);
+  Invalidate;
+  Update;
 end;
 
 procedure THistoryGrid.SetShowHeaders(const Value: Boolean);
@@ -1783,8 +1781,6 @@ begin
   if not IsMatched(Item) then exit;
   IntSortedArray_Add(TIntArray(FSelItems),Item);
   FRichCache.ResetItem(Item);
-  //r := GetItemRect(Item);
-  //InvalidateRect(Handle,@r,False);
 end;
 
 procedure THistoryGrid.WMLButtonDown(var Message: TWMLButtonDown);
@@ -1975,22 +1971,18 @@ begin
   if Item <> -1 then begin
     if (mmkControl in Keys) then begin
       if IsSelected(Item) then
-        RemoveSelected(Item)
-      else
+        RemoveSelected(Item) else
         AddSelected(Item);
-      FSelected := Item;
-      MakeVisible(Item);
+      MakeSelected(Item);
       Invalidate;
     end else
     if (Selected <> -1) and (mmkShift in Keys) then begin
       MakeSelectedTo(Item);
-      FSelected := Item;
-      MakeVisible(Item);
+      MakeSelected(Item);
       Invalidate;
     end else
       Selected := Item;
   end;
-
 end;
 
 function THistoryGrid.GetItemRect(Item: Integer): TRect;
@@ -2303,8 +2295,7 @@ begin
     if (not ((FSelItems[0] = Item) or (FSelItems[High(FSelItems)] = Item)))
     or (FSelected <> Item) then begin
       MakeSelectedTo(Item);
-      FSelected := Item;
-      MakeVisible(Item);
+      MakeSelected(Item);
       Invalidate;
     end;
   end;
@@ -2488,8 +2479,7 @@ begin
       Selected := NextItem;
     end else begin
       MakeSelectedTo(NextItem);
-      FSelected := NextItem;
-      MakeVisible(NextItem);
+      MakeSelected(NextItem);
       Invalidate;
     end;
     AdjustScrollBar;
@@ -2503,8 +2493,7 @@ begin
       Selected := NextItem;
     end else begin
       MakeSelectedTo(NextItem);
-      FSelected := NextItem;
-      MakeVisible(NextItem);
+      MakeSelected(NextItem);
       Invalidate;
     end;
     AdjustScrollBar;
@@ -2528,8 +2517,7 @@ begin
       Selected := NextItem;
     end else begin
       MakeSelectedTo(NextItem);
-      FSelected := NextItem;
-      MakeVisible(NextItem);
+      MakeSelected(NextItem);
       Invalidate;
     end;
     AdjustScrollBar;
@@ -2556,8 +2544,7 @@ begin
       Selected := NextItem;
     end else begin
       MakeSelectedTo(NextItem);
-      FSelected := NextItem;
-      MakeVisible(NextItem);
+      MakeSelected(NextItem);
       Invalidate;
     end;
     AdjustScrollBar;
@@ -2573,8 +2560,7 @@ begin
       if item = -1 then exit;
       if (ssShift in ShiftState) and (MultiSelect) then begin
         MakeSelectedTo(Item);
-        FSelected := Item;
-        MakeVisible(Selected);
+        MakeSelected(Item);
         Invalidate;
       end else
         Selected := Item;
@@ -2592,8 +2578,7 @@ begin
       if Item = -1 then exit;
       if (ssShift in ShiftState) and (MultiSelect) then begin
         MakeSelectedTo(Item);
-        FSelected := Item;
-        MakeVisible(Item);
+        MakeSelected(Item);
         Invalidate;
       end else
         Selected := Item;
@@ -2703,8 +2688,7 @@ begin
   if FromItem <= ToItem then begin
     StartItem := FromItem;
     EndItem := ToItem;
-  end
-  else begin
+  end else begin
     StartItem := ToItem;
     EndItem := FromItem;
   end;
@@ -2727,16 +2711,33 @@ begin
   FSelItems := TempSelItems;
 end;
 
+procedure THistoryGrid.SelectRange(FromItem,ToItem: Integer);
+begin
+  MakeRangeSelected(FromItem,ToItem);
+  if SelCount > 0 then
+    MakeSelected(FSelItems[0]);
+  Invalidate;
+end;
+
+procedure THistoryGrid.SelectAll;
+begin
+  if Count = 0 then exit;
+  MakeRangeSelected(0,Count-1);
+  if SelCount > 0 then
+    MakeSelected(FSelected);
+  Invalidate;
+end;
+
 procedure THistoryGrid.MakeSelectedTo(Item: Integer);
 var
-  first: Integer;
+  First: Integer;
 begin
   if FSelItems[0] = FSelected then
-    first := FSelItems[High(FSelItems)]
+    First := FSelItems[High(FSelItems)]
   else if FSelItems[High(FSelItems)] = FSelected then
-    first := FSelItems[0]
+    First := FSelItems[0]
   else
-    first := FSelected;
+    First := FSelected;
   MakeRangeSelected(first,Item);
 end;
 
