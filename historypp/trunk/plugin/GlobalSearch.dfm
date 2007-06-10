@@ -26,7 +26,7 @@ object fmGlobalSearch: TfmGlobalSearch
     Left = 0
     Top = 0
     Width = 551
-    Height = 498
+    Height = 496
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 2
@@ -34,7 +34,7 @@ object fmGlobalSearch: TfmGlobalSearch
     object spContacts: TTntSplitter
       Left = 157
       Top = 248
-      Height = 194
+      Height = 192
       ResizeStyle = rsUpdate
       Visible = False
     end
@@ -84,7 +84,7 @@ object fmGlobalSearch: TfmGlobalSearch
     end
     object paProgress: THppPanel
       Left = 2
-      Top = 442
+      Top = 440
       Width = 547
       Height = 54
       Align = alBottom
@@ -187,7 +187,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Left = 2
       Top = 248
       Width = 155
-      Height = 194
+      Height = 192
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 2
@@ -196,7 +196,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Left = 0
         Top = 0
         Width = 155
-        Height = 194
+        Height = 192
         Align = alClient
         Columns = <
           item
@@ -220,7 +220,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Left = 160
       Top = 248
       Width = 389
-      Height = 194
+      Height = 192
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 4
@@ -228,7 +228,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Left = 0
         Top = 0
         Width = 389
-        Height = 166
+        Height = 164
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         ShowBottomAligned = False
@@ -276,7 +276,7 @@ object fmGlobalSearch: TfmGlobalSearch
       end
       object paFilter: THppPanel
         Left = 0
-        Top = 166
+        Top = 164
         Width = 389
         Height = 28
         Align = alBottom
@@ -685,7 +685,7 @@ object fmGlobalSearch: TfmGlobalSearch
   end
   object sb: TTntStatusBar
     Left = 0
-    Top = 498
+    Top = 496
     Width = 551
     Height = 19
     Panels = <>
@@ -743,7 +743,6 @@ object fmGlobalSearch: TfmGlobalSearch
     object SaveSelected1: TTntMenuItem
       Caption = '&Save Selected...'
       ShortCut = 16467
-      Visible = False
       OnClick = tbSaveClick
     end
     object N5: TTntMenuItem

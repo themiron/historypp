@@ -698,8 +698,7 @@ begin
     if Grid.Selected = -1 then exit;
     Grid.InlineRichEdit.SelectAll;
   end else begin
-    Grid.MakeRangeSelected(0,Grid.Count-1);
-    Grid.Invalidate;
+    Grid.SelectAll;
   end;
 end;
 
