@@ -99,7 +99,6 @@ type
   TMouseMoveKey = (mmkControl,mmkLButton,mmkMButton,mmkRButton,mmkShift);
   TMouseMoveKeys = set of TMouseMoveKey;
 
-  TSaveFormat = (sfHTML,sfXML,sfRTF,sfUnicode,sfText);
   TGridState = (gsIdle,gsDelete,gsSearch,gsSearchItem,gsLoad,gsSave,gsInline,gsClose);
 
   TXMLItem = record
@@ -4243,14 +4242,16 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
 
   procedure SaveHTML;
   var
-    cnt: String;
     mes_id,type_id: String;
-    mes,time: WideString;
+    nick,mes,time: WideString;
     txt: String;
   begin
-    if mtIncoming in FItems[Item].MessageType then cnt := UTF8Encode(ContactName)
-                                              else cnt := UTF8Encode(ProfileName);
-    cnt := MakeTextHtmled(cnt+':');
+    if mtIncoming in FItems[Item].MessageType then
+      nick := ContactName else
+      nick := ProfileName;
+    if Assigned(FGetNameData) then
+      FGetNameData(Self,Item,nick);
+    nick := nick + ':';
     mes := FItems[Item].Text;
     if Options.RawRTFEnabled and IsRTF(FItems[Item].Text) then begin
       ApplyItemToRich(Item);
@@ -4275,7 +4276,7 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
       WriteString(Stream,'</div>'+#13#10);
     end;
     WriteString(Stream,'<div class=mes id='+mes_id+'>'+#13#10);
-    WriteString(Stream,#9+'<div class=nick id='+type_id+'>'+cnt+'</div>'+#13#10);
+    WriteString(Stream,#9+'<div class=nick id='+type_id+'>'+MakeTextHtmled(UTF8Encode(nick))+'</div>'+#13#10);
     WriteString(Stream,#9+'<div class=date id='+type_id+'>'+MakeTextHtmled(UTF8Encode(time))+'</div>'+#13#10);
     WriteString(Stream,#9+'<div class=text>'+#13#10#9+txt+#13#10#9+'</div>'+#13#10);
     WriteString(Stream,'</div>'+#13#10);
@@ -4306,10 +4307,13 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
 
   procedure SaveUnicode;
   var
-    mes,date,cnt: WideString;
+    nick,mes,date: WideString;
   begin
-    if mtIncoming in FItems[Item].MessageType then cnt := ContactName
-                                              else cnt := ProfileName;
+    if mtIncoming in FItems[Item].MessageType then
+      nick := ContactName else
+      nick := ProfileName;
+    if Assigned(FGetNameData) then
+      FGetNameData(Self,Item,nick);
     mes := FItems[Item].Text;
     if Options.RawRTFEnabled and IsRTF(mes) then begin
       ApplyItemToRich(Item);
@@ -4318,17 +4322,20 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     if Options.BBCodesEnabled then
       mes := DoStripBBCodes(mes);
     date := GetTime(FItems[Item].Time);
-    WriteWideString(Stream,WideFormat('[%s] %s:'#13#10,[date,cnt]));
+    WriteWideString(Stream,WideFormat('[%s] %s:'#13#10,[date,nick]));
     WriteWideString(Stream,mes+#13#10+#13#10);
   end;
 
   procedure SaveText;
   var
-    date,cnt: String;
-    mes: WideString;
+    date: String;
+    nick,mes: WideString;
   begin
-    if mtIncoming in FItems[Item].MessageType then cnt := WideToAnsiString(ContactName,Codepage)
-                                              else cnt := WideToAnsiString(ProfileName,Codepage);
+    if mtIncoming in FItems[Item].MessageType then
+      nick := ContactName else
+      nick := ProfileName;
+    if Assigned(FGetNameData) then
+      FGetNameData(Self,Item,nick);
     mes := FItems[Item].Text;
     if Options.RawRTFEnabled and IsRTF(mes) then begin
       ApplyItemToRich(Item);
@@ -4337,7 +4344,7 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     if Options.BBCodesEnabled then
       mes := DoStripBBCodes(mes);
     date := WideToAnsiString(GetTime(FItems[Item].Time),Codepage);
-    WriteString(Stream,Format('[%s] %s:'#13#10,[date,cnt]));
+    WriteString(Stream,Format('[%s] %s:'#13#10,[date,WideToAnsiString(nick,Codepage)]));
     WriteString(Stream,WideToAnsiString(mes,Codepage)+#13#10+#13#10);
   end;
 
@@ -4346,8 +4353,11 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     RTFStream: String;
     Text: WideString;
   begin
-    if mtIncoming in FItems[Item].MessageType then Text := ContactName
-                                              else Text := ProfileName;
+    if mtIncoming in FItems[Item].MessageType then
+      Text := ContactName else
+      Text := ProfileName;
+    if Assigned(FGetNameData) then
+      FGetNameData(Self,Item,Text);
     Text := Text + ' ['+GetTime(FItems[Item].Time)+']:';
     RTFStream := '{\rtf1\par\b1 '+FormatString2RTF(Text)+'\b0\par}';
     SetRichRTF(FRichSave.Handle,RTFStream,True,False,False);

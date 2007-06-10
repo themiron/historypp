@@ -106,6 +106,9 @@ type
     iSkin: SmallInt;
   end;
 
+  TSaveFormat = (sfAll,sfHTML,sfXML,sfRTF,sfUnicode,sfText);
+  TSaveFormats = set of TSaveFormat;
+
   TWideStrArray = array of WideString;
   TIntArray = array of Integer;
 
