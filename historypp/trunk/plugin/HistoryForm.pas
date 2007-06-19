@@ -1042,6 +1042,7 @@ end;
 
 procedure THistoryFrm.HMNickChanged(var M: TMessage);
 begin
+  if SubProtocol = '' then exit;
   hg.BeginUpdate;
   if M.WParam = 0 then
     hg.ProfileName := GetContactDisplayName(0, SubProtocol)

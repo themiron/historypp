@@ -899,6 +899,7 @@ end;
 
 procedure TExternalGrid.HMNickChanged(var M: TMessage);
 begin
+  if FSubProtocol = '' then exit;
   Grid.BeginUpdate;
   if M.WParam = 0 then
     Grid.ProfileName := GetContactDisplayName(0, FSubProtocol)
