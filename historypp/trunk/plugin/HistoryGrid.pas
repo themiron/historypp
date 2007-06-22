@@ -3209,25 +3209,27 @@ end;
 procedure THistoryGrid.CreateWindowHandle(const Params: TCreateParams);
 begin
   if hppOSUnicode then
-    CreateUnicodeHandle(Self, Params, '')
-  else
+    CreateUnicodeHandle(Self, Params, '') else
     inherited;
 end;
 
 procedure THistoryGrid.CreateParams(var Params: TCreateParams);
 const
   BorderStyles: array[TBorderStyle] of DWORD = (0, WS_BORDER);
+  ReadOnlys: array[Boolean] of DWORD = (0, ES_READONLY);
 begin
   inherited CreateParams(Params);
   with Params do begin
-    Style := Style or BorderStyles[FBorderStyle];
+    Style := Style or
+             BorderStyles[FBorderStyle] or
+             ReadOnlys[True];
     if NewStyleControls and Ctl3D and (FBorderStyle = bsSingle) then begin
       Style := Style and not WS_BORDER;
       ExStyle := ExStyle or WS_EX_CLIENTEDGE;
     end;
     with WindowClass do
-    //style := style or CS_HREDRAW or CS_VREDRAW or CS_BYTEALIGNCLIENT or CS_BYTEALIGNWINDOW;
-    style := style or CS_HREDRAW or CS_VREDRAW;
+      //style := style or CS_HREDRAW or CS_VREDRAW or CS_BYTEALIGNCLIENT or CS_BYTEALIGNWINDOW;
+      style := style or CS_HREDRAW or CS_VREDRAW;
   end;
 end;
 
