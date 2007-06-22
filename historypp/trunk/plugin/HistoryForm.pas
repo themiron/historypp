@@ -156,7 +156,7 @@ type
     imSearchNotFound: TTntImage;
     TntToolButton4: THppToolButton;
     N4: TTntMenuItem;
-    Emptyhistory1: TTntMenuItem;
+    EmptyHistory1: TTntMenuItem;
     pmEventsFilter: TTntPopupMenu;
     ShowAll1: TTntMenuItem;
     Customize1: TTntMenuItem;
@@ -292,7 +292,7 @@ type
     procedure EndHotFilterTimer(DoClearFilter: Boolean = False);
     procedure tiFilterTimer(Sender: TObject);
     procedure tbHistorySearchClick(Sender: TObject);
-    procedure Emptyhistory1Click(Sender: TObject);
+    procedure EmptyHistory1Click(Sender: TObject);
     procedure EventsFilterItemClick(Sender: TObject);
     procedure Passwordprotection1Click(Sender: TObject);
     procedure SessSelectClick(Sender: TObject);
@@ -1104,8 +1104,7 @@ var
 begin
   if (Key = VK_ESCAPE) or ((Key = VK_F4) and (ssAlt in Shift)) then begin
     if (Key = VK_ESCAPE) and edSearch.Focused then
-      SearchMode := smNone
-    else
+      SearchMode := smNone else
       close;
     Key := 0;
     exit;
@@ -1114,13 +1113,13 @@ begin
   if (Key = VK_F10) and (Shift=[]) and (not PasswordMode) then begin
     WriteDBBool(hppDBName,'Accessability', true);
     NotifyAllForms(HM_NOTF_ACCCHANGED,DWord(True),0);
+    Key := 0;
     exit;
   end;
 
   if (key = VK_F3) and ((Shift=[]) or (Shift=[ssShift])) and (not PasswordMode) and (SearchMode in [smSearch,smHotSearch]) then begin
     if ssShift in Shift then
-      sbSearchPrev.Click
-    else
+      sbSearchPrev.Click else
       sbSearchNext.Click;
     key := 0;
   end;
@@ -1135,18 +1134,16 @@ begin
     end;
   end;
 
-  with Sender as TWinControl do
-    begin
-      if Perform(CM_CHILDKEY, Key, Integer(Sender)) <> 0 then
-        Exit;
-      Mask := 0;
-      case Key of
-        VK_TAB:
-          Mask := DLGC_WANTTAB;
-        VK_RETURN, VK_EXECUTE, VK_ESCAPE, VK_CANCEL:
-          Mask := DLGC_WANTALLKEYS;
-      end;
-      if (Mask <> 0)
+  with Sender as TWinControl do begin
+    if Perform(CM_CHILDKEY, Key, LPARAM(Sender)) <> 0 then Exit;
+    Mask := 0;
+    case Key of
+      VK_TAB:
+        Mask := DLGC_WANTTAB;
+      VK_RETURN, VK_EXECUTE, VK_ESCAPE, VK_CANCEL:
+        Mask := DLGC_WANTALLKEYS;
+    end;
+    if (Mask <> 0)
         and (Perform(CM_WANTSPECIALKEY, Key, 0) = 0)
         and (Perform(WM_GETDLGCODE, 0, 0) and Mask = 0)
         and (Perform(CM_DIALOGKEY, Key, 0) <> 0)
@@ -1781,13 +1778,15 @@ procedure THistoryFrm.tbDeleteClick(Sender: TObject);
 begin
   if hg.SelCount = 0 then exit;
   if hg.SelCount > 1 then begin
-    if HppMessageBox(Handle,
-      WideFormat(TranslateWideW('Do you really want to delete selected items (%.0f)?'),
-      [hg.SelCount/1]), TranslateWideW('Delete Selected'),
-      MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = IDNO then exit;
+    if HppMessageBox(Handle,WideFormat(
+      TranslateWideW('Do you really want to delete selected items (%.0f)?'),[hg.SelCount/1]),
+      TranslateWideW('Delete Selected'),
+      MB_YESNOCANCEL or MB_DEFBUTTON1 or MB_ICONQUESTION) <> IDYES then exit;
   end else begin
-    if HppMessageBox(Handle, TranslateWideW('Do you really want to delete selected item?'),
-    TranslateWideW('Delete'), MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = IDNO then exit;
+    if HppMessageBox(Handle,
+      TranslateWideW('Do you really want to delete selected item?'),
+      TranslateWideW('Delete'),
+      MB_YESNOCANCEL or MB_DEFBUTTON1 or MB_ICONQUESTION) <> IDYES then exit;
   end;
 
   if hg.SelCount = hg.Count then
@@ -2127,9 +2126,10 @@ begin
     // not found
     if Warp and (down = not hg.Reversed) then begin
       // do warp?
-      if HppMessageBox(WndHandle, TranslateWideW('You have reached the end of the history.')+
-      #10#13+TranslateWideW('Do you want to continue searching at the beginning?'),
-      tCap, MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = ID_YES then
+      if HppMessageBox(WndHandle,
+         TranslateWideW('You have reached the end of the history.')+#10#13+
+         TranslateWideW('Do you want to continue searching at the beginning?'),
+      tCap, MB_YESNOCANCEL or MB_DEFBUTTON1 or MB_ICONQUESTION) = ID_YES then
         SearchNext(Rev,False);
     end else begin
       // not warped
@@ -3174,13 +3174,14 @@ begin
     end;
 end;
 
-procedure THistoryFrm.Emptyhistory1Click(Sender: TObject);
+procedure THistoryFrm.EmptyHistory1Click(Sender: TObject);
 begin
-  if HppMessageBox(Handle,
-    WideFormat(TranslateWideW('Do you really want to delete ALL items (%.0f) for this contact?')+
-    #10#13+''+#10#13+TranslateWideW('Note: It can take several minutes for large history.'),
-    [hg.Count/1]), TranslateWideW('Empty History'), MB_YESNO or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) = IDNO then exit;
-
+  if HppMessageBox(Handle,WideFormat(
+    TranslateWideW('Do you really want to delete ALL items (%.0f) for this contact?')+#10#13+
+    ''+#10#13+
+    TranslateWideW('Note: It can take several minutes for large history.'),[hg.Count/1]),
+    TranslateWideW('Empty History'),
+    MB_YESNOCANCEL or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) <> IDYES then exit;
   EmptyHistory;
 end;
 

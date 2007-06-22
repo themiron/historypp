@@ -242,7 +242,7 @@ type
     procedure hgSelect(Sender: TObject; Item, OldItem: Integer);
     procedure tbCopyClick(Sender: TObject);
     procedure CopyText1Click(Sender: TObject);
-    procedure bDeleteClick(Sender: TObject);
+    procedure tbDeleteClick(Sender: TObject);
     procedure hgRTLEnabled(Sender: TObject; BiDiMode: TBiDiMode);
     procedure Bookmark1Click(Sender: TObject);
     procedure hgBookmarkClick(Sender: TObject; Item: Integer);
@@ -1988,16 +1988,19 @@ begin
     // not found
     if Warp and (down = not hg.Reversed) then begin
       // do warp?
-      if hppMessageBox(WndHandle,TranslateWideW('You have reached the end of the history.')+
-        #10#13+TranslateWideW('Do you want to continue searching at the beginning?'),
+      if hppMessageBox(WndHandle,
+        TranslateWideW('You have reached the end of the history.')+#10#13+
+        TranslateWideW('Do you want to continue searching at the beginning?'),
         TranslateWideW('History++ Search'),
-        MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = ID_YES then
+        MB_YESNOCANCEL or MB_DEFBUTTON1 or MB_ICONQUESTION) = ID_YES then
           SearchNext(Rev,False);
     end else begin
       // not warped
       hgState(Self,gsIdle);
-      hppMessageBox(WndHandle,WideFormat('"%s" not found',[stext]),
-        TranslateWideW('History++ Search'),MB_OK or MB_DEFBUTTON1 or 0);
+      hppMessageBox(WndHandle,
+        WideFormat('"%s" not found',[stext]),
+        TranslateWideW('History++ Search'),
+        MB_OK or MB_DEFBUTTON1 or 0);
     end;
   end;
 end;
@@ -2043,8 +2046,7 @@ var
 begin
   if (Key = VK_ESCAPE) or ((Key = VK_F4) and (ssAlt in Shift)) then begin
     if (Key = VK_ESCAPE) and IsSearching then
-      StopSearching
-    else
+      StopSearching else
       close;
     Key := 0;
     exit;
@@ -2053,6 +2055,7 @@ begin
   if (Key = VK_F10) and (Shift=[]) then begin
     WriteDBBool(hppDBName,'Accessability', true);
     NotifyAllForms(HM_NOTF_ACCCHANGED,DWord(True),0);
+    Key := 0;
     exit;
   end;
 
@@ -2070,8 +2073,7 @@ begin
 
   with Sender as TWinControl do
     begin
-      if Perform(CM_CHILDKEY, Key, Integer(Sender)) <> 0 then
-        Exit;
+      if Perform(CM_CHILDKEY, Key, LPARAM(Sender)) <> 0 then Exit;
       Mask := 0;
       case Key of
         VK_TAB:
@@ -2207,17 +2209,19 @@ begin
   end;
 end;
 
-procedure TfmGlobalSearch.bDeleteClick(Sender: TObject);
+procedure TfmGlobalSearch.tbDeleteClick(Sender: TObject);
 begin
   if hg.SelCount = 0 then exit;
   if hg.SelCount > 1 then begin
-    if HppMessageBox(Handle,
-      WideFormat(TranslateWideW('Do you really want to delete selected items (%.0f)?'),
-      [hg.SelCount/1]), TranslateWideW('Delete Selected'),
-      MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = IDNO then exit;
+    if HppMessageBox(Handle,WideFormat(
+      TranslateWideW('Do you really want to delete selected items (%.0f)?'),[hg.SelCount/1]),
+      TranslateWideW('Delete Selected'),
+      MB_YESNOCANCEL or MB_DEFBUTTON1 or MB_ICONQUESTION) <> IDYES then exit;
   end else begin
-    if HppMessageBox(Handle, TranslateWideW('Do you really want to delete selected item?'),
-    TranslateWideW('Delete'), MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = IDNO then exit;
+    if HppMessageBox(Handle,
+      TranslateWideW('Do you really want to delete selected item?'),
+      TranslateWideW('Delete'),
+      MB_YESNOCANCEL or MB_DEFBUTTON1 or MB_ICONQUESTION) <> IDYES then exit;
   end;
   SetSafetyMode(False);
   try

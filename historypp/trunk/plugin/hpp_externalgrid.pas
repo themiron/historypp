@@ -706,13 +706,15 @@ procedure TExternalGrid.OnDeleteClick(Sender: TObject);
 begin
   if Grid.SelCount = 0 then exit;
   if Grid.SelCount > 1 then begin
-    if HppMessageBox(FParentWindow,
-      WideFormat(TranslateWideW('Do you really want to delete selected items (%.0f)?'),
-      [Grid.SelCount/1]), TranslateWideW('Delete Selected'),
-      MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = IDNO then exit;
+    if HppMessageBox(FParentWindow,WideFormat(
+      TranslateWideW('Do you really want to delete selected items (%.0f)?'),[Grid.SelCount/1]),
+      TranslateWideW('Delete Selected'),
+      MB_YESNOCANCEL or MB_DEFBUTTON1 or MB_ICONQUESTION) <> IDYES then exit;
   end else begin
-    if HppMessageBox(FParentWindow, TranslateWideW('Do you really want to delete selected item?'),
-    TranslateWideW('Delete'), MB_YESNO or MB_DEFBUTTON1 or MB_ICONQUESTION) = IDNO then exit;
+    if HppMessageBox(FParentWindow,
+      TranslateWideW('Do you really want to delete selected item?'),
+      TranslateWideW('Delete'),
+      MB_YESNOCANCEL or MB_DEFBUTTON1 or MB_ICONQUESTION) <> IDYES then exit;
   end;
   SetSafetyMode(False);
   try

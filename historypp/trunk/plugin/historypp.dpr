@@ -187,10 +187,11 @@ begin
   if (hppCodepage = CALLSERVICE_NOTFOUND) or
      (hppCodepage = CP_ACP) then hppCodepage := GetACP();
   // Checking if richedit 2.0 or 3.0 availible
-  if not IsRichEdit20Available and (IDYES <> hppMessagebox(0,
+  if not IsRichEdit20Available and (hppMessagebox(0,
       // single line to translation script
       TranslateWideW('History++ module could not be loaded, riched20.dll is missing. Press Yes to continue loading Miranda.'),
-      hppName+' Information', MB_YESNO or MB_ICONINFORMATION)) then begin
+      hppName+' Information',
+      MB_YESNOCANCEL or MB_ICONINFORMATION) <> IDYES) then begin
     Result := 1;
     exit;
   end;
