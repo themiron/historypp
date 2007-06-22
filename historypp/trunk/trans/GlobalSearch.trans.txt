@@ -39,13 +39,10 @@ Bookmarks
 Find
 Filter
 Copy
-Ctrl+C
 Copy
 Delete
-Del
 Delete
 Save
-Ctrl+S
 Save
 Search messages matched to
 Limit Event Types
