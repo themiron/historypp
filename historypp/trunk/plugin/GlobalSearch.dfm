@@ -26,7 +26,7 @@ object fmGlobalSearch: TfmGlobalSearch
     Left = 0
     Top = 0
     Width = 551
-    Height = 496
+    Height = 498
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 2
@@ -34,7 +34,7 @@ object fmGlobalSearch: TfmGlobalSearch
     object spContacts: TTntSplitter
       Left = 157
       Top = 248
-      Height = 192
+      Height = 194
       ResizeStyle = rsUpdate
       Visible = False
     end
@@ -84,7 +84,7 @@ object fmGlobalSearch: TfmGlobalSearch
     end
     object paProgress: THppPanel
       Left = 2
-      Top = 440
+      Top = 442
       Width = 547
       Height = 54
       Align = alBottom
@@ -187,7 +187,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Left = 2
       Top = 248
       Width = 155
-      Height = 192
+      Height = 194
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 2
@@ -196,7 +196,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Left = 0
         Top = 0
         Width = 155
-        Height = 192
+        Height = 194
         Align = alClient
         Columns = <
           item
@@ -220,7 +220,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Left = 160
       Top = 248
       Width = 389
-      Height = 192
+      Height = 194
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 4
@@ -228,7 +228,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Left = 0
         Top = 0
         Width = 389
-        Height = 164
+        Height = 166
         VertScrollBar.Increment = 1
         VertScrollBar.PageSize = 20
         ShowBottomAligned = False
@@ -276,7 +276,7 @@ object fmGlobalSearch: TfmGlobalSearch
       end
       object paFilter: THppPanel
         Left = 0
-        Top = 164
+        Top = 166
         Width = 389
         Height = 28
         Align = alBottom
@@ -594,7 +594,6 @@ object fmGlobalSearch: TfmGlobalSearch
           Left = 303
           Top = 0
           Hint = 'Copy'
-          HelpKeyword = 'Ctrl+C'
           Caption = 'Copy'
           OnClick = tbCopyClick
         end
@@ -602,15 +601,13 @@ object fmGlobalSearch: TfmGlobalSearch
           Left = 326
           Top = 0
           Hint = 'Delete'
-          HelpKeyword = 'Del'
           Caption = 'Delete'
-          OnClick = bDeleteClick
+          OnClick = tbDeleteClick
         end
         object tbSave: TTntToolButton
           Left = 349
           Top = 0
           Hint = 'Save'
-          HelpKeyword = 'Ctrl+S'
           Caption = 'Save'
           OnClick = tbSaveClick
         end
@@ -685,7 +682,7 @@ object fmGlobalSearch: TfmGlobalSearch
   end
   object sb: TTntStatusBar
     Left = 0
-    Top = 496
+    Top = 498
     Width = 551
     Height = 19
     Panels = <>
@@ -734,7 +731,7 @@ object fmGlobalSearch: TfmGlobalSearch
     object Delete1: TTntMenuItem
       Caption = '&Delete'
       ShortCut = 46
-      OnClick = bDeleteClick
+      OnClick = tbDeleteClick
     end
     object N1: TTntMenuItem
       Caption = '-'
