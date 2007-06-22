@@ -371,28 +371,33 @@ var
   msgW: PWideChar;
   msglen,lenW: Cardinal;
   i: integer;
-  UseUnicode: boolean;
-  dbegt: TDBEVENTGETTEXT;
+  //dbegt: TDBEVENTGETTEXT;
 begin
-  if DatabaseNewAPI then begin
+  // commented out buggy MS_DB_EVENT_GETTEXT on Miranda IM ansi build
+  {if DatabaseNewAPI then begin
     dbegt.dbei := @EventInfo;
     dbegt.datatype := DBVT_WCHAR;
     dbegt.codepage := hi.Codepage;
-    msgW := PWideChar(PluginLink.CallService(MS_DB_EVENT_GETTEXT,0,LPARAM(@dbegt)));
+    try
+      msgW := PWideChar(PluginLink.CallService(MS_DB_EVENT_GETTEXT,0,LPARAM(@dbegt)));
+    except
+      msgW := nil;
+    end;
     if msgW <> nil then begin
-      hi.Text := WideString(msgW);
+      SetString(hi.Text,msgW,WStrLen(msgW));
       MirandaFree(msgW);
     end;
   end else msgW := nil;
-  if msgW = nil then begin
+  if msgW = nil then }
+  begin
     msgA := PChar(EventInfo.pBlob);
     msglen := lstrlenA(PChar(EventInfo.pBlob))+1;
     if Boolean(EventInfo.flags and DBEF_UTF) then begin
       SetLength(hi.Text,msglen);
       msgW := PWideChar(hi.Text);
-      i := Utf8ToUnicode(msgW,msglen,msgA,msglen);
-      if i > 0 then
-        SetLength(hi.Text,i-1) else
+      lenW := Utf8ToUnicode(msgW,msglen,msgA,msglen);
+      if lenW > 0 then
+        SetLength(hi.Text,lenW-1) else
         hi.Text := AnsiToWideString(msgA,hi.Codepage);
     end else begin
       lenW := 0;
@@ -403,9 +408,8 @@ begin
             LenW := i;
             break;
           end;
-        UseUnicode := (lenW < msglen) and (lenW > 0);
-      end else UseUnicode := false;
-      if UseUnicode then
+      end;
+      if (lenW > 0) and (lenW < msglen) then
         SetString(hi.Text,msgW,lenW) else
         hi.Text := AnsiToWideString(msgA,hi.Codepage);
     end;
@@ -582,7 +586,6 @@ var
   msgW: PWideChar;
   msglen,lenW: Cardinal;
   i: integer;
-  UseUnicode: boolean;
 begin
   msgA := PChar(EventInfo.pBlob);
   msglen := lstrlenA(PChar(EventInfo.pBlob))+1;
@@ -594,11 +597,9 @@ begin
         LenW := i;
         break;
       end;
-    UseUnicode := (lenW < msglen) and (lenW > 0);
-  end else UseUnicode := false;
-  if UseUnicode then
-    SetString(hi.Text,msgW,lenW)
-  else
+  end;
+  if (lenW > 0) and (lenW < msglen) then
+    SetString(hi.Text,msgW,lenW) else
     hi.Text := AnsiToWideString(msgA,hi.Codepage);
   msglen := msglen+(lenW+1)*SizeOf(WideChar);
   if msglen < EventInfo.cbBlob then begin
