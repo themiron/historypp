@@ -190,16 +190,10 @@ Find
 Filter
 [Copy]
 Copy
-[Ctrl+C]
-Ctrl+C
 [Delete]
 Delete
-[Del]
-Del
 [Save]
 Save
-[Ctrl+S]
-Ctrl+S
 [Search messages matched to]
 Search messages matched to
 [Limit Event Types]
