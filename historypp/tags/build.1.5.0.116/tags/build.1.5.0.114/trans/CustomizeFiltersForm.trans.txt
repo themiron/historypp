@@ -1,0 +1,18 @@
+;; Text found in ..\plugin\CustomizeFiltersForm.dfm:
+Customize Filters
+OK
+&Cancel
+Filter Properties
+&Name:
+Show all except selected events
+Show only selected events
+R&eset to Default
+Filters
+&Down
+&Up
+&Delete
+&Add
+;; Text found in ..\plugin\CustomizeFiltersForm.pas:
+New Filter #%d
+Incoming & Outgoing
+Events
