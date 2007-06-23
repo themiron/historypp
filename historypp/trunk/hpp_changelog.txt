@@ -9,6 +9,14 @@ Changelog
 
 SVN Changelog: https://opensvn.csie.org/traccgi/historypp/log/?verbose=on
 
+1.5.0.116
+
++ Added workaround to avoid crashed with ANSI core
++ Added ESC key reflection to question dialogs
++ Fixed crashes on empty history selection attempt
++ Fixed showing (Unknown contact) instead of owner's nick in message log
++ Fixed Ctrl+C, Del, Ctrl+S shortcuts greedy behavior in history and global search
+
 1.5.0.115
 
 Added ability to search history by message types
