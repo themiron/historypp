@@ -2477,7 +2477,8 @@ begin
     NextItem := GetNext(GetIdx(-1));
     if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
       Selected := NextItem;
-    end else begin
+    end else
+    if NextItem <> -1 then begin
       MakeSelectedTo(NextItem);
       MakeSelected(NextItem);
       Invalidate;
@@ -2491,7 +2492,8 @@ begin
     NextItem := GetPrev(GetIdx(Count));
     if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
       Selected := NextItem;
-    end else begin
+    end else
+    if NextItem <> -1 then begin
       MakeSelectedTo(NextItem);
       MakeSelected(NextItem);
       Invalidate;
@@ -2515,7 +2517,8 @@ begin
     end;
     if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
       Selected := NextItem;
-    end else begin
+    end else
+    if NextItem <> -1 then begin
       MakeSelectedTo(NextItem);
       MakeSelected(NextItem);
       Invalidate;
@@ -2536,13 +2539,13 @@ begin
       NextItem := GetNext(NextItem);
     if NextItem = -1 then begin
       if IsMatched(GetIdx(0)) then
-        NextItem := GetIdx(0)
-      else
+        NextItem := GetIdx(0) else
         NextItem := GetNext(GetIdx(0));
     end;
     if (not (ssShift in ShiftState)) or (not MultiSelect) then begin
       Selected := NextItem;
-    end else begin
+    end else
+    if NextItem <> -1 then begin
       MakeSelectedTo(NextItem);
       MakeSelected(NextItem);
       Invalidate;
@@ -2557,7 +2560,7 @@ begin
     else begin
       SearchPattern := '';
       if GetIdx(Item) > 0 then Item := GetPrev(Item);
-      if item = -1 then exit;
+      if Item = -1 then exit;
       if (ssShift in ShiftState) and (MultiSelect) then begin
         MakeSelectedTo(Item);
         MakeSelected(Item);
@@ -2713,6 +2716,7 @@ end;
 
 procedure THistoryGrid.SelectRange(FromItem,ToItem: Integer);
 begin
+  if (FromItem = -1) or (ToItem = -1) then exit;
   MakeRangeSelected(FromItem,ToItem);
   if SelCount > 0 then
     MakeSelected(FSelItems[0]);
@@ -2732,13 +2736,14 @@ procedure THistoryGrid.MakeSelectedTo(Item: Integer);
 var
   First: Integer;
 begin
+  if (FSelected = -1) or (Item = -1) then exit;
   if FSelItems[0] = FSelected then
     First := FSelItems[High(FSelItems)]
   else if FSelItems[High(FSelItems)] = FSelected then
     First := FSelItems[0]
   else
     First := FSelected;
-  MakeRangeSelected(first,Item);
+  MakeRangeSelected(First,Item);
 end;
 
 procedure THistoryGrid.MakeTopmost(Item: Integer);
