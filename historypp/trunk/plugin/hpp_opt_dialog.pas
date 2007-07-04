@@ -31,31 +31,40 @@ uses
 
 const
   IDD_OPT_HISTORYPP   = 207; // dialog id
-  ID_GRID_GROUP       = 100;
+
+  ID_APPEARANCE_GROUP = 100; // "Appearance options" group
   IDC_SHOWEVENTICONS  = 101; // "Show event icons" checkbox
   IDC_RECENTONTOP     = 102; // "Recent events on top" checkbox
   IDC_RTLDEFAULT      = 103; // "RTL by default" checkbox
   IDC_OPENDETAILS     = 104; // "Open event details by Enter" checkbox
-  IDC_IEVIEWAPI       = 105; // "Imitate IEView API" checkbox
-  IDC_GROUPLOGITEMS   = 106; // "Group log messages"
-  //IDC_SHOWAVATARS     = 107; // "Show avatars" checkbox
-  ID_FORMATTING_GROUP = 200;
+  IDC_SHOWEVENTSCOUNT = 105; // "Show events count in menu" checkbox
+  IDC_SHOWAVATARS     = 106; // "Show avatars" checkbox
+
+  ID_FORMATTING_GROUP = 200; // "Text formatting options" group
   IDC_BBCODE          = 201; // "Enable BBCodes" checkbox
   IDC_SMILEY          = 202; // "Enable SmileyAdd support" checkbox
   IDC_MATH            = 203; // "Enable MathModule support" checkbox
   IDC_RAWRTF          = 204; // "Enable raw RTF support" checkbox
   IDC_AVATARSHISTORY  = 205; // "Display chanage avatars" checkbox
+
+  ID_MESSAGELOG_GROUP = 300; // "Message log options" group
+  IDC_IEVIEWAPI       = 301; // "Imitate IEView API" checkbox
+  IDC_GROUPLOGITEMS   = 302; // "Group messages" checkbox
+  IDC_DISABLEBORDER   = 303; // "Disable border" checkbox
+
   ID_NEEDOPTIONS_LINK = 250; // "Need more options?" hyperlink
-  ID_LOOK_GROUP       = 300;
-  ID_LOOK_FONT1       = 301; // "To change fonts ..."
-  ID_LOOK_FONT2       = 302;
-  ID_LOOK_FONT_ICON   = 303;
-  ID_LOOK_FONT_LINK   = 310; // "Download FontService plugin"
-  ID_LOOK_ICO1        = 321; // "To change icons ..."
-  ID_LOOK_ICO2        = 322;
-  ID_LOOK_ICO_ICON    = 323;
-  ID_LOOK_ICO_LINK    = 330; // "Download IcoLib plugin"
-  ID_LOOK_INFO_LINK   = 340; // "More info on why ..."
+
+  ID_LOOK_GROUP       = 400;
+  ID_LOOK_FONT1       = 401; // "To change fonts ..."
+  ID_LOOK_FONT2       = 402;
+  ID_LOOK_FONT_ICON   = 403;
+  ID_LOOK_FONT_LINK   = 410; // "Download FontService plugin"
+  ID_LOOK_ICO1        = 421; // "To change icons ..."
+  ID_LOOK_ICO2        = 422;
+  ID_LOOK_ICO_ICON    = 423;
+  ID_LOOK_ICO_LINK    = 430; // "Download IcoLib plugin"
+  ID_LOOK_INFO_LINK   = 440; // "More info on why ..."
+
   ID_NEED_RESTART     = 999; // "Please restart Miranda IM..."
 
 const
@@ -63,7 +72,7 @@ const
   URL_ICOLIB      = 'http://addons.miranda-im.org/details.php?action=viewfile&id=2700';
   URL_EXPLAIN     = 'https://opensvn.csie.org/traccgi/historypp/trac.cgi/wiki/CustomizationSupport';
   URL_NEEDOPTIONS = 'https://opensvn.csie.org/traccgi/historypp/trac.cgi/wiki/AdditionalOptions';
-  
+
 function OptDialogProc(hwndDlg: HWND; uMsg: Integer;
   wParam: WPARAM; lParam: LPARAM): Integer; stdcall;
 
