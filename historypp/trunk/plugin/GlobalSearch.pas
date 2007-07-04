@@ -193,10 +193,10 @@ type
     sbEventsClose: THppSpeedButton;
     tbEvents: THppToolButton;
     cbEvents: TTntComboBox;
-    TntToolButton4: TTntToolButton;
-    tbCopy: TTntToolButton;
-    tbDelete: TTntToolButton;
-    tbSave: TTntToolButton;
+    TntToolButton4: THppToolButton;
+    tbCopy: THppToolButton;
+    tbDelete: THppToolButton;
+    tbSave: THppToolButton;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);

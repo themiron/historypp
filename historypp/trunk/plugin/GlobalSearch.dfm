@@ -584,27 +584,27 @@ object fmGlobalSearch: TfmGlobalSearch
           Transparent = False
           OnClick = tbEventsFilterClick
         end
-        object TntToolButton4: TTntToolButton
+        object TntToolButton4: THppToolButton
           Left = 295
           Top = 0
           Width = 8
           Style = tbsSeparator
         end
-        object tbCopy: TTntToolButton
+        object tbCopy: THppToolButton
           Left = 303
           Top = 0
           Hint = 'Copy'
           Caption = 'Copy'
           OnClick = tbCopyClick
         end
-        object tbDelete: TTntToolButton
+        object tbDelete: THppToolButton
           Left = 326
           Top = 0
           Hint = 'Delete'
           Caption = 'Delete'
           OnClick = tbDeleteClick
         end
-        object tbSave: TTntToolButton
+        object tbSave: THppToolButton
           Left = 349
           Top = 0
           Hint = 'Save'
