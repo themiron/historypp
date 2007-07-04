@@ -130,6 +130,18 @@ const
     MS_DB_CONTACT_GETSETTING        = 'DB/Contact/GetSetting';
 
     {
+        wParam : Handle of a contact to get the setting for (see notes)
+        lParam : pointer to a TDBCONTACTGETSETTING structure to be filled with setting
+                 this structure also has to be initalised (see notes)
+        affect : Queries the database module for a setting from a contact.
+        returns: 0 on success, non zero on failure (contact not found, setting doesn't exist)
+        notes  : Same as DB/Contact/GetSetting, but also gets the required string type inside
+                 the TDBCONTACTGETSETTING._type parameter
+        verison: 0.4.3+
+    }
+    MS_DB_CONTACT_GETSETTING_STR    = 'DB/Contact/GetSettingStr';
+
+    {
         wParam : Handle for a contact to query a setting for
         lParam : Pointer to a TDBCONTACTGETSETTING structure
         affects: This service is almost the same as the one above, but it does
