@@ -2156,7 +2156,6 @@ begin
   t := Translate('Full History [%s] - [%s]');
   t := Format(t,[WideToAnsiString(hg.ProfileName,CP_ACP),WideToAnsiString(hg.ContactName,CP_ACP)]);
   t := MakeFileName(t);
-  t := t + SaveDialog.DefaultExt;
   SaveDialog.FileName := t;
   if not SaveDialog.Execute then exit;
   hg.SaveAll(SaveDialog.Files[0],sfXML);
@@ -2175,7 +2174,6 @@ begin
   t := Translate('Full History [%s] - [%s]');
   t := Format(t,[WideToAnsiString(hg.ProfileName,CP_ACP),WideToAnsiString(hg.ContactName,CP_ACP)]);
   t := MakeFileName(t);
-  t := t + SaveDialog.DefaultExt;
   SaveDialog.FileName := t;
   if not SaveDialog.Execute then exit;
   case SaveDialog.FilterIndex of
@@ -3311,7 +3309,6 @@ begin
   t := Translate('Full History [%s] - [%s]');
   t := Format(t,[WideToAnsiString(hg.ProfileName,CP_ACP),WideToAnsiString(hg.ContactName,CP_ACP)]);
   t := MakeFileName(t);
-  t := t + SaveDialog.DefaultExt;
   SaveDialog.FileName := t;
   if not SaveDialog.Execute then exit;
   hg.SaveAll(SaveDialog.Files[0],sfRTF);
