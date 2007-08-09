@@ -422,28 +422,35 @@ procedure GetEventTextForUrl(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   BytePos:LongWord;
   Url,Desc: String;
+  cp: Cardinal;
 begin
   BytePos:=0;
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Url,BytePos);
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Desc,BytePos);
-  Hi.Text := WideFormat(TranslateWideW('URL: %s'),[AnsiToWideString(url+#13#10+desc,hi.Codepage)]);
-  Hi.Extended := Url;
+  if Boolean(EventInfo.flags and DBEF_UTF) then
+    cp := CP_UTF8 else
+    cp := hi.Codepage;
+  hi.Text := WideFormat(TranslateWideW('URL: %s'),[AnsiToWideString(url+#13#10+desc,cp)]);
+  hi.Extended := Url;
 end;
 
 procedure GetEventTextForFile(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   BytePos: LongWord;
   FileName,Desc: String;
+  cp: Cardinal;
 begin
   //blob is: sequenceid(DWORD),filename(ASCIIZ),description(ASCIIZ)
   BytePos:=4;
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Filename,BytePos);
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Desc,BytePos);
-  if (EventInfo.Flags and DBEF_SENT)>0 then
-    hi.Text := TranslateWideW('Outgoing file transfer: %s')
-  else
+  if Boolean(EventInfo.Flags and DBEF_SENT) then
+    hi.Text := TranslateWideW('Outgoing file transfer: %s') else
     hi.Text := TranslateWideW('Incoming file transfer: %s');
-  hi.Text := WideFormat(hi.Text,[AnsiToWideString(FileName+#13#10+Desc,hi.Codepage)]);
+  if Boolean(EventInfo.flags and DBEF_UTF) then
+    cp := CP_UTF8 else
+    cp := hi.Codepage;
+  hi.Text := WideFormat(hi.Text,[AnsiToWideString(FileName+#13#10+Desc,cp)]);
   hi.Extended := FileName;
 end;
 
@@ -461,8 +468,7 @@ begin
   // read nick
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Nick,BytePos);
   if Nick='' then
-    NickW := GetContactDisplayName(hContact,'',true)
-  else
+    NickW := GetContactDisplayName(hContact,'',true) else
     NickW := AnsiToWideString(Nick,CP_ACP);
   // read first name
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
@@ -473,13 +479,11 @@ begin
   if Name <> '' then Name:=Name + ', ';
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
   if Email <> '' then Email := Email + ', ';
-
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Reason,BytePos);
   ReasonUTF := AnsiToWideString(Reason,CP_UTF8);
   ReasonACP := AnsiToWideString(Reason,hppCodepage);
   if (Length(ReasonUTF) > 0) and (Length(ReasonUTF) < Length(ReasonACP)) then
-    ReasonW := ReasonUTF
-  else
+    ReasonW := ReasonUTF else
     ReasonW := ReasonACP;
   hi.Text := WideFormat(TranslateWideW('Authorisation request by %s (%s%d): %s'),
                         [NickW,AnsiToWideString(Name+Email,hppCodepage),uin,ReasonW]);
@@ -499,8 +503,7 @@ begin
     // read nick
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Nick,BytePos);
   if Nick='' then
-    NickW := GetContactDisplayName(hContact,'',true)
-  else
+    NickW := GetContactDisplayName(hContact,'',True) else
     NickW := AnsiToWideString(Nick,CP_ACP);
   // read first name
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
@@ -516,14 +519,20 @@ begin
 end;
 
 procedure GetEventTextForSms(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+var
+  cp: Cardinal;
 begin
-  hi.Text := AnsiToWideString(PChar(EventInfo.pBlob),hi.Codepage);
+  if Boolean(EventInfo.flags and DBEF_UTF) then
+    cp := CP_UTF8 else
+    cp := hi.Codepage;
+  hi.Text := AnsiToWideString(PChar(EventInfo.pBlob),cp);
 end;
 
 procedure GetEventTextForContacts(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   BytePos: LongWord;
   Contacts: String;
+  cp: Cardinal;
 begin
   BytePos := 0;
   Contacts := '';
@@ -534,41 +543,51 @@ begin
     ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Contacts,BytePos);
     Contacts := Contacts + ')';
   end;
-  if (EventInfo.flags and DBEF_SENT) = 0 then
-    hi.Text := TranslateWideW('Incoming contacts: %s')
-  else
-    hi.Text := TranslateWideW('Outgoing contacts: %s');
-  hi.Text := WideFormat(hi.Text,[AnsiToWideString(Contacts,hi.Codepage)]);
+  if Boolean(EventInfo.flags and DBEF_SENT) then
+    hi.Text := TranslateWideW('Outgoing contacts: %s') else
+    hi.Text := TranslateWideW('Incoming contacts: %s');
+  if Boolean(EventInfo.flags and DBEF_UTF) then
+    cp := CP_UTF8 else
+    cp := hi.Codepage;
+  hi.Text := WideFormat(hi.Text,[AnsiToWideString(Contacts,cp)]);
 end;
 
 procedure GetEventTextForWebPager(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   BytePos: LongWord;
   Body,Name,Email: String;
+  cp: Cardinal;
 begin
   BytePos := 0;
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
   hi.Text := TranslateWideW('Webpager message from %s (%s): %s');
-  hi.Text := WideFormat(hi.Text,[AnsiToWideString(Name,hppCodepage),
-                                 AnsiToWideString(Email,hppCodepage),
-                                 AnsiToWideString(#13#10+Body,hppCodepage)]);
+  if Boolean(EventInfo.flags and DBEF_UTF) then
+    cp := CP_UTF8 else
+    cp := hppCodepage;
+  hi.Text := WideFormat(hi.Text,[AnsiToWideString(Name,cp),
+                                 AnsiToWideString(Email,cp),
+                                 AnsiToWideString(#13#10+Body,cp)]);
 end;
 
 procedure GetEventTextForEmailExpress(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   BytePos: LongWord;
   Body,Name,Email: String;
+  cp: Cardinal;
 begin
   BytePos := 0;
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
   hi.Text := TranslateWideW('Email express from %s (%s): %s');
-  hi.Text := WideFormat(hi.Text,[AnsiToWideString(Name,hppCodepage),
-                                 AnsiToWideString(Email,hppCodepage),
-                                 AnsiToWideString(#13#10+Body,hppCodepage)]);
+  if Boolean(EventInfo.flags and DBEF_UTF) then
+    cp := CP_UTF8 else
+    cp := hppCodepage;
+  hi.Text := WideFormat(hi.Text,[AnsiToWideString(Name,cp),
+                                 AnsiToWideString(Email,cp),
+                                 AnsiToWideString(#13#10+Body,cp)]);
 end;
 
 procedure GetEventTextForStatusChange(EventInfo: TDBEventInfo; var Hi: THistoryItem);
@@ -589,19 +608,28 @@ var
 begin
   msgA := PChar(EventInfo.pBlob);
   msglen := lstrlenA(PChar(EventInfo.pBlob))+1;
-  LenW := 0;
-  if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
-    msgW := PWideChar(msgA+msglen);
-    for i := 0 to ((EventInfo.cbBlob-msglen) div SizeOf(WideChar))-1 do
-      if msgW[i] = #0 then begin
-        LenW := i;
-        break;
-      end;
+  if Boolean(EventInfo.flags and DBEF_UTF) then begin
+    SetLength(hi.Text,msglen);
+    msgW := PWideChar(hi.Text);
+    lenW := Utf8ToUnicode(msgW,msglen,msgA,msglen);
+    if lenW > 0 then
+      SetLength(hi.Text,lenW-1) else
+      hi.Text := AnsiToWideString(msgA,hi.Codepage);
+  end else begin
+    LenW := 0;
+    if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
+      msgW := PWideChar(msgA+msglen);
+      for i := 0 to ((EventInfo.cbBlob-msglen) div SizeOf(WideChar))-1 do
+        if msgW[i] = #0 then begin
+          LenW := i;
+          break;
+        end;
+    end;
+    if (lenW > 0) and (lenW < msglen) then
+      SetString(hi.Text,msgW,lenW) else
+      hi.Text := AnsiToWideString(msgA,hi.Codepage);
+    msglen := msglen+(lenW+1)*SizeOf(WideChar);
   end;
-  if (lenW > 0) and (lenW < msglen) then
-    SetString(hi.Text,msgW,lenW) else
-    hi.Text := AnsiToWideString(msgA,hi.Codepage);
-  msglen := msglen+(lenW+1)*SizeOf(WideChar);
   if msglen < EventInfo.cbBlob then begin
     msgA := msgA + msglen;
     if lstrlenA(msgA) > 0 then hi.Extended := msgA;
@@ -612,16 +640,22 @@ function GetEventTextForICQSystem(EventInfo: TDBEventInfo; Template: WideString)
 var
   BytePos: LongWord;
   Body: String;
-  uin: integer;
+  uin: Integer;
   Name: WideString;
+  cp: Cardinal;
 begin
   BytePos := 0;
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
-  if EventInfo.cbBlob < (BytePos+4) then uin := 0
-  else uin := PDWord(PChar(EventInfo.pBlob)+BytePos)^;
-  if EventInfo.cbBlob < (BytePos+8) then Name := TranslateW('''(Unknown Contact)'''{TRANSLATE-IGNORE})
-  else Name := GetContactDisplayName(PDWord(PChar(EventInfo.pBlob)+BytePos+4)^,'',true);
-  Result := WideFormat(Template ,[Name,uin,AnsiToWideString(#13#10+Body,hppCodepage)]);
+  if EventInfo.cbBlob < (BytePos+4) then
+    uin := 0 else
+    uin := PDWord(PChar(EventInfo.pBlob)+BytePos)^;
+  if EventInfo.cbBlob < (BytePos+8) then
+    Name := TranslateW('''(Unknown Contact)'''{TRANSLATE-IGNORE}) else
+    Name := GetContactDisplayName(PDWord(PChar(EventInfo.pBlob)+BytePos+4)^,'',true);
+  if Boolean(EventInfo.flags and DBEF_UTF) then
+    cp := CP_UTF8 else
+    cp := hppCodepage;
+  Result := WideFormat(Template ,[Name,uin,AnsiToWideString(#13#10+Body,cp)]);
 end;
 
 procedure GetEventTextForICQAuthGranted(EventInfo: TDBEventInfo; var Hi: THistoryItem);
@@ -670,15 +704,19 @@ procedure GetEventTextForICQBroadcast(EventInfo: TDBEventInfo; var Hi: THistoryI
 var
   BytePos: LongWord;
   Body,Name,Email: String;
+  cp: Cardinal;
 begin
   BytePos := 0;
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Body,BytePos);
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Name,BytePos);
   ReadStringTillZeroA(Pointer(EventInfo.pBlob),EventInfo.cbBlob,Email,BytePos);
   hi.Text := TranslateWideW('Broadcast message from %s (%s): %s');
-  hi.Text := WideFormat(hi.Text,[AnsiToWideString(Name,hppCodepage),
-                                 AnsiToWideString(Email,hppCodepage),
-                                 AnsiToWideString(#13#10+Body,hppCodepage)]);
+  if Boolean(EventInfo.flags and DBEF_UTF) then
+    cp := CP_UTF8 else
+    cp := hppCodepage;
+  hi.Text := WideFormat(hi.Text,[AnsiToWideString(Name,cp),
+                                 AnsiToWideString(Email,cp),
+                                 AnsiToWideString(#13#10+Body,cp)]);
 end;
 
 procedure GetEventTextWATrackRequest(EventInfo: TDBEventInfo; var Hi: THistoryItem);
@@ -712,10 +750,15 @@ begin
 end;
 
 procedure GetEventTextForOther(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+var
+  cp: Cardinal;
 begin
   AllocateTextBuffer(EventInfo.cbBlob+1);
   StrLCopy(buffer,PChar(EventInfo.pBlob),EventInfo.cbBlob);
-  hi.Text := AnsiToWideString(buffer,hi.Codepage);
+  if Boolean(EventInfo.flags and DBEF_UTF) then
+    cp := CP_UTF8 else
+    cp := hi.Codepage;
+  hi.Text := AnsiToWideString(buffer,cp);
 end;
 
 initialization

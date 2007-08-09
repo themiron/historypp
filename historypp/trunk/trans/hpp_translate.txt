@@ -474,10 +474,10 @@ Incoming file transfer: %s
 Authorisation request by %s (%s%d): %s
 [You were added by %s (%s%d)]
 You were added by %s (%s%d)
-[Incoming contacts: %s]
-Incoming contacts: %s
 [Outgoing contacts: %s]
 Outgoing contacts: %s
+[Incoming contacts: %s]
+Incoming contacts: %s
 [Webpager message from %s (%s): %s]
 Webpager message from %s (%s): %s
 [Email express from %s (%s): %s]
