@@ -57,6 +57,7 @@ uses
     {$include m_protosvc.inc}
     {$include m_options.inc}
     {$include m_icq.inc}
+    {$include m_jabber.inc}
     {$include m_protocols.inc}
     {$include m_protomod.inc}
     {$include m_utils.inc}
