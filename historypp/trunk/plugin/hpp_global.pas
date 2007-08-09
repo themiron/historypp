@@ -266,8 +266,8 @@ const
 
 {$I m_historypp.inc}
 
-function AnsiToWideString(const S: AnsiString; CodePage: Cardinal): WideString;
-function WideToAnsiString(const WS: WideString; CodePage: Cardinal): AnsiString;
+function AnsiToWideString(const S: AnsiString; CodePage: Cardinal; InLength: Integer = -1): WideString;
+function WideToAnsiString(const WS: WideString; CodePage: Cardinal; InLength: Integer = -1): AnsiString;
 function TranslateAnsiW(const S: AnsiString{TRANSLATE-IGNORE}): WideString;
 function TranslateWideW(const WS: WideString{TRANSLATE-IGNORE}): WideString;
 function MakeFileName(FileName: AnsiString): AnsiString;
@@ -304,7 +304,7 @@ begin
   end;
 end;
 
-function AnsiToWideString(const S: AnsiString; CodePage: Cardinal): WideString;
+function AnsiToWideString(const S: AnsiString; CodePage: Cardinal; InLength: Integer = -1): WideString;
 var
   InputLength,
   OutputLength: Integer;
@@ -312,14 +312,16 @@ begin
   if CodePage = CP_UTF8 then begin
     Result := UTF8Decode(S);         // CP_UTF8 not supported on Windows 95
   end else begin
-    InputLength := Length(S);
+    if InLength < 0 then
+      InputLength := Length(S) else
+      InputLength := InLength;
     OutputLength := MultiByteToWideChar(CodePage,0,PChar(S),InputLength,nil,0);
     SetLength(Result,OutputLength);
     MultiByteToWideChar(CodePage,MB_PRECOMPOSED,PChar(S),InputLength,PWideChar(Result),OutputLength);
   end;
 end;
 
-function WideToAnsiString(const WS: WideString; CodePage: Cardinal): AnsiString;
+function WideToAnsiString(const WS: WideString; CodePage: Cardinal; InLength: Integer = -1): AnsiString;
 var
   InputLength,
   OutputLength: Integer;
@@ -327,7 +329,9 @@ begin
   if CodePage = CP_UTF8 then
     Result := UTF8Encode(WS) // CP_UTF8 not supported on Windows 95
   else begin
-    InputLength := Length(WS);
+    if InLength < 0 then
+      InputLength := Length(WS) else
+      InputLength := InLength;
     OutputLength := WideCharToMultiByte(CodePage, 0, PWideChar(WS), InputLength, nil, 0, nil, nil);
     SetLength(Result, OutputLength);
     WideCharToMultiByte(CodePage, 0, PWideChar(WS), InputLength, PAnsiChar(Result), OutputLength, nil, nil);

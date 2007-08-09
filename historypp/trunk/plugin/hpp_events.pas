@@ -110,6 +110,7 @@ procedure GetEventTextForICQClientChange(EventInfo: TDBEventInfo; var Hi: THisto
 procedure GetEventTextForICQCheckStatus(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextForICQIgnoreCheckStatus(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextForICQBroadcast(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+procedure GetEventTextForJabberChatStates(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextWATrackRequest(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextWATrackAnswer(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextWATrackError(EventInfo: TDBEventInfo; var Hi: THistoryItem);
@@ -139,7 +140,7 @@ const
 
 var
 
-  EventTable: array[0..27] of TEventTableItem = (
+  EventTable: array[0..28] of TEventTableItem = (
     // must be the first item in array for unknown events
     (EventType: MaxWord; MessageType: mtOther; TextFunction: GetEventTextForOther),
     // events definitions
@@ -165,6 +166,7 @@ var
     (EventType: ICQEVENTTYPE_CHECK_STATUS; MessageType: mtSystem; TextFunction: GetEventTextForICQCheckStatus),
     (EventType: ICQEVENTTYPE_IGNORECHECK_STATUS; MessageType: mtSystem; TextFunction: GetEventTextForICQIgnoreCheckStatus),
     (EventType: ICQEVENTTYPE_BROADCAST; MessageType: mtSystem; TextFunction: GetEventTextForICQBroadcast),
+    (EventType: JABBER_DB_EVENT_TYPE_CHATSTATES; MessageType: mtStatus; TextFunction: GetEventTextForJabberChatStates),
     (EventType: EVENTTYPE_CONTACTLEFTCHANNEL; MessageType: mtStatus; TextFunction: GetEventTextForMessage),
     (EventType: EVENTTYPE_WAT_REQUEST; MessageType: mtWATrack; TextFunction: GetEventTextWATrackRequest),
     (EventType: EVENTTYPE_WAT_ANSWER; MessageType: mtWATrack; TextFunction: GetEventTextWATrackAnswer),
@@ -325,7 +327,7 @@ begin
     Result.EventType := EventInfo.EventType;
     Result.IsRead := Boolean(EventInfo.flags and DBEF_READ);
     // enable autoRTL feature
-    if boolean(EventInfo.flags and DBEF_RTL) then
+    if Boolean(EventInfo.flags and DBEF_RTL) then
      Result.RTLMode := hppRTLEnable;
     EventIndex := 0;
     for i := 1 to High(EventTable) do
@@ -337,8 +339,7 @@ begin
     Result.MessageType := [EventTable[EventIndex].MessageType];
     EventTable[EventIndex].TextFunction(EventInfo,Result);
     if (EventInfo.flags and DBEF_SENT) = 0 then
-      include(Result.MessageType,mtIncoming)
-    else
+      include(Result.MessageType,mtIncoming) else
       include(Result.MessageType,mtOutgoing);
     Result.Text := TntAdjustLineBreaks(Result.Text);
     Result.Text := TrimRight(Result.Text);
@@ -392,13 +393,14 @@ begin
   begin
     msgA := PChar(EventInfo.pBlob);
     msglen := lstrlenA(PChar(EventInfo.pBlob))+1;
+    if msglen > EventInfo.cbBlob then msglen := EventInfo.cbBlob;
     if Boolean(EventInfo.flags and DBEF_UTF) then begin
       SetLength(hi.Text,msglen);
       msgW := PWideChar(hi.Text);
       lenW := Utf8ToUnicode(msgW,msglen,msgA,msglen);
       if lenW > 0 then
         SetLength(hi.Text,lenW-1) else
-        hi.Text := AnsiToWideString(msgA,hi.Codepage);
+        hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen);
     end else begin
       lenW := 0;
       if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
@@ -411,7 +413,7 @@ begin
       end;
       if (lenW > 0) and (lenW < msglen) then
         SetString(hi.Text,msgW,lenW) else
-        hi.Text := AnsiToWideString(msgA,hi.Codepage);
+        hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen);
     end;
   end;
   if (hi.MessageType = [mtMessage]) and TextHasUrls(hi.Text) then
@@ -608,13 +610,14 @@ var
 begin
   msgA := PChar(EventInfo.pBlob);
   msglen := lstrlenA(PChar(EventInfo.pBlob))+1;
+  if msglen > EventInfo.cbBlob then msglen := EventInfo.cbBlob;
   if Boolean(EventInfo.flags and DBEF_UTF) then begin
     SetLength(hi.Text,msglen);
     msgW := PWideChar(hi.Text);
     lenW := Utf8ToUnicode(msgW,msglen,msgA,msglen);
     if lenW > 0 then
       SetLength(hi.Text,lenW-1) else
-      hi.Text := AnsiToWideString(msgA,hi.Codepage);
+      hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen);
   end else begin
     LenW := 0;
     if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
@@ -627,7 +630,7 @@ begin
     end;
     if (lenW > 0) and (lenW < msglen) then
       SetString(hi.Text,msgW,lenW) else
-      hi.Text := AnsiToWideString(msgA,hi.Codepage);
+      hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen);
     msglen := msglen+(lenW+1)*SizeOf(WideChar);
   end;
   if msglen < EventInfo.cbBlob then begin
@@ -717,6 +720,15 @@ begin
   hi.Text := WideFormat(hi.Text,[AnsiToWideString(Name,cp),
                                  AnsiToWideString(Email,cp),
                                  AnsiToWideString(#13#10+Body,cp)]);
+end;
+
+procedure GetEventTextForJabberChatStates(EventInfo: TDBEventInfo; var Hi: THistoryItem);
+begin
+  if EventInfo.cbBlob = 0 then exit;
+  case PByte(EventInfo.pBlob)^ of
+    JABBER_DB_EVENT_CHATSTATES_GONE:
+      hi.Text := TranslateWideW('closed chat session');
+  end;
 end;
 
 procedure GetEventTextWATrackRequest(EventInfo: TDBEventInfo; var Hi: THistoryItem);

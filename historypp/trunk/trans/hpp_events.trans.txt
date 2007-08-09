@@ -17,6 +17,7 @@ User %s (%d) changed icq client: %s
 Status request by %s (%d):%s
 Ignored status request by %s (%d):%s
 Broadcast message from %s (%s): %s
+closed chat session
 WATrack: information request
 Artist: %s\r\nTitle: %s\r\nAlbum: %s
 WATrack: %s
