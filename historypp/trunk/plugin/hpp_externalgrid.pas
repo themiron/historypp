@@ -499,14 +499,7 @@ var
   Source: Pointer;
   Size: integer;
 begin
-  if Grid.Count = 0 then exit;
-  if Grid.State = gsInline then
-    TextW := GetRichString(Grid.InlineRichEdit.Handle,True)
-  else
-  if Grid.Focused and (Grid.Selected <> -1) then
-    TextW := Grid.FormatSelected(GridOptions.SelectionFormat)
-  else
-    TextW := '';
+  TextW := Grid.SelectionString;
   if Length(TextW) > 0 then begin
     TextW := TextW+#0;
     if NoUnicode then begin
