@@ -79,8 +79,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, ComCtrls, CommCtrl,
-  TntSysUtils, TntWindows, TntControls,TntGraphics, {TntComCtrls,} Menus, TntMenus, StdCtrls,
-  Math, mmsystem,
+  TntSysUtils, TntWindows, TntControls,TntGraphics, {TntComCtrls,} Menus, TntMenus,
+  {$IFDEF COMPILER_10}WideStrUtils,{$ENDIF} TntWideStrUtils,
+  StdCtrls, Math, mmsystem,
   hpp_global, hpp_contacts, hpp_itemprocess, hpp_events, hpp_eventfilters,
   hpp_richedit, hpp_richedit_ole,
   Contnrs,
@@ -378,7 +379,6 @@ type
     ShowProgress: Boolean;
     ProgressPercent: Byte;
     SearchPattern: WideString;
-    LastKeyDown: DWord;
     GridUpdates: TGridUpdates;
     VLineScrollSize: Integer;
     FSelItems, TempSelItems: array of Integer;
@@ -416,6 +416,9 @@ type
     FTxtGenHist1: WideString;
     FTxtGenHist2: WideString;
     FTxtSessions: WideString;
+
+    FSelectionString: WideString;
+    FSelectionStored: Boolean;
 
     FOnState: TOnState;
     FReversed: Boolean;
@@ -513,7 +516,13 @@ type
     procedure CMBiDiModeChanged(var Message: TMessage); message CM_BIDIMODECHANGED;
     procedure CMCtl3DChanged(var Message: TMessage); message CM_CTL3DCHANGED;
     procedure WMCommand(var Message: TWMCommand); message WM_COMMAND;
+    procedure EMGetSel(var Message: TMessage); message EM_GETSEL;
+    procedure EMExGetSel(var Message: TMessage); message EM_EXGETSEL;
     procedure EMSetSel(var Message: TMessage); message EM_SETSEL;
+    procedure EMExSetSel(var Message: TMessage); message EM_EXSETSEL;
+    procedure WMGetText(var Message: TWMGetText); message WM_GETTEXT;
+    procedure WMGetTextLength(var Message: TWMGetTextLength); message WM_GETTEXTLENGTH;
+    procedure WMSetText(var Message: TWMSetText); message WM_SETTEXT;
     procedure SetContolID(const Value: Cardinal);
     function SendMsgFilterMessage(var Message: TMessage): Longint;
     function GetCount: Integer;
@@ -609,6 +618,7 @@ type
     procedure SaveEnd(Stream: TFileStream; SaveFormat: TSaveFormat);
 
     procedure GridUpdateSize;
+    function GetSelectionString: WideString;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -676,6 +686,7 @@ type
     property Filter: TMessageTypes read FFilter write SetFilter;
 
     property ControlID: Cardinal read FControlID write SetContolID;
+    property SelectionString: WideString read GetSelectionString;
   published
     procedure SetRichRTL(RTL: Boolean; RichEdit: THPPRichEdit; ProcessTag: Boolean = True);
     function GetItemRTL(Item: Integer): Boolean;
@@ -1017,6 +1028,9 @@ begin
   FGridNotFocused := True;
 
   FControlID := 0;
+
+  FSelectionString := '';
+  FSelectionStored := False;
 end;
 
 destructor THistoryGrid.Destroy;
@@ -1739,6 +1753,7 @@ begin
   if FSelected <> -1 then MakeVisible(Selected);
   if Assigned(FOnSelect) then
     FOnSelect(Self,Selected,OldSelected);
+  FSelectionStored := False;
 end;
 
 procedure THistoryGrid.SetSelected(const Value: Integer);
@@ -2674,10 +2689,91 @@ begin
   Message.Result := Message.Result or DLGC_HASSETSEL;
 end;
 
+function THistoryGrid.GetSelectionString: WideString;
+begin
+  if FSelectionStored then begin
+    Result := FSelectionString;
+    exit;
+  end else
+    Result := '';
+  if csDestroying in ComponentState then exit;
+  if Count = 0 then exit;
+  if State = gsInline then
+    Result := GetRichString(InlineRichEdit.Handle,True)
+  else
+  if Focused and (Selected <> -1) then begin
+    FSelectionString := FormatSelected(Options.SelectionFormat);
+    FSelectionStored := True;
+    Result := FSelectionString;
+  end;
+end;
+
+procedure THistoryGrid.EMGetSel(var Message: TMessage);
+var
+  M: TWMGetTextLength;
+begin
+  WMGetTextLength(M);
+  PDWord(Message.WParam)^ := 0;
+  PDWord(Message.LParam)^ := M.Result;
+end;
+
+procedure THistoryGrid.EMExGetSel(var Message: TMessage);
+var
+  M: TWMGetTextLength;
+begin
+  Message.WParam := 0;
+  if Message.LParam = 0 then exit;
+  WMGetTextLength(M);
+  TCharRange(Pointer(Message.LParam)^).cpMin := 0;
+  TCharRange(Pointer(Message.LParam)^).cpMax := M.Result;
+end;
+
 procedure THistoryGrid.EMSetSel(var Message: TMessage);
 begin
+  FSelectionStored := False;
   if csDestroying in ComponentState then exit;
   if Assigned(FOnSelectRequest) then FOnSelectRequest(Self);
+end;
+
+procedure THistoryGrid.EMExSetSel(var Message: TMessage);
+begin
+  FSelectionStored := False;
+  if csDestroying in ComponentState then exit;
+  if Assigned(FOnSelectRequest) then FOnSelectRequest(Self);
+end;
+
+procedure THistoryGrid.WMGetText(var Message: TWMGetText);
+var
+  len: Integer;
+  str: WideString;
+  tmp: AnsiString;
+begin
+  str := SelectionString;
+  if hppOSUnicode then begin
+    len := Min(Message.TextMax-1,Length(str));
+    if len >= 0 then WStrLCopy(PWideChar(Message.Text),PWideChar(str),len);
+  end else begin
+    tmp := WideToAnsiString(str,CP_ACP);
+    len := Min(Message.TextMax-1,Length(tmp));
+    if len >= 0 then StrLCopy(Message.Text,PChar(tmp),len);
+  end;
+  Message.Result := len;
+end;
+
+procedure THistoryGrid.WMGetTextLength(var Message: TWMGetTextLength);
+var
+  str: WideString;
+begin
+  str := SelectionString;
+  if hppOSUnicode then
+    Message.Result := Length(str) else
+    Message.Result := Length(WideToAnsiString(str,CP_ACP));
+end;
+
+procedure THistoryGrid.WMSetText(var Message: TWMSetText);
+begin
+  //inherited;
+  FSelectionStored := False;
 end;
 
 procedure THistoryGrid.MakeRangeSelected(FromItem, ToItem: Integer);
