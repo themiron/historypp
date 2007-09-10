@@ -397,20 +397,20 @@ function GetEventModuleText(EventInfo: TDBEventInfo; var Hi: THistoryItem): Bool
 var
    dbegt: TDBEVENTGETTEXT;
    msgW: PWideChar;
-   service: array[0..99] of Char;
+   szServiceName: array[0..99] of Char;
 begin
-  Result := False;
   dbegt.dbei := @EventInfo;
   dbegt.datatype := DBVT_WCHAR;
   dbegt.codepage := hi.Codepage;
-  StrFmt(service,'%s/GetEventText%d',[EventInfo.szModule,EventInfo.eventType]);
-  if Boolean(PluginLink.ServiceExists(service)) then begin
-    msgW := PWideChar(PluginLink.CallService(service,0,LPARAM(@dbegt)));
+  StrFmt(szServiceName,'%s/GetEventText%d',[EventInfo.szModule,EventInfo.eventType]);
+  Result := False;
+  if Boolean(PluginLink.ServiceExists(szServiceName)) then begin
+    msgW := PWideChar(PluginLink.CallService(szServiceName,0,LPARAM(@dbegt)));
     Result := (msgW <> nil);
-  end;
-  if Result then begin
-    SetString(hi.Text,msgW,WStrLen(msgW));
-    MirandaFree(msgW);
+    if Result then begin
+      SetString(hi.Text,msgW,WStrLen(msgW));
+      MirandaFree(msgW);
+    end;
   end;
 end;
 
