@@ -278,6 +278,7 @@ type
     procedure BrowseReceivedFilesClick(Sender: TObject);
     procedure tbEventsClick(Sender: TObject);
     procedure sbEventsCloseClick(Sender: TObject);
+    procedure lvContactsDblClick(Sender: TObject);
   private
     UsedPassword: String;
     UserMenu: hMenu;
@@ -2427,6 +2428,16 @@ end;
 procedure TfmGlobalSearch.sbEventsCloseClick(Sender: TObject);
 begin
   ToggleEventsPanel(False);
+end;
+
+procedure TfmGlobalSearch.lvContactsDblClick(Sender: TObject);
+var
+  hContact: THandle;
+begin
+  if lvContacts.Selected = nil then exit;
+  hContact := Integer(lvContacts.Selected.Data);
+  if hContact = 0 then exit;
+  SendMessageTo(hContact);
 end;
 
 initialization
