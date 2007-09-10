@@ -1937,7 +1937,7 @@ var
   bNewWindow: Integer;
 begin
   if Url = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,1,LPARAM(@Url[1]));
+  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@Url[1]));
 end;
 
 procedure TfmGlobalSearch.edPassKeyPress(Sender: TObject; var Key: Char);
@@ -2337,14 +2337,14 @@ end;
 procedure TfmGlobalSearch.OpenLinkClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,0,LPARAM(@SavedLinkUrl[1]));
+  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(False),LPARAM(@SavedLinkUrl[1]));
   SavedLinkUrl := '';
 end;
 
 procedure TfmGlobalSearch.OpenLinkNWClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,1,LPARAM(@SavedLinkUrl[1]));
+  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@SavedLinkUrl[1]));
   SavedLinkUrl := '';
 end;
 

@@ -527,7 +527,7 @@ end;
 procedure TExternalGrid.GridUrlClick(Sender: TObject; Item: Integer; Url: String);
 begin
   if Url= '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,1,LPARAM(Pointer(@Url[1])));
+  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(Pointer(@Url[1])));
 end;
 
 procedure TExternalGrid.GridBookmarkClick(Sender: TObject; Item: Integer);
@@ -782,7 +782,7 @@ end;
 procedure TExternalGrid.OnOpenLinkClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,0,LPARAM(@SavedLinkUrl[1]));
+  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(False),LPARAM(@SavedLinkUrl[1]));
   SavedLinkUrl := '';
 end;
 
@@ -805,7 +805,7 @@ end;
 procedure TExternalGrid.OnOpenLinkNWClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,1,LPARAM(@SavedLinkUrl[1]));
+  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@SavedLinkUrl[1]));
   SavedLinkUrl := '';
 end;
 
