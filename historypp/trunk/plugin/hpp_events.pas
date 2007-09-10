@@ -90,6 +90,9 @@ function ReadEvent(hDBEvent: THandle; UseCP: Cardinal = CP_ACP): THistoryItem;
 function GetEventInfo(hDBEvent: DWord): TDBEventInfo;
 function GetEventTimestamp(hDBEvent: THandle): DWord;
 function GetEventDateTime(hDBEvent: THandle): TDateTime;
+// global routines
+function GetEventCoreText(EventInfo: TDBEventInfo; var Hi: THistoryItem): Boolean;
+function GetEventModuleText(EventInfo: TDBEventInfo; var Hi: THistoryItem): Boolean;
 // specific routines
 procedure GetEventTextForMessage(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 procedure GetEventTextForFile(EventInfo: TDBEventInfo; var Hi: THistoryItem);
@@ -337,7 +340,11 @@ begin
       end;
     Result.Codepage := UseCP;
     Result.MessageType := [EventTable[EventIndex].MessageType];
-    EventTable[EventIndex].TextFunction(EventInfo,Result);
+    //if not (DatabaseNewAPI and GetEventCoreText(EventInfo,Result)) then
+    if not (DatabaseNewAPI and GetEventModuleText(EventInfo,Result)) then
+      EventTable[EventIndex].TextFunction(EventInfo,Result);
+    if (Result.MessageType = [mtMessage]) and TextHasUrls(Result.Text) then
+      Result.MessageType := [mtUrl];
     if (EventInfo.flags and DBEF_SENT) = 0 then
       include(Result.MessageType,mtIncoming) else
       include(Result.MessageType,mtOutgoing);
@@ -366,58 +373,78 @@ begin
   Inc(Pos,SizeOf(WideChar));
 end;
 
+function GetEventCoreText(EventInfo: TDBEventInfo; var Hi: THistoryItem): Boolean;
+const
+  datatypes: Array[False..True] of Integer = (DBVT_ASCIIZ,DBVT_WCHAR);
+var
+   dbegt: TDBEVENTGETTEXT;
+   msg: Pointer;
+begin
+  dbegt.dbei := @EventInfo;
+  dbegt.datatype := datatypes[hppCoreUnicode];
+  dbegt.codepage := hi.Codepage;
+  msg := Pointer(PluginLink.CallService(MS_DB_EVENT_GETTEXT,0,LPARAM(@dbegt)));
+  Result := (msg <> nil);
+  if Result then begin
+    if hppCoreUnicode then
+      SetString(hi.Text,PWideChar(msg),WStrLen(PWideChar(msg))) else
+      hi.Text := AnsiToWideString(PChar(msg),hi.Codepage,StrLen(PChar(msg)));
+    MirandaFree(msg);
+  end;
+end;
+
+function GetEventModuleText(EventInfo: TDBEventInfo; var Hi: THistoryItem): Boolean;
+var
+   dbegt: TDBEVENTGETTEXT;
+   msgW: PWideChar;
+   service: array[0..99] of Char;
+begin
+  Result := False;
+  dbegt.dbei := @EventInfo;
+  dbegt.datatype := DBVT_WCHAR;
+  dbegt.codepage := hi.Codepage;
+  StrFmt(service,'%s/GetEventText%d',[EventInfo.szModule,EventInfo.eventType]);
+  if Boolean(PluginLink.ServiceExists(service)) then begin
+    msgW := PWideChar(PluginLink.CallService(service,0,LPARAM(@dbegt)));
+    Result := (msgW <> nil);
+  end;
+  if Result then begin
+    SetString(hi.Text,msgW,WStrLen(msgW));
+    MirandaFree(msgW);
+  end;
+end;
+
 procedure GetEventTextForMessage(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   msgA: PAnsiChar;
   msgW: PWideChar;
   msglen,lenW: Cardinal;
   i: integer;
-  //dbegt: TDBEVENTGETTEXT;
 begin
-  // commented out buggy MS_DB_EVENT_GETTEXT on Miranda IM ansi build
-  {if DatabaseNewAPI then begin
-    dbegt.dbei := @EventInfo;
-    dbegt.datatype := DBVT_WCHAR;
-    dbegt.codepage := hi.Codepage;
-    try
-      msgW := PWideChar(PluginLink.CallService(MS_DB_EVENT_GETTEXT,0,LPARAM(@dbegt)));
-    except
-      msgW := nil;
+  msgA := PChar(EventInfo.pBlob);
+  msglen := lstrlenA(PChar(EventInfo.pBlob))+1;
+  if msglen > EventInfo.cbBlob then msglen := EventInfo.cbBlob;
+  if Boolean(EventInfo.flags and DBEF_UTF) then begin
+    SetLength(hi.Text,msglen);
+    msgW := PWideChar(hi.Text);
+    lenW := Utf8ToUnicode(msgW,msglen,msgA,msglen);
+    if lenW > 0 then
+      SetLength(hi.Text,lenW-1) else
+      hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen);
+  end else begin
+    lenW := 0;
+    if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
+      msgW := PWideChar(msgA+msglen);
+      for i := 0 to ((EventInfo.cbBlob-msglen) div SizeOf(WideChar))-1 do
+        if msgW[i] = #0 then begin
+          LenW := i;
+          break;
+        end;
     end;
-    if msgW <> nil then begin
-      SetString(hi.Text,msgW,WStrLen(msgW));
-      MirandaFree(msgW);
-    end;
-  end else msgW := nil;
-  if msgW = nil then }
-  begin
-    msgA := PChar(EventInfo.pBlob);
-    msglen := lstrlenA(PChar(EventInfo.pBlob))+1;
-    if msglen > EventInfo.cbBlob then msglen := EventInfo.cbBlob;
-    if Boolean(EventInfo.flags and DBEF_UTF) then begin
-      SetLength(hi.Text,msglen);
-      msgW := PWideChar(hi.Text);
-      lenW := Utf8ToUnicode(msgW,msglen,msgA,msglen);
-      if lenW > 0 then
-        SetLength(hi.Text,lenW-1) else
-        hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen);
-    end else begin
-      lenW := 0;
-      if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
-        msgW := PWideChar(msgA+msglen);
-        for i := 0 to ((EventInfo.cbBlob-msglen) div SizeOf(WideChar))-1 do
-          if msgW[i] = #0 then begin
-            LenW := i;
-            break;
-          end;
-      end;
-      if (lenW > 0) and (lenW < msglen) then
-        SetString(hi.Text,msgW,lenW) else
-        hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen);
-    end;
+    if (lenW > 0) and (lenW < msglen) then
+      SetString(hi.Text,msgW,lenW) else
+      hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen);
   end;
-  if (hi.MessageType = [mtMessage]) and TextHasUrls(hi.Text) then
-    hi.MessageType := [mtUrl];
 end;
 
 procedure GetEventTextForUrl(EventInfo: TDBEventInfo; var Hi: THistoryItem);
