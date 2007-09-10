@@ -503,6 +503,8 @@ type
     procedure WMLButtonDown(var Message: TWMLButtonDown); message WM_LBUTTONDOWN;
     procedure WMLButtonUp(var Message: TWMLButtonUp); message WM_LBUTTONUP;
     procedure WMLButtonDblClick(var Message: TWMLButtonDblClk); message WM_LBUTTONDBLCLK;
+    procedure WMMButtonDown(var Message: TWMRButtonDown); message WM_MBUTTONDOWN;
+    procedure WMMButtonUp(var Message: TWMRButtonDown); message WM_MBUTTONUP;
     procedure WMPaint(var Message: TWMPaint); message WM_PAINT;
     procedure WMSize(var Message: TWMSize); message WM_SIZE;
     procedure WMEraseBkgnd(var Message: TWMEraseBkgnd); message WM_ERASEBKGND;
@@ -608,6 +610,8 @@ type
     procedure DoMouseMove(X,Y: Integer; Keys: TMouseMoveKeys);
     procedure DoRButtonDown(X,Y: Integer; Keys: TMouseMoveKeys);
     procedure DoRButtonUp(X,Y: Integer; Keys: TMouseMoveKeys);
+    procedure DoMButtonDown(X,Y: Integer; Keys: TMouseMoveKeys);
+    procedure DoMButtonUp(X,Y: Integer; Keys: TMouseMoveKeys);
     //procedure DoUrlMouseMove(Url: WideString);
     procedure DoProgress(Position,Max: Integer);
     function CalcItemHeight(Item: Integer): Integer;
@@ -1798,13 +1802,6 @@ begin
   FRichCache.ResetItem(Item);
 end;
 
-procedure THistoryGrid.WMLButtonDown(var Message: TWMLButtonDown);
-begin
-  inherited;
-  if FGridNotFocused then Windows.SetFocus(Handle);
-  DoLButtonDown(Message.XPos,Message.YPos,TranslateKeys(Message.Keys));
-end;
-
 function THistoryGrid.FindItemAt(x, y: Integer; out ItemRect: TRect): Integer;
 var
   SumHeight: Integer;
@@ -2074,10 +2071,30 @@ begin
   Result := Length(FSelItems);
 end;
 
+procedure THistoryGrid.WMLButtonDown(var Message: TWMLButtonDown);
+begin
+  inherited;
+  if FGridNotFocused then Windows.SetFocus(Handle);
+  DoLButtonDown(Message.XPos,Message.YPos,TranslateKeys(Message.Keys));
+end;
+
 procedure THistoryGrid.WMLButtonUp(var Message: TWMLButtonUp);
 begin
   inherited;
   DoLButtonUp(Message.XPos,Message.YPos,TranslateKeys(Message.Keys));
+end;
+
+procedure THistoryGrid.WMMButtonDown(var Message: TWMMButtonDown);
+begin
+  inherited;
+  if FGridNotFocused then Windows.SetFocus(Handle);
+  DoMButtonDown(Message.XPos,Message.YPos,TranslateKeys(Message.Keys));
+end;
+
+procedure THistoryGrid.WMMButtonUp(var Message: TWMMButtonUp);
+begin
+  inherited;
+  DoMButtonUp(Message.XPos,Message.YPos,TranslateKeys(Message.Keys));
 end;
 
 {$IFDEF RENDER_RICH}
@@ -2275,6 +2292,30 @@ begin
     exit;
   end;
 
+end;
+
+procedure THistoryGrid.DoMButtonDown(X, Y: Integer; Keys: TMouseMoveKeys);
+begin
+  WasDownOnGrid := True;
+  if Count = 0 then exit;
+  DownHitTests := GetHitTests(x,y);
+end;
+
+procedure THistoryGrid.DoMButtonUp(X, Y: Integer; Keys: TMouseMoveKeys);
+var
+  Item: Integer;
+  ht: TGridHitTests;
+begin
+  ht := GetHitTests(x,y) * DownHitTests;
+  DownHitTests := [];
+  WasDownOnGrid := False;
+  if (ghtLink in ht) then begin
+    if Assigned(FOnUrlClick) then begin
+      Item := FindItemAt(x,y);
+      FOnUrlClick(Self,Item,GetLinkAtPoint(x,y));
+    end;
+    exit;
+  end;
 end;
 
 procedure THistoryGrid.WMMouseMove(var Message: TWMMouseMove);
@@ -5959,6 +6000,9 @@ begin
 end;
 
 procedure THPPRichedit.CreateHandle;
+const
+  EM_SETEDITSTYLE = WM_USER + 204;
+  SES_EXTENDBACKCOLOR = 4;
 var
   re_mask: cardinal;
 begin
@@ -5967,6 +6011,7 @@ begin
   SendMessage(Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK);
   SendMessage(Handle,EM_AUTOURLDETECT,1,0);
   SendMessage(Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
+  SendMessage(Handle,EM_SETEDITSTYLE,SES_EXTENDBACKCOLOR,SES_EXTENDBACKCOLOR);
 end;
 
 // Fix for VCL TRichEdit uses RichEdit 1.0 class, incompatible
