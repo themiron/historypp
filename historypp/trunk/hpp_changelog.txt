@@ -9,6 +9,19 @@ Changelog
 
 SVN Changelog: https://opensvn.csie.org/traccgi/historypp/log/?verbose=on
 
+1.5.0.117
+
+Added SRMM dialog open on contact double-click in history search window
+Added url opening by middle-click in log/history/search windows
+Added EDIT control emulation to allow getting selected text from log/history
+Added ability to read module-specified database event types
+Added internal support for utf8 non-message events
+Improved short messages reading
+Redesigned options dialog
+Fixed * char in export filename
+Fixed tool buttons definitions
+Translation changes
+
 1.5.0.116
 
 + Added workaround to avoid crashed with ANSI core
