@@ -213,6 +213,7 @@ object fmGlobalSearch: TfmGlobalSearch
         TabOrder = 0
         ViewStyle = vsReport
         OnContextPopup = lvContactsContextPopup
+        OnDblClick = lvContactsDblClick
         OnSelectItem = lvContactsSelectItem
       end
     end
