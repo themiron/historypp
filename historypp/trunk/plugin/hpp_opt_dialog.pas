@@ -250,10 +250,10 @@ function CommandDlg(idCtrl: Integer; hCtrl: HWND; wNotifyCode: Integer): Integer
 begin
   Result := 1;
   case idCtrl of
-    ID_LOOK_FONT_LINK: PluginLink.CallService(MS_UTILS_OPENURL,Integer(True),Integer(@URL_FONTSERVICE[1]));
-    ID_LOOK_ICO_LINK: PluginLink.CallService(MS_UTILS_OPENURL,Integer(True),Integer(@URL_ICOLIB[1]));
-    ID_LOOK_INFO_LINK: PluginLink.CallService(MS_UTILS_OPENURL,Integer(True),Integer(@URL_EXPLAIN[1]));
-    ID_NEEDOPTIONS_LINK: PluginLink.CallService(MS_UTILS_OPENURL,Integer(True),Integer(@URL_NEEDOPTIONS[1]));
+    ID_LOOK_FONT_LINK: PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@URL_FONTSERVICE[1]));
+    ID_LOOK_ICO_LINK: PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@URL_ICOLIB[1]));
+    ID_LOOK_INFO_LINK: PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@URL_EXPLAIN[1]));
+    ID_NEEDOPTIONS_LINK: PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@URL_NEEDOPTIONS[1]));
   else
     Result := 0;
   end;
