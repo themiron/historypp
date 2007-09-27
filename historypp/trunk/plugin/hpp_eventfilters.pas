@@ -71,7 +71,7 @@ const
 implementation
 
 uses
-  HistoryGrid, hpp_database, hpp_services, HistoryForm, Math, hpp_forms;
+  HistoryGrid, hpp_database, Math, hpp_forms;
 
 var
   filterAll: TMessageTypes;

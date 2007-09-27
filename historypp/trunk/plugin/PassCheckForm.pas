@@ -58,7 +58,7 @@ var
 
 implementation
 
-uses hpp_options, hpp_global, PassForm;
+uses hpp_options, hpp_services, hpp_global, PassForm;
 
 {$R *.DFM}
 

@@ -27,7 +27,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,Dialogs,
   HistoryControls,
   TntForms, StdCtrls, TntStdCtrls, CheckLst, TntCheckLst, TntGraphics, TntWindows,
-  hpp_global, hpp_eventfilters, ExtCtrls, TntExtCtrls;
+  hpp_global, hpp_events, hpp_eventfilters, ExtCtrls, TntExtCtrls;
 
 type
   TfmCustomizeFilters = class(TTntForm)
