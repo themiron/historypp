@@ -52,7 +52,7 @@ uses
   Classes, Windows,
   m_globaldefs, m_api,
   hpp_options,
-  HistoryForm;
+  HistoryForm, PassForm, PassCheckForm;
 
 
 var
@@ -62,6 +62,8 @@ var
   hHppShowGlobalSearch,
   hHppOpenHistoryEvent: THandle;
   HstWindowList:TList;
+  PassFm: TfmPass;
+  PassCheckFm: TfmPassCheck;
 
   procedure hppRegisterServices;
   procedure hppUnregisterServices;
@@ -76,7 +78,7 @@ var
 implementation
 
 uses
-  {Dialogs, }GlobalSearch, PassForm, hpp_global, hpp_itemprocess, hpp_forms;
+  GlobalSearch, hpp_global, hpp_itemprocess, hpp_forms;
 
 // our own processing of RichEdit for all history windows
 function AllHistoryRichEditProcess(wParam{hRichEdit}, lParam{PItemRenderDetails}: DWord): Integer; cdecl;

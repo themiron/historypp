@@ -87,7 +87,7 @@ procedure RunPassForm;
 
 implementation
 
-uses PassNewForm, hpp_options, PassCheckForm;
+uses PassNewForm, hpp_options, hpp_services, PassCheckForm;
 
 {$I m_database.inc}
 {$I m_langpack.inc}

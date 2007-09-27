@@ -50,8 +50,8 @@ interface
 uses
   Graphics, Classes, SysUtils, Windows, Dialogs,
   m_globaldefs, m_api,
-  HistoryGrid, {OptionsForm, }PassForm, PassCheckForm,
-  hpp_global, hpp_contacts;
+  HistoryGrid,
+  hpp_global, hpp_contacts, hpp_events;
 
 type
 
@@ -181,8 +181,6 @@ const
 
 var
   GridOptions: TGridOptions;
-  PassFm: TfmPass;
-  PassCheckFm: TfmPassCheck;
   IcoLibEnabled: Boolean;
   FontServiceEnabled: Boolean;
   SmileyAddEnabled: Boolean;
