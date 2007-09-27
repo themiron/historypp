@@ -342,7 +342,7 @@ begin
   Assert(Assigned(FParentForm));
   if Value = -1 then exit;
   FItem := Value;
-  EMsgType.Text := TranslateWideW(GetMessageRecord(FParentForm.hg.Items[FItem].MessageType).Name{TRANSLATE-IGNORE});
+  EMsgType.Text := TranslateWideW(GetEventRecord(FParentForm.hg.Items[FItem]).Name{TRANSLATE-IGNORE});
   EMsgType.Text := WideFormat('%s #%u',[EMsgType.Text,FParentForm.hg.Items[FItem].EventType]);
   EDateTime.Text := TimestampToString(FParentForm.hg.Items[FItem].Time);
   FromContact := false;
@@ -558,7 +558,7 @@ var
   ic: hIcon;
   er: PEventRecord;
 begin
-  er := GetMessageRecord(FParentForm.hg.Items[FItem].MessageType);
+  er := GetEventRecord(FParentForm.hg.Items[FItem]);
   if er.i = -1 then
     ic := 0
   else

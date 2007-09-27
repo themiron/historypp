@@ -69,6 +69,15 @@ type
     TextFunction: TTextFunction;
   end;
 
+  PEventRecord = ^TEventRecord;
+  TEventRecord = record
+    Name: WideString;
+    XML: String;
+    i: SmallInt;
+    iName: PChar;
+    iSkin: SmallInt;
+  end;
+
 const
 
   EVENTTYPE_STATUSCHANGE        = 25368;  // from srmm's
@@ -78,6 +87,29 @@ const
   EVENTTYPE_AVATARCHANGE        = 9003;   // from pescuma
   EVENTTYPE_CONTACTLEFTCHANNEL  = 9004;   // from pescuma
   EVENTTYPE_VOICE_CALL          = 8739;   // from pescuma
+
+  EventRecords: array[TMessageType] of TEventRecord = (
+    (Name:'Unknown'; XML:''; i:-1; iSkin:-1),
+    (Name:'Incoming events'; XML:''; i:HPP_ICON_EVENT_INCOMING; iName:'hppevn_inc'; iSkin:-1),
+    (Name:'Outgoing events'; XML:''; i:HPP_ICON_EVENT_OUTGOING; iName:'hppevn_out'; iSkin:-1),
+    (Name:'Message'; XML:'MSG'; i:HPP_SKIN_EVENT_MESSAGE; iSkin: SKINICON_EVENT_MESSAGE),
+    (Name:'Link'; XML:'URL'; i:HPP_SKIN_EVENT_URL; iSkin:SKINICON_EVENT_URL),
+    (Name:'File transfer'; XML:'FILE'; i:HPP_SKIN_EVENT_FILE; iSkin:SKINICON_EVENT_FILE),
+    (Name:'System message'; XML:'SYS'; i:HPP_ICON_EVENT_SYSTEM; iName:'hppevn_sys'; iSkin:-1),
+    (Name:'Contacts'; XML:'ICQCNT'; i:HPP_ICON_EVENT_CONTACTS; iName:'hppevn_icqcnt'; iSkin:-1),
+    (Name:'SMS message'; XML:'SMS'; i:HPP_ICON_EVENT_SMS; iName:'hppevn_sms'; iSkin:-1),
+    (Name:'Webpager message'; XML:'ICQWP'; i:HPP_ICON_EVENT_WEBPAGER; iName:'hppevn_icqwp'; iSkin:-1),
+    (Name:'EMail Express message'; XML:'ICQEX'; i:HPP_ICON_EVENT_EEXPRESS; iName:'hppevn_icqex'; iSkin:-1),
+    (Name:'Status changes'; XML:'STATUSCNG'; i:HPP_ICON_EVENT_STATUS; iName:'hppevn_status'; iSkin:-1),
+    (Name:'SMTP Simple Email'; XML:'SMTP'; i:HPP_ICON_EVENT_SMTPSIMPLE; iName:'hppevn_smtp'; iSkin:-1),
+    (Name:'Other events (unknown)'; XML:'OTHER'; i:HPP_SKIN_OTHER_MIRANDA; iSkin:SKINICON_OTHER_MIRANDA),
+    (Name:'Nick changes'; XML:'NICKCNG'; i:HPP_ICON_EVENT_NICK; iName:'hppevn_nick'; iSkin:-1),
+    (Name:'Avatar changes'; XML:'AVACNG'; i:HPP_ICON_EVENT_AVATAR; iName:'hppevn_avatar'; iSkin:-1),
+    (Name:'WATrack notify'; XML:'WATRACK'; i:HPP_ICON_EVENT_WATRACK; iName:'hppevn_watrack'; iSkin:-1),
+    (Name:'Status message changes'; XML:'STATUSMSGCHG'; i:HPP_ICON_EVENT_STATUSMES; iName:'hppevn_statuschng'; iSkin:-1),
+    (Name:'Voice call'; XML:'VCALL'; i:HPP_ICON_EVENT_VOICECALL; iName:'hppevn_vcall'; iSkin:-1),
+    (Name:'Custom'; XML:''; i:-1; iSkin:-1)
+  );
 
 // General timstamp function
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;
@@ -90,6 +122,7 @@ function ReadEvent(hDBEvent: THandle; UseCP: Cardinal = CP_ACP): THistoryItem;
 function GetEventInfo(hDBEvent: DWord): TDBEventInfo;
 function GetEventTimestamp(hDBEvent: THandle): DWord;
 function GetEventDateTime(hDBEvent: THandle): TDateTime;
+function GetEventRecord(const Hi: THistoryItem): PEventRecord;
 // global routines
 function GetEventCoreText(EventInfo: TDBEventInfo; var Hi: THistoryItem): Boolean;
 function GetEventModuleText(EventInfo: TDBEventInfo; var Hi: THistoryItem): Boolean;
@@ -128,7 +161,13 @@ implementation
 
 uses
   hpp_options;
-  
+
+type
+  TModuleEventRecord = record
+    EventDesc: PDBEVENTTYPEDESCR;
+    EventRecord: TEventRecord;
+  end;
+
 // OXY:
 // Routines UnixTimeToDate and DateTimeToUnixTime are taken
 // from JclDateTime.pas
@@ -177,6 +216,8 @@ var
     (EventType: EVENTTYPE_VOICE_CALL; MessageType: mtVoiceCall; TextFunction: GetEventTextForMessage)
   );
 
+  ModuleEventRecords: array of TModuleEventRecord;
+
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;
 begin
   Result:= UnixTimeStart + (UnixTime / SecondsPerDay);
@@ -200,11 +241,6 @@ begin
   Result := FormatDateTime(GridOptions.DateTimeFormat,TimestampToDateTime(Timestamp));
 end;
 
-function GetEventDateTime(hDBEvent: THandle): TDateTime;
-begin
-  Result := TimestampToDateTime(GetEventTimestamp(hDBEvent));
-end;
-
 function GetEventTimestamp(hDBEvent: THandle): DWord;
 var
   Event: TDBEventInfo;
@@ -214,6 +250,46 @@ begin
   Event.cbBlob := 0;
   PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,LPARAM(@Event));
   Result := Event.timestamp;
+end;
+
+function GetEventDateTime(hDBEvent: THandle): TDateTime;
+begin
+  Result := TimestampToDateTime(GetEventTimestamp(hDBEvent));
+end;
+
+function GetEventRecord(const Hi: THistoryItem): PEventRecord;
+var
+  MesType: TMessageTypes;
+  mt: TMessageType;
+  etd: PDBEVENTTYPEDESCR;
+  i,count: integer;
+begin
+  MesType := hi.MessageType;
+  exclude(MesType,mtIncoming);
+  exclude(MesType,mtOutgoing);
+  exclude(MesType,mtOther);
+  for mt := Low(EventRecords) to High(EventRecords) do begin
+    if mt in MesType then begin
+      Result := @EventRecords[mt];
+      exit;
+    end;
+  end;
+  etd := Pointer(PluginLink.CallService(MS_DB_EVENT_GETTYPE,WPARAM(PChar(hi.Module)),LPARAM(hi.EventType)));
+  if etd = nil then begin
+    Result := @EventRecords[mtOther];
+    exit;
+  end;
+  count := Length(ModuleEventRecords);
+  for i := 0 to count-1 do
+    if ModuleEventRecords[i].EventDesc = etd then begin
+      Result := @ModuleEventRecords[i].EventRecord;
+      exit;
+    end;
+  SetLength(ModuleEventRecords,count+1);
+  ModuleEventRecords[count].EventDesc := etd;
+  ModuleEventRecords[count].EventRecord := EventRecords[mtOther];
+  ModuleEventRecords[count].EventRecord.Name := AnsiToWideString(etd.descr,CP_ACP);
+  Result := @ModuleEventRecords[count].EventRecord;
 end;
 
 var
@@ -806,4 +882,5 @@ initialization
   ShrinkTextBuffer;
 finalization
   CleanupTextBuffer;
+  SetLength(ModuleEventRecords,0);
 end.

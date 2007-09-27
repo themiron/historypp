@@ -1670,7 +1670,7 @@ begin
     end;
 
     if Options.ShowIcons then begin
-      er := GetMessageRecord(FItems[Index].MessageType);
+      er := GetEventRecord(FItems[Index]);
       if er.i = -1 then
         ic := 0
       else
