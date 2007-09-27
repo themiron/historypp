@@ -133,7 +133,7 @@ const
         wParam : Handle of a contact to get the setting for (see notes)
         lParam : pointer to a TDBCONTACTGETSETTING structure to be filled with setting
                  this structure also has to be initalised (see notes)
-        affect : Queries the database module for a setting from a contact.
+        affects: Queries the database module for a setting from a contact.
         returns: 0 on success, non zero on failure (contact not found, setting doesn't exist)
         notes  : Same as DB/Contact/GetSetting, but also gets the required string type inside
                  the TDBCONTACTGETSETTING._type parameter
@@ -283,9 +283,41 @@ const
     }
     MS_DB_CONTACT_ADD               = 'DB/Contact/Add';
 
+type
 
+    PDBEVENTTYPEDESCR = ^TDBEVENTTYPEDESCR;
+    TDBEVENTTYPEDESCR = record
+        cbSize: int;        // structure size in bytes
+        module: PChar;      // event module name
+        eventType: WORD;    // event id, unique for this module
+        descr: PChar;       // event type description (i.e. "File Transfer")
+    end;
 
+const
 
+    {
+        wParam : 0
+        lParam : Pointer to a TDBEVENTTYPEDESCR structure
+        affects: Registers the specified database event type, with module, id & description.
+        returns: 0
+        notes  : When someone needs to retrieve an event's text, a service
+                 named Module/GetEventText<id> will be called. For example, for
+                 module named 'foo' and event id 2000 a service foo/GetEventText2000
+                 should be defined to process this request. That handler should
+                 decode a blob and return the event text in the required format,
+                 its prototype is identical to a call of MS_DB_EVENT_GETTEXT (see below)
+        version: 0.7+
+    }
+    MS_DB_EVENT_REGISTERTYPE        = 'DB/EventType/Register';
+
+    {
+        wParam : szModule, pointer to module name string
+        lParam : eventType
+        affects: Retrieves the previously registered database event type, by module & id.
+        returns: Returns PDBEVENTTYPEDESCR or nil, if an event isn't found.
+        version: 0.7+
+    }
+    MS_DB_EVENT_GETTYPE             = 'DB/EventType/Get';
 
     {
         wParam : contact handle for events count is needed
@@ -355,9 +387,9 @@ const
     {
         wParam : Handle to the contact
         lParam : HDBEVENT handle to delete
-        Affects: Removes a single event from the database for the given contact
-        Returns: 0 on success, nonzero on failure
-        Notes  : Triggers DB/Event/Deleted just before the event *is* deleted
+        affects: Removes a single event from the database for the given contact
+        returns: 0 on success, nonzero on failure
+        notes  : Triggers DB/Event/Deleted just before the event *is* deleted
     }
     MS_DB_EVENT_DELETE              = 'DB/Event/Delete';
 
@@ -372,12 +404,12 @@ const
     {
         wParam : Handle to a DB event
         lParam : Pointer to a TDBEVENTINFO structure which must be initialised
-        Affects: Returns all the information about an DB event handle to a TDBEVENTINFO
+        affects: Returns all the information about an DB event handle to a TDBEVENTINFO
                  structure which must be initalised, DBEI.cbSize, DBEI.pBlob and DBEI.cbSize
                  before calling this service, the size can be assertained with
                  GetBlobSize() service, see notes
-        Returns: Returns 0 on success, non zero on failure
-        Notes  : The correct value dbe.cbBlob can be got using db/event/getblobsize
+        returns: Returns 0 on success, non zero on failure
+        notes  : The correct value dbe.cbBlob can be got using db/event/getblobsize
                  If successful, all the fields of dbe are filled. dbe.cbBlob is set to the
                  actual number of bytes retrieved and put in dbe.pBlob
                  If dbe.cbBlob is too small, dbe.pBlob is filled up to the size of dbe.cbBlob
@@ -390,9 +422,9 @@ const
     {
         wParam : 0
         lParam : Pointer to TDBEVENTGETTEXT structure which must be initialised
-        Affects: Retrieves the event's text
-        Returns: Returns pointer to a string in the required format.
-        Notes  : TDBEVENTINFO structure should be the valid database event
+        affects: Retrieves the event's text
+        returns: Returns pointer to a string in the required format.
+        notes  : TDBEVENTINFO structure should be the valid database event
                  read via MS_DB_EVENT_GET
                  Only events of type EVENTTYPE_MESSAGE are supported.
                  This string should be freed by a call of mir_free
@@ -419,7 +451,7 @@ const
         wParam : HCONTACT
         lParam : HDBEVENT
         affect : Changes the flag for an event to mark it as read
-        Returns: Returns the entire flag DWORD for the event after the change, or -1
+        returns: Returns the entire flag DWORD for the event after the change, or -1
                  if HDBEVENT is invalid, see notes
         notes  : This iss one of the database write operations that does not trigger
                  an event, modules should not save flagss states for any length of time.
@@ -429,9 +461,9 @@ const
     {
         wParam : HDBEVENT
         lParam : 0
-        Affect : Returns a handle to a contact that owns the HDBEVENT,
+        affect : Returns a handle to a contact that owns the HDBEVENT,
                  see notes
-        Returns: Returns a handle if successful or HDBEEVENT(-1) on failure
+        returns: Returns a handle if successful or HDBEEVENT(-1) on failure
         notes  : This service is very slow, only use wheen you have no other choice
                  at all.
     }
@@ -440,7 +472,7 @@ const
     {
         wParam : HCONTACT
         lParam : 0
-        Affect : Retrieves a handlee to the first event in the chain
+        affect : Retrieves a handlee to the first event in the chain
                  for a HCONTACT
         returns: Returns a handle, or NULL(0) if HCONTACT is invalid or has
                  no events, events in a chain are sorted chronologically automatically
@@ -466,16 +498,16 @@ const
     {
         wParam : HCONTACT
         lParam : 0;
-        Affects: Retrieves a handle to the lasts event in the chain for a HCONTACT
-        Returns: Returns a handle or NULL(0) if HCONTACT is invalid or has no events
+        affects: Retrieves a handle to the lasts event in the chain for a HCONTACT
+        returns: Returns a handle or NULL(0) if HCONTACT is invalid or has no events
     }
     MS_DB_EVENT_FINDLAST            = 'DB/Event/FindLast';
 
     {
         wParam : HDBEVENT
         lParam : 0
-        Affects: Retrieves a handle to the next event in a chain after HDBEVENT
-        Returns: A handle to the next DB event or NULL(0) if HDBEVENT is invalid
+        affects: Retrieves a handle to the next event in a chain after HDBEVENT
+        returns: A handle to the next DB event or NULL(0) if HDBEVENT is invalid
                  or the last event in the chain.
     }
     MS_DB_EVENT_FINDNEXT            = 'DB/Event/FindNext';
@@ -483,8 +515,8 @@ const
     {
         wParam : HDBEVENT
         lParam : 0
-        Affects: Retrieves a handle to the previous event in a chain before HDBEVENT
-        Returns: A handle to the previous HDBEVENT or NULL(0) if HDBEVENT is invalid
+        affects: Retrieves a handle to the previous event in a chain before HDBEVENT
+        returns: A handle to the previous HDBEVENT or NULL(0) if HDBEVENT is invalid
                  or is the first event in the chain
     }
     MS_DB_EVENT_FINDPREV            = 'DB/Event/FindPrev';
@@ -578,7 +610,7 @@ const
     {
         wParam : (caller defined data) will be passed to lParam of the call back
         lParam : function pointer to TDBMODULEENUMPROC
-        Affects: Enumerates the names of all modules that have stored or
+        affects: Enumerates the names of all modules that have stored or
                  requested information from the database,
                  the modules are returned in no real order --
                  Writing to the database while module names are being enumerated will cause
@@ -586,8 +618,8 @@ const
 
                  the enumeration will stop if the callback returns a non zero value.
 
-        Returns: the last return value from the enumeration call back.
-        Notes  : This service is only useful for debugging or EnumSettings
+        returns: the last return value from the enumeration call back.
+        notes  : This service is only useful for debugging or EnumSettings
         version: The service registered to enumerate all modules that have touched
                  the database module uses wParam as the lParam cookie value and the lParam
                  value given here is the function pointer -- this is not safe
