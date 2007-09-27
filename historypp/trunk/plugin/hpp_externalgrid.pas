@@ -969,7 +969,7 @@ begin
   else
     Item.From := '&ME;';
 
-  Item.EventType := '&'+GetMessageRecord(Grid.Items[Index].MessageType).XML+';';
+  Item.EventType := '&'+GetEventRecord(Grid.Items[Index]).XML+';';
 
   mes := Grid.Items[Index].Text;
   if GridOptions.RawRTFEnabled and IsRTF(mes) then begin

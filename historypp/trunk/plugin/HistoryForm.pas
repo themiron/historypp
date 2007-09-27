@@ -2203,7 +2203,7 @@ begin
   else
     Item.From := '&ME;';
 
-  Item.EventType := '&'+GetMessageRecord(hg.Items[Index].MessageType).XML+';';
+  Item.EventType := '&'+GetEventRecord(hg.Items[Index]).XML+';';
 
   mes := hg.Items[Index].Text;
   if GridOptions.RawRTFEnabled and IsRTF(mes) then begin

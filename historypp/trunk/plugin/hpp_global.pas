@@ -97,15 +97,6 @@ type
     name: WideString;
   end;
 
-  PEventRecord = ^TEventRecord;
-  TEventRecord = record
-    Name: WideString;
-    XML: String;
-    i: SmallInt;
-    iName: PChar;
-    iSkin: SmallInt;
-  end;
-
   TSaveFormat = (sfAll,sfHTML,sfXML,sfRTF,sfUnicode,sfText);
   TSaveFormats = set of TSaveFormat;
 
@@ -239,31 +230,6 @@ var
   hppPluginsDir: String;
   hppDllName: String;
 
-const
-
-  EventRecords: array[TMessageType] of TEventRecord = (
-    (Name:'Unknown'; XML:''; i:-1; iSkin:-1),
-    (Name:'Incoming events'; XML:''; i:HPP_ICON_EVENT_INCOMING; iName:'hppevn_inc'; iSkin:-1),
-    (Name:'Outgoing events'; XML:''; i:HPP_ICON_EVENT_OUTGOING; iName:'hppevn_out'; iSkin:-1),
-    (Name:'Message'; XML:'MSG'; i:HPP_SKIN_EVENT_MESSAGE; iSkin: SKINICON_EVENT_MESSAGE),
-    (Name:'Link'; XML:'URL'; i:HPP_SKIN_EVENT_URL; iSkin:SKINICON_EVENT_URL),
-    (Name:'File transfer'; XML:'FILE'; i:HPP_SKIN_EVENT_FILE; iSkin:SKINICON_EVENT_FILE),
-    (Name:'System message'; XML:'SYS'; i:HPP_ICON_EVENT_SYSTEM; iName:'hppevn_sys'; iSkin:-1),
-    (Name:'Contacts'; XML:'ICQCNT'; i:HPP_ICON_EVENT_CONTACTS; iName:'hppevn_icqcnt'; iSkin:-1),
-    (Name:'SMS message'; XML:'SMS'; i:HPP_ICON_EVENT_SMS; iName:'hppevn_sms'; iSkin:-1),
-    (Name:'Webpager message'; XML:'ICQWP'; i:HPP_ICON_EVENT_WEBPAGER; iName:'hppevn_icqwp'; iSkin:-1),
-    (Name:'EMail Express message'; XML:'ICQEX'; i:HPP_ICON_EVENT_EEXPRESS; iName:'hppevn_icqex'; iSkin:-1),
-    (Name:'Status changes'; XML:'STATUSCNG'; i:HPP_ICON_EVENT_STATUS; iName:'hppevn_status'; iSkin:-1),
-    (Name:'SMTP Simple Email'; XML:'SMTP'; i:HPP_ICON_EVENT_SMTPSIMPLE; iName:'hppevn_smtp'; iSkin:-1),
-    (Name:'Other events (unknown)'; XML:'OTHER'; i:HPP_SKIN_OTHER_MIRANDA; iSkin:SKINICON_OTHER_MIRANDA),
-    (Name:'Nick changes'; XML:'NICKCNG'; i:HPP_ICON_EVENT_NICK; iName:'hppevn_nick'; iSkin:-1),
-    (Name:'Avatar changes'; XML:'AVACNG'; i:HPP_ICON_EVENT_AVATAR; iName:'hppevn_avatar'; iSkin:-1),
-    (Name:'WATrack notify'; XML:'WATRACK'; i:HPP_ICON_EVENT_WATRACK; iName:'hppevn_watrack'; iSkin:-1),
-    (Name:'Status message changes'; XML:'STATUSMSGCHG'; i:HPP_ICON_EVENT_STATUSMES; iName:'hppevn_statuschng'; iSkin:-1),
-    (Name:'Voice call'; XML:'VCALL'; i:HPP_ICON_EVENT_VOICECALL; iName:'hppevn_vcall'; iSkin:-1),
-    (Name:'Custom'; XML:''; i:-1; iSkin:-1)
-  );
-
 {$I m_historypp.inc}
 
 function AnsiToWideString(const S: AnsiString; CodePage: Cardinal; InLength: Integer = -1): WideString;
@@ -275,7 +241,6 @@ function GetLCIDfromCodepage(Codepage: Cardinal): LCID;
 procedure CopyToClip(WideStr: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP; Clear: Boolean = True);
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
 function URLEncode(const ASrc: string): string;
-function GetMessageRecord(MesType: TMessageTypes): PEventRecord;
 function MakeTextXMLedA(Text: String): String;
 function MakeTextXMLedW(Text: WideString): WideString;
 function FormatCString(Text: WideString): WideString;
@@ -462,22 +427,6 @@ begin
     // unicode ver
     Result := MessageBoxW(Handle,PWideChar(Text),PWideChar(Caption),Flags);
   end;
-end;
-
-function GetMessageRecord(MesType: TMessageTypes): PEventRecord;
-var
-  mt: TMessageType;
-begin
-  exclude(MesType,mtIncoming);
-  exclude(MesType,mtOutgoing);
-  exclude(MesType,mtOther);
-  for mt := Low(EventRecords) to High(EventRecords) do begin
-    if mt in MesType then begin
-      Result := @EventRecords[mt];
-      exit;
-    end;
-  end;
-  Result := @EventRecords[mtOther];
 end;
 
 function MakeTextXMLedA(Text: String): String;
