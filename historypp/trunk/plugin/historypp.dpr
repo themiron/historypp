@@ -89,6 +89,7 @@ type
 const
   UnicodeFlag: array[Boolean] of Byte = (0,UNICODE_AWARE);
 
+var
   PluginInfoEx: TPLUGININFOEX = (
     cbSize: SizeOf(TPLUGININFOEX);
     shortName: hppShortNameV;
@@ -99,6 +100,7 @@ const
     copyright: hppCopyright;
     homepage: hppHomePageURL;
     replacesDefaultModule: DEFMOD_UIHISTORY;
+    uuid: MIID_HISTORYPP;
   );
 
   PluginInfo: TPLUGININFO = (
@@ -113,13 +115,17 @@ const
     replacesDefaultModule: DEFMOD_UIHISTORY;
   );
 
+  PluginInterfaces: array[0..2] of TGUID = (
+    MIID_UIHISTORY,
+    MIID_LOGWINDOW,
+    MIID_LAST);
+
   MenuHandles: array[0..2] of TMenuHandles = (
     (Handle:0; Count:-1; Name:'View &History'),
     (Handle:0; Count:-1; Name:'&System History'),
     (Handle:0; Count:-1; Name:'His&tory Search'));
 
 var
-  PluginInterfaces: array[0..2] of TMUUID;
   HookModulesLoad,
   HookOptInit,
   HookSettingsChanged,
@@ -607,10 +613,6 @@ begin
   // filling used plugin structures
   PluginInfo.flags    := UnicodeFlag[hppOSUnicode];
   PluginInfoEx.flags  := UnicodeFlag[hppOSUnicode];
-  PluginInfoEx.uuid   := MIID_HISTORYPP;
-  PluginInterfaces[0] := MIID_UIHISTORY;
-  PluginInterfaces[1] := MIID_LOGWINDOW;
-  PluginInterfaces[2] := MIID_LAST;
 
   // decreasing ref count to oleaut32.dll as said
   // in plugins doc
