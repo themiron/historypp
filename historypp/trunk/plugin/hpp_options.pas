@@ -135,10 +135,6 @@ const
     (name:'historypp_34'; desc:'Search Protected Contacts'; group: 'Toolbar'; i:HPP_ICON_SEARCHPROTECTED)
   );
 
-  hppIntIcons: array[0..0] of ThppIntIconsRec = (
-    (handle: 0; name:'z_password_protect')
-  );
-
   hppFontItems: array[0..28] of ThppFontsRec = (
     (_type:[hppFont,hppColor]; name: 'Incoming nick'; nameColor: 'Divider'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $6B3FC8; back: clGray),
     (_type:[hppFont,hppColor]; name: 'Outgoing nick'; nameColor: 'Selected text'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $BD6008; back: clHighlightText),
@@ -178,6 +174,11 @@ const
     (Index: 3;  Filter:'RTF file'; DefaultExt:'*.rtf'; Owned:[]; OwnedIndex: -1),
     (Index: 4;  Filter:'Unicode text file'; DefaultExt:'*.txt'; Owned:[sfUnicode,sfText]; OwnedIndex: 1),
     (Index: 5;  Filter:'Text file'; DefaultExt:'*.txt'; Owned:[sfUnicode,sfText]; OwnedIndex: 2));
+
+var
+  hppIntIcons: array[0..0] of ThppIntIconsRec = (
+    (handle: 0; name:'z_password_protect')
+  );
 
 var
   GridOptions: TGridOptions;
