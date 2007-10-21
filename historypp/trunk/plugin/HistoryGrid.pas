@@ -1019,12 +1019,11 @@ begin
   {$ENDIF}
 
   // get line scroll size depending on current dpi
-  // default is 5 lines (13px usually) for standard 96dpi
+  // default is 13px for standard 96dpi
   dc := GetDC(0);
   LogY := GetDeviceCaps(dc, LOGPIXELSY);
   ReleaseDC(0,dc);
-  //VLineScrollSize := MulDiv(LogY,13*5,96);
-  VLineScrollSize := MulDiv(LogY,13*3,96);
+  VLineScrollSize := MulDiv(LogY,13,96);
 
   FBorderStyle := bsSingle;
 
@@ -4029,16 +4028,27 @@ end;
 
 procedure THistoryGrid.WMMouseWheel(var Message: TWMMouseWheel);
 var
-  i,off: Integer;
-  code: DWord;
+  lines,code,count,i: Integer;
 begin
-  off := -(Message.WheelDelta div WHEEL_DELTA);
-  if off > 0 then code := SB_LINEDOWN
-             else code := SB_LINEUP;
-  if State = gsInline then
-    FRichInline.Perform(EM_SCROLL,code,0)
-  else
-    Perform(WM_VSCROLL,code,0);
+  if Mouse.WheelScrollLines < 0 then begin
+    lines := 1;
+    if Message.WheelDelta < 0 then
+      code := SB_PAGEDOWN else
+      code := SB_PAGEUP;
+  end else begin
+    lines := Mouse.WheelScrollLines;
+    if Message.WheelDelta < 0 then
+      code := SB_LINEDOWN else
+      code := SB_LINEUP;
+  end;
+  count := MulDiv(Message.WheelDelta,lines,WHEEL_DELTA);
+  if State = gsInline then begin
+    for i := 1 to abs(count) do
+      PostMessage(FRichInline.Handle,EM_SCROLL,code,0);
+  end else begin
+    for i := 1 to abs(count) do
+      PostMessage(Self.Handle,WM_VSCROLL,code,0);
+  end;
 end;
 
 procedure THistoryGrid.DeleteItem(Item: Integer);
@@ -5680,22 +5690,17 @@ end;
 { TRichCache }
 
 procedure TRichCache.ApplyItemToRich(Item: PRichItem);
-var
-  str: String;
 begin
-  //str := 'Apply item ['+IntToStr(Item.GridItem)+'] for "'+Copy(Item.Rich.Text,1,15)+'"';
   //OutputDebugString(PChar(str));
   // force to send the size:
   FRichHeight := -1;
+  Item^.Rich.HandleNeeded;
+  Item^.Rich.Perform(EM_SETEVENTMASK,0,0);
   Grid.ApplyItemToRich(Item^.GridItem,Item^.Rich);
-  SendMessage(Item^.Rich.Handle,EM_SETEVENTMASK,0,ENM_REQUESTRESIZE);
-  SendMessage(Item^.Rich.Handle,EM_REQUESTRESIZE,0,0);
-  //if FRichHeight <= 0 then begin
-    //Grid.ApplyItemToRich(Item^.GridItem,Item^.Rich);
-    //SendMessage(Item^.Rich.Handle,EM_REQUESTRESIZE,0,0);
-  //end;
-  SendMessage(Item^.Rich.Handle,EM_SETEVENTMASK,0,RichEventMasks);
+  Item^.Rich.Perform(EM_SETEVENTMASK,0,ENM_REQUESTRESIZE);
+  Item^.Rich.Perform(EM_REQUESTRESIZE,0,0);
   Assert(FRichHeight > 0, 'RichCache.ApplyItemToRich: rich is still <= 0 height');
+  Item^.Rich.Perform(EM_SETEVENTMASK,0,RichEventMasks);
 end;
 
 function TRichCache.CalcItemHeight(GridItem: Integer): Integer;

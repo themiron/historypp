@@ -76,7 +76,10 @@ begin
         PluginLink.CallService(MS_HPP_SHOWGLOBALSEARCH,0,0);
     end;}
     WM_SETTINGCHANGE: begin
-      Mouse.SettingChanged(wParam);
+      // workaround to force vcl notice mouse setting changed
+      if wParam = SPI_SETWHEELSCROLLLINES then
+        Mouse.SettingChanged(SPI_GETWHEELSCROLLLINES) else
+        Mouse.SettingChanged(wParam);
       Result := DefWindowProc(hwndDlg, uMsg, wParam, lParam);
     end;
     WM_FONTCHANGE: begin
