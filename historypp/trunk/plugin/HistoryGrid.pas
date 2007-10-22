@@ -933,7 +933,9 @@ begin
 
   // Ok, now inlined richedit
   FRichInline := THPPRichEdit.Create(Self);
-  FRichInline.Top := -100;
+  // workaround of SmileyAdd making richedit visible all the time
+  FRichInline.Top := -MaxInt;
+  FRichInline.Height := -1;
   FRichInline.Name := 'FRichInline';
   FRichInline.Visible := False;
   //FRichInline.Parent := Self.Parent;
@@ -1452,6 +1454,18 @@ begin
 
   BeginUpdate;
   try
+
+    if Message.ScrollCode in [SB_LINEUP,SB_LINEDOWN,SB_PAGEDOWN,SB_PAGEUP] then begin
+      Message.Result := 0;
+      case Message.ScrollCode of
+        SB_LINEDOWN: ScrollGridBy(VLineScrollSize);
+        SB_LINEUP: ScrollGridBy(-VLineScrollSize);
+        SB_PAGEDOWN: ScrollGridBy(ClientHeight);
+        SB_PAGEUP: ScrollGridBy(-ClientHeight);
+      end;
+      exit;
+    end;
+
     idx := VertScrollBar.Position;
     ind := idx;
     first := GetFirstVisible;
@@ -1473,17 +1487,6 @@ begin
     VertScrollBar.ScrollMessage(Message);
     exit;
     end;}
-
-    if Message.ScrollCode in [SB_LINEUP,SB_LINEDOWN,SB_PAGEDOWN,SB_PAGEUP] then begin
-      Message.Result := 0;
-      case Message.ScrollCode of
-        SB_LINEDOWN: ScrollGridBy(VLineScrollSize);
-        SB_LINEUP: ScrollGridBy(-VLineScrollSize);
-        SB_PAGEDOWN: ScrollGridBy(ClientHeight);
-        SB_PAGEUP: ScrollGridBy(-ClientHeight);
-      end;
-      exit;
-    end;
 
     {$IFDEF CUST_SB}
     if (Message.ScrollBar = 0) and FVertScrollBar.Visible then
@@ -5740,12 +5743,10 @@ begin
     RichItem^.GridItem := -1;
     RichItem^.Rich := THPPRichEdit.Create(nil);
     RichItem^.Rich.Name := 'CachedRichEdit'+IntToStr(i);
+    // workaround of SmileyAdd making richedit visible all the time
+    RichItem^.Rich.Top := -MaxInt;
+    RichItem^.Rich.Height := -1;
     RichItem^.Rich.Visible := False;
-    // just a dirty hack to workaround problem with
-    // SmileyAdd making richedit visible all the time
-    RichItem^.Rich.Height := 1000;
-    RichItem^.Rich.Top := -1001;
-    // </hack>
     { Don't give him grid as parent, or we'll have
     wierd problems with scroll bar }
     RichItem^.Rich.Parent := nil;
