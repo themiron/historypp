@@ -19,26 +19,18 @@ package HistGrid;
 {$STACKFRAMES OFF}
 {$TYPEDADDRESS OFF}
 {$VARSTRINGCHECKS ON}
-{$WRITEABLECONST ON}
+{$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $2630000}
 {$IMPLICITBUILD ON}
 
-{$I compilers.inc}
-
 requires
   vcl,
   vclx,
-  {$IFDEF DELPHI_7}
   TntUnicodeVcl_R70;
-  {$ELSEIF DELPHI_6}
-  TntUnicodeVcl_R60;
-  {$ELSE}
-  TntUnicodeVcl;
-  {$IFEND}
 
 contains
   HistoryGrid in 'HistoryGrid.pas',
   HistoryControls in 'HistoryControls.pas';
-  
+
 end.
