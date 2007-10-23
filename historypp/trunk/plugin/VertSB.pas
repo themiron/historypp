@@ -47,8 +47,7 @@ type
   TScrollBarInc = 1..32767;
   TScrollBarStyle = (ssRegular, ssFlat, ssHotTrack);
 
-  TVertScrollBar = class(TControlScrollBar)
-  //TVertScrollBar = class(TPersistent)
+  TVertScrollBar = class(TPersistent)
   private
     FControl: TScrollingWinControl;
     FIncrement: TScrollBarInc;
@@ -61,7 +60,7 @@ type
     FVisible: Boolean;
     FTracking: Boolean;
     {$IFDEF PAGE_SIZE}
-    FPageSize: Integer;
+      FPageSize: Integer;
     {$ENDIF}
     FScaled: Boolean;
     FSmooth: Boolean;
@@ -76,6 +75,7 @@ type
     FLineDiv: Integer;
     FUpdatingScrollBars: Boolean;
     FUpdateNeeded: Boolean;
+    FHidden: Boolean;
     procedure CalcAutoRange;
     function ControlSize(ControlSB, AssumeSB: Boolean): Integer;
     procedure DoSetRange(Value: Integer);
@@ -94,6 +94,7 @@ type
     function IsRangeStored: Boolean;
     procedure Update(ControlSB, AssumeSB: Boolean);
     procedure WINUpdateScrollBars;
+    procedure SetHidden(Value: Boolean);
   public
     constructor Create(AControl: TScrollingWinControl; AKind: TScrollBarKind);
     procedure Assign(Source: TPersistent); override;
@@ -117,8 +118,9 @@ type
     property Tracking: Boolean read FTracking write FTracking default True;
     property Visible: Boolean read FVisible write SetVisible default True;
     {$IFDEF PAGE_SIZE}
-    {OXY}property PageSize: Integer read FPageSize write FPageSize;
+      property PageSize: Integer read FPageSize write FPageSize default 20;
     {$ENDIF}
+    property Hidden: Boolean read FHidden write SetHidden default False;
   end;
 
 implementation
@@ -156,7 +158,7 @@ constructor TVertScrollBar.Create(AControl: TScrollingWinControl; AKind: TScroll
 begin
   inherited Create;
   {$IFDEF PAGE_SIZE}
-  FPageSize := 20;
+    FPageSize := 20;
   {$ENDIF}
   FControl := AControl;
   FKind := AKind;
@@ -171,6 +173,7 @@ begin
   FColor := clBtnHighlight;
   FParentColor := True;
   FUpdateNeeded := True;
+  FHidden := False;
 end;
 
 function TVertScrollBar.IsIncrementStored: Boolean;
@@ -371,11 +374,11 @@ begin
         SB_LINEUP: SetPosition(FPosition - FIncrement);
         SB_LINEDOWN: SetPosition(FPosition + FIncrement);
         {$IFDEF PAGE_SIZE}
-        SB_PAGEUP: SetPosition(FPosition - FPageSize);
-        SB_PAGEDOWN: SetPosition(FPosition + FPageSize);
+          SB_PAGEUP: SetPosition(FPosition - FPageSize);
+          SB_PAGEDOWN: SetPosition(FPosition + FPageSize);
         {$ELSE}
-        SB_PAGEUP: SetPosition(FPosition - ControlSize(True, False));
-        SB_PAGEDOWN: SetPosition(FPosition + ControlSize(True, False));
+          SB_PAGEUP: SetPosition(FPosition - ControlSize(True, False));
+          SB_PAGEDOWN: SetPosition(FPosition + ControlSize(True, False));
         {$ENDIF}
         SB_THUMBPOSITION:
             if FCalcRange > 32767 then
@@ -569,7 +572,7 @@ begin
   if Visible then
   begin
     {$IFDEF PAGE_SIZE}
-      FCalcRange := Range-FPageSize+1;
+      FCalcRange := Range - FPageSize + 1;
     {$ELSE}
       FCalcRange := Range - ControlSize(ControlSB, AssumeSB);
     {$ENDIF}
@@ -581,22 +584,36 @@ begin
   if FCalcRange > 0 then
     ScrollInfo.nMax := Range else
     ScrollInfo.nMax := 0;
+  if Hidden then
+    ScrollInfo.nPage := ScrollInfo.nMax+1
+  else
   {$IFDEF PAGE_SIZE}
-  ScrollInfo.nPage := FPageSize;
+    ScrollInfo.nPage := FPageSize;
   {$ELSE}
-  ScrollInfo.nPage := ControlSize(ControlSB, AssumeSB) + 1;
+    ScrollInfo.nPage := ControlSize(ControlSB, AssumeSB) + 1;
   {$ENDIF}
   ScrollInfo.nPos := FPosition;
   ScrollInfo.nTrackPos := FPosition;
-//  if FUpdateNeeded then
-  begin
-    UpdateScrollProperties(FUpdateNeeded);
-    FUpdateNeeded := False;
-  end;
+  UpdateScrollProperties(FUpdateNeeded);
+  FUpdateNeeded := False;
   FlatSB_SetScrollInfo(FControl.Handle, Code, ScrollInfo, True);
   SetPosition(FPosition);
-  FPageIncrement := (ControlSize(True, False) * 9) div 10;
+  {$IFDEF PAGE_SIZE}
+    FPageIncrement := (FPageSize+1 * 9) div 10;
+  {$ELSE}
+    FPageIncrement := (ControlSize(True, False) * 9) div 10;
+  {$ENDIF}
   if Smooth then FIncrement := FPageIncrement div 10;
+end;
+
+procedure TVertScrollBar.SetHidden(Value: Boolean);
+begin
+  if Hidden <> Value then
+  begin
+    FHidden := Value;
+    FUpdateNeeded := True;
+    WINUpdateScrollBars;
+  end;
 end;
 
 end.
