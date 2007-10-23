@@ -262,6 +262,8 @@ begin
     Grid.BorderStyle := bsSingle;
   Grid.BorderWidth := 0;
 
+  Grid.HideScrollBar := GetDBBool(hppDBName,'NoLogScrollBar',False);
+
   Grid.OnItemData := GridItemData;
   Grid.OnTranslateTime := GridTranslateTime;
   Grid.OnNameData := GridNameData;
