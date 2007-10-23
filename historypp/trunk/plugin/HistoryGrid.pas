@@ -74,7 +74,9 @@ unit HistoryGrid;
 interface
 
 {$DEFINE CUST_SB}
-{$DEFINE PAGE_SIZE}
+{$IFDEF CUST_SB}
+  {$DEFINE PAGE_SIZE}
+{$ENDIF}
 {$DEFINE RENDER_RICH}
 
 uses
@@ -430,7 +432,7 @@ type
     FGetXMLData: TGetXMLData;
     FOnItemFilter: TOnItemFilter;
     {$IFDEF CUST_SB}
-    FVertScrollBar: TVertScrollBar;
+      FVertScrollBar: TVertScrollBar;
     {$ENDIF}
     {$IFDEF RENDER_RICH}
     FRichCache: TRichCache;
@@ -555,7 +557,9 @@ type
     procedure SetOptions(const Value: TGridOptions);
     procedure SetMultiSelect(const Value: Boolean);
     {$IFDEF CUST_SB}
-    procedure SetVertScrollBar(const Value: TVertScrollBar);
+      procedure SetVertScrollBar(const Value: TVertScrollBar);
+      function GetHideScrollBar: Boolean;
+      procedure SetHideScrollBar(const Value: Boolean);
     {$ENDIF}
     function GetHitTests(X,Y: Integer): TGridHitTests;
     function GetLinkAtPoint(X,Y: Integer): WideString;
@@ -775,7 +779,8 @@ type
     property ParentCtl3D;
     property Padding: Integer read FPadding write SetPadding;
     {$IFDEF CUST_SB}
-    property VertScrollBar: TVertScrollBar read FVertScrollBar write SetVertScrollBar;
+      property VertScrollBar: TVertScrollBar read FVertScrollBar write SetVertScrollBar;
+      property HideScrollBar: Boolean read GetHideScrollBar write SetHideScrollBar;
     {$ENDIF}
     property Hint: WideString read GetHint write SetHint stored IsHintStored;
     property ShowHint;
@@ -1016,16 +1021,17 @@ begin
   FCanvas := FClient.Canvas;
   FCanvas.Font.Name := 'MS Shell Dlg';
 
-  {$IFDEF CUST_SB}
-  FVertScrollBar := TVertScrollBar.Create(Self,sbVertical);
-  {$ENDIF}
-
   // get line scroll size depending on current dpi
   // default is 13px for standard 96dpi
   dc := GetDC(0);
   LogY := GetDeviceCaps(dc, LOGPIXELSY);
   ReleaseDC(0,dc);
   VLineScrollSize := MulDiv(LogY,13,96);
+
+  {$IFDEF CUST_SB}
+    FVertScrollBar := TVertScrollBar.Create(Self,sbVertical);
+  {$ENDIF}
+  VertScrollBar.Increment := VLineScrollSize;
 
   FBorderStyle := bsSingle;
 
@@ -1042,7 +1048,7 @@ destructor THistoryGrid.Destroy;
 begin
   FState := gsClose;
   {$IFDEF CUST_SB}
-  FVertScrollBar.Free;
+    FVertScrollBar.Free;
   {$ENDIF}
   {$IFDEF RENDER_RICH}
   // it gets deleted autmagically because FRich.Owner = Self
@@ -1128,15 +1134,10 @@ begin
     FItems[i].MessageType := [mtUnknown];
     FRichCache.ResetItem(i);
     end;
-  {$IFDEF CUST_SB}
-    {$IFDEF PAGE_SIZE}
-      //VertScrollBar.Visible := True;
-      FVertScrollBar.Range := ItemsCount + FVertScrollBar.PageSize-1;
-    {$ELSE}
-      FVertScrollBar.Range := ItemsCount+ClientHeight-1;
-    {$ENDIF}
+  {$IFDEF PAGE_SIZE}
+    VertScrollBar.Range := ItemsCount + FVertScrollBar.PageSize - 1;
   {$ELSE}
-    VertScrollBar.Range := ItemsCount+ClientHeight-1;
+    VertScrollBar.Range := ItemsCount + ClientHeight;
   {$ENDIF}
   BarAdjusted := False;
   Allocated := True;
@@ -1470,31 +1471,21 @@ begin
     ind := idx;
     first := GetFirstVisible;
 
- {if FItems[first].Height > ClientRect.Bottom-ClientRect.Top then begin
-    r := ClientRect;
-    PaintItem(first,r);
-    Message.Result := 0;
-    exit;
-  end;}
-
-  // if visible > then scroll it
-
-  // OXY: This code prevents thumb from staying "between" filtered items
-  // but it leads to thumb "jumping" after user finishes thumbtracking
-  // uncomment if this "stuck-in-between" seems to produce bug
-  {if Message.ScrollCode = SB_THUMBPOSITION then begin
-    Message.Pos := GetIdx(first);
-    VertScrollBar.ScrollMessage(Message);
-    exit;
+    // OXY: This code prevents thumb from staying "between" filtered items
+    // but it leads to thumb "jumping" after user finishes thumbtracking
+    // uncomment if this "stuck-in-between" seems to produce bug
+    {if Message.ScrollCode = SB_THUMBPOSITION then begin
+      Message.Pos := GetIdx(first);
+      VertScrollBar.ScrollMessage(Message);
+      exit;
     end;}
 
     {$IFDEF CUST_SB}
-    if (Message.ScrollBar = 0) and FVertScrollBar.Visible then
-      FVertScrollBar.ScrollMessage(Message)
-    else
-      inherited;
+      if (Message.ScrollBar = 0) and FVertScrollBar.Visible then
+        FVertScrollBar.ScrollMessage(Message) else
+        inherited;
     {$ELSE}
-    inherited;
+      inherited;
     {$ENDIF}
 
     SBPos := VertScrollBar.Position;
@@ -3299,7 +3290,11 @@ begin
     until ((SumHeight >= ClientHeight) or (maxidx < 0) or (maxidx >= Length(FItems)));
     BarAdjusted := True;
     VertScrollBar.Visible := (idx <> -1);
-    VertScrollBar.Range := GetIdx(maxidx) + VertScrollBar.PageSize-1+1;
+    {$IFDEF PAGE_SIZE}
+      VertScrollBar.Range := GetIdx(maxidx) + VertScrollBar.PageSize - 1 + 1;
+    {$ELSE}
+      VertScrollBar.Range := GetIdx(maxidx) + ClientHeight + 1;
+    {$ENDIF}
     MaxSBPos := GetIdx(maxidx);
     //if VertScrollBar.Position > MaxSBPos then
     SetSBPos(VertScrollBar.Position);
@@ -3313,7 +3308,11 @@ begin
   end;
 
   VertScrollBar.Visible := True;
-  VertScrollBar.Range := Count + VertScrollBar.PageSize-1;
+  {$IFDEF PAGE_SIZE}
+    VertScrollBar.Range := Count + VertScrollBar.PageSize - 1;
+  {$ELSE}
+    VertScrollBar.Range := Count + ClientHeight;
+  {$ENDIF}
   MaxSBPos := Count-1;
   exit;
 
@@ -3334,17 +3333,17 @@ begin
     end;
     BarAdjusted := True;
     {$IFDEF PAGE_SIZE}
-    VertScrollBar.Range := GetIdx(idx) + VertScrollBar.PageSize-1;
+      VertScrollBar.Range := GetIdx(idx) + VertScrollBar.PageSize - 1;
     {$ELSE}
-    VertScrollBar.Range := GetIdx(idx)+ClientHeight;
+      VertScrollBar.Range := GetIdx(idx) + ClientHeight;
     {$ENDIF}
     MaxSBPos := GetIdx(idx)-1;
     SetSBPos(VertScrollBar.Range);
   end else begin
     {$IFDEF PAGE_SIZE}
-    VertScrollBar.Range := Count + VertScrollBar.PageSize-1;
+      VertScrollBar.Range := Count + VertScrollBar.PageSize - 1;
     {$ELSE}
-    VertScrollBar.Range := Count+ClientHeight-1;
+      VertScrollBar.Range := Count + ClientHeight;
     {$ENDIF}
     MaxSBPos := Count-1;
   end;
@@ -4765,7 +4764,6 @@ begin
   // DoOptionsChanged;
 end;
 
-{$IFDEF CUST_SB}
 procedure THistoryGrid.SetSBPos(Position: Integer);
 var
   SumHeight: Integer;
@@ -4817,11 +4815,21 @@ begin
   end;}
 end;
 
+{$IFDEF CUST_SB}
 procedure THistoryGrid.SetVertScrollBar(const Value: TVertScrollBar);
 begin
   FVertScrollBar.Assign(Value);
 end;
 
+function THistoryGrid.GetHideScrollBar: Boolean;
+begin
+  Result := FVertScrollBar.Hidden;
+end;
+
+procedure THistoryGrid.SetHideScrollBar(const Value: Boolean);
+begin
+  FVertScrollBar.Hidden := Value;
+end;
 {$ENDIF}
 
 procedure THistoryGrid.UpdateFilter;
@@ -4833,7 +4841,11 @@ begin
   State := gsLoad;
   try
     VertScrollBar.Visible := True;
-    VertScrollBar.Range := Count + ClientHeight -1;
+    {$IFDEF PAGE_SIZE}
+      VertScrollBar.Range := Count + FVertScrollBar.PageSize - 1;
+    {$ELSE}
+      VertScrollBar.Range := Count + ClientHeight;
+    {$ENDIF}
     BarAdjusted := False;
     if (FSelected = -1) or (not IsMatched(FSelected)) then begin
       ShowProgress := True;
@@ -5697,7 +5709,7 @@ begin
   //OutputDebugString(PChar(str));
   // force to send the size:
   FRichHeight := -1;
-  Item^.Rich.HandleNeeded;
+  //Item^.Rich.HandleNeeded;
   Item^.Rich.Perform(EM_SETEVENTMASK,0,0);
   Grid.ApplyItemToRich(Item^.GridItem,Item^.Rich);
   Item^.Rich.Perform(EM_SETEVENTMASK,0,ENM_REQUESTRESIZE);
