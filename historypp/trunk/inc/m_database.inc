@@ -419,18 +419,6 @@ const
     }
     MS_DB_EVENT_GET                 = 'DB/Event/Get';
 
-    {
-        wParam : 0
-        lParam : Pointer to TDBEVENTGETTEXT structure which must be initialised
-        affects: Retrieves the event's text
-        returns: Returns pointer to a string in the required format.
-        notes  : TDBEVENTINFO structure should be the valid database event
-                 read via MS_DB_EVENT_GET
-                 Only events of type EVENTTYPE_MESSAGE are supported.
-                 This string should be freed by a call of mir_free
-        Version: 0.7.0+
-    }
-
 type
 
     PDBEVENTGETTEXT = ^TDBEVENTGETTEXT;
@@ -445,7 +433,35 @@ type
 
 const
 
+    {
+        wParam : 0
+        lParam : Pointer to TDBEVENTGETTEXT structure which must be initialised
+        affects: Retrieves the event's text
+        returns: Returns pointer to a string in the required format.
+        notes  : TDBEVENTINFO structure should be the valid database event
+                 read via MS_DB_EVENT_GET
+                 This string should be freed by a call of mir_free
+        Version: 0.7.0+
+    }
     MS_DB_EVENT_GETTEXT             = 'DB/Event/GetText';
+
+    {
+        wParam : flags - use LR_SHARED for shared HICON
+        lParam : Pointer to a TDBEVENTINFO structure which must be initialised
+        affects: Retrieves the event's icon
+        returns: Returns pointer to a string in the required format.
+        notes  : TDBEVENTINFO structure should be the valid database event
+                 read via MS_DB_EVENT_GET
+                 Use DestroyIcon to release resources if not LR_SHARED
+                 A plugin can register the standard event icon in IcoLib named
+                 'eventicon_'+Module+EvtID, like eventicon_ICQ2001. Otherwise,
+                 to declare an icon with the non-standard name, you can declare
+                 the special service, Module/GetEventIcon<id>, which will retrieve
+                 the custom icon handle (HICON). This service function has the
+                 same parameters MS_DB_EVENT_GETICON does.
+        Version: 0.7.0.1+
+    }
+    MS_DB_EVENT_GETICON             = 'DB/Event/GetIcon';
 
     {
         wParam : HCONTACT
