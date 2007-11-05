@@ -569,7 +569,7 @@ begin
   FCalcRange := 0;
   Code := SB_HORZ;
   if Kind = sbVertical then Code := SB_VERT;
-  if not Hidden and Visible then
+  if Visible then
   begin
     {$IFDEF PAGE_SIZE}
       FCalcRange := Range - FPageSize + 1;
@@ -581,7 +581,7 @@ begin
   ScrollInfo.cbSize := SizeOf(ScrollInfo);
   ScrollInfo.fMask := SIF_ALL;
   ScrollInfo.nMin := 0;
-  if FCalcRange > 0 then
+  if not Hidden and (FCalcRange > 0) then
     ScrollInfo.nMax := Range else
     ScrollInfo.nMax := 0;
   //if Hidden then
