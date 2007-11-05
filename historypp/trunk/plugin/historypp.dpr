@@ -386,7 +386,7 @@ begin
         GridOptions.ReplyQuotedFormat := GetDBWideStr(hppDBName,'FormatReplyQuoted',DEFFORMAT_REPLYQUOTED)
       else
       if StrComp(cws.szSetting,'FormatReplyQuotedText') = 0 then
-        GridOptions.ReplyQuotedTextFormat := GetDBWideStr(hppDBName,'FormatReplyQuotedText',DEFFORMAT_REPLYQUOTED)
+        GridOptions.ReplyQuotedTextFormat := GetDBWideStr(hppDBName,'FormatReplyQuotedText',DEFFORMAT_REPLYQUOTEDTEXT)
       else
       if StrComp(cws.szSetting,'FormatSelection') = 0 then
         GridOptions.SelectionFormat := GetDBWideStr(hppDBName,'FormatSelection',DEFFORMAT_SELECTION)
