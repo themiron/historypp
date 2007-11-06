@@ -298,7 +298,7 @@ var
 
 const
   SHRINK_ON_CALL = 50;
-  SHRINK_TO_LEN  = 500;
+  SHRINK_TO_LEN  = 512;
 
 var
   calls_count: Integer = 0;
@@ -325,6 +325,7 @@ function AllocateTextBuffer(len: integer): integer;
 begin
   ShrinkTextBuffer;
   if len > buflen then begin
+    len := ((len shr 4)+1) shl 4;
     ReallocMem(buffer,len);
     buflen := len;
   end;
