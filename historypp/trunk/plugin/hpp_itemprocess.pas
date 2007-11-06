@@ -58,32 +58,11 @@ uses
   m_globaldefs, m_api,
   hpp_global, hpp_events, hpp_richedit, hpp_richedit_ole;
 
-type
-
-  TRTFColorTable = record
-    sz: String;
-    col: COLORREF;
-  end;
-
-  WideAnsiRecord = record
-    w: WideString;
-    a: AnsiString;
-  end;
-
-  TBBCodeInfo = record
-    ss: WideAnsiRecord;
-    es: WideAnsiRecord;
-    simple: boolean;
-    rtf: String;
-    sshtml: String;
-    eshtml: String;
-  end;
-
 var
   rtf_ctable_text: String;
 
-  function DoSupportBBCodesHTML(S: String): String;
-  function DoSupportBBCodesRTF(S: String; StartColor: integer; doColorBBCodes: boolean): String;
+  function DoSupportBBCodesHTML(S: AnsiString): AnsiString;
+  function DoSupportBBCodesRTF(S: AnsiString; StartColor: integer; doColorBBCodes: boolean): AnsiString;
   function DoStripBBCodes(S: WideString): WideString;
 
   function DoSupportSmileys(wParam, lParam: DWord): Integer;
@@ -94,20 +73,30 @@ implementation
 
 uses StrUtils, TntSysUtils, RichEdit;
 
+type
+
+  TRTFColorTable = record
+    sz: PChar;
+    col: COLORREF;
+  end;
+
+  TBBCodeClass = (bbStart,bbEnd);
+  TBBCodeType = (bbSimple, bbColor, bbSize);
+
+  TBBCodeString = record
+    ansi: PAnsiChar;
+    wide: WideString;
+  end;
+
+  TBBCodeInfo = record
+    prefix: TBBCodeString;
+    suffix: TBBCodeString;
+    bbtype: TBBCodeType;
+    rtf: PAnsiChar;
+    html: PAnsiChar;
+  end;
+
 const
-
-  bbCodes: array[0..9] of TBBCodeInfo = (
-    (ss:(w:'[b]';     a:'[b]');     es:(w:''; a:'');  simple:true;  rtf:'\b ';       sshtml:'<b>';          eshtml:''),
-    (ss:(w:'[/b]';    a:'[/b]');    es:(w:''; a:'');  simple:true;  rtf:'\b0 ';      sshtml:'</b>';         eshtml:''),
-    (ss:(w:'[i]';     a:'[i]');     es:(w:''; a:'');  simple:true;  rtf:'\i ';       sshtml:'<i>';          eshtml:''),
-    (ss:(w:'[/i]';    a:'[/i]');    es:(w:''; a:'');  simple:true;  rtf:'\i0 ';      sshtml:'</i>';         eshtml:''),
-    (ss:(w:'[u]';     a:'[u]');     es:(w:''; a:'');  simple:true;  rtf:'\ul ';      sshtml:'<u>';          eshtml:''),
-    (ss:(w:'[/u]';    a:'[/u]');    es:(w:''; a:'');  simple:true;  rtf:'\ul0 ';     sshtml:'</u>';         eshtml:''),
-    (ss:(w:'[s]';     a:'[s]');     es:(w:''; a:'');  simple:true;  rtf:'\strike ';  sshtml:'<s>';          eshtml:''),
-    (ss:(w:'[/s]';    a:'[/s]');    es:(w:''; a:'');  simple:true;  rtf:'\strike0 '; sshtml:'</s>';         eshtml:''),
-    (ss:(w:'[color='; a:'[color='); es:(w:']';a:']'); simple:false; rtf:'\cf%u ';    sshtml:'<font color='; eshtml:'>'),
-    (ss:(w:'[/color]';a:'[/color]');es:(w:''; a:'');  simple:true;  rtf:'\cf0 ';     sshtml:'</font>';      eshtml:''));
-
   rtf_ctable: array[0..7] of TRTFColorTable = (
     //                 BBGGRR
     (sz:'black';  col:$000000),
@@ -120,105 +109,251 @@ const
     (sz:'white';  col:$FFFFFF));
 
 var
-  i: integer;
+  bbCodes: array[0..5,bbStart..bbEnd] of TBBCodeInfo = (
+    ((prefix:(ansi:'[b]');      suffix:(ansi:nil); bbtype:bbSimple; rtf:'{\b ';      html:'<b>'),
+     (prefix:(ansi:'[/b]');     suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</b>')),
+    ((prefix:(ansi:'[i]');      suffix:(ansi:nil); bbtype:bbSimple; rtf:'{\i ';      html:'<i>'),
+     (prefix:(ansi:'[/i]');     suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</i>')),
+    ((prefix:(ansi:'[u]');      suffix:(ansi:nil); bbtype:bbSimple; rtf:'{\ul ';     html:'<u>'),
+     (prefix:(ansi:'[/u]');     suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</u>')),
+    ((prefix:(ansi:'[s]');      suffix:(ansi:nil); bbtype:bbSimple; rtf:'{\strike '; html:'<s>'),
+     (prefix:(ansi:'[/s]');     suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</s>')),
+    ((prefix:(ansi:'[color=');  suffix:(ansi:']'); bbtype:bbColor;  rtf:'{\cf%u ';   html:'<font style="color:%s">'),
+     (prefix:(ansi:'[/color]'); suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</font>')),
+    ((prefix:(ansi:'[size=');   suffix:(ansi:']'); bbtype:bbSize; rtf:'{\fs%u ';     html:'<font style="font-size:%spt">'),
+     (prefix:(ansi:'[/size]');  suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</font>')));
 
-function GetColorRTF(code: String; colcount: integer): integer;
+const
+  SHRINK_ON_CALL = 50;
+  SHRINK_TO_LEN  = 512;
+  MAX_FMTBUF     = 4095;
+
+var
+  i: integer;
+  buffer: PChar = nil;
+  buflen: Integer = 0;
+  calls_count: Integer = 0;
+
+procedure CleanupTextBuffer;
+begin
+  FreeMem(buffer,buflen);
+  buffer := nil;
+  buflen := 0;
+end;
+
+procedure ShrinkTextBuffer;
+begin
+  // shrink find_buf on every SHRINK_ON_CALL event, so it's not growing to infinity
+  if calls_count >= SHRINK_ON_CALL then begin
+    buflen := SHRINK_TO_LEN;
+    ReallocMem(buffer,buflen);
+    calls_count := 0;
+  end else
+    Inc(calls_count);
+end;
+
+function AllocateTextBuffer(len: Integer): Integer;
+begin
+  if len > buflen then begin
+    len := ((len shr 4)+1) shl 4;
+    ReallocMem(buffer,len);
+    buflen := len;
+  end;
+  Result := len;
+end;
+
+function GetColorRTF(code: AnsiString; colcount: integer): integer;
 var
   i: integer;
 begin
   Result := 0;
   if colcount >= 0 then
     for i := 0 to High(rtf_ctable) do
-      if code = rtf_ctable[i].sz then begin
+      if rtf_ctable[i].sz = code then begin
         Result := colcount+i;
         break;
       end;
 end;
 
-function DoSupportBBCodesRTF(S: String; StartColor: integer; doColorBBCodes: boolean): String;
+function StrReplace(strStart, str, strEnd: PChar; var strTrail: PChar): PChar;
 var
-  i,spos,epos,cpos: integer;
-  trail,code: WideString;
-  color: integer;
-  RTFStream: String;
+  len: integer;
+  oldTrail: PChar;
 begin
-  RTFStream := S;
-  for i := 0 to High(bbCodes) do begin
-    if bbCodes[i].simple then
-      RTFStream := StringReplace(RTFStream,bbCodes[i].ss.a,bbCodes[i].rtf,[rfReplaceAll])
-    else repeat
-      spos := Pos(bbCodes[i].ss.a,RTFStream);
-      if spos > 0 then begin
-        cpos := spos+Length(bbCodes[i].ss.a);
-        epos := PosEx(bbCodes[i].es.a,RTFStream,cpos);
-        if epos > cpos then begin
-          code := Copy(RTFStream,cpos,epos-cpos);
-          cpos := epos+Length(bbCodes[i].es.a);
-          trail := Copy(RTFStream,cpos,Length(RTFStream)-cpos+1);
-          SetLength(RTFStream,spos-1);
-          if doColorBBCodes then color := GetColorRTF(code,StartColor)
-                            else color := 0;
-          RTFStream := RTFStream+Format(bbCodes[i].rtf,[color])+trail;
-        end;
-      end;
-    until (spos = 0) or (epos = 0);
-  end;
-  Result := RTFStream;
+  if str = nil then
+    len := 0 else
+    len := StrLen(str);
+  oldTrail := strTrail;
+  strTrail := strStart+len;
+  Result := strEnd+(strTrail-oldTrail);
+  AllocateTextBuffer((Result-buffer)+1);
+  StrMove(strTrail,oldTrail,strEnd-oldTrail+1);
+  if len > 0 then
+    StrMove(strStart,str,len);
 end;
 
-function DoSupportBBCodesHTML(S: String): String;
+function StrAppend(str, strEnd: PChar): PChar;
 var
-  HTMLStream: String;
-  i,spos,epos,cpos: integer;
-  trail,code: WideString;
+  len: integer;
 begin
-  HTMLStream := S;
-  for i := 0 to High(bbCodes) do begin
-    if bbCodes[i].simple then
-      HTMLStream := StringReplace(HTMLStream,bbCodes[i].ss.a,bbCodes[i].sshtml,[rfReplaceAll])
-    else repeat
-      spos := Pos(bbCodes[i].ss.a,HTMLStream);
-      if spos > 0 then begin
-        cpos := spos+Length(bbCodes[i].ss.a);
-        epos := PosEx(bbCodes[i].es.a,HTMLStream,cpos);
-        if epos > cpos then begin
-          code := Copy(HTMLStream,cpos,epos-cpos);
-          cpos := epos+Length(bbCodes[i].es.a);
-          trail := Copy(HTMLStream,cpos,Length(HTMLStream)-cpos+1);
-          SetLength(HTMLStream,spos-1);
-          HTMLStream := HTMLStream+bbCodes[i].sshtml+code+bbCodes[i].eshtml+trail;
-        end;
-      end;
-    until (spos = 0) or (epos = 0);
+  if str = nil then begin
+    Result := strEnd;
+    exit;
   end;
-  Result := HTMLStream;
+  len := StrLen(str);
+  Result := strEnd+len;
+  AllocateTextBuffer((Result-buffer)+1);
+  StrMove(strEnd,str,len+1);
+end;
+
+function StrSearch(str,prefix,suffix: PChar; var strStart,strEnd,strCode: PChar; var lenCode: integer): Boolean;
+begin
+  Result := false;
+  strStart := StrPos(str,prefix);
+  if strStart = nil then exit;
+  strCode := strStart + StrLen(prefix);
+  if suffix = nil then
+    strEnd := strCode
+  else begin
+    strEnd := StrPos(strCode,suffix);
+    if strEnd = nil then exit;
+    lenCode := strEnd - strCode;
+    strEnd := strEnd + StrLen(suffix);
+  end;
+  Result := true;
+end;
+
+function DoSupportBBCodesRTF(S: AnsiString; StartColor: integer; doColorBBCodes: boolean): AnsiString;
+var
+  bufPos,bufEnd: PChar;
+  strStart,strTrail: PChar;
+  strCode,newCode: PChar;
+  i,n,lenCode: Integer;
+  sfound,efound: Boolean;
+  fmt_buffer: array[0..MAX_FMTBUF] of Char;
+  code: AnsiString;
+begin
+  ShrinkTextBuffer;
+  AllocateTextBuffer(Length(S)+1);
+  bufEnd := StrECopy(buffer,PChar(S));
+  for i := 0 to High(bbCodes) do begin
+    bufPos := buffer;
+    repeat
+      newCode := nil;
+      sfound := StrSearch(buffer,
+          bbCodes[i,bbStart].prefix.ansi,bbCodes[i,bbStart].suffix.ansi,
+          strStart,strTrail,strCode,lenCode);
+      if sfound then begin
+        case bbCodes[i,bbStart].bbtype of
+          bbSimple:
+            newCode := bbCodes[i,bbStart].rtf;
+          bbColor: begin
+            if doColorBBCodes then begin
+              SetString(code,strCode,lenCode);
+              n := GetColorRTF(code,StartColor);
+              newCode := StrLFmt(fmt_buffer,MAX_FMTBUF,bbCodes[i,bbStart].rtf,[n]);
+            end;
+          end;
+          bbSize: begin
+            SetString(code,strCode,lenCode);
+            if TryStrToInt(code,n) then
+              newCode := StrLFmt(fmt_buffer,MAX_FMTBUF,bbCodes[i,bbStart].rtf,[n shl 1]);
+          end;
+        end;
+        bufEnd := StrReplace(strStart,newCode,bufEnd,strTrail);
+        bufPos := strTrail;
+      end;
+      repeat
+        efound := StrSearch(bufPos,
+            bbCodes[i,bbEnd].prefix.ansi,bbCodes[i,bbEnd].suffix.ansi,
+            strStart,strTrail,strCode,lenCode);
+        if sfound and (newCode <> nil) then
+          strCode := bbCodes[i,bbEnd].rtf else
+          strCode := nil;
+        if efound then begin
+          bufEnd := StrReplace(strStart,strCode,bufEnd,strTrail);
+          bufPos := strTrail;
+        end else
+          bufEnd := StrAppend(strCode,bufEnd);
+      until sfound or not efound;
+    until not sfound;
+  end;
+  SetString(Result,buffer,bufEnd-buffer);
+end;
+
+function DoSupportBBCodesHTML(S: AnsiString): AnsiString;
+var
+  bufPos,bufEnd: PChar;
+  strStart,strTrail,strCode: PChar;
+  i,lenCode: Integer;
+  sfound,efound: Boolean;
+  fmt_buffer: array[0..MAX_FMTBUF] of Char;
+  code: AnsiString;
+begin
+  ShrinkTextBuffer;
+  AllocateTextBuffer(Length(S)+1);
+  bufEnd := StrECopy(buffer,PChar(S));
+  for i := 0 to High(bbCodes) do begin
+    bufPos := buffer;
+    repeat
+      sfound := StrSearch(buffer,
+          bbCodes[i,bbStart].prefix.ansi,bbCodes[i,bbStart].suffix.ansi,
+          strStart,strTrail,strCode,lenCode);
+      if sfound then begin
+        if bbCodes[i,bbStart].bbtype = bbSimple then
+          strCode := bbCodes[i,bbStart].html
+        else begin
+          SetString(code,strCode,lenCode);
+          strCode := StrLFmt(fmt_buffer,MAX_FMTBUF,bbCodes[i,bbStart].html,[PChar(code)]);
+        end;
+        bufEnd := StrReplace(strStart,strCode,bufEnd,strTrail);
+        bufPos := strTrail;
+      end;
+      repeat
+        efound := StrSearch(bufPos,
+            bbCodes[i,bbEnd].prefix.ansi,bbCodes[i,bbEnd].suffix.ansi,
+            strStart,strTrail,strCode,lenCode);
+        if sfound then
+          strCode := bbCodes[i,bbEnd].html else
+          strCode := nil;
+        if efound then begin
+          bufEnd := StrReplace(strStart,strCode,bufEnd,strTrail);
+          bufPos := strTrail;
+        end else
+          bufEnd := StrAppend(strCode,bufEnd);
+      until sfound or not efound;
+    until not sfound;
+  end;
+  SetString(Result,buffer,bufEnd-buffer);
 end;
 
 function DoStripBBCodes(S: WideString): WideString;
 var
-  HTMLStream: WideString;
+  WideStream: WideString;
   i,spos,epos,cpos: integer;
   trail: WideString;
+  bbClass: TBBCodeClass;
 begin
-  HTMLStream := S;
-  for i := 0 to High(bbCodes) do begin
-    if bbCodes[i].simple then
-      HTMLStream := Tnt_WideStringReplace(HTMLStream,bbCodes[i].ss.w,'',[rfReplaceAll])
-    else repeat
-      spos := Pos(bbCodes[i].ss.w,HTMLStream);
-      if spos > 0 then begin
-        cpos := spos+Length(bbCodes[i].ss.w);
-        epos := PosEx(bbCodes[i].es.a,HTMLStream,cpos);
-        if epos > cpos then begin
-          cpos := epos+Length(bbCodes[i].es.w);
-          trail := Copy(HTMLStream,cpos,Length(HTMLStream)-cpos+1);
-          SetLength(HTMLStream,spos-1);
-          HTMLStream := HTMLStream+trail;
+  WideStream := S;
+  for i := 0 to High(bbCodes) do
+    for bbClass := bbStart to bbEnd do begin
+      if bbCodes[i,bbClass].bbtype = bbSimple then
+        WideStream := Tnt_WideStringReplace(WideStream,bbCodes[i,bbClass].prefix.wide,'',[rfReplaceAll])
+      else repeat
+        spos := Pos(bbCodes[i,bbClass].prefix.wide,WideStream);
+        if spos > 0 then begin
+          cpos := spos+Length(bbCodes[i,bbClass].prefix.wide);
+          epos := PosEx(bbCodes[i,bbClass].suffix.wide,WideStream,cpos);
+          if epos > cpos then begin
+            cpos := epos+Length(bbCodes[i,bbClass].suffix.wide);
+            trail := Copy(WideStream,cpos,Length(WideStream)-cpos+1);
+            SetLength(WideStream,spos-1);
+            WideStream := WideStream+trail;
+          end;
         end;
-      end;
-    until (spos = 0) or (epos = 0);
-  end;
-  Result := HTMLStream;
+      until (spos = 0) or (epos = 0);
+    end;
+  Result := WideStream;
 end;
 
 function DoSupportSmileys(wParam{hRichEdit}, lParam{PItemRenderDetails}: DWord): Integer;
@@ -276,7 +411,6 @@ const
 var
   ird: PItemRenderDetails;
   Link: String;
-  msglen: integer;
   hBmp: hBitmap;
   cr: CHARRANGE;
 begin
@@ -296,10 +430,24 @@ begin
 end;
 
 initialization
-
   rtf_ctable_text := '';
   for i := 0 to High(rtf_ctable) do begin
-    rtf_ctable_text := rtf_ctable_text + format('\red%d\green%d\blue%d;',[rtf_ctable[i].col and $FF,(rtf_ctable[i].col shr 8) and $FF,(rtf_ctable[i].col shr 16) and $FF]);
+    rtf_ctable_text := rtf_ctable_text + format('\red%d\green%d\blue%d;',[
+      rtf_ctable[i].col and $FF,
+      (rtf_ctable[i].col shr 8) and $FF,
+      (rtf_ctable[i].col shr 16) and $FF]);
   end;
+  for i := 0 to High(bbCodes) do begin
+    bbCodes[i,bbStart].prefix.wide := bbCodes[i,bbStart].prefix.ansi;
+    bbCodes[i,bbStart].suffix.wide := bbCodes[i,bbStart].suffix.ansi;
+    bbCodes[i,bbEnd].prefix.wide := bbCodes[i,bbEnd].prefix.ansi;
+    bbCodes[i,bbEnd].suffix.wide := bbCodes[i,bbEnd].suffix.ansi;
+  end;
+  // allocate some mem, so first ReadEvents would start faster
+  calls_count := SHRINK_ON_CALL + 1;
+  ShrinkTextBuffer;
+
+finalization
+  CleanupTextBuffer;
 
 end.
