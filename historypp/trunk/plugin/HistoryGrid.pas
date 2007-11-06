@@ -4212,18 +4212,20 @@ begin
 end;
 
 function FontToCss(Font: TFont): String;
-var
-w: String;
 begin
-  Result := 'font-family: '+Font.Name+', Tahoma, Verdana, Arial, sans-serif;';
-  Result := Result+' font-size: '+IntToStr(Font.Size)+'pt;';
-  if fsBold in Font.Style then w := 'bold'
-                          else w := 'normal';
-  Result := Result+' font-weight: '+w+';';
-  if fsItalic in Font.Style then w := 'italic'
-                            else w := 'normal';
-  Result := Result+' font-style: '+w+';';
-  Result := Result+' color: '+ColorToCss(Font.Color)+';';
+  Result := 'color: '+ColorToCss(Font.Color)+'; font: ';  // color
+  if fsItalic in Font.Style then                          // font-style
+    Result := Result+'italic ' else
+    Result := Result+'normal ';
+  Result := Result+'normal ';                             // font-variant
+  if fsBold in Font.Style then                            // font-weight
+    Result := Result+'bold ' else
+    Result := Result+'normal ';
+  Result := Result+IntToStr(Font.Size)+'pt ';             // font-size
+  Result := Result+'normal ';                             // line-height
+  Result := Result+                                       // font-family
+    Font.Name+', Tahoma, Verdana, Arial, sans-serif; ';
+  Result := Result+'text-decoration: none;';              // decoration
 end;
 
 procedure THistoryGrid.SaveStart(Stream: TFileStream; SaveFormat: TSaveFormat; Caption: WideString);
