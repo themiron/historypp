@@ -219,6 +219,7 @@ type
     FileActions: TTntMenuItem;
     N10: TTntMenuItem;
     pmFile: TTntPopupMenu;
+    SpeakMessage1: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
@@ -337,6 +338,7 @@ type
     procedure hgFilterChange(Sender: TObject);
     procedure OpenFileFolderClick(Sender: TObject);
     procedure BrowseReceivedFilesClick(Sender: TObject);
+    procedure SpeakMessage1Click(Sender: TObject);
   private
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
@@ -1605,6 +1607,7 @@ end;
 
 procedure THistoryFrm.hgPopup(Sender: TObject);
 begin
+  SpeakMessage1.Visible := MeSpeakEnabled;
   Delete1.Visible := False;
   SaveSelected1.Visible := False;
   if hContact = 0 then begin
@@ -3713,6 +3716,24 @@ var
 begin
   PluginLink.CallService(MS_FILE_GETRECEIVEDFILESFOLDER,hContact,LPARAM(@Path));
   ShellExecute(0,'open',Path,nil,nil,SW_SHOW);
+end;
+
+procedure THistoryFrm.SpeakMessage1Click(Sender: TObject);
+var
+  mesW: WideString;
+  mesA: WideString;
+begin
+  if not MeSpeakEnabled then exit;
+  if hg.Selected = -1 then exit;
+  mesW := hg.Items[hg.Selected].Text;
+  if GridOptions.BBCodesEnabled then
+      mesW := DoStripBBCodes(mesW);
+  if Boolean(PluginLink.ServiceExists(MS_SPEAK_SAY_W)) then
+    PluginLink.CallServiceSync(MS_SPEAK_SAY_W,hContact,LPARAM(PWideChar(mesW)))
+  else begin
+    mesA := WideToAnsiString(mesW,UserCodepage);
+    PluginLink.CallServiceSync(MS_SPEAK_SAY_A,hContact,LPARAM(PChar(mesA)));
+  end;
 end;
 
 end.
