@@ -188,6 +188,7 @@ var
   MathModuleEnabled: Boolean;
   MetaContactsEnabled: Boolean;
   DatabaseNewAPI: Boolean;
+  MeSpeakEnabled: Boolean;
   ShowHistoryCount: Boolean;
   hppIcons: array of ThppIntIconsRec;
   skinIcons: array of ThppIntIconsRec;
@@ -563,6 +564,8 @@ begin
   MetaContactsEnabled := Boolean(PluginLink.ServiceExists(MS_MC_GETMOSTONLINECONTACT));
   // Checking MS_DB_EVENT_GETTEXT database service
   DatabaseNewAPI := Boolean(PluginLink.ServiceExists(MS_DB_EVENT_GETTEXT));
+  // Checking presence of msSpeak plugin
+  MeSpeakEnabled := Boolean(PluginLink.ServiceExists(MS_SPEAK_SAYEX));
 end;
 
 procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);

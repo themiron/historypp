@@ -79,6 +79,7 @@ uses
     {$include m_dataasmessage.inc}
     {$include m_metacontacts.inc}
     {$include m_dbeditorpp.inc}
+    {$include m_speak.inc}
 
     {$define M_API_UNIT}
     {$include m_helpers.inc}
