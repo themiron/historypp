@@ -197,6 +197,7 @@ type
     tbCopy: THppToolButton;
     tbDelete: THppToolButton;
     tbSave: THppToolButton;
+    SpeakMessage1: TTntMenuItem;
     procedure pbFilterPaint(Sender: TObject);
     procedure edFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure tiFilterTimer(Sender: TObject);
@@ -279,6 +280,7 @@ type
     procedure tbEventsClick(Sender: TObject);
     procedure sbEventsCloseClick(Sender: TObject);
     procedure lvContactsDblClick(Sender: TObject);
+    procedure SpeakMessage1Click(Sender: TObject);
   private
     UsedPassword: String;
     UserMenu: hMenu;
@@ -1619,6 +1621,7 @@ end;
 
 procedure TfmGlobalSearch.hgPopup(Sender: TObject);
 begin
+  SpeakMessage1.Visible := MeSpeakEnabled;
   Delete1.Visible := False;
   SaveSelected1.Visible := False;
   if hg.Selected <> -1 then begin
@@ -2438,6 +2441,26 @@ begin
   hContact := Integer(lvContacts.Selected.Data);
   if hContact = 0 then exit;
   SendMessageTo(hContact);
+end;
+
+procedure TfmGlobalSearch.SpeakMessage1Click(Sender: TObject);
+var
+  mesW: WideString;
+  mesA: WideString;
+  hContact: THandle;
+begin
+  if not MeSpeakEnabled then exit;
+  if hg.Selected = -1 then exit;
+  hContact := GetSearchItem(hg.Selected).Contact.Handle;
+  mesW := hg.Items[hg.Selected].Text;
+  if GridOptions.BBCodesEnabled then
+      mesW := DoStripBBCodes(mesW);
+  if Boolean(PluginLink.ServiceExists(MS_SPEAK_SAY_W)) then
+    PluginLink.CallServiceSync(MS_SPEAK_SAY_W,hContact,LPARAM(PWideChar(mesW)))
+  else begin
+    mesA := WideToAnsiString(mesW,GetSearchItem(hg.Selected).Contact.Codepage);
+    PluginLink.CallServiceSync(MS_SPEAK_SAY_A,hContact,LPARAM(PChar(mesA)));
+  end;
 end;
 
 initialization

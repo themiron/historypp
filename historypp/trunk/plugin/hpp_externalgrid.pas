@@ -118,6 +118,7 @@ type
     procedure OnEventsFilterItemClick(Sender: TObject);
     procedure OnBrowseReceivedFilesClick(Sender: TObject);
     procedure OnOpenFileFolderClick(Sender: TObject);
+    procedure OnSpeakMessage(Sender: TObject);
   public
     constructor Create(AParentWindow: HWND; ControlID: Cardinal = 0);
     destructor Destroy; override;
@@ -298,6 +299,7 @@ begin
   pmGrid := TTntPopupMenu.Create(Grid);
   pmGrid.ParentBiDiMode := False;
   pmGrid.Items.Add(WideNewItem('Sh&ow in history',0,false,true,OnOpenClick,0,'pmOpen'));
+  pmGrid.Items.Add(WideNewItem('Speak Message',0,false,true,OnSpeakMessage,0,'pmSpeakMessage'));
   pmGrid.Items.Add(WideNewItem('-',0,false,true,nil,0,'pmN1'));
   pmGrid.Items.Add(WideNewItem('&Copy',TextToShortCut('Ctrl+C'),false,true,OnCopyClick,0,'pmCopy'));
   pmGrid.Items.Add(WideNewItem('Copy &Text',TextToShortCut('Ctrl+T'),false,true,OnCopyTextClick,0,'pmCopyText'));
@@ -620,41 +622,42 @@ var
 begin
   GridSelected := (Grid.Selected <> -1);
   pmGrid.Items[0].Visible := GridSelected and (Grid.State = gsIdle) and not Items[Grid.Selected].Custom;
-  pmGrid.Items[2].Visible := GridSelected;
+  pmGrid.Items[1].Visible := MeSpeakEnabled; 
   pmGrid.Items[3].Visible := GridSelected;
-  pmGrid.Items[4].Visible := GridSelected and (Grid.State = gsInline); // works even if not in pseudo-edit
-  pmGrid.Items[5].Visible := GridSelected;
-  pmGrid.Items[7].Visible := GridSelected and (Grid.State = gsInline);
-  pmGrid.Items[8].Visible := GridSelected;
+  pmGrid.Items[4].Visible := GridSelected;
+  pmGrid.Items[5].Visible := GridSelected and (Grid.State = gsInline); // works even if not in pseudo-edit
+  pmGrid.Items[6].Visible := GridSelected;
+  pmGrid.Items[8].Visible := GridSelected and (Grid.State = gsInline);
+  pmGrid.Items[9].Visible := GridSelected;
   if GridSelected then begin
-    pmGrid.Items[7].Checked := GridOptions.TextFormatting;
+    pmGrid.Items[8].Checked := GridOptions.TextFormatting;
     if Grid.State = gsInline then
-      pmGrid.Items[2].Enabled := Grid.InlineRichEdit.SelLength > 0 else
-      pmGrid.Items[2].Enabled := True;
-    pmGrid.Items[8].Enabled := pmGrid.Items[2].Enabled;
+      pmGrid.Items[3].Enabled := Grid.InlineRichEdit.SelLength > 0 else
+      pmGrid.Items[3].Enabled := True;
+    pmGrid.Items[9].Enabled := pmGrid.Items[2].Enabled;
   end;
-  pmGrid.Items[9].Visible := GridSelected and not Items[Grid.Selected].Custom;
-  pmGrid.Items[10].Visible := GridSelected;
+  pmGrid.Items[10].Visible := GridSelected and not Items[Grid.Selected].Custom;
+  pmGrid.Items[11].Visible := GridSelected;
   if GridSelected then begin
     if Items[Grid.Selected].Custom then
-      pmGrid.Items[10].Visible := False
+      pmGrid.Items[11].Visible := False
     else
     if Grid.Items[Grid.Selected].Bookmarked then
-      TTntMenuItem(pmGrid.Items[10]).Caption := TranslateWideW('Remove &Bookmark')
+      TTntMenuItem(pmGrid.Items[11]).Caption := TranslateWideW('Remove &Bookmark')
     else
-      TTntMenuItem(pmGrid.Items[10]).Caption := TranslateWideW('Set &Bookmark');
+      TTntMenuItem(pmGrid.Items[11]).Caption := TranslateWideW('Set &Bookmark');
   end;
-  pmGrid.Items[12].Visible := (Grid.SelCount > 1);
-  pmGrid.Items[14].Visible := GridSelected and IsFileEvent(Grid.Selected);
-  if pmGrid.Items[14].Visible then
-    pmGrid.Items[14].Items[1].Visible := (SavedFileDir <> '');
-  pmGrid.Items[15].Visible := (Grid.State = gsIdle);
-  pmGrid.Items[15].Items[0].Checked := not FUseHistoryRTLMode;
-  pmGrid.Items[15].Items[1].Checked := FUseHistoryRTLMode;
+  pmGrid.Items[13].Visible := (Grid.SelCount > 1);
+  pmGrid.Items[15].Visible := GridSelected and IsFileEvent(Grid.Selected);
+  if pmGrid.Items[15].Visible then
+    pmGrid.Items[15].Items[1].Visible := (SavedFileDir <> '');
   pmGrid.Items[16].Visible := (Grid.State = gsIdle);
-  pmGrid.Items[16].Items[0].Checked := not FUseHistoryCodepage;
-  pmGrid.Items[16].Items[1].Checked := FUseHistoryCodepage;
-  pmGrid.Items[18].Visible := (Grid.State = gsIdle);
+  pmGrid.Items[16].Items[0].Checked := not FUseHistoryRTLMode;
+  pmGrid.Items[16].Items[1].Checked := FUseHistoryRTLMode;
+  pmGrid.Items[17].Visible := (Grid.State = gsIdle);
+  pmGrid.Items[17].Items[0].Checked := not FUseHistoryCodepage;
+  pmGrid.Items[17].Items[1].Checked := FUseHistoryCodepage;
+  pmGrid.Items[19].Visible := (Grid.State = gsIdle);
   pmGrid.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
 end;
 
@@ -1086,6 +1089,27 @@ begin
   if Grid.Selected = -1 then exit;
   PluginLink.CallService(MS_FILE_GETRECEIVEDFILESFOLDER,Items[Grid.Selected].hContact,LPARAM(@Path));
   ShellExecute(0,'open',Path,nil,nil,SW_SHOW);
+end;
+
+procedure TExternalGrid.OnSpeakMessage(Sender: TObject);
+var
+  mesW: WideString;
+  mesA: AnsiString;
+  hContact: THandle;
+begin
+  if not MeSpeakEnabled then exit;
+  if Grid.Selected = -1 then exit;
+  //if Items[Grid.Selected].Custom then exit;
+  hContact := Items[Grid.Selected].hContact;
+  mesW := Grid.Items[Grid.Selected].Text;
+  if GridOptions.BBCodesEnabled then
+      mesW := DoStripBBCodes(mesW);
+  if Boolean(PluginLink.ServiceExists(MS_SPEAK_SAY_W)) then
+    PluginLink.CallServiceSync(MS_SPEAK_SAY_W,hContact,LPARAM(PWideChar(mesW)))
+  else begin
+    mesA := WideToAnsiString(mesW,Items[Grid.Selected].Codepage);
+    PluginLink.CallServiceSync(MS_SPEAK_SAY_A,hContact,LPARAM(PChar(mesA)));
+  end;
 end;
 
 end.

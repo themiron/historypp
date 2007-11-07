@@ -660,6 +660,10 @@ object HistoryFrm: THistoryFrm
       ShortCut = 16450
       OnClick = Bookmark1Click
     end
+    object SpeakMessage1: TTntMenuItem
+      Caption = 'Speak Message'
+      OnClick = SpeakMessage1Click
+    end
     object N8: TTntMenuItem
       Caption = '-'
     end
