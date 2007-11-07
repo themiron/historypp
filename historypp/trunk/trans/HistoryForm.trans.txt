@@ -45,6 +45,7 @@ Enter
 Save History
 &Open
 Set &Bookmark
+Speak Message
 Send &Message
 &Reply Quoted
 &Copy

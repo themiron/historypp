@@ -705,7 +705,6 @@ object fmGlobalSearch: TfmGlobalSearch
     end
     object SpeakMessage1: TTntMenuItem
       Caption = 'Speak Message'
-      Hint = 'SpeakMessage1'
       OnClick = SpeakMessage1Click
     end
     object N3: TTntMenuItem

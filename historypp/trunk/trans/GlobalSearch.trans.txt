@@ -48,6 +48,7 @@ Search messages matched to
 Limit Event Types
 Sh&ow in context
 Set &Bookmark
+Speak Message
 Send &Message
 Reply &Quoted
 &Copy
