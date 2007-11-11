@@ -3181,8 +3181,8 @@ begin
         subst := WideWrapText(mes,#13#10,[' ',#9,'-'],72)
       else
       if tok[toksp[i]] = '%quot_mes%' then begin
-        subst := Tnt_WideStringReplace('> '+mes,#13#10,#13#10+'> ',[rfReplaceAll]);
-        subst := WideWrapText(subst,#13#10+'> ',[' ',#9,'-'],70)
+        subst := Tnt_WideStringReplace('» '+mes,#13#10,#13#10+'» ',[rfReplaceAll]);
+        subst := WideWrapText(subst,#13#10+'» ',[' ',#9,'-'],70)
       end else
       if tok[toksp[i]] = '%selmes%' then
         subst := selmes
@@ -3191,8 +3191,8 @@ begin
         subst := WideWrapText(selmes,#13#10,[' ',#9,'-'],72)
       else
       if tok[toksp[i]] = '%quot_selmes%' then begin
-        subst := Tnt_WideStringReplace('> '+selmes,#13#10,#13#10+'> ',[rfReplaceAll]);
-        subst := WideWrapText(subst,#13#10+'> ',[' ',#9,'-'],70)
+        subst := Tnt_WideStringReplace('» '+selmes,#13#10,#13#10+'» ',[rfReplaceAll]);
+        subst := WideWrapText(subst,#13#10+'» ',[' ',#9,'-'],70)
       end else
       if tok[toksp[i]] = '%nick%' then subst := nick
       else
