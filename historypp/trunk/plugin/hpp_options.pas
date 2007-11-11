@@ -564,8 +564,9 @@ begin
   MetaContactsEnabled := Boolean(PluginLink.ServiceExists(MS_MC_GETMOSTONLINECONTACT));
   // Checking MS_DB_EVENT_GETTEXT database service
   DatabaseNewAPI := Boolean(PluginLink.ServiceExists(MS_DB_EVENT_GETTEXT));
-  // Checking presence of msSpeak plugin
-  MeSpeakEnabled := Boolean(PluginLink.ServiceExists(MS_SPEAK_SAYEX));
+  // Checking presence of speech api
+  MeSpeakEnabled := Boolean(PluginLink.ServiceExists(MS_SPEAK_SAY_W)) or
+                    Boolean(PluginLink.ServiceExists(MS_SPEAK_SAY_A));
 end;
 
 procedure PrepareSaveDialog(SaveDialog: TSaveDialog; SaveFormat: TSaveFormat; AllFormats: Boolean = False);
