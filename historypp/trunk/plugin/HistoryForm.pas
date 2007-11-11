@@ -3729,10 +3729,10 @@ begin
   if GridOptions.BBCodesEnabled then
       mesW := DoStripBBCodes(mesW);
   if Boolean(PluginLink.ServiceExists(MS_SPEAK_SAY_W)) then
-    PluginLink.CallServiceSync(MS_SPEAK_SAY_W,hContact,LPARAM(PWideChar(mesW)))
+    PluginLink.CallService(MS_SPEAK_SAY_W,hContact,LPARAM(PWideChar(mesW)))
   else begin
     mesA := WideToAnsiString(mesW,UserCodepage);
-    PluginLink.CallServiceSync(MS_SPEAK_SAY_A,hContact,LPARAM(PChar(mesA)));
+    PluginLink.CallService(MS_SPEAK_SAY_A,hContact,LPARAM(PChar(mesA)));
   end;
 end;
 
