@@ -132,6 +132,7 @@ if errorlevel 1 goto ziperr
 cd ..
 rd /q/s src
 rd /q/s bin
+echo ; > historypp-%VER_%-changelog.txt
 
 goto end
 

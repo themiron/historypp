@@ -153,6 +153,7 @@ cd ..
 rd /q/s src
 rd /q/s bin
 rd /q/s dbg
+echo ; > historypp-%VER_%-changelog.txt
 
 goto end
 
