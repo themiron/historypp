@@ -1,6 +1,6 @@
 
 Note: For licenses on VertSB.pas, Base64.pas, Checksum.pas,
-tntControls, jcl see appropriate files. This licese doesn't cover them.
+tntControls, 3rdparty see appropriate files. This licese doesn't cover them.
 
 =====================================================================
 
