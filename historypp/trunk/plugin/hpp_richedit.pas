@@ -53,10 +53,10 @@ uses
 type
   PTextStream = ^TTextStream;
   TTextStream = record
-    Size: integer;
+    Size: Integer;
     case Boolean of
-      True: (DataIn: PByte);
-      False: (DataOut: PString);
+      false: (Data:  PAnsiChar);
+      true:  (DataW: PWideChar);
   end;
 
 function GetRichRTF(RichEditHandle: THandle; var RTFStream: WideString;
@@ -75,7 +75,7 @@ function GetRichString(RichEditHandle: THandle; SelectionOnly: Boolean = false):
 
 implementation
 
-Uses SysUtils{, TntSysUtils};
+Uses SysUtils;
 
 const
   SF_UNICODE = 16;
@@ -83,14 +83,14 @@ const
 
 function RichEditStreamLoad(dwCookie: Longint; pbBuff: PByte; cb: Longint; var pcb: Longint): Longint; stdcall;
 var
-  pBuff: PByte;
+  pBuff: PChar;
 begin
   with PTextStream(dwCookie)^ do begin
-    pBuff := DataIn;
+    pBuff := Data;
     pcb := Size;
     if pcb > cb then pcb := cb;
     move(pBuff^,pbBuff^,pcb);
-    Inc(DataIn,pcb);
+    Inc(Data,pcb);
     Dec(Size,pcb);
   end;
   Result := 0;
@@ -98,96 +98,124 @@ end;
 
 function RichEditStreamSave(dwCookie: Longint; pbBuff: PByte; cb: Longint; var pcb: Longint): Longint; stdcall;
 var
-  pBuff: PChar;
-  prevlen: integer;
+  prevSize: Integer;
 begin
   with PTextStream(dwCookie)^ do begin
-    prevlen := Length(DataOut^);
-    SetLength(DataOut^,prevlen+cb);
-    pBuff := @DataOut^[1+prevlen];
-    Move(pbBuff^,pBuff^,cb);
+    prevSize := Size;
+    Inc(Size,cb);
+    ReallocMem(Data,Size);
+    Move(pbBuff^,(Data+prevSize)^,cb);
     pcb := cb;
   end;
   Result := 0;
 end;
 
-function _GetRichRTF(RichEditHandle: THandle; var RTFStream: String;
+function _GetRichRTF(RichEditHandle: THandle; TextStream: PTextStream;
                     SelectionOnly, PlainText, NoObjects, PlainRTF, Unicode: Boolean): Integer;
 var
   es: TEditStream;
-  ts: TTextStream;
   format: Longint;
 begin
   format := 0;
-  if Unicode then format := format or SF_UNICODE;
   if SelectionOnly then format := format or SFF_SELECTION;
-  if PlainRTF then format := format or SFF_PLAINRTF;
   if PlainText then begin
     if NoObjects then format := format or SF_TEXT
                  else format := format or SF_TEXTIZED;
+    if Unicode then   format := format or SF_UNICODE;
   end else begin
     if NoObjects then format := format or SF_RTFNOOBJS
                  else format := format or SF_RTF;
+    if PlainRTF  then format := format or SFF_PLAINRTF;
+    //if Unicode then   format := format or SF_USECODEPAGE or (CP_UTF16 shl 16);
   end;
-  RTFStream := '';
-  ts.Size := 0;
-  ts.DataOut := @RTFStream;
-  es.dwCookie := integer(@ts);
+  TextStream^.Size := 0;
+  TextStream^.Data := nil;
+  es.dwCookie := LPARAM(TextStream);
   es.dwError := 0;
   es.pfnCallback := @RichEditStreamSave;
-  SendMessage(RichEditHandle, EM_STREAMOUT, format, integer(@es));
+  SendMessage(RichEditHandle, EM_STREAMOUT, format, LPARAM(@es));
   Result := es.dwError;
 end;
 
 function GetRichRTF(RichEditHandle: THandle; var RTFStream: WideString;
                     SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean): Integer;
 var
-  Buffer: AnsiString;
+  Stream: TTextStream;
 begin
-  Result := _GetRichRTF(RichEditHandle,Buffer,SelectionOnly,PlainText,NoObjects,PlainRTF,True);
-  SetString(RTFStream,PWideChar(@Buffer[1]),Length(Buffer) div SizeOf(WideChar));
+  Result := _GetRichRTF(RichEditHandle, @Stream,
+                        SelectionOnly, PlainText, NoObjects, PlainRTF, PlainText);
+  if Assigned(Stream.DataW) then begin
+    if PlainText then
+      SetString(RTFStream,Stream.DataW,Stream.Size div SizeOf(WideChar)) else
+      RTFStream := AnsiToWideString(Stream.Data,CP_ACP);
+    FreeMem(Stream.Data,Stream.Size);
+  end;
 end;
 
 function GetRichRTF(RichEditHandle: THandle; var RTFStream: AnsiString;
                     SelectionOnly, PlainText, NoObjects, PlainRTF: Boolean): Integer;
+var
+  Stream: TTextStream;
 begin
-  Result := _GetRichRTF(RichEditHandle,RTFStream,SelectionOnly,PlainText,NoObjects,PlainRTF,False);
+  Result := _GetRichRTF(RichEditHandle, @Stream,
+                        SelectionOnly, PlainText, NoObjects, PlainRTF, False);
+  if Assigned(Stream.Data) then begin
+    SetString(RTFStream,Stream.Data,Stream.Size-1);
+    FreeMem(Stream.Data,Stream.Size);
+  end;
 end;
 
-function _SetRichRTF(RichEditHandle: THandle; Buffer: PByte; Length: integer;
+function _SetRichRTF(RichEditHandle: THandle; TextStream: PTextStream;
                     SelectionOnly, PlainText, PlainRTF, Unicode: Boolean): Integer;
 var
   es: TEditStream;
-  ts: TTextStream;
   format: Longint;
 begin
   format := 0;
-  if Unicode then format := format or SF_UNICODE;
   if SelectionOnly then format := format or SFF_SELECTION;
-  if PlainRTF then format := format or SFF_PLAINRTF;
-  if PlainText then format := format or SF_TEXT
-               else format := format or SF_RTF;
-  ts.DataIn := Buffer;
-  ts.Size := Length;
-  es.dwCookie := integer(@ts);
+  if PlainText then begin
+    format := format or SF_TEXT;
+    if Unicode then format := format or SF_UNICODE;
+  end else begin
+    format := format or SF_RTF;
+
+    if PlainRTF then format := format or SFF_PLAINRTF;
+    //if Unicode then  format := format or SF_USECODEPAGE or (CP_UTF16 shl 16);
+  end;
+  es.dwCookie := LPARAM(TextStream);
   es.dwError := 0;
   es.pfnCallback := @RichEditStreamLoad;
-  SendMessage(RichEditHandle, EM_STREAMIN, format, integer(@es));
+  SendMessage(RichEditHandle, EM_STREAMIN, format, LPARAM(@es));
   Result := es.dwError;
 end;
 
 function SetRichRTF(RichEditHandle: THandle; RTFStream: WideString;
                     SelectionOnly, PlainText, PlainRTF: Boolean): Integer;
+var
+  Stream: TTextStream;
+  Buffer: AnsiString;
 begin
-  Result := _SetRichRTF(RichEditHandle,@RTFStream[1],Length(RTFStream)*SizeOf(WideChar),
-                        SelectionOnly,PlainText,PlainRTF,True);
+  if PlainText then begin
+    Stream.DataW := @RTFStream[1];
+    Stream.Size  := Length(RTFStream)*SizeOf(WideChar);
+  end else begin
+    Buffer := WideToAnsiString(RTFStream,CP_ACP);
+    Stream.Data := @Buffer[1];
+    Stream.Size  := Length(Buffer);
+  end;
+  Result := _SetRichRTF(RichEditHandle, @Stream,
+                        SelectionOnly, PlainText, PlainRTF, PlainText);
 end;
 
 function SetRichRTF(RichEditHandle: THandle; RTFStream: AnsiString;
                     SelectionOnly, PlainText, PlainRTF: Boolean): Integer;
+var
+  Stream: TTextStream;
 begin
-  Result := _SetRichRTF(RichEditHandle,@RTFStream[1],Length(RTFStream),
-                        SelectionOnly,PlainText,PlainRTF,False);
+  Stream.Data := @RTFStream[1];
+  Stream.Size := Length(RTFStream);
+  Result := _SetRichRTF(RichEditHandle, @Stream,
+                        SelectionOnly, PlainText, PlainRTF, False);
 end;
 
 function FormatString2RTF(Source: WideString; Suffix: String = ''): String;
@@ -198,11 +226,11 @@ begin
   Result := '{\uc1 ';
   while Text[0] <> #0 do begin
     if (Text[0] = #13) and (Text[1] = #10) then begin
-      Result := Result + '\line ';
+      Result := Result + '\par ';
       Inc(Text);
     end else
     case Text[0] of
-      #10: Result := Result + '\line ';
+      #10: Result := Result + '\par ';
       #09: Result := Result + '\tab ';
       '\','{','}': Result := Result + '\' + Text[0];
     else
