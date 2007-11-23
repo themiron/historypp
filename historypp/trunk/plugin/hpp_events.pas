@@ -338,8 +338,8 @@ var
   HasProto, HasWWW: Boolean;
 begin
   Result := False;
-  HasProto := WStrPos(@Text[1],'://') <> nil;
-  HasWWW := WStrPos(@Text[1],'www.') <> nil;
+  HasProto := Assigned(WStrPos(@Text[1],'://'));
+  HasWWW := Assigned(WStrPos(@Text[1],'www.'));
   if (not HasProto) and (not HasWWW) then exit;
   if HasWWW then begin
     Result := True;
@@ -354,21 +354,23 @@ begin
   if HasProto then begin
     // note: we can make it one big OR clause, but it's more readable this way
     // list strings in order of probability
-    Result := WStrPos(PWideChar(buffer), 'http://') <> nil;
+    Result := Assigned(WStrPos(PWideChar(buffer), 'http://'));
     if Result then exit;
-    Result := WStrPos(PWideChar(buffer), 'ftp://') <> nil;
+    Result := Assigned(WStrPos(PWideChar(buffer), 'ftp://'));
     if Result then exit;
-    Result := WStrPos(PWideChar(buffer), 'https://') <> nil;
+    Result := Assigned(WStrPos(PWideChar(buffer), 'https://'));
     if Result then exit;
-    Result := WStrPos(PWideChar(buffer), 'nntp://') <> nil;
+    Result := Assigned(WStrPos(PWideChar(buffer), 'mailto://'));
     if Result then exit;
-    Result := WStrPos(PWideChar(buffer), 'irc://') <> nil;
+    Result := Assigned(WStrPos(PWideChar(buffer), 'file://'));
     if Result then exit;
-    Result := WStrPos(PWideChar(buffer), 'news://') <> nil;
+    Result := Assigned(WStrPos(PWideChar(buffer), 'nntp://'));
     if Result then exit;
-    Result := WStrPos(PWideChar(buffer), 'file://') <> nil;
+    Result := Assigned(WStrPos(PWideChar(buffer), 'irc://'));
     if Result then exit;
-    //Result := WStrPos(find_buf, 'opera:') <> nil;
+    Result := Assigned(WStrPos(PWideChar(buffer), 'news://'));
+    if Result then exit;
+    //Result := Assigned(WStrPos(find_buf, 'opera:'));
     //if Result then exit;
   end;
 end;
@@ -396,6 +398,7 @@ function ReadEvent(hDBEvent: THandle; UseCP: Cardinal = CP_ACP): THistoryItem;
 var
   EventInfo: TDBEventInfo;
   i,EventIndex: integer;
+  Handled: Boolean;
 begin
   ZeroMemory(@Result,SizeOf(Result));
   Result.Height := -1;
@@ -417,11 +420,12 @@ begin
       end;
     Result.Codepage := UseCP;
     Result.MessageType := [EventTable[EventIndex].MessageType];
-    //if not (DatabaseNewAPI and GetEventCoreText(EventInfo,Result)) then
-    if not (DatabaseNewAPI and GetEventModuleText(EventInfo,Result)) then
-      EventTable[EventIndex].TextFunction(EventInfo,Result);
-    if (Result.MessageType = [mtMessage]) and TextHasUrls(Result.Text) then
-      Result.MessageType := [mtUrl];
+    Handled := DatabaseNewAPI;
+    //if Handled then Handled := GetEventCoreText(EventInfo,Result);
+    if Handled then Handled := GetEventModuleText(EventInfo,Result);
+    if not Handled then EventTable[EventIndex].TextFunction(EventInfo,Result);
+    if Result.MessageType = [mtMessage] then
+      if TextHasUrls(Result.Text) then Result.MessageType := [mtUrl];
     if (EventInfo.flags and DBEF_SENT) = 0 then
       include(Result.MessageType,mtIncoming) else
       include(Result.MessageType,mtOutgoing);
@@ -476,18 +480,22 @@ var
    msgW: PWideChar;
    szServiceName: array[0..99] of Char;
 begin
+  Result := False;
   dbegt.dbei := @EventInfo;
   dbegt.datatype := DBVT_WCHAR;
   dbegt.codepage := hi.Codepage;
-  StrFmt(szServiceName,'%s/GetEventText%d',[EventInfo.szModule,EventInfo.eventType]);
-  Result := False;
-  if Boolean(PluginLink.ServiceExists(szServiceName)) then begin
+  StrFmt(szServiceName,'%s/GetEventText%u',[EventInfo.szModule,EventInfo.eventType]);
+  if not Boolean(PluginLink.ServiceExists(szServiceName)) then exit;
+  try
     msgW := PWideChar(PluginLink.CallService(szServiceName,0,LPARAM(@dbegt)));
-    Result := (msgW <> nil);
-    if Result then begin
-      SetString(hi.Text,msgW,WStrLen(msgW));
-      MirandaFree(msgW);
-    end;
+  except
+    if Assigned(msgW) then MirandaFree(msgW);
+    exit;
+  end;
+  if Assigned(msgW) then begin
+    SetString(hi.Text,msgW,WStrLen(msgW));
+    MirandaFree(msgW);
+    Result := True;
   end;
 end;
 
