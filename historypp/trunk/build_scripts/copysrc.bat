@@ -33,7 +33,7 @@ if "%TRIES%"=="000000" goto exitloop
 set TRIES=0%TRIES%
 goto loop
 :exitloop
-set JCLPATH=%LIBPATH%jcl
+set TRDPATH=%LIBPATH%3rdparty
 
 xcopy /S /I %TNTPATH% build\src\tntControls
-xcopy /S /I %JCLPATH% build\src\jcl
+xcopy /S /I %TRDPATH% build\src\3rdparty

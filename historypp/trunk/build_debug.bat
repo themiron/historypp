@@ -143,9 +143,9 @@ set TRIES=0%TRIES%
 goto loop
 :exitloop
 set TNTPATH=%TNTPATH%;%TNTPATH%\Source
-set JCLPATH=%LIBPATH%jcl
+set TRDPATH=%LIBPATH%3rdparty
 
-set INCDIR="%DELPHILIB%;%TNTPATH%;%JCLPATH%;..\inc;"
+set INCDIR="%DELPHILIB%;%TNTPATH%;%TRDPATH%;..\inc;"
 set OUTDIR=".."
 set DCUDIR="tmp"
 : A4 Aligned record fields  
