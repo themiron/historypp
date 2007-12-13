@@ -29,6 +29,7 @@ library historypp;
 {$I compilers.inc}
 
 uses
+  RtlVclOptimize,
   {$IFDEF REPORT_LEAKS}
   {$IFNDEF DELPHI_10_UP}
   FastMM4,
@@ -76,8 +77,7 @@ uses
   hpp_external in 'hpp_external.pas',
   hpp_externalgrid in 'hpp_externalgrid.pas',
   {$ENDIF}
-  hpp_richedit in 'hpp_richedit.pas',
-  hpp_richedit_ole in 'hpp_richedit_ole.pas';
+  hpp_richedit in 'hpp_richedit.pas';
 
 type
   TMenuHandles = record
@@ -192,12 +192,12 @@ begin
   hppCodepage := PluginLink.CallService(MS_LANGPACK_GETCODEPAGE,0,0);
   if (hppCodepage = CALLSERVICE_NOTFOUND) or
      (hppCodepage = CP_ACP) then hppCodepage := GetACP();
-  // Checking if richedit 2.0 or 3.0 availible
-  if not IsRichEdit20Available and (hppMessagebox(0,
-      // single line to translation script
-      TranslateWideW('History++ module could not be loaded, riched20.dll is missing. Press Yes to continue loading Miranda.'),
-      hppName+' Information',
-      MB_YESNOCANCEL or MB_ICONINFORMATION) <> IDYES) then begin
+  // Checking the version of richedit is available, need 2.0+
+  hppRichEditVersion := InitRichEditLibrary;
+  if hppRichEditVersion < 20 then begin
+    hppMessagebox(hppMainWindow, FormatCString( // single line to translation script
+      TranslateWideW('History++ module could not be loaded, richedit 2.0+ module is missing.\nPress OK to continue loading Miranda.')),
+      hppName+' Information', MB_OK or MB_ICONINFORMATION);
     Result := 1;
     exit;
   end;
@@ -218,7 +218,7 @@ begin
   {$IFNDEF NO_EXTERNALGRID}
   RegisterExtGridServices;
   {$ENDIF}
-  hppRegisterMessagesCatcher;
+  hppRegisterMainWindow;
   Result := 0;
 end;
 
@@ -583,8 +583,8 @@ begin
     if MetaContactsEnabled then
       PluginLink.UnhookEvent(HookMetaDefaultChanged);
 
-    // destroy messages chatcher
-    hppUnregisterMessagesCatcher;
+    // destroy hidden main window
+    hppUnregisterMainWindow;
     // unregistering events
     hppUnregisterServices;
     {$IFNDEF NO_EXTERNALGRID}
@@ -595,7 +595,7 @@ begin
 
   except
     on E: Exception do
-      HppMessageBox(0,
+      HppMessageBox(hppMainWindow,
         'Error while closing '+hppName+':'+#10#13+E.Message,
         hppName+' Error',MB_OK or MB_ICONERROR);
   end;
