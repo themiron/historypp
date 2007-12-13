@@ -29,6 +29,11 @@ unit RtlVclOptimize;
     Delphi 6, 7, 2005 and 2006 is overwritten by a version that takes less
     time and which is also used in the Delphi 2007 VCL by default. }
 
+{$DEFINE WMERASEBKGND_HOOK}
+  { If WMERASEBKGND_HOOK is defined the TWinControl.WMEraseBkgnd message handler
+    for Delphi 6, 7, 2005 is overwritten by a version that takes case about
+    DoubleBuffered controls and is used in the Delphi 2006+ VCL by default. }
+
 {$DEFINE STREQUAL_INJECTION}
   { If STREQUAL_INJECTION is defined the _LStrCmp/_WStrCmp call is replaced
     by a call to _LStrEqual/_WStrEqual when the next opcode is a
@@ -85,7 +90,7 @@ implementation
 uses
   Windows, Messages, SysUtils, Classes, Contnrs, TypInfo,
   {$IFDEF COMPILER6_UP} RtlConsts {$ELSE} Consts {$ENDIF},
-  Controls;
+  Controls, Themes;
 
 {$IFDEF NOLEADBYTES_HOOK}
 var
@@ -2727,8 +2732,39 @@ begin
     end;
   end;
 end;
+
 {$ENDIF WMPAINT_HOOK}
 {$ENDIF ~DELPHI2007_UP}
+
+{$IFNDEF COMPILER9_UP}
+{$IFDEF WMERASEBKGND_HOOK}
+{ Code by Nathanial Woolls posted to Quality Central.
+  Optimizes the double buffered drawing
+  DrawParentBackground does not work if the control's parent is DoubleBuffered. }
+procedure WinControlWMEraseBkgnd(Control: TWinControl; var Message: TWMEraseBkgnd);
+begin
+  with ThemeServices do
+  if ThemesEnabled and Assigned(Control.Parent) and (csParentBackground in Control.ControlStyle) then
+    begin
+      if Control.DoubleBuffered and
+         (TMessage(Message).wParam <> TMessage(Message).lParam) then
+        PerformEraseBackground(Control, Message.DC) else
+      { Get the parent to draw its background into the control's background. }
+      DrawParentBackground(Control.Handle, Message.DC, nil, False);
+    end
+    else
+    begin
+      { Only erase background if we're not doublebuffering or painting to memory. }
+      if not Control.DoubleBuffered or
+         (TMessage(Message).wParam = TMessage(Message).lParam) then
+        FillRect(Message.DC, Control.ClientRect, Control.Brush.Handle);
+    end;
+
+  Message.Result := 1;
+end;
+
+{$ENDIF WMERASEBKGND_HOOK}
+{$ENDIF ~COMPILER9_UP}
 
 var
   GetDynaMethodAddr: Pointer;
@@ -2838,6 +2874,12 @@ initialization
   CodeRedirect(GetDynamicMethod(TWinControl, WM_PAINT), @WinControlWMPaint);
   {$ENDIF ~COMPILER10_UP}
   {$ENDIF WMPAINT_HOOK}
+
+  {$IFDEF WMERASEBKGND_HOOK}
+  {$IFNDEF COMPILER9_UP}
+  CodeRedirect(GetDynamicMethod(TWinControl, WM_ERASEBKGND), @WinControlWMEraseBkgnd);
+  {$ENDIF ~COMPILER9_UP}
+  {$ENDIF WMERASEBKGND_HOOK}
 
 end.
 
