@@ -333,45 +333,54 @@ begin
 end;
 
 function TextHasUrls(var Text: WideString): Boolean;
+const
+  prefix: array[0..1] of WideString = ('www.','ftp.');
+  protos: array[0..12] of WideString = (
+    'http:/',
+    'ftp:/',
+    'file:/',
+    'mailto:/',
+    'https:/',
+    'gopher:/',
+    'nntp:/',
+    'prospero:/',
+    'telnet:/',
+    'news:/',
+    'wais:/',
+    'outlook:/',
+    'callto:/');
 var
-  len,lenW: Integer;
-  HasProto, HasWWW: Boolean;
+  i,len,lenW: Integer;
+  pText,pPos: PWideChar;
+
 begin
   Result := False;
-  HasProto := Assigned(WStrPos(@Text[1],'://'));
-  HasWWW := Assigned(WStrPos(@Text[1],'www.'));
-  if (not HasProto) and (not HasWWW) then exit;
-  if HasWWW then begin
-    Result := True;
-    exit;
+  len := Length(Text);
+  if len=0 then exit;
+
+  pText := PWideChar(Text);
+  for i := 0 to High(prefix) do begin
+    pPos := WStrPos(pText,PWideChar(prefix[i]));
+    if not Assigned(pPos) then continue;
+    Result :=
+      ((DWord(pPos)=DWord(pText)) or not IsWideCharAlphaNumeric((pPos-1)^)) and
+      IsWideCharAlphaNumeric((pPos+Length(prefix[i]))^);
+    if Result then exit;
   end;
 
-  len := Length(Text);
-  lenW := AllocateTextBuffer((len+1)*SizeOf(WideChar));
-  Move(Text[1],PWideChar(buffer)^,lenW);
+  if not Assigned(WStrPos(PWideChar(Text),':/')) then exit;
+
+  lenW := (len+1)*SizeOf(WideChar);
+  AllocateTextBuffer(lenW);
+  Move(Text[1],buffer^,lenW);
   Tnt_CharLowerBuffW(PWideChar(buffer),len);
 
-  if HasProto then begin
-    // note: we can make it one big OR clause, but it's more readable this way
-    // list strings in order of probability
-    Result := Assigned(WStrPos(PWideChar(buffer), 'http://'));
-    if Result then exit;
-    Result := Assigned(WStrPos(PWideChar(buffer), 'ftp://'));
-    if Result then exit;
-    Result := Assigned(WStrPos(PWideChar(buffer), 'https://'));
-    if Result then exit;
-    Result := Assigned(WStrPos(PWideChar(buffer), 'mailto://'));
-    if Result then exit;
-    Result := Assigned(WStrPos(PWideChar(buffer), 'file://'));
-    if Result then exit;
-    Result := Assigned(WStrPos(PWideChar(buffer), 'nntp://'));
-    if Result then exit;
-    Result := Assigned(WStrPos(PWideChar(buffer), 'irc://'));
-    if Result then exit;
-    Result := Assigned(WStrPos(PWideChar(buffer), 'news://'));
-    if Result then exit;
-    //Result := Assigned(WStrPos(find_buf, 'opera:'));
-    //if Result then exit;
+  for i := 0 to High(protos) do begin
+    pPos := WStrPos(PWideChar(buffer),PWideChar(protos[i]));
+    if not Assigned(pPos) then continue;
+    Result :=
+      ((DWord(pPos)=DWord(buffer)) or not IsWideCharAlphaNumeric((pPos-1)^));
+    if Result then break;
   end;
 end;
 
@@ -528,7 +537,7 @@ begin
     end;
     if (lenW > 0) and (lenW < msglen) then
       SetString(hi.Text,msgW,lenW) else
-      hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen);
+      hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen-1);
   end;
 end;
 
