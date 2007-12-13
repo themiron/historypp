@@ -229,6 +229,7 @@ var
   hppProfileDir: String;
   hppPluginsDir: String;
   hppDllName: String;
+  hppRichEditVersion: Integer;
 
 {$I m_historypp.inc}
 
