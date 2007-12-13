@@ -44,7 +44,7 @@ unit RtlVclOptimize;
   { If NOLEADBYTES_HOOK is defined and SysLocal.LeadBytes is [], some ANSI
     functions are replaced by faster functions that ignore the LeadBytes. }
 
-{$DEFINE RTLDEBUG}
+{.$DEFINE RTLDEBUG}
   { If RTLDEBUG is defined the unit is compiled with debug information. }
 
 interface
