@@ -26,7 +26,7 @@ unit HistoryControls;
 interface
 
 uses
-  Windows, Messages, Classes,
+  Windows, Messages, Classes, TntWindows,
   Controls, StdCtrls, ComCtrls, ExtCtrls, Buttons, {Dialogs,}
   TntControls, TntStdCtrls, TntComCtrls, TntExtCtrls, TntButtons;
 
@@ -100,6 +100,11 @@ type
     {$ENDIF}
   end;
 
+  THppGroupBox = class(TTntGroupBox)
+  protected
+    procedure Paint; override;
+  end;
+
   { //Saved for probably future use
   THppSaveDialog = class(TSaveDialog)
   private
@@ -117,7 +122,8 @@ procedure Register;
 
 implementation
 
-uses CommCtrl, {CommDlg,} Forms, Themes, TntSysUtils;
+uses CommCtrl, {CommDlg,} Forms, Themes, UxTheme, TntSysUtils,
+  Graphics, TntGraphics;
 
 procedure Register;
 begin
@@ -130,6 +136,7 @@ begin
   RegisterComponents('History++', [THppButton]);
   RegisterComponents('History++', [THppRadioButton]);
   RegisterComponents('History++', [THppCheckBox]);
+  RegisterComponents('History++', [THppGroupBox]);
   {RegisterComponents('History++', [THppSaveDialog]);}
 end;
 
@@ -192,9 +199,10 @@ var
 begin
   StoredParentBackground := ParentBackground;
   inherited Create(AOwner);
-  //ControlStyle := ControlStyle - [csParentBackground] + [csOpaque];
+  {$IFDEF THEME_7_UP}
   if ThemeServices.ThemesEnabled then
     ParentBackground := StoredParentBackground;
+  {$ENDIF}
 end;
 {$ENDIF}
 
@@ -272,9 +280,11 @@ type
 // VCL bug.
 procedure THppSpeedButton.PaintButton;
 begin
+  {$IFDEF THEME_7_UP}
   with ThemeServices do
     if not Transparent and ThemesEnabled and Assigned(Parent) then
       DrawParentBackground(Parent.Handle, Canvas.Handle, nil, True);
+  {$ENDIF}
   inherited;
 end;
 
@@ -321,20 +331,26 @@ end;
 // VCL bug. http://qc.borland.com/wc/qcmain.aspx?d=2537
 procedure THppButton.CNCtlColorStatic(var Message: TWMCtlColorStatic);
 begin
-  if Assigned(Parent) and Parent.DoubleBuffered then begin
+  {$IFDEF THEME_7_UP}
+  with ThemeServices do
+  if ThemesEnabled and Assigned(Parent) and Parent.DoubleBuffered then begin
     PerformEraseBackground(Self, Message.ChildDC);
     Message.Result := GetStockObject(NULL_BRUSH);
   end else
-    inherited;
+  {$ENDIF}
+  inherited;
 end;
 
 procedure THppButton.CNCtlColorBtn(var Message: TWMCtlColorBtn);
 begin
-  if Assigned(Parent) and Parent.DoubleBuffered then begin
+  {$IFDEF THEME_7_UP}
+  with ThemeServices do
+  if ThemesEnabled and Assigned(Parent) and Parent.DoubleBuffered then begin
     PerformEraseBackground(Self, Message.ChildDC);
     Message.Result := GetStockObject(NULL_BRUSH);
   end else
-    inherited;
+  {$ENDIF}
+  inherited;
 end;
 {$ENDIF}
 
@@ -345,11 +361,14 @@ end;
 // VCL bug. http://qc.borland.com/wc/qcmain.aspx?d=2537
 procedure THppRadioButton.CNCtlColorStatic(var Message: TWMCtlColorStatic);
 begin
-  if Assigned(Parent) and Parent.DoubleBuffered then begin
+  {$IFDEF THEME_7_UP}
+  with ThemeServices do
+  if ThemesEnabled and Assigned(Parent) and Parent.DoubleBuffered then begin
     PerformEraseBackground(Self, Message.ChildDC);
     Message.Result := GetStockObject(NULL_BRUSH);
   end else
-    inherited;
+  {$ENDIF}
+  inherited;
 end;
 {$ENDIF}
 
@@ -360,13 +379,105 @@ end;
 // VCL bug. http://qc.borland.com/wc/qcmain.aspx?d=2537
 procedure THppCheckBox.CNCtlColorStatic(var Message: TWMCtlColorStatic);
 begin
-  if Assigned(Parent) and Parent.DoubleBuffered then begin
+  {$IFDEF THEME_7_UP}
+  with ThemeServices do
+  if ThemesEnabled and Assigned(Parent) and Parent.DoubleBuffered then begin
     PerformEraseBackground(Self, Message.ChildDC);
     Message.Result := GetStockObject(NULL_BRUSH);
   end else
-    inherited;
+  {$ENDIF}
+  inherited;
 end;
 {$ENDIF}
+
+{ THppGroupBox }
+
+procedure THppGroupBox.Paint;
+var
+  spCaption: WideString;
+
+  {$IFDEF THEME_7_UP}
+  procedure PaintThemedGroupBox;
+  var
+    CaptionRect: TRect;
+    OuterRect: TRect;
+    Box: TThemedButton;
+    Details: TThemedElementDetails;
+  begin
+    if Enabled then
+      Box := tbGroupBoxNormal else
+      Box := tbGroupBoxDisabled;
+    Details := ThemeServices.GetElementDetails(Box);
+    with Canvas do begin
+      if spCaption <> '' then begin
+        with Details do
+          UxTheme.GetThemeTextExtent(ThemeServices.Theme[Element],Handle,
+            Part,State,PWideChar(spCaption),Length(spCaption),DT_LEFT, nil,CaptionRect);
+        if not UseRightToLeftAlignment then
+          OffsetRect(CaptionRect, 8, 0) else
+          OffsetRect(CaptionRect, Width - 8 - CaptionRect.Right, 0);
+      end else
+        CaptionRect := Rect(0, 0, 0, 0);
+
+      OuterRect := ClientRect;
+      OuterRect.Top := (CaptionRect.Bottom - CaptionRect.Top) div 2;
+      with CaptionRect do
+        ExcludeClipRect(Handle, Left, Top, Right, Bottom);
+      ThemeServices.DrawElement(Handle, Details, OuterRect);
+
+      SelectClipRgn(Handle, 0);
+      if Caption <> '' then
+        ThemeServices.DrawText(Handle, Details, spCaption, CaptionRect, DT_LEFT, 0);
+    end;
+  end;
+  {$ENDIF}
+
+  procedure PaintGroupBox;
+  var
+    H: Integer;
+    R: TRect;
+    Flags: Longint;
+  begin
+    with Canvas do begin
+      H := WideCanvasTextHeight(Canvas, '0');
+      R := Rect(0, H div 2 - 1, Width, Height);
+      if Ctl3D then
+      begin
+        Inc(R.Left);
+        Inc(R.Top);
+        Brush.Color := clBtnHighlight;
+        FrameRect(R);
+        OffsetRect(R, -1, -1);
+        Brush.Color := clBtnShadow;
+      end else
+        Brush.Color := clWindowFrame;
+      FrameRect(R);
+      if spCaption <> '' then
+      begin
+        if not UseRightToLeftAlignment then
+          R := Rect(8, 0, 0, H)
+        else
+          R := Rect(R.Right - WideCanvasTextWidth(Canvas, spCaption) - 8, 0, 0, H);
+        Flags := DrawTextBiDiModeFlags(DT_SINGLELINE);
+        Tnt_DrawTextW(Handle, PWideChar(spCaption), Length(spCaption), R, Flags or DT_CALCRECT);
+        Brush.Color := Color;
+        Tnt_DrawTextW(Handle, PWideChar(spCaption), Length(spCaption), R, Flags);
+      end;
+    end;
+  end;
+
+begin
+  if Win32PlatformIsUnicode then begin
+    spCaption := Caption;
+    if spCaption <> '' then spCaption := ' '+spCaption+' ';
+    Canvas.Font := Self.Font;
+    {$IFDEF THEME_7_UP}
+    if ThemeServices.ThemesEnabled then PaintThemedGroupBox else
+    {$ENDIF}
+    PaintGroupBox;
+  end else
+    inherited;
+end;
 
 { THppSaveDialog }
 { //Saved for probably future use
