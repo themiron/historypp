@@ -49,32 +49,64 @@ unit hpp_mescatcher;
 interface
 
 {$I compilers.inc}
+{.$DEFINE USE_CUSTOMIDLEHOOK}
 
 uses
-  Windows, Messages, Classes, Controls, Forms, Themes;
+  Windows, Messages, Classes, Controls;
 
 const
-  hppMCWindowClassName = 'hppMessageCatcher';
+  hppWindowClassName = 'History++ MainWindow';
+
+var
+  hppMainWindow: HWND = 0;
 
 procedure hppWakeMainThread(Sender: TObject);
-function hppRegisterMessagesCatcher: Boolean;
-function hppUnregisterMessagesCatcher: Boolean;
+function hppRegisterMainWindow: Boolean;
+function hppUnregisterMainWindow: Boolean;
 
 implementation
 
-var
-  MCWindow: HWND = 0;
-  SavedWakeMainThread: TNotifyEvent = nil;
+uses Forms, Themes;
 
-function MessageCatcherWndProc(hwndDlg: HWND; uMsg: Integer; wParam: WPARAM; lParam: LPARAM): Integer; stdcall;
+{$IFDEF USE_CUSTOMIDLEHOOK}
+type
+  THackApplication = class(TComponent)
+  protected
+    FxxxxxxxxxHandle: HWnd;
+    FxxxxxxxxxBiDiMode: TBiDiMode;
+    FxxxxxxxxxBiDiKeyboard: AnsiString;
+    FxxxxxxxxxNonBiDiKeyboard: AnsiString;
+    FxxxxxxxxxObjectInstance: Pointer;
+    FxxxxxxxxxMainForm: TForm;
+    FMouseControl: TControl;
+  end;
+{$ENDIF}
+
+var
+  SavedWakeMainThread: TNotifyEvent = nil;
+  SavedCheckIniChange: function (var Message: TMessage): Boolean of object = nil;
+  {$IFDEF USE_CUSTOMIDLEHOOK}
+  ForegroundIdleHook: HHOOK;
+  {$ENDIF}
+
+function MainWindowWndProc(hwndDlg: HWND; uMsg: Integer; wParam: WPARAM; lParam: LPARAM): Integer; stdcall;
+var
+  Message: TMessage;
 begin
   Result := 0;
+  if Assigned(SavedCheckIniChange) then begin
+    Message.Msg := uMsg;
+    SavedCheckIniChange(Message);
+  end;
   case uMsg of
+    //WM_HOTKEY:
     // place for global hotkeys :)
-    {WM_HOTKEY: begin
-      if wParam = Hotkey then
-        PluginLink.CallService(MS_HPP_SHOWGLOBALSEARCH,0,0);
-    end;}
+    //if wParam = Hotkey then
+    //  PluginLink.CallService(MS_HPP_SHOWGLOBALSEARCH,0,0);
+    CM_WINDOWHOOK: begin
+      if (wParam = 0) and not Assigned(SavedCheckIniChange) then
+        SavedCheckIniChange := TWindowHook(Pointer(LParam)^);
+    end;
     WM_SETTINGCHANGE: begin
       // workaround to force vcl notice mouse setting changed
       if wParam = SPI_SETWHEELSCROLLLINES then
@@ -95,38 +127,80 @@ begin
   end;
 end;
 
-function hppRegisterMessagesCatcher: Boolean;
+{$IFDEF USE_CUSTOMIDLEHOOK}
+function IdleHookProc(code: Integer; wParam: WPARAM; lParam: LPARAM): Integer; stdcall;
+var
+  Control: TControl;
+  MouseControl: TControl;
+  CaptureControl: TControl;
+  P: TPoint;
+begin
+  if code < 0 then begin
+    Result := CallNextHookEx(ForegroundIdleHook,code,wParam,lParam);
+    exit;
+  end;
+  GetCursorPos(P);
+  Control := FindDragTarget(P, True);
+  MouseControl := THackApplication(Application).FMouseControl;
+  CaptureControl := GetCaptureControl;
+  if MouseControl <> Control then begin
+    if ((MouseControl <> nil) and (CaptureControl = nil)) or
+      ((CaptureControl <> nil) and (MouseControl = CaptureControl)) then
+      MouseControl.Perform(CM_MOUSELEAVE, 0, 0);
+    MouseControl := Control;
+    if ((MouseControl <> nil) and (CaptureControl = nil)) or
+      ((CaptureControl <> nil) and (MouseControl = CaptureControl)) then
+      MouseControl.Perform(CM_MOUSEENTER, 0, 0);
+    THackApplication(Application).FMouseControl := MouseControl;
+  end;
+  if Application.ShowHint and (MouseControl = nil) then
+    Application.CancelHint;
+  Result := 1;
+end;
+{$ENDIF}
+
+function hppRegisterMainWindow: Boolean;
 var
   WndClass: TWNDCLASS;
 begin
   Result := False;
   ZeroMemory(@WndClass,SizeOf(WndClass));
-  WndClass.lpfnWndProc   := @MessageCatcherWndProc;
+  WndClass.lpfnWndProc   := @MainWindowWndProc;
   WndClass.hInstance     := GetModuleHandle(nil);
-  WndClass.lpszClassName := hppMCWindowClassName;
+  WndClass.lpszClassName := hppWindowClassName;
   if Windows.RegisterClass(WndClass) = 0 then exit;
-  MCWindow := CreateWindow(hppMCWindowClassName,'hppMessageCatcher',WS_DISABLED,
-              0,0,0,0,0,0,WndClass.hInstance,nil);
-  Result := (MCWindow <> 0);
+  hppMainWindow := CreateWindow(hppWindowClassName,hppWindowClassName,WS_DISABLED,
+                             0,0,0,0,0,0,WndClass.hInstance,nil);
+  Result := (hppMainWindow <> 0);
   if Result then begin
+    // assign Application.CheckIniChange function
+    Application.Handle := hppMainWindow;
+    Application.Handle := 0;
     SavedWakeMainThread := Classes.WakeMainThread;
     @Classes.WakeMainThread := @hppWakeMainThread;
   end;
+  {$IFDEF USE_CUSTOMIDLEHOOK}
+  ForegroundIdleHook := SetWindowsHookEx(WH_FOREGROUNDIDLE,
+                             @IdleHookProc,0,GetCurrentThreadID);
+  {$ENDIF}
 end;
 
-function hppUnregisterMessagesCatcher: Boolean;
+function hppUnregisterMainWindow: Boolean;
 begin
-  if MCWindow <> 0 then begin
-    DestroyWindow(MCWindow);
-    MCWindow := 0;
+  if hppMainWindow <> 0 then begin
+    DestroyWindow(hppMainWindow);
+    hppMainWindow := 0;
   end;
-  Result := Boolean(Windows.UnregisterClass(hppMCWindowClassName,GetModuleHandle(nil)));
+  Result := Boolean(Windows.UnregisterClass(hppWindowClassName,GetModuleHandle(nil)));
   Classes.WakeMainThread := SavedWakeMainThread;
+  {$IFDEF USE_CUSTOMIDLEHOOK}
+  if ForegroundIdleHook <> 0 then UnhookWindowsHookEx(ForegroundIdleHook);
+  {$ENDIF}
 end;
 
 procedure hppWakeMainThread(Sender: TObject);
 begin
-  PostMessage(MCWindow, WM_NULL, 0, 0);
+  PostMessage(hppMainWindow, WM_NULL, 0, 0);
   if Assigned(SavedWakeMainThread) then
     SavedWakeMainThread(Sender);
 end;
