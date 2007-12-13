@@ -67,7 +67,7 @@ type
     paBottom: THppPanel;
     Panel3: THppPanel;
     paInfo: THppPanel;
-    GroupBox: TTntGroupBox;
+    GroupBox: THppGroupBox;
     laType: TTntLabel;
     laDateTime: TTntLabel;
     EMsgType: THppEdit;
@@ -124,10 +124,10 @@ type
     procedure OpenLinkNWClick(Sender: TObject);
     procedure OpenLinkClick(Sender: TObject);
     procedure CopyLinkClick(Sender: TObject);
-    procedure ETextMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
+    procedure ETextMouseMove(Sender: TObject; Shift: TShiftState; X,Y: Integer);
     procedure BrowseReceivedFilesClick(Sender: TObject);
     procedure OpenFileFolderClick(Sender: TObject);
+    procedure ETextURLClick(Sender: TObject; const URLText: String; Button: TMouseButton);
   private
     FParentForm: THistoryFrm;
     FItem: Integer;
@@ -141,7 +141,6 @@ type
 
     procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
     procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
-    procedure WMNotify(var Message: TWMNotify); message WM_NOTIFY;
     procedure WMSetCursor(var Message: TWMSetCursor); message WM_SETCURSOR;
     procedure WMSysColorChange(var Message: TMessage); message WM_SYSCOLORCHANGE;
     procedure LoadPosition;
@@ -188,11 +187,6 @@ begin
   end
 end;
 
-procedure TEventDetailsFrm.PrevBtnClick(Sender: TObject);
-begin
-  Item := PrevItem;
-end;
-
 procedure TEventDetailsFrm.ProcessRichEdit(const FItem: Integer);
 var
   ItemRenderDetails: TItemRenderDetails;
@@ -215,11 +209,6 @@ begin
   else
     ItemRenderDetails.bHistoryWindow := IRDHW_CONTACTHISTORY;
   PluginLink.NotifyEventHooks(hHppRichEditItemProcess,EText.Handle,Integer(@ItemRenderDetails));
-end;
-
-procedure TEventDetailsFrm.NextBtnClick(Sender: TObject);
-begin
-  Item := NextItem;
 end;
 
 procedure TEventDetailsFrm.EFromMoreClick(Sender: TObject);
@@ -281,7 +270,6 @@ begin
     end;
 end;
 
-
 procedure TEventDetailsFrm.LoadPosition;
 begin
   Utils_RestoreFormPosition(Self,0,hppDBName,'EventDetail.');
@@ -295,7 +283,6 @@ begin
   // use MagneticWindows.dll
   PluginLink.CallService(MS_MW_REMWINDOW,WindowHandle,0);
 end;
-
 
 procedure TEventDetailsFrm.FormClose(Sender: TObject;
   var Action: TCloseAction);
@@ -311,8 +298,6 @@ begin
 end;
 
 procedure TEventDetailsFrm.FormCreate(Sender: TObject);
-//var
-  //re_mask: integer;
 begin
   Icon.ReleaseHandle;
 
@@ -322,16 +307,9 @@ begin
   DoubleBuffered := True;
   MakeDoubleBufferedParent(Self);
 
-  EText.Brush.Style := bsClear;
-
   LoadButtonIcons;
   TranslateForm;
 
-  //re_mask := SendMessage(EText.Handle,EM_GETEVENTMASK, 0, 0);
-  //SendMessage(EText.Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK or ENM_REQUESTRESIZE);
-  //SendMessage(EText.Handle,EM_AUTOURLDETECT,1,0);
-  //SendMessage(EText.Handle,EM_SETMARGINS,EC_RIGHTMARGIN or EC_LEFTMARGIN,MakeLParam(3,3));
-  //SendMessage(EText.Handle,EM_SETMARGINS,EC_RIGHTMARGIN or EC_LEFTMARGIN,0);
   LoadPosition;
 end;
 
@@ -378,8 +356,10 @@ begin
 
   EText.Lines.BeginUpdate;
   ParentForm.hg.ApplyItemToRich(FItem,EText,false,true);
+  EText.Brush.Style := bsClear;
   EText.SelStart := 0;
-  //EText.SelLength := 0;
+  EText.SelLength := 0;
+
   SendMessage(EText.Handle,EM_REQUESTRESIZE,0,0);
   EText.Lines.EndUpdate;
 
@@ -393,10 +373,24 @@ begin
   PrevBtn.Enabled := (PrevItem <> -1);
 
   FOverFile := IsFileEvent;
+end;
 
+procedure TEventDetailsFrm.PrevBtnClick(Sender: TObject);
+begin
+  SetItem(PrevItem);
+  Assert(Assigned(FParentForm));
   if FParentForm.hg.Selected <> FItem then
     FParentForm.hg.Selected := FItem;
 end;
+
+procedure TEventDetailsFrm.NextBtnClick(Sender: TObject);
+begin
+  SetItem(NextItem);
+  Assert(Assigned(FParentForm));
+  if FParentForm.hg.Selected <> FItem then
+    FParentForm.hg.Selected := FItem;
+end;
+
 
 procedure TEventDetailsFrm.ResetItem;
 begin
@@ -477,29 +471,6 @@ begin
   FParentForm.ReplyQuoted(FItem);
 end;
 
-procedure TEventDetailsFrm.WMNotify(var Message: TWMNotify);
-var
-  p: TPoint;
-  link: TENLink;
-  tr: TextRange;
-begin
-  if Message.NMHdr^.code = EN_LINK then begin
-    p := EText.ScreenToClient(Mouse.CursorPos);
-    if p.Y <= FRichHeight then begin
-      FOverURL := True;
-      link := TENLink(Pointer(Message.NMHdr)^);
-      tr.chrg := link.chrg;
-      SetLength(SavedLinkUrl,link.chrg.cpMax-link.chrg.cpMin);
-      tr.lpstrText := @SavedLinkUrl[1];
-      EText.Perform(EM_GETTEXTRANGE,0,LongInt(@tr));
-      if link.msg = WM_LBUTTONUP then begin
-        OpenLinkNW.Click;
-      end;
-    end;
-  end;
-  inherited;
-end;
-
 procedure TEventDetailsFrm.WMSetCursor(var Message: TWMSetCursor);
 var
   p: TPoint;
@@ -528,28 +499,38 @@ begin
     Height := 16;
     Canvas.Brush.Color := clBtnFace;
     Canvas.FillRect(Canvas.ClipRect);
-    DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_CONTACDETAILS].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+    DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_CONTACDETAILS].Handle,
+               16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
   with EToMore.Glyph do begin
     Width := 16;
     Height := 16;
     Canvas.Brush.Color := clBtnFace;
     Canvas.FillRect(Canvas.ClipRect);
-    DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_CONTACDETAILS].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+    DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_CONTACDETAILS].Handle,
+               16,16,0,Canvas.Brush.Handle,DI_NORMAL);
   end;
   with PrevBtn.Glyph do begin
-    Width := 16;
+    PrevBtn.NumGlyphs := 2;
+    Width := 16*2;
     Height := 16;
     Canvas.Brush.Color := clBtnFace;
     Canvas.FillRect(Canvas.ClipRect);
-    DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_SEARCHUP].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+    DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_SEARCHUP].Handle,
+               16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+    DrawState(Canvas.Handle,0,nil,hppIcons[HPP_ICON_SEARCHUP].Handle,0,
+              16,0,16,16,DST_ICON or DSS_DISABLED);
   end;
   with NextBtn.Glyph do begin
-    Width := 16;
+    NextBtn.NumGlyphs := 2;
+    Width := 16*2;
     Height := 16;
     Canvas.Brush.Color := clBtnFace;
     Canvas.FillRect(Canvas.ClipRect);
-    DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_SEARCHDOWN].Handle,16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+    DrawIconEx(Canvas.Handle,0,0,hppIcons[HPP_ICON_SEARCHDOWN].Handle,
+               16,16,0,Canvas.Brush.Handle,DI_NORMAL);
+    DrawState(Canvas.Handle,0,nil,hppIcons[HPP_ICON_SEARCHDOWN].Handle,0,
+              16,0,16,16,DST_ICON or DSS_DISABLED);
   end;
 end;
 
@@ -677,6 +658,15 @@ var
 begin
   PluginLink.CallService(MS_FILE_GETRECEIVEDFILESFOLDER,FParentForm.hContact,LPARAM(@Path));
   ShellExecute(0,'open',Path,nil,nil,SW_SHOW);
+end;
+
+procedure TEventDetailsFrm.ETextURLClick(Sender: TObject; const URLText: String; Button: TMouseButton);
+begin
+  SavedLinkUrl := URLText;
+  case Button of
+    mbLeft: OpenLinkNW.Click;
+    mbRight: FOverUrl := True;
+  end;
 end;
 
 end.
