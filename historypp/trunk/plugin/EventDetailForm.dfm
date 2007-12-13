@@ -34,6 +34,7 @@ object EventDetailsFrm: TEventDetailsFrm
       Top = 4
       Width = 77
       Height = 25
+      Hint = 'Prevous message'
       Caption = 'Prev'
       OnClick = PrevBtnClick
     end
@@ -42,6 +43,7 @@ object EventDetailsFrm: TEventDetailsFrm
       Top = 4
       Width = 77
       Height = 25
+      Hint = 'Next message'
       Caption = 'Next'
       OnClick = NextBtnClick
     end
@@ -83,16 +85,14 @@ object EventDetailsFrm: TEventDetailsFrm
     Height = 101
     Align = alTop
     BevelOuter = bvNone
-    Caption = ' '
     TabOrder = 2
-    object GroupBox: TTntGroupBox
+    object GroupBox: THppGroupBox
       Left = 0
       Top = 0
       Width = 450
       Height = 101
       Align = alClient
       Caption = 'Event Info'
-      ParentBackground = False
       TabOrder = 0
       DesignSize = (
         450
@@ -181,7 +181,7 @@ object EventDetailsFrm: TEventDetailsFrm
         BorderStyle = bsNone
         Color = clBtnFace
         ReadOnly = True
-        TabOrder = 1
+        TabOrder = 2
       end
       object ETo: THppEdit
         Left = 80
@@ -192,7 +192,7 @@ object EventDetailsFrm: TEventDetailsFrm
         BorderStyle = bsNone
         Color = clBtnFace
         ReadOnly = True
-        TabOrder = 2
+        TabOrder = 3
       end
       object EDateTime: THppEdit
         Left = 80
@@ -203,7 +203,7 @@ object EventDetailsFrm: TEventDetailsFrm
         BorderStyle = bsNone
         Color = clBtnFace
         ReadOnly = True
-        TabOrder = 3
+        TabOrder = 1
       end
     end
   end
@@ -216,7 +216,7 @@ object EventDetailsFrm: TEventDetailsFrm
     BevelOuter = bvNone
     TabOrder = 3
   end
-  object EText: THPPRichEdit
+  object EText: THppRichEdit
     Left = 0
     Top = 107
     Width = 450
@@ -232,6 +232,7 @@ object EventDetailsFrm: TEventDetailsFrm
     TabOrder = 0
     OnMouseMove = ETextMouseMove
     OnResizeRequest = ETextResizeRequest
+    OnURLClick = ETextURLClick
   end
   object pmEText: TTntPopupMenu
     BiDiMode = bdLeftToRight
