@@ -68,8 +68,12 @@ Event Filters
 ;; Text found in ..\plugin\EventDetailForm.dfm:
 [Event Details]
 Event Details
+[Prevous message]
+Prevous message
 [Prev]
 Prev
+[Next message]
+Next message
 [Next]
 Next
 [Reply &Quoted]
@@ -452,8 +456,8 @@ Password and Confirm fields should be similar
 ;; historypp.trans.txt file
 
 ;; Text found in ..\plugin\historypp.pas:
-[History++ module could not be loaded, riched20.dll is missing. Press Yes to continue loading Miranda.]
-History++ module could not be loaded, riched20.dll is missing. Press Yes to continue loading Miranda.
+[History++ module could not be loaded, richedit 2.0+ module is missing.\nPress OK to continue loading Miranda.]
+History++ module could not be loaded, richedit 2.0+ module is missing.\nPress OK to continue loading Miranda.
 [History]
 History
 
