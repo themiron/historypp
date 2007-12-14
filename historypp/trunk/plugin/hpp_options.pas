@@ -51,7 +51,7 @@ uses
   Graphics, Classes, SysUtils, Windows, Dialogs,
   m_globaldefs, m_api,
   HistoryGrid,
-  hpp_global, hpp_contacts, hpp_events;
+  hpp_global, hpp_contacts, hpp_events, hpp_mescatcher;
 
 type
 
@@ -476,7 +476,7 @@ begin
       hppMessage := WideFormat(FormatCString(
         TranslateWideW('Cannot load icon pack (%s) from:\r\n%s\r\nThis can cause no icons will be shown.')),
         [hppIPName,hppIconsDir+#13#10+hppPluginsDir]);
-      hppMessageBox(0,hppMessage,hppName+' Error',MB_ICONERROR or MB_OK);
+      hppMessageBox(hppMainWindow,hppMessage,hppName+' Error',MB_ICONERROR or MB_OK);
     end;
   end;
   if DoCheck then begin
@@ -485,7 +485,7 @@ begin
       hppMessage := WideFormat(FormatCString(
         TranslateWideW('You are using old icon pack from:\r\n%s\r\nThis can cause missing icons, so update the icon pack.')),
         [AnsiToWideString(Result,hppCodepage)]);
-      hppMessageBox(0,hppMessage,hppName+' Warning',MB_ICONWARNING or MB_OK);
+      hppMessageBox(hppMainWindow,hppMessage,hppName+' Warning',MB_ICONWARNING or MB_OK);
     end;
   end;
 end;
