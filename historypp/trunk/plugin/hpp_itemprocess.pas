@@ -47,7 +47,7 @@
  Contributors: theMIROn, Art Fedorov
 -----------------------------------------------------------------------------}
 
-{$DEFINE _OLD_MATHMOD}
+{.$DEFINE USE_URL_BBCODE}
 
 unit hpp_itemprocess;
 
@@ -56,7 +56,7 @@ interface
 uses
   Windows, Messages, SysUtils,
   m_globaldefs, m_api,
-  hpp_global, hpp_events, hpp_richedit, hpp_richedit_ole;
+  hpp_global, hpp_events, hpp_richedit;
 
 var
   rtf_ctable_text: String;
@@ -81,7 +81,7 @@ type
   end;
 
   TBBCodeClass = (bbStart,bbEnd);
-  TBBCodeType = (bbSimple, bbColor, bbSize);
+  TBBCodeType = (bbSimple, bbColor, bbSize, bbUrl);
 
   TBBCodeString = record
     ansi: PAnsiChar;
@@ -94,34 +94,44 @@ type
     bbtype: TBBCodeType;
     rtf: PAnsiChar;
     html: PAnsiChar;
+    minRE: Integer;
   end;
 
 const
   rtf_ctable: array[0..7] of TRTFColorTable = (
     //                 BBGGRR
     (sz:'black';  col:$000000),
-    (sz:'red';    col:$0000FF),
     (sz:'blue';   col:$FF0000),
     (sz:'green';  col:$00FF00),
+    (sz:'red';    col:$0000FF),
     (sz:'magenta';col:$FF00FF),
     (sz:'cyan';   col:$FFFF00),
     (sz:'yellow'; col:$00FFFF),
     (sz:'white';  col:$FFFFFF));
 
+const
+  bbCodesCount = {$IFDEF USE_URL_BBCODE}6{$ELSE}5{$ENDIF};
+
 var
-  bbCodes: array[0..5,bbStart..bbEnd] of TBBCodeInfo = (
-    ((prefix:(ansi:'[b]');      suffix:(ansi:nil); bbtype:bbSimple; rtf:'{\b ';      html:'<b>'),
+
+  bbCodes: array[0..bbCodesCount,bbStart..bbEnd] of TBBCodeInfo = (
+    ((prefix:(ansi:'[b]');      suffix:(ansi:nil); bbtype:bbSimple; rtf:'{\b ';      html:'<b>';  minRE: 10),
      (prefix:(ansi:'[/b]');     suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</b>')),
-    ((prefix:(ansi:'[i]');      suffix:(ansi:nil); bbtype:bbSimple; rtf:'{\i ';      html:'<i>'),
+    ((prefix:(ansi:'[i]');      suffix:(ansi:nil); bbtype:bbSimple; rtf:'{\i ';      html:'<i>';  minRE: 10),
      (prefix:(ansi:'[/i]');     suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</i>')),
-    ((prefix:(ansi:'[u]');      suffix:(ansi:nil); bbtype:bbSimple; rtf:'{\ul ';     html:'<u>'),
+    ((prefix:(ansi:'[u]');      suffix:(ansi:nil); bbtype:bbSimple; rtf:'{\ul ';     html:'<u>';  minRE: 10),
      (prefix:(ansi:'[/u]');     suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</u>')),
-    ((prefix:(ansi:'[s]');      suffix:(ansi:nil); bbtype:bbSimple; rtf:'{\strike '; html:'<s>'),
+    ((prefix:(ansi:'[s]');      suffix:(ansi:nil); bbtype:bbSimple; rtf:'{\strike '; html:'<s>';  minRE: 10),
      (prefix:(ansi:'[/s]');     suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</s>')),
-    ((prefix:(ansi:'[color=');  suffix:(ansi:']'); bbtype:bbColor;  rtf:'{\cf%u ';   html:'<font style="color:%s">'),
+    ((prefix:(ansi:'[color=');  suffix:(ansi:']'); bbtype:bbColor;  rtf:'{\cf%u ';   html:'<font style="color:%s">'; minRE: 10),
      (prefix:(ansi:'[/color]'); suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</font>')),
-    ((prefix:(ansi:'[size=');   suffix:(ansi:']'); bbtype:bbSize; rtf:'{\fs%u ';     html:'<font style="font-size:%spt">'),
-     (prefix:(ansi:'[/size]');  suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</font>')));
+    {$IFDEF USE_URL_BBCODE}
+    ((prefix:(ansi:'[url=');    suffix:(ansi:']'); bbtype:bbUrl;    rtf:'{\field{\*\fldinst{HYPERLINK ":%s"}}{\fldrslt{\ul\cf%u'; html:'<a href="%s">'; minRE: 41),
+     (prefix:(ansi:'[/url]');   suffix:(ansi:nil); bbtype:bbSimple; rtf:'}}}';      html:'</a>')),
+    {$ENDIF}
+    ((prefix:(ansi:'[size=');   suffix:(ansi:']'); bbtype:bbSize;   rtf:'{\fs%u ';   html:'<font style="font-size:%spt">'; minRE: 10),
+     (prefix:(ansi:'[/size]');  suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</font>'))
+  );
 
 const
   SHRINK_ON_CALL = 50;
@@ -223,6 +233,48 @@ begin
   Result := true;
 end;
 
+(* commented out fo future use
+function ParseLinksInRTF(S: AnsiString): AnsiString;
+const
+  urlStopChars = [' ','{','}','\','[',']'];
+  url41fmt = '{\field{\*\fldinst{HYPERLINK "%s"}}{\fldrslt{{\v #}\ul\cf1 %0:s}}}';
+var
+  bufPos,bufEnd: PChar;
+  urlStart,urlEnd: PChar;
+  newCode: PChar;
+  fmt_buffer: array[0..MAX_FMTBUF] of Char;
+  code: AnsiString;
+begin
+  ShrinkTextBuffer;
+  AllocateTextBuffer(Length(S)+1);
+  bufEnd := StrECopy(buffer,PChar(S));
+  bufPos := StrPos(buffer,'://');
+  while Assigned(bufPos) do begin
+    urlStart := bufPos;
+    urlEnd := bufPos+3;
+    while urlStart > buffer do begin
+      Dec(urlStart);
+      if urlStart[0] in urlStopChars then begin
+        Inc(urlStart);
+        break;
+      end;
+    end;
+    while urlEnd < bufEnd do begin
+      Inc(UrlEnd);
+      if urlEnd[0] in urlStopChars then break;
+    end;
+    if (urlStart<bufPos) and (urlEnd>bufPos+3) then begin
+      SetString(code,urlStart,urlEnd-urlStart);
+      newCode := StrLFmt(fmt_buffer,MAX_FMTBUF,url41fmt,[code]);
+      bufEnd := StrReplace(urlStart,newCode,bufEnd,urlEnd);
+      bufPos := urlEnd;
+    end;
+    bufPos := StrPos(bufPos,'://');
+  end;
+  SetString(Result,buffer,bufEnd-buffer);
+end;
+*)
+
 function DoSupportBBCodesRTF(S: AnsiString; StartColor: integer; doColorBBCodes: boolean): AnsiString;
 var
   bufPos,bufEnd: PChar;
@@ -237,6 +289,7 @@ begin
   AllocateTextBuffer(Length(S)+1);
   bufEnd := StrECopy(buffer,PChar(S));
   for i := 0 to High(bbCodes) do begin
+    if hppRichEditVersion < bbCodes[i,bbStart].minRE then continue;
     bufPos := buffer;
     repeat
       newCode := nil;
@@ -259,6 +312,13 @@ begin
             if TryStrToInt(code,n) then
               newCode := StrLFmt(fmt_buffer,MAX_FMTBUF,bbCodes[i,bbStart].rtf,[n shl 1]);
           end;
+          {$IFDEF USE_URL_BBCODE}
+          bbUrl: begin
+            SetString(code,strCode,lenCode);
+            if doColorBBCodes then n := 1 else n := 0;
+            newCode := StrLFmt(fmt_buffer,MAX_FMTBUF,bbCodes[i,bbStart].rtf,[PChar(code),n]);
+          end;
+          {$ENDIF}
         end;
         bufEnd := StrReplace(strStart,newCode,bufEnd,strTrail);
         bufPos := strTrail;
@@ -425,7 +485,7 @@ begin
     cr.cpMax := cr.cpMin;
     SendMessage(wParam,EM_EXSETSEL,0,integer(@cr));
     SetRichRTF(wParam,crlf,True,False,True);
-    REInsertBitmap(wParam,hBmp,-1);
+    RichEdit_InsertBitmap(wParam,hBmp,Cardinal(-1));
   end;
 end;
 
