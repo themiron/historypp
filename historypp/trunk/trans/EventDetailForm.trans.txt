@@ -1,6 +1,8 @@
 ;; Text found in ..\plugin\EventDetailForm.dfm:
 Event Details
+Prevous message
 Prev
+Next message
 Next
 Reply &Quoted
 &Close
