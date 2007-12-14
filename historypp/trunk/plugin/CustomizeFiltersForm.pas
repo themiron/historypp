@@ -33,13 +33,13 @@ type
   TfmCustomizeFilters = class(TTntForm)
     bnOK: TTntButton;
     bnCancel: TTntButton;
-    gbFilter: TTntGroupBox;
+    gbFilter: THppGroupBox;
     edFilterName: THppEdit;
     clEvents: TTntCheckListBox;
     bnReset: TTntButton;
     rbExclude: THppRadioButton;
     rbInclude: THppRadioButton;
-    gbFilters: TTntGroupBox;
+    gbFilters: THppGroupBox;
     lbFilters: TTntListBox;
     bnDown: THppButton;
     bnUp: THppButton;

@@ -64,7 +64,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
       TabOrder = 4
       OnClick = bnResetClick
     end
-    object gbFilter: TTntGroupBox
+    object gbFilter: THppGroupBox
       Left = 4
       Top = 145
       Width = 362
@@ -152,7 +152,7 @@ object fmCustomizeFilters: TfmCustomizeFilters
         OnClick = rbPropertyClick
       end
     end
-    object gbFilters: TTntGroupBox
+    object gbFilters: THppGroupBox
       Left = 4
       Top = 4
       Width = 362
