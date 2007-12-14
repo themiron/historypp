@@ -29,7 +29,9 @@ uses Windows, Messages, Classes, Graphics,
   Themes;
 
 type
-  THppHintWindow = class (TTntHintWindow)
+  THppHintWindow = class(TTntHintWindow)
+  private
+    procedure CMInvalidate(var Message: TMessage); message CM_INVALIDATE;
   protected
     procedure NCPaint(DC: HDC); override;
   public
@@ -80,7 +82,7 @@ function Utils_SaveFormPosition(Form: TTntForm; hContact: THandle; Module,Prefix
 
 implementation
 
-uses hpp_global, hpp_services, hpp_opt_dialog, hpp_database,
+uses hpp_global, hpp_services, hpp_opt_dialog, hpp_database, hpp_mescatcher,
   HistoryForm, GlobalSearch,
   {$IFNDEF NO_EXTERNALGRID}hpp_external,{$ENDIF}
   CustomizeFiltersForm, CustomizeToolbar,
@@ -283,10 +285,26 @@ end;
 
 { THppHintWindow }
 
+type
+  THackHintWindow = class(TCustomControl)
+  private
+    FActivating: Boolean;
+  end;
+
 constructor THppHintWindow.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   Color := clInfoBk;
+end;
+
+procedure THppHintWindow.CMInvalidate(var Message: TMessage);
+begin
+  if (THackHintWindow(Self).FActivating) and
+     (Application.Handle = 0) and (ParentWindow = 0) then begin
+    ParentWindow := hppMainWindow;
+    ShowWindow(Handle, SW_SHOWNOACTIVATE);
+  end;
+  inherited;
 end;
 
 procedure THppHintWindow.NCPaint(DC: HDC);
