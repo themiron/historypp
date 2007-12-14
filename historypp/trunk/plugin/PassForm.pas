@@ -332,7 +332,7 @@ begin
       if (Mask <> 0)
         and (Perform(CM_WANTSPECIALKEY, Key, 0) = 0)
         and (Perform(WM_GETDLGCODE, 0, 0) and Mask = 0)
-        and (Self.Perform(CM_DIALOGKEY, Key, 0) <> 0)
+        and (Perform(CM_DIALOGKEY, Key, 0) <> 0)
         then Exit;
     end;
 end;
