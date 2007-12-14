@@ -2746,11 +2746,11 @@ begin
   with ThemeServices do
   if ThemesEnabled and Assigned(Control.Parent) and (csParentBackground in Control.ControlStyle) then
     begin
-      if Control.DoubleBuffered and
-         (TMessage(Message).wParam <> TMessage(Message).lParam) then
-        PerformEraseBackground(Control, Message.DC) else
       { Get the parent to draw its background into the control's background. }
-      DrawParentBackground(Control.Handle, Message.DC, nil, False);
+      if Control.Parent.DoubleBuffered then
+        PerformEraseBackground(Control, Message.DC)
+      else
+        DrawParentBackground(Control.Handle, Message.DC, nil, False);
     end
     else
     begin
