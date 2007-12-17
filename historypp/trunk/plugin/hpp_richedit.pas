@@ -49,7 +49,7 @@ interface
 
 uses
   Windows, Messages, Classes, RichEdit, ActiveX,
-  Controls, StdCtrls, ComCtrls, Forms,
+  Controls, StdCtrls, ComCtrls, CommCtrl, Forms,
   TntControls,
   hpp_global;
 
@@ -73,7 +73,6 @@ type
   end;
 
 const
-
   // Flags to specify which interfaces should be returned in the structure above
   REO_GETOBJ_NO_INTERFACES  = $00000000;
   REO_GETOBJ_POLEOBJ        = $00000001;
@@ -114,6 +113,25 @@ const
   RECO_COPY   = $00000002; // copy to the clipboard
   RECO_CUT    = $00000003; // cut to the clipboard
   RECO_DRAG   = $00000004; // drag
+
+type
+  PNMFireViewChange = ^TNMFireViewChange;
+  TNMFireViewChange = record
+    nmhdr: TNMHdr;
+    cbSize: Integer;
+    bEvent: Byte;
+    bAction: Byte;
+    hDC: HDC;
+    rcRect: TRect;
+    clrBackground: COLORREF;
+    fTransparent: BOOL;
+    lParam: LPARAM;
+  end;
+
+const
+  NM_FIREVIEWCHANGE = NM_FIRST+1;
+  FVCN_PREFIRE  = 1;
+  FVCN_POSTFIRE = 2;
 
 type
   THppRichEdit = class;
@@ -174,6 +192,7 @@ type
   end;
 
   TURLClickEvent = procedure(Sender: TObject; const URLText: String; Button: TMouseButton) of object;
+  TViewChangeEvent = TNotifyEvent;
 
   THppRichEdit = class(TCustomRichEdit)
   private
@@ -183,6 +202,7 @@ type
     FClickRange: TCharRange;
     FClickBtn: TMouseButton;
     FOnURLClick: TURLClickEvent;
+    FOnViewChange: TViewChangeEvent;
     FRichEditOleCallback: TRichEditOleCallback;
     FRichEditOle: IRichEditOle;
     procedure CNNotify(var Message: TWMNotify); message CN_NOTIFY;
@@ -194,11 +214,14 @@ type
     procedure WMKeyDown(var Message: TWMKey); message WM_KEYDOWN;
     procedure SetAutoKeyboard(Enabled: Boolean);
     function GetUnicodeAPI: Boolean;
+    procedure LinkNotify(Link: TENLink);
+    procedure ViewChangeNotify(FVC: TNMFireViewChange);
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     procedure CreateWindowHandle(const Params: TCreateParams); override;
     procedure CreateWnd; override;
     procedure URLClick(const URLText: String; Button: TMouseButton); dynamic;
+    procedure ViewChange; dynamic;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -275,6 +298,7 @@ type
     property OnStartDock;
     property OnStartDrag;
     property OnURLClick: TURLClickEvent read FOnURLClick write FOnURLClick;
+    property OnViewChange: TViewChangeEvent read FOnViewChange write FOnViewChange;
   end;
 
   TImageDataObject = class(TInterfacedObject,IDataObject)
@@ -823,35 +847,51 @@ begin
   if Assigned(OnURLClick) then OnURLClick(Self, URLText, Button);
 end;
 
+procedure THppRichedit.LinkNotify(Link: TENLink);
+begin
+  case Link.msg of
+    WM_RBUTTONDOWN: begin
+      FClickRange := Link.chrg;
+      FClickBtn := mbRight;
+    end;
+    WM_RBUTTONUP: begin
+      if (FClickBtn = mbRight) and
+         (FClickRange.cpMin = Link.chrg.cpMin) and (FClickRange.cpMax = Link.chrg.cpMax) then
+        URLClick(GetTextRangeA(Link.chrg.cpMin, Link.chrg.cpMax), mbRight);
+      FClickRange.cpMin := -1;
+      FClickRange.cpMax := -1;
+    end;
+    WM_LBUTTONDOWN: begin
+      FClickRange := Link.chrg;
+      FClickBtn := mbLeft;
+    end;
+    WM_LBUTTONUP: begin
+      if (FClickBtn = mbLeft) and
+         (FClickRange.cpMin = Link.chrg.cpMin) and (FClickRange.cpMax = Link.chrg.cpMax) then
+        URLClick(GetTextRangeA(Link.chrg.cpMin, Link.chrg.cpMax), mbLeft);
+      FClickRange.cpMin := -1;
+      FClickRange.cpMax := -1;
+    end;
+  end;
+end;
+
+procedure THppRichedit.ViewChange;
+begin
+  if Assigned(OnViewChange) then OnViewChange(Self);
+end;
+
+procedure THppRichedit.ViewChangeNotify(FVC: TNMFireViewChange);
+begin
+  if FVC.bEvent = FVCN_POSTFIRE then ViewChange;
+end;
+
 procedure THppRichedit.CNNotify(var Message: TWMNotify);
 begin
-  inherited;
-  if Message.NMHdr^.code <> EN_LINK then exit;
-  with TENLink(Pointer(Message.NMHdr)^) do begin
-    case Msg of
-      WM_RBUTTONDOWN: begin
-        FClickRange := chrg;
-        FClickBtn := mbRight;
-      end;
-      WM_RBUTTONUP: begin
-        if (FClickBtn = mbRight) and
-           (FClickRange.cpMin = chrg.cpMin) and (FClickRange.cpMax = chrg.cpMax) then
-          URLClick(GetTextRangeA(chrg.cpMin, chrg.cpMax), mbRight);
-        FClickRange.cpMin := -1;
-        FClickRange.cpMax := -1;
-      end;
-      WM_LBUTTONDOWN: begin
-        FClickRange := chrg;
-        FClickBtn := mbLeft;
-      end;
-      WM_LBUTTONUP: begin
-        if (FClickBtn = mbLeft) and
-           (FClickRange.cpMin = chrg.cpMin) and (FClickRange.cpMax = chrg.cpMax) then
-          URLClick(GetTextRangeA(chrg.cpMin, chrg.cpMax), mbLeft);
-        FClickRange.cpMin := -1;
-        FClickRange.cpMax := -1;
-      end;
-    end;
+  case Message.NMHdr^.code of
+    EN_LINK: LinkNotify(TENLINK(Pointer(Message.NMHdr)^));
+    NM_FIREVIEWCHANGE: ViewChangeNotify(TNMFireViewChange(Pointer(Message.NMHdr)^));
+  else
+    inherited;
   end;
 end;
 
