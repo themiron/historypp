@@ -138,6 +138,7 @@ type
     SavedFileDir: String;
     hSubContactFrom,hSubContactTo: THandle;
     FNameFrom,FNameTo: WideString;
+    FProtocol: String;
 
     procedure OnCNChar(var Message: TWMChar); message WM_CHAR;
     procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
@@ -321,8 +322,13 @@ begin
   if Value = -1 then exit;
   FItem := Value;
   EMsgType.Text := TranslateWideW(GetEventRecord(FParentForm.hg.Items[FItem]).Name{TRANSLATE-IGNORE});
-  EMsgType.Text := WideFormat('%s #%u',[EMsgType.Text,FParentForm.hg.Items[FItem].EventType]);
+  EMsgType.Text := WideFormat('%s [%s/%u]',[EMsgType.Text,
+    FParentForm.hg.Items[FItem].Module,
+    FParentForm.hg.Items[FItem].EventType]);
   EDateTime.Text := TimestampToString(FParentForm.hg.Items[FItem].Time);
+  if FParentForm.hContact = 0 then
+    FProtocol := FParentForm.hg.Items[FItem].Proto else
+    FProtocol := FParentForm.SubProtocol;
   FromContact := false;
   ToContact := false;
   if mtIncoming in FParentForm.hg.Items[FItem].MessageType then begin
@@ -331,14 +337,14 @@ begin
     hContactTo      := 0;
     hSubContactTo   := 0;
     FNameFrom       := FParentForm.hg.ContactName;
-    FNameTo         := FParentForm.hg.ProfileName;
+    FNameTo         := GetContactDisplayName(0, FProtocol);
     FromContact     := (hContactFrom = 0);
   end else begin
     hContactFrom    := 0;
     hSubContactFrom := 0;
     hContactTo      := FParentForm.hContact;
     hSubContactTo   := FParentForm.hSubContact;
-    FNameFrom       := FParentForm.hg.ProfileName;
+    FNameFrom       := GetContactDisplayName(0, FProtocol);
     FNameTo         := FParentForm.hg.ContactName;
     ToContact       := (hContactTo = 0);
   end;
@@ -346,13 +352,17 @@ begin
   LoadMessageIcons;
 
   EFromMore.Enabled := not FromContact;
+  EFrom.Text := FNameFrom;
+  if not FromContact then
+    EFrom.Text := EFrom.Text + ' (' +
+      AnsiToWideString(FProtocol+': '+GetContactID(hSubContactFrom,FProtocol,FromContact),ParentForm.UserCodepage)+
+      ')';
   EToMore.Enabled := not ToContact;
-  EFrom.Text := FNameFrom + ' (' +
-                AnsiToWideString(FParentForm.SubProtocol+': '+GetContactID(hSubContactFrom,FParentForm.SubProtocol,FromContact),ParentForm.UserCodepage)+
-                ')';
-  ETo.Text   := FNameTo + ' (' +
-                AnsiToWideString(FParentForm.SubProtocol+': '+GetContactID(hSubContactTo,FParentForm.SubProtocol,ToContact),ParentForm.UserCodepage)+
-                ')';
+  ETo.Text := FNameTo;
+  if not ToContact then
+    ETo.Text := ETo.Text + ' (' +
+      AnsiToWideString(FProtocol+': '+GetContactID(hSubContactTo,FProtocol,ToContact),ParentForm.UserCodepage)+
+      ')';
 
   EText.Lines.BeginUpdate;
   ParentForm.hg.ApplyItemToRich(FItem,EText,false,true);
@@ -364,8 +374,7 @@ begin
   EText.Lines.EndUpdate;
 
   if FromContact or ToContact then
-    bnReply.Enabled := False
-  else
+    bnReply.Enabled := False else
     bnReply.Enabled := True;
 
   // check forward and back buttons
