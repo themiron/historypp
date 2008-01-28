@@ -29,9 +29,9 @@ goto misszip
 :havezip
 
 :start
-FOR /F "TOKENS=1" %%A IN ('date /t') DO SET DATE_=%%A
-FOR /F "TOKENS=1,2 delims=:" %%A IN ('time /t') DO SET TIME_V=%%A.%%B
-FOR /F "TOKENS=1,2 delims=:" %%A IN ('time /t') DO SET TIME_A=%%A:%%B
+FOR /F "TOKENS=1,2,3 delims=. " %%A IN ('date /t') DO SET DATE_=%%C.%%B.%%A
+FOR /F "TOKENS=1,2 delims=: " %%A IN ('time /t') DO SET TIME_V=%%A.%%B
+FOR /F "TOKENS=1,2 delims=: " %%A IN ('time /t') DO SET TIME_A=%%A:%%B
 set ALPHA='%DATE_% %TIME_A% NoEG'
 set VER_=alpha-%DATE_%-%TIME_V%
 
