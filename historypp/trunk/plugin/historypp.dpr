@@ -29,7 +29,6 @@ library historypp;
 {$I compilers.inc}
 
 uses
-  RtlVclOptimize,
   {$IFDEF REPORT_LEAKS}
   {$IFNDEF DELPHI_10_UP}
   FastMM4,
@@ -38,6 +37,7 @@ uses
   {$IFDEF EUREKALOG}
   ExceptionLog,
   {$ENDIF}
+  RtlVclOptimize,
   Windows,
   SysUtils,
   {$IFDEF REPORT_LEAKS} Themes, {$ENDIF}
