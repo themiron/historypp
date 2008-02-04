@@ -80,6 +80,7 @@ uses
     {$include m_metacontacts.inc}
     {$include m_dbeditorpp.inc}
     {$include m_speak.inc}
+    {$include m_anismiley.inc}
 
     {$define M_API_UNIT}
     {$include m_helpers.inc}
