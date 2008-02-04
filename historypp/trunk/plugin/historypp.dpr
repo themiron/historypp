@@ -77,7 +77,8 @@ uses
   hpp_external in 'hpp_external.pas',
   hpp_externalgrid in 'hpp_externalgrid.pas',
   {$ENDIF}
-  hpp_richedit in 'hpp_richedit.pas';
+  hpp_richedit in 'hpp_richedit.pas',
+  hpp_olesmileys in 'hpp_olesmileys.pas';
 
 type
   TMenuHandles = record
