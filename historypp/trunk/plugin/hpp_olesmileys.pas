@@ -49,13 +49,19 @@ interface
 uses ActiveX;
 
 const
+  IID_ITooltipData:     TGUID = '{58B32D03-1BD2-4840-992E-9AE799FD4ADE}';
   IID_IGifSmileyCtrl:   TGUID = '{CB64102B-8CE4-4A55-B050-131C435A3A3F}';
-  IID_IGifSmileyCtrl2:  TGUID = '{0418FB4B-E1AF-4e32-94AD-FF322C622AD3}';
   IID_ISmileyAddSmiley: TGUID = '{105C56DF-6455-4705-A501-51F1CCFCF688}';
   IID_IEmoticonsImage:  TGUID = '{2FD9449B-7EBB-476a-A9DD-AE61382CCE08}';
 
 type
-  IGifSmileyCtrl = interface(IDispatch)
+  ITooltipData = interface(IUnknown)
+   ['{58B32D03-1BD2-4840-992E-9AE799FD4ADE}']
+   function SetTooltip(const bstrHint: WideString): HRESULT; stdcall;
+   function GetTooltip(out bstrHint: WideString): HRESULT; stdcall;
+  end;
+
+  IGifSmileyCtrl = interface(IUnknown)
     ['{CB64102B-8CE4-4A55-B050-131C435A3A3F}']
     procedure Set_BackColor(pclr: OLE_COLOR); safecall;
     function Get_BackColor: OLE_COLOR; safecall;
@@ -63,31 +69,16 @@ type
     procedure LoadFromFile(const bstrFileName: WideString); safecall;
     procedure LoadFromFileSized(const bstrFileName: WideString; nHeight: SYSINT); safecall;
     procedure SetHostWindow(hwndHostWindow: Integer; nNotyfyMode: SYSINT); safecall;
+    procedure ShowHint( ); safecall;
     property BackColor: OLE_COLOR read Get_BackColor write Set_BackColor;
     property HWND: Integer read Get_HWND;
   end;
 
-  IGifSmileyCtrlDisp = dispinterface
-    ['{CB64102B-8CE4-4A55-B050-131C435A3A3F}']
-    property BackColor: OLE_COLOR dispid -501;
-    property HWND: Integer readonly dispid -515;
-    procedure LoadFromFile(const bstrFileName: WideString); dispid 1;
-    procedure LoadFromFileSized(const bstrFileName: WideString; nHeight: SYSINT); dispid 2;
-    procedure SetHostWindow(hwndHostWindow: Integer; nNotyfyMode: SYSINT); dispid 3;
-  end;
-
-  IGifSmileyCtrl2 = interface(IDispatch)
-    ['{0418FB4B-E1AF-4e32-94AD-FF322C622AD3}']
-    procedure SetHint(const bstrHint: WideString); safecall;
-    function GetHint: WideString; safecall;
-    procedure ShowHint(); safecall;
-  end;
-
-  ISmileyAddSmiley = interface
+  ISmileyAddSmiley = interface(IUnknown)
     ['{105C56DF-6455-4705-A501-51F1CCFCF688}']
   end;
 
-  IEmoticonsImage = interface
+  IEmoticonsImage = interface(IUnknown)
     ['{2FD9449B-7EBB-476a-A9DD-AE61382CCE08}']
   end;
 
