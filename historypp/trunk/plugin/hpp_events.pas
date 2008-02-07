@@ -520,11 +520,10 @@ begin
   if msglen > EventInfo.cbBlob then msglen := EventInfo.cbBlob;
   if Boolean(EventInfo.flags and DBEF_UTF) then begin
     SetLength(hi.Text,msglen);
-    msgW := PWideChar(hi.Text);
-    lenW := Utf8ToUnicode(msgW,msglen,msgA,msglen);
-    if lenW > 0 then
+    lenW := Utf8ToWideChar(PWideChar(hi.Text),msglen,msgA,msglen-1);
+    if Integer(lenW) > 0 then
       SetLength(hi.Text,lenW-1) else
-      hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen);
+      hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen-1);
   end else begin
     lenW := 0;
     if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
@@ -734,11 +733,10 @@ begin
   if msglen > EventInfo.cbBlob then msglen := EventInfo.cbBlob;
   if Boolean(EventInfo.flags and DBEF_UTF) then begin
     SetLength(hi.Text,msglen);
-    msgW := PWideChar(hi.Text);
-    lenW := Utf8ToUnicode(msgW,msglen,msgA,msglen);
-    if lenW > 0 then
+    lenW := Utf8ToWideChar(PWideChar(hi.Text),msglen,msgA,msglen-1);
+    if Integer(lenW) > 0 then
       SetLength(hi.Text,lenW-1) else
-      hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen);
+      hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen-1);
   end else begin
     LenW := 0;
     if EventInfo.cbBlob >= msglen*SizeOf(WideChar) then begin
@@ -751,7 +749,7 @@ begin
     end;
     if (lenW > 0) and (lenW < msglen) then
       SetString(hi.Text,msgW,lenW) else
-      hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen);
+      hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen-1);
     msglen := msglen+(lenW+1)*SizeOf(WideChar);
   end;
   if msglen < EventInfo.cbBlob then begin

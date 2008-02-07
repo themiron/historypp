@@ -233,6 +233,7 @@ var
 
 {$I m_historypp.inc}
 
+function Utf8ToWideChar(Dest: PWideChar; MaxDestChars: Integer; Source: PChar; SourceBytes: Integer): Integer;
 function AnsiToWideString(const S: AnsiString; CodePage: Cardinal; InLength: Integer = -1): WideString;
 function WideToAnsiString(const WS: WideString; CodePage: Cardinal; InLength: Integer = -1): AnsiString;
 function TranslateAnsiW(const S: AnsiString{TRANSLATE-IGNORE}): WideString;
@@ -250,6 +251,35 @@ function PassMessage(Handle: THandle; Message: DWord; wParam: WPARAM; lParam: LP
 implementation
 
 uses TntSystem,TntSysUtils;
+
+const
+  ReplacementCharacter: Cardinal = $0000FFFD;
+  MaximumUCS2: Cardinal = $0000FFFF;
+  MaximumUTF16: Cardinal = $0010FFFF;
+  MaximumUCS4: Cardinal = $7FFFFFFF;
+
+  SurrogateHighStart: Cardinal = $D800;
+  SurrogateHighEnd: Cardinal = $DBFF;
+  SurrogateLowStart: Cardinal = $DC00;
+  SurrogateLowEnd: Cardinal = $DFFF;
+
+  HalfShift: Integer = 10;
+  HalfBase: Cardinal = $0010000;
+  HalfMask: Cardinal = $3FF;
+
+  OffsetsFromUTF8: array [0..5] of Cardinal =
+    ($00000000, $00003080, $000E2080,
+     $03C82080, $FA082080, $82082080);
+
+  BytesFromUTF8: array [0..255] of Byte =
+   (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5);
 
 function URLEncode(const ASrc: string): string;
 const
@@ -270,11 +300,63 @@ begin
   end;
 end;
 
+function Utf8ToWideChar(Dest: PWideChar; MaxDestChars: Integer; Source: PChar; SourceBytes: Integer): Integer;
+var
+  i,j,count: Integer;
+  ch: Cardinal;
+  ExtraBytesToWrite: Word;
+begin
+  if Source = nil then begin
+    Result := 0;
+    Exit;
+  end;
+  Result := -1;
+  if Dest = nil then exit;
+  i := 0;
+  count := 0;
+  while (i < SourceBytes) and (count < MaxDestChars) do begin
+    ch := 0;
+    ExtraBytesToWrite := BytesFromUTF8[Byte(Source[i])];
+    for j := ExtraBytesToWrite downto 1 do begin
+      ch := ch + Byte(Source[i]);
+      Inc(i);
+      ch := ch shl 6;
+    end;
+    ch := ch + Byte(Source[i]);
+    Inc(i);
+    ch := ch - OffsetsFromUTF8[ExtraBytesToWrite];
+    if ch <= MaximumUCS2 then begin
+      Dest[count] := WideChar(Ch);
+      Inc(count);
+      if count > MaxDestChars then break;
+    end else begin
+      if ch > MaximumUCS4 then begin
+        Dest[count] := WideChar(ReplacementCharacter);
+        Inc(count);
+        if count > MaxDestChars then break;
+      end else begin
+        ch := ch - HalfBase;
+        Dest[count] := WideChar((ch shr HalfShift) + SurrogateHighStart);
+        Inc(count);
+        if count > MaxDestChars then break;
+        Dest[count] := WideChar((ch and HalfMask) + SurrogateLowStart);
+        Inc(count);
+        if count > MaxDestChars then break;
+      end;
+    end;
+  end;
+  if count > MaxDestChars then count := MaxDestChars;
+  Dest[count] := #0;
+  Result := count+1;
+end;
+
 function AnsiToWideString(const S: AnsiString; CodePage: Cardinal; InLength: Integer = -1): WideString;
 var
   InputLength,
   OutputLength: Integer;
 begin
+  Result := '';
+  if S = '' then exit;
   if CodePage = CP_UTF8 then begin
     Result := UTF8Decode(S);         // CP_UTF8 not supported on Windows 95
   end else begin
@@ -292,6 +374,8 @@ var
   InputLength,
   OutputLength: Integer;
 begin
+  Result := '';
+  if WS = '' then exit;
   if CodePage = CP_UTF8 then
     Result := UTF8Encode(WS) // CP_UTF8 not supported on Windows 95
   else begin
