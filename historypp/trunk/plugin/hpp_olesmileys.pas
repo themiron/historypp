@@ -46,7 +46,7 @@ unit hpp_olesmileys;
 
 interface
 
-uses ActiveX;
+uses Windows,CommCtrl,ActiveX;
 
 const
   IID_ITooltipData:     TGUID = '{58B32D03-1BD2-4840-992E-9AE799FD4ADE}';
@@ -63,15 +63,6 @@ type
 
   IGifSmileyCtrl = interface(IUnknown)
     ['{CB64102B-8CE4-4A55-B050-131C435A3A3F}']
-    procedure Set_BackColor(pclr: OLE_COLOR); safecall;
-    function Get_BackColor: OLE_COLOR; safecall;
-    function Get_HWND: Integer; safecall;
-    procedure LoadFromFile(const bstrFileName: WideString); safecall;
-    procedure LoadFromFileSized(const bstrFileName: WideString; nHeight: SYSINT); safecall;
-    procedure SetHostWindow(hwndHostWindow: Integer; nNotyfyMode: SYSINT); safecall;
-    procedure ShowHint( ); safecall;
-    property BackColor: OLE_COLOR read Get_BackColor write Set_BackColor;
-    property HWND: Integer read Get_HWND;
   end;
 
   ISmileyAddSmiley = interface(IUnknown)
@@ -81,6 +72,60 @@ type
   IEmoticonsImage = interface(IUnknown)
     ['{2FD9449B-7EBB-476a-A9DD-AE61382CCE08}']
   end;
+
+(*
+	NM_FIREVIEWCHANGE is WM_NOTIFY Message for notify parent of host window about smiley are going to be repaint
+
+	The proposed action is next: Owner of RichEdit windows received NM_FIREVIEWCHANGE through WM_NOTIFY
+	twice first time before painting|invalidating (FVCN_PREFIRE) and second time - after (FVCN_POSTFIRE).
+	The Owner window may change any values of received FVCNDATA_NMHDR structure in order to raise needed action.
+	For example it may substitute FVCA_INVALIDATE to FVCA_CUSTOMDRAW event to force painting on self offscreen context.
+	
+	It can be:
+	FVCA_CUSTOMDRAW - in this case you need to provide valid HDC to draw on and valid RECT of smiley
+	FVCA_INVALIDATE - to invalidate specified rect of window 
+	FVCA_NONE		- skip any action. But be aware - animation will be stopped till next repainting of smiley.
+	FVCA_SENDVIEWCHANGE - to notify richedit ole about object changed. Be aware Richedit will fully reconstruct itself
+
+	Another point is moment of received smiley rect - it is only valid if FVCA_DRAW is initially set, 
+	and it is PROBABLY valid if FVCA_INVALIDATE is set. And it most probably invalid in case of FVCA_SENDVIEWCHANGE.
+	The smiley position is relative last full paint HDC. Usually it is relative to top-left corner of host 
+	richedit (NOT it client area) in windows coordinates. 
+
+*)
+
+const
+    // Type of Event one of
+    FVCN_PREFIRE  = 1;
+    FVCN_POSTFIRE = 2;
+
+    // Action of event are going to be done
+    FVCA_NONE           = 0;
+    FVCA_DRAW           = 1;   // do not modify hdc in case of _DRAW, Use _CUSTOMDRAW
+    FVCA_CUSTOMDRAW     = 2;
+    FVCA_INVALIDATE     = 3;
+    FVCA_SENDVIEWCHANGE = 4;
+    FVCA_SKIPDRAW       = 5;
+
+type
+    // Extended NMHDR structure for WM_NOTIFY
+    PFVCNDATA_NMHDR= ^TFVCNDATA_NMHDR;
+    TFVCNDATA_NMHDR = record
+        nmhdr: TNMHdr;
+        cbSize: Integer;
+        bEvent: Byte;
+        bAction: Byte;
+        hDC: HDC;
+        rcRect: TRect;
+        clrBackground: COLORREF;
+        fTransparent: BOOL;
+        lParam: LPARAM;
+    end;
+
+const
+    // Code of WM_NOTIFY message (code)
+    NM_FIREVIEWCHANGE = NM_FIRST+1;
+
 
 implementation
 
