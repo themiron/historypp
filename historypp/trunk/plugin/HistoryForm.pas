@@ -278,8 +278,7 @@ type
     procedure edPassKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure edPassKeyPress(Sender: TObject; var Key: Char);
     procedure CopyText1Click(Sender: TObject);
-    procedure hgUrlClick(Sender: TObject; Item: Integer; Url: String);
-    procedure hgUrlPopup(Sender: TObject; Item: Integer; Url: String);
+    procedure hgUrlClick(Sender: TObject; Item: Integer; URLText: String; Button: TMouseButton);
     procedure hgProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
     procedure hgSearchItem(Sender: TObject; Item, ID: Integer; var Found: Boolean);
     procedure hgKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -2447,17 +2446,9 @@ begin
       exit;
     end;
     if (Shift = [ssCtrl]) and (Key in [VK_UP,VK_DOWN]) then begin
-      if hg.Reversed then begin
-        if Key = VK_UP then
-          sbSearchNext.Click
-        else
-          sbSearchPrev.Click;
-      end else begin
-        if Key = VK_UP then
-          sbSearchPrev.Click
-        else
-          sbSearchNext.Click;
-      end;
+      if (Key = VK_UP) xor hg.Reversed then
+        sbSearchNext.Click else
+        sbSearchPrev.Click;
       Key := 0;
       exit;
     end;
@@ -2820,16 +2811,15 @@ begin
   end;
 end;
 
-procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
+procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; URLText: String; Button: TMouseButton);
 begin
-  if Url= '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@Url[1]));
-end;
-
-procedure THistoryFrm.hgUrlPopup(Sender: TObject; Item: Integer; Url: String);
-begin
-  SavedLinkUrl := Url;
-  pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
+  if URLText = '' then exit;
+  if (Button = mbLeft) or (Button = mbMiddle) then
+    PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@URLText[1]))
+  else begin
+    SavedLinkUrl := URLText;
+    pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
+  end;
 end;
 
 procedure THistoryFrm.hgProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
@@ -2845,7 +2835,7 @@ begin
   ItemRenderDetails.cbSize := SizeOf(ItemRenderDetails);
   // use meta's subcontact info, if available
   //ItemRenderDetails.hContact := hContact;
-  ItemRenderDetails.hContact := Self.FhSubContact;
+  ItemRenderDetails.hContact := FhSubContact;
   ItemRenderDetails.hDBEvent := History[GridIndexToHistory(Item)];
   // use meta's subcontact info, if available
   //ItemRenderDetails.pProto := PChar(hg.Items[Item].Proto);
@@ -3521,7 +3511,7 @@ var
   Index,i: Integer;
   Event: THandle;
 begin
-  if not Selected then exit; 
+  if not Selected then exit;
   Event := DWord(Item.Data);
   Index := -1;
   // looks like history starts to load from end?
@@ -3721,7 +3711,7 @@ end;
 procedure THistoryFrm.SpeakMessage1Click(Sender: TObject);
 var
   mesW: WideString;
-  mesA: WideString;
+  mesA: AnsiString;
 begin
   if not MeSpeakEnabled then exit;
   if hg.Selected = -1 then exit;

@@ -88,14 +88,13 @@ type
     procedure GridTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
     procedure GridNameData(Sender: TObject; Index: Integer; var Name: WideString);
     procedure GridProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
-    procedure GridUrlClick(Sender: TObject; Item: Integer; Url: String);
+    procedure GridUrlClick(Sender: TObject; Item: Integer; URLText: AnsiString; Button: TMouseButton);
     procedure GridBookmarkClick(Sender: TObject; Item: Integer);
     procedure GridSelectRequest(Sender: TObject);
     procedure GridDblClick(Sender: TObject);
     procedure GridKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure GridKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure GridPopup(Sender: TObject);
-    procedure GridUrlPopup(Sender: TObject; Item: Integer; Url: String);
     procedure GridInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure GridItemDelete(Sender: TObject; Index: Integer);
     procedure GridXMLData(Sender: TObject; Index: Integer; var Item: TXMLItem);
@@ -277,7 +276,6 @@ begin
   Grid.OnKeyUp := GridKeyUp;
   Grid.OnPopup := GridPopup;
   Grid.OnInlinePopup := GridPopup;
-  Grid.OnUrlPopup := GridUrlPopup;
   Grid.OnInlineKeyDown := GridInlineKeyDown;
   Grid.OnItemDelete := GridItemDelete;
   Grid.OnXMLData := GridXMLData;
@@ -528,10 +526,16 @@ begin
   //Grid.Repaint;
 end;
 
-procedure TExternalGrid.GridUrlClick(Sender: TObject; Item: Integer; Url: String);
+procedure TExternalGrid.GridUrlClick(Sender: TObject; Item: Integer; URLText: AnsiString; Button: TMouseButton);
 begin
-  if Url= '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(Pointer(@Url[1])));
+  if URLText= '' then exit;
+  if (Button = mbLeft) or (Button = mbMiddle) then
+    PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@URLText[1]))
+  else
+  if Button = mbRight then begin
+    SavedLinkUrl := URLText;
+    pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
+  end;
 end;
 
 procedure TExternalGrid.GridBookmarkClick(Sender: TObject; Item: Integer);
@@ -776,12 +780,6 @@ begin
     Key := 0;
     exit;
   end;
-end;
-
-procedure TExternalGrid.GridUrlPopup(Sender: TObject; Item: Integer; Url: String);
-begin
-  SavedLinkUrl := Url;
-  pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
 end;
 
 procedure TExternalGrid.OnOpenLinkClick(Sender: TObject);

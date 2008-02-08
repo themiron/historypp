@@ -237,7 +237,7 @@ type
     procedure hgProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
     procedure FormShow(Sender: TObject);
     procedure hgKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure hgUrlClick(Sender: TObject; Item: Integer; Url: String);
+    procedure hgUrlClick(Sender: TObject; Item: Integer; URLText: String; Button: TMouseButton);
     procedure edPassKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure hgSelect(Sender: TObject; Item, OldItem: Integer);
@@ -266,7 +266,6 @@ type
     procedure InlineSelectAllClick(Sender: TObject);
     procedure InlineTextFormattingClick(Sender: TObject);
     procedure InlineReplyQuotedClick(Sender: TObject);
-    procedure hgUrlPopup(Sender: TObject; Item: Integer; Url: String);
     procedure CopyLinkClick(Sender: TObject);
     procedure OpenLinkClick(Sender: TObject);
     procedure OpenLinkNWClick(Sender: TObject);
@@ -1936,12 +1935,15 @@ begin
  // Name := Name + ' [' + BookmarkServer[si.Contact.Handle].BookmarkName[si.hDBEvent] + ']';
 end;
 
-procedure TfmGlobalSearch.hgUrlClick(Sender: TObject; Item: Integer; Url: String);
-var
-  bNewWindow: Integer;
+procedure TfmGlobalSearch.hgUrlClick(Sender: TObject; Item: Integer; URLText: String; Button: TMouseButton);
 begin
-  if Url = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@Url[1]));
+  if URLText = '' then exit;
+  if (Button = mbLeft) or (Button = mbMiddle) then
+    PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@URLText[1]))
+  else begin
+    SavedLinkUrl := URLText;
+    pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
+  end;
 end;
 
 procedure TfmGlobalSearch.edPassKeyPress(Sender: TObject; var Key: Char);
@@ -2332,12 +2334,6 @@ begin
   end;}
 end;
 
-procedure TfmGlobalSearch.hgUrlPopup(Sender: TObject; Item: Integer; Url: String);
-begin
-  SavedLinkUrl := Url;
-  pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
-end;
-
 procedure TfmGlobalSearch.OpenLinkClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
@@ -2446,7 +2442,7 @@ end;
 procedure TfmGlobalSearch.SpeakMessage1Click(Sender: TObject);
 var
   mesW: WideString;
-  mesA: WideString;
+  mesA: AnsiString;
   hContact: THandle;
 begin
   if not MeSpeakEnabled then exit;

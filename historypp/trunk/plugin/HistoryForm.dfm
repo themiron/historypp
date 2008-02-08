@@ -58,7 +58,6 @@ object HistoryFrm: THistoryFrm
         Width = 415
         Height = 319
         VertScrollBar.Increment = 1
-        VertScrollBar.PageSize = 20
         ShowBottomAligned = False
         ShowBookmarks = True
         MultiSelect = True
@@ -90,7 +89,6 @@ object HistoryFrm: THistoryFrm
         OnXMLData = hgXMLData
         OnRTLChange = hgRTLEnabled
         OnUrlClick = hgUrlClick
-        OnUrlPopup = hgUrlPopup
         OnBookmarkClick = hgBookmarkClick
         OnItemFilter = hgItemFilter
         OnProcessRichText = hgProcessRichText
@@ -108,6 +106,7 @@ object HistoryFrm: THistoryFrm
         BevelInner = bvNone
         BevelOuter = bvNone
         Padding = 4
+        HideScrollBar = False
         ShowHint = True
       end
     end

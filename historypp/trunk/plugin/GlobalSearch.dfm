@@ -231,7 +231,6 @@ object fmGlobalSearch: TfmGlobalSearch
         Width = 389
         Height = 166
         VertScrollBar.Increment = 1
-        VertScrollBar.PageSize = 20
         ShowBottomAligned = False
         ShowBookmarks = True
         MultiSelect = True
@@ -261,7 +260,6 @@ object fmGlobalSearch: TfmGlobalSearch
         OnSelect = hgSelect
         OnRTLChange = hgRTLEnabled
         OnUrlClick = hgUrlClick
-        OnUrlPopup = hgUrlPopup
         OnBookmarkClick = hgBookmarkClick
         OnItemFilter = hgItemFilter
         OnProcessRichText = hgProcessRichText
@@ -273,6 +271,7 @@ object fmGlobalSearch: TfmGlobalSearch
         BevelInner = bvNone
         BevelOuter = bvNone
         Padding = 4
+        HideScrollBar = False
         ShowHint = True
       end
       object paFilter: THppPanel
