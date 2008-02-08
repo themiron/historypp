@@ -1583,7 +1583,9 @@ var
 begin
   HistoryIndex := GridIndexToHistory(Index);
   Item := GetItemData(HistoryIndex);
-  Item.Proto := Protocol;
+  if hContact = 0 then
+    Item.Proto := Item.Module else
+    Item.Proto := Protocol;
   Item.Bookmarked := BookmarkServer[hContact].Bookmarked[History[HistoryIndex]];
   if HistoryIndex = 0 then
     Item.HasHeader := IsEventInSession(Item.EventType)
@@ -2838,8 +2840,9 @@ begin
   ItemRenderDetails.hContact := FhSubContact;
   ItemRenderDetails.hDBEvent := History[GridIndexToHistory(Item)];
   // use meta's subcontact info, if available
-  //ItemRenderDetails.pProto := PChar(hg.Items[Item].Proto);
-  ItemRenderDetails.pProto := PChar(Self.FSubProtocol);
+  if hContact = 0 then
+    ItemRenderDetails.pProto := PChar(hg.Items[Item].Proto) else
+    ItemRenderDetails.pProto := PChar(FSubProtocol);
   ItemRenderDetails.pModule := PChar(hg.Items[Item].Module);
   ItemRenderDetails.pText := nil;
   ItemRenderDetails.pExtended := PChar(hg.Items[Item].Extended);
