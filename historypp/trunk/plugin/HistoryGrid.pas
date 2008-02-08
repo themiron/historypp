@@ -81,11 +81,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, ComCtrls, CommCtrl,
-  TntSysUtils, TntWindows, TntControls,TntGraphics, {TntComCtrls,} Menus, TntMenus,
-  {$IFDEF COMPILER_10}WideStrUtils,{$ENDIF} TntWideStrUtils,
+  TntSysUtils, TntWindows, TntControls, TntGraphics, {TntComCtrls,} Menus, TntMenus,
+  StrUtils, {$IFDEF COMPILER_10}WideStrUtils,{$ENDIF} TntWideStrUtils,
   StdCtrls, Math, mmsystem,
   hpp_global, hpp_contacts, hpp_itemprocess, hpp_events, hpp_eventfilters,
-  hpp_richedit, hpp_richedit_ole,
+  hpp_richedit,
   Contnrs,
   VertSB,
   RichEdit, ShellAPI;
@@ -102,7 +102,7 @@ type
   TMouseMoveKey = (mmkControl,mmkLButton,mmkMButton,mmkRButton,mmkShift);
   TMouseMoveKeys = set of TMouseMoveKey;
 
-  TGridState = (gsIdle,gsDelete,gsSearch,gsSearchItem,gsLoad,gsSave,gsInline,gsClose);
+  TGridState = (gsIdle,gsDelete,gsSearch,gsSearchItem,gsLoad,gsSave,gsInline);
 
   TXMLItem = record
     Protocol: string;
@@ -137,31 +137,18 @@ type
   TOnSearchItem = procedure(Sender: TObject; Item: Integer; ID: Integer; var Found: Boolean) of object;
   TOnSelectRequest = TNotifyEvent;
   TOnFilterChange = TNotifyEvent;
-
-  THPPRichEdit = class(TRichEdit)
-  private
-    FCodepage: Cardinal;
-    procedure SetAutoKeyboard(Enabled: Boolean);
-    procedure WMSetFocus(var Message: TWMSetFocus); message WM_SETFOCUS;
-    procedure WMLangChange(var Message: TMessage); message WM_INPUTLANGCHANGE;
-    procedure WMCopy(var Message: TWMCopy); message WM_COPY;
-    procedure WMKeyDown(var Message: TWMKey); message WM_KEYDOWN;
-  protected
-    procedure CreateHandle; override;
-    procedure CreateParams(var Params: TCreateParams); override;
-  public
-    property Codepage: Cardinal read FCodepage write FCodepage default CP_ACP;
-  end;
-
+  
   THistoryGrid = class;
 
   {IFDEF RENDER_RICH}
-  TUrlEvent = procedure(Sender: TObject; Item: Integer; Url: String) of object;
+  TUrlClickItemEvent = procedure(Sender: TObject; Item: Integer;
+                                 Url: String; Button: TMouseButton) of object;
   {ENDIF}
   TOnShowIcons = procedure;
   TOnTextFormatting = procedure(Value: Boolean);
 
-  TGridHitTest = (ghtItem, ghtHeader, ghtText, ghtLink, ghtButton, ghtSession, ghtSessHideButton, ghtSessShowButton, ghtBookmark);
+  TGridHitTest = (ghtItem, ghtHeader, ghtText, ghtLink,
+                  ghtButton, ghtSession, ghtSessHideButton, ghtSessShowButton, ghtBookmark);
   TGridHitTests = set of TGridHitTest;
 
   TItemOption = record
@@ -274,7 +261,7 @@ type
     property ClipCopyTextFormat: WideString read FClipCopyTextFormat write FClipCopyTextFormat;
     property ReplyQuotedFormat: WideString read FReplyQuotedFormat write FReplyQuotedFormat;
     property ReplyQuotedTextFormat: WideString read FReplyQuotedTextFormat write FReplyQuotedTextFormat;
-    property SelectionFormat: WideString read FSelectionFormat write FSelectionFormat; 
+    property SelectionFormat: WideString read FSelectionFormat write FSelectionFormat;
 
     property Locked: Boolean read GetLocked;
 
@@ -318,7 +305,6 @@ type
     property DateTimeFormat: String read FDateTimeFormat write SetDateTimeFormat;
     property TextFormatting: Boolean read FTextFormatting write SetTextFormatting;
   end;
-
 
   TRichItem = record
     Rich: THPPRichEdit;
@@ -370,6 +356,7 @@ type
 
   THistoryGrid = class(TScrollingWinControl)
   private
+    LogX,LogY: Integer;
     SessHeaderHeight: Integer;
     CHeaderHeight, PHeaderheight: Integer;
     IsCanvasClean: Boolean;
@@ -436,8 +423,7 @@ type
     {$ENDIF}
     {$IFDEF RENDER_RICH}
     FRichCache: TRichCache;
-    FOnUrlClick: TUrlEvent;
-    FOnUrlPopup: TUrlEvent;
+    FOnUrlClick: TUrlClickItemEvent;
     FRich: THPPRichEdit;
     FRichInline: THPPRichEdit;
     FItemInline: Integer;
@@ -474,6 +460,9 @@ type
     FSavedKeyMessage: TWMKey;
     FBorderStyle: TBorderStyle;
 
+    FWheelAccumulator: Integer;
+    FWheelLastTick: Cardinal;
+
     FHintRect: TRect;
     function GetHint: WideString;
     procedure SetHint(const Value: WideString);
@@ -493,14 +482,12 @@ type
     //procedure OnRichResize(Sender: TObject; Rect: TRect);
     //procedure OnMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     {$ENDIF}
-    procedure WMNotify(var Message: TWMNotify); message WM_NOTIFY;
     procedure WMSetFocus(var Message: TWMSetFocus); message WM_SETFOCUS;
     procedure WMKillFocus(var Message: TWMKillFocus); message WM_KILLFOCUS;
-    procedure WMSysCommand(var Message: TWMSysCommand); message WM_SYSCOMMAND;
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
     procedure WMSetCursor(var Message: TWMSetCursor); message WM_SETCURSOR;
     procedure WMMouseMove(var Message: TWMMouseMove); message WM_MOUSEMOVE;
-    procedure WMRButtonUp(var Message: TWMRButtonDown); message WM_RBUTTONUP;
+    procedure WMRButtonUp(var Message: TWMRButtonUp); message WM_RBUTTONUP;
     procedure WMRButtonDown(var Message: TWMRButtonDown); message WM_RBUTTONDOWN;
     procedure WMLButtonDown(var Message: TWMLButtonDown); message WM_LBUTTONDOWN;
     procedure WMLButtonUp(var Message: TWMLButtonUp); message WM_LBUTTONUP;
@@ -562,8 +549,8 @@ type
       procedure SetHideScrollBar(const Value: Boolean);
     {$ENDIF}
     function GetHitTests(X,Y: Integer): TGridHitTests;
-    function GetLinkAtPoint(X,Y: Integer): WideString;
     {$IFDEF RENDER_RICH}
+    function GetLinkAtPoint(X,Y: Integer): AnsiString;
     function GetRichEditRect(Item: Integer; DontClipTop: Boolean = False): TRect;
     {$ENDIF}
     procedure SetRTLMode(const Value: TRTLMode);
@@ -587,6 +574,7 @@ type
     procedure OnInlineOnKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure OnInlineOnMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure OnInlineOnMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure OnInlineOnURLClick(Sender: TObject; const URLText: String; Button: TMouseButton);
 
     function GetProfileName: WideString;
     procedure SetProfileName(const Value: WideString);
@@ -627,6 +615,7 @@ type
 
     procedure GridUpdateSize;
     function GetSelectionString: WideString;
+    procedure URLClick(Item: Integer; const URLText: String; Button: TMouseButton); dynamic;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -681,7 +670,6 @@ type
     property HotString: WideString read SearchPattern;
     property RTLMode: TRTLMode read FRTLMode write SetRTLMode;
 
-    procedure CalcAllHeight;
     procedure MakeTopmost(Item: Integer);
     procedure ScrollToBottom;
     procedure ResetItem(Item: Integer);
@@ -744,8 +732,7 @@ type
     property OnXMLData: TGetXMLData read FGetXMLData write FGetXMLData;
     property OnRTLChange: TOnRTLChange read FOnRTLChange write FOnRTLChange;
     {IFDEF RENDER_RICH}
-    property OnUrlClick: TUrlEvent read FOnUrlClick write FOnUrlClick;
-    property OnUrlPopup: TUrlEvent read FOnUrlPopup write FOnUrlPopup;
+    property OnUrlClick: TUrlClickItemEvent read FOnUrlClick write FOnUrlClick;
     {ENDIF}
     property OnBookmarkClick: TOnBookmarkClick read FOnBookmarkClick write FOnBookmarkClick;
     property OnItemFilter: TOnItemFilter read FOnItemFilter write FOnItemFilter;
@@ -787,31 +774,17 @@ type
   end;
 
 procedure Register;
-function IsRichEdit20Available: Boolean;
 
 implementation
 
 {$I compilers.inc}
 
 uses
-  hpp_options, hpp_arrays, hpp_strparser;
+  hpp_options, hpp_arrays, hpp_strparser,
+  ComObj;
 
 const
   HtmlStop = [#0,#10,#13,'<','>',' '];
-  EM_SETZOOM = WM_USER + 225;
-
-var
-  FRichEdit10Module: THandle = 0;
-  FRichEdit20Module: THandle = 0;
-
-function IsRichEdit20Available: Boolean;
-const
-  RICHED20_DLL = 'RICHED20.DLL';
-begin
-  if FRichEdit20Module = 0 then
-    FRichEdit20Module := Tnt_LoadLibraryW(RICHED20_DLL);
-  Result := FRichEdit20Module <> 0;
-end;
 
 function UrlHighlightHtml(Text: String): String;
 var
@@ -860,14 +833,14 @@ end;
 
 function PointInRect(Pnt: TPoint; Rct: TRect): Boolean;
 begin
-Result := (Pnt.x >= Rct.Left) and (Pnt.x <= Rct.Right)
-and (Pnt.y >= Rct.Top) and (Pnt.y <= Rct.Bottom);
+  Result := (Pnt.x >= Rct.Left) and (Pnt.x <= Rct.Right) and
+            (Pnt.y >= Rct.Top) and (Pnt.y <= Rct.Bottom);
 end;
 
 function DoRectsIntersect(R1,R2: TRect): Boolean;
 begin
-Result := ((Max(R1.Left,R2.Left) < Min(R1.Right,R2.Right)) and
-(Max(R1.Top,R2.Top) < Min(R1.Bottom,R2.Bottom)));
+  Result := (Max(R1.Left,R2.Left) < Min(R1.Right,R2.Right)) and
+            (Max(R1.Top,R2.Top) < Min(R1.Bottom,R2.Bottom));
 end;
 
 function TranslateKeys(const Keys: Integer): TMouseMoveKeys;
@@ -891,7 +864,6 @@ end;
 procedure Register;
 begin
   RegisterComponents('History++', [THistoryGrid]);
-  RegisterComponents('History++', [THPPRichedit]);
 end;
 
 { THistoryGrid }
@@ -901,7 +873,6 @@ const
   GridStyle = [csCaptureMouse, csClickEvents, csDoubleClicks, csReflector, csOpaque, csNeedsBorderPaint];
 var
   dc: HDC;
-  LogY: Integer;
 begin
   inherited;
   ShowHint := True;
@@ -957,6 +928,7 @@ begin
   FRichInline.OnKeyUp := OnInlineOnKeyUp;
   FRichInline.OnMouseDown := OnInlineOnMouseDown;
   FRichInline.OnMouseUp := OnInlineOnMouseUp;
+  FRichInline.OnURLClick := OnInlineOnURLClick;
 
   FRichInline.Brush.Style := bsClear;
 
@@ -1024,6 +996,7 @@ begin
   // get line scroll size depending on current dpi
   // default is 13px for standard 96dpi
   dc := GetDC(0);
+  LogX := GetDeviceCaps(dc, LOGPIXELSX);
   LogY := GetDeviceCaps(dc, LOGPIXELSY);
   ReleaseDC(0,dc);
   VLineScrollSize := MulDiv(LogY,13,96);
@@ -1046,7 +1019,6 @@ end;
 
 destructor THistoryGrid.Destroy;
 begin
-  FState := gsClose;
   {$IFDEF CUST_SB}
     FVertScrollBar.Free;
   {$ENDIF}
@@ -1079,7 +1051,6 @@ end;
 
 procedure THistoryGrid.CMHintShow(var Message: TMessage);
 var
-  //ht: TGridHitTests;
   Item: Integer;
 begin
   With TCMHintShow(Message).HintInfo^ do begin
@@ -1133,7 +1104,7 @@ begin
     FItems[i].Height := -1;
     FItems[i].MessageType := [mtUnknown];
     FRichCache.ResetItem(i);
-    end;
+  end;
   {$IFDEF PAGE_SIZE}
     VertScrollBar.Range := ItemsCount + FVertScrollBar.PageSize - 1;
   {$ELSE}
@@ -1164,28 +1135,33 @@ end;
 
 procedure THistoryGrid.Paint;
 var
-  TextRect: TRect;
-  ch,cw,idx,SumHeight: Integer;
+  TextRect,HeaderRect: TRect;
+  ch,cw: Integer;
+  idx,cnt: Integer;
+  SumHeight: Integer;
 begin
   if csDesigning in ComponentState then exit;
 
   if not Allocated then begin
     DrawMessage(TxtStartup);
     exit;
-  end;
-  if (Count = 0) then begin
-    DrawMessage(TxtNoItems);
-    exit;
-  end;
+  end else
   if ShowProgress then begin
     DrawProgress;
     exit;
   end;
+
+  cnt := Count;
+  if cnt = 0 then begin
+    DrawMessage(TxtNoItems);
+    exit;
+  end;
+
   idx := GetFirstVisible;
   { REV
   idx := GetNext(VertScrollBar.Position-1);
   }
-  if (idx = -1) then begin
+  if idx = -1 then begin
     DrawMessage(TxtNoSuch);
     exit;
   end;
@@ -1199,40 +1175,34 @@ begin
   ch := ClientHeight;
   cw := ClientWidth;
 
-  while (SumHeight < ch) and (idx >= 0) and (idx < Length(FItems)) do begin
+  while (SumHeight < ch) and (idx >= 0) and (idx < cnt) do begin
     LoadItem(idx);
-    TextRect := Rect(0,SumHeight,cw,SumHeight+FItems[idx].Height);
+    TextRect := Bounds(0,SumHeight,cw,FItems[idx].Height);
     if DoRectsIntersect(ClipRect,TextRect) then begin
       Canvas.Brush.Color := Options.ColorDivider;
       Canvas.FillRect(TextRect);
       if (FItems[idx].HasHeader) and (ShowHeaders) and (ExpandHeaders) then begin
         if Reversed xor ReversedHeader then begin
-          TextRect := Rect(0,SumHeight,cw,SumHeight+SessHeaderHeight);
-          PaintHeader(idx,TextRect);
-          TextRect := Rect(0,SumHeight+SessHeaderHeight,cw,SumHeight+FItems[idx].Height);
-        end
-        else begin
-          TextRect := Rect(0,SumHeight+FItems[idx].Height-SessHeaderHeight,cw,SumHeight+FItems[idx].Height);
-          PaintHeader(idx,TextRect);
-          TextRect := Rect(0,SumHeight,cw,SumHeight+FItems[idx].Height-SessHeaderHeight);
+          HeaderRect := Rect(0,TextRect.Top,cw,TextRect.Top+SessHeaderHeight);
+          Inc(TextRect.Top,SessHeaderHeight);
+        end else begin
+          HeaderRect := Rect(0,TextRect.Bottom-SessHeaderHeight,cw,TextRect.Bottom);
+          Dec(TextRect.Bottom,SessHeaderHeight);
         end;
-      end
-      else
-        TextRect := Rect(0,SumHeight,cw,SumHeight+FItems[idx].Height);
+        PaintHeader(idx,HeaderRect);
+      end;
       PaintItem(idx,TextRect);
     end;
     Inc(SumHeight,FItems[idx].Height);
-    {
-    if Reversed then idx := GetPrev(idx)
-    else idx := GetNext(idx);
-    }
     idx := GetNext(idx);
     if idx = -1 then break;
-    //Inc(idx);
   end;
   if SumHeight < ch then begin
-    Canvas.Brush.Color := Options.ColorBackground;
-    Canvas.FillRect(Rect(0,SumHeight,ClientWidth,ClientHeight));
+    TextRect := Rect(0,SumHeight,cw,ch);
+    if DoRectsIntersect(ClipRect,TextRect) then begin
+      Canvas.Brush.Color := Options.ColorBackground;
+      Canvas.FillRect(TextRect);
+    end;
   end;
 end;
 
@@ -1383,10 +1353,7 @@ end;
 
 procedure THistoryGrid.WMEraseBkgnd(var Message: TWMEraseBkgnd);
 begin
-  //Canvas.Brush.Color := Color;
-  //Canvas.FillRect(Rect(0,0,ClientWidth,ClientHeight));//Canvas.ClipRect);
   Message.Result := 1;
-  //inherited;
 end;
 
 procedure THistoryGrid.WMPaint(var Message: TWMPaint);
@@ -1398,21 +1365,19 @@ begin
     Message.Result := 1;
     exit;
   end;
-  BeginPaint(Handle,ps);
-  dc := ps.HDC;
+  dc := BeginPaint(Handle,ps);
   ClipRect := ps.rcPaint;
   try
-    //Canvas.Handle := dc;
-    //Canvas.Font.name := 'MS Shell Dlg';
-    //Canvas.Brush.Color := Color;
     Paint;
     BitBlt(dc,ClipRect.Left,ClipRect.Top,
-      ClipRect.Right-ClipRect.Left,ClipRect.Bottom-ClipRect.Top,
-      Canvas.Handle,ClipRect.Left,ClipRect.Top,SRCCOPY);
+      ClipRect.Right-ClipRect.Left,
+      ClipRect.Bottom-ClipRect.Top,
+      Canvas.Handle,
+      ClipRect.Left,ClipRect.Top,
+      SRCCOPY);
   finally
     EndPaint(Handle,ps);
     Message.Result := 0;
-    //FRich.Visible := False;
   end;
 end;
 
@@ -1573,8 +1538,8 @@ end;
 procedure THistoryGrid.PaintItem(Index: Integer; ItemRect: TRect);
 var
   TimeStamp,HeaderName: WideString;
-  OrgRect: TRect;
-  TopIconOffset,IconOffset,NickOffset,TimeOffset: Integer;
+  OrgRect, ItemClipRect: TRect;
+  TopIconOffset,IconOffset,TimeOffset: Integer;
   //icon: TIcon;
   BackColor: TColor;
   nameFont,timestampFont,textFont: TFont;
@@ -1584,69 +1549,58 @@ var
   RichBMP: TBitmap;
   ic: HICON;
   HeadRect: TRect;
-  offset,dtf: Integer;
+  dtf: Integer;
   er: PEventRecord;
 begin
-  {$IFDEF DEBUG}
-  OutputDebugString(PChar('Paint item '+intToStr(Index)+' to screen'));
-  {$ENDIF}
-
   // leave divider line
   Dec(ItemRect.Bottom);
-
   OrgRect := ItemRect;
 
-  FullHeader := not (FGroupLinked and FItems[Index].LinkedToPrev);
   Sel := IsSelected(Index);
-  RTL := GetItemRTL(Index);
   Options.GetItemOptions(FItems[Index].MessageType,textFont,BackColor);
+  if Sel then BackColor := Options.ColorSelected;
 
-  if not (RTL = ((Canvas.TextFlags and ETO_RTLREADING) > 0)) then begin
-    if RTL then
-      Canvas.TextFlags := Canvas.TextFlags or ETO_RTLREADING
-    else
-      Canvas.TextFlags := Canvas.TextFlags and not ETO_RTLREADING;
-  end;
+  IntersectRect(ItemClipRect,ItemRect,ClipRect);
+  Canvas.Brush.Color := BackColor;
+  Canvas.FillRect(ItemClipRect);
 
-  //BackColor := SendMessage(FRich.Handle,EM_SETBKGNDCOLOR,0,0);
-  //SendMessage(FRich.Handle,EM_SETBKGNDCOLOR,0,ColorToRGB(BackColor));
+  InflateRect(ItemRect,-Padding,-Padding);
 
+  FullHeader := not (FGroupLinked and FItems[Index].LinkedToPrev);
   if FullHeader then begin
     HeadRect := ItemRect;
-    InflateRect(HeadRect,-Padding,-Padding);
-    Dec(HeadRect.Top,Padding);
-    Inc(HeadRect.Top,Padding div 2);
+    HeadRect.Top := HeadRect.Top - Padding + (Padding div 2);
+    if mtIncoming in FItems[Index].MessageType then
+      HeadRect.Bottom := HeadRect.Top+CHeaderHeight else
+      HeadRect.Bottom := HeadRect.Top+PHeaderHeight;
+    ItemRect.Top := HeadRect.Bottom + Padding - (Padding div 2);
+  end;
+
+  if FullHeader and DoRectsIntersect(HeadRect,ClipRect) then begin
+    {$IFDEF DEBUG}
+    OutputDebugString(PChar('Paint item header '+intToStr(Index)+' to screen'));
+    {$ENDIF}
     if mtIncoming in FItems[Index].MessageType then begin
       nameFont := Options.FontContact;
       timestampFont := Options.FontIncomingTimestamp;
       HeaderName := ContactName;
-      HeadRect.Bottom := HeadRect.Top+CHeaderHeight;
     end else begin
       nameFont := Options.FontProfile;
       timestampFont := Options.FontOutgoingTimestamp;
       HeaderName := ProfileName;
-      HeadRect.Bottom := HeadRect.Top+PHeaderHeight;
     end;
     if Assigned(FGetNameData) then
       FGetNameData(Self,Index,HeaderName);
     HeaderName := HeaderName + ':';
     TimeStamp := GetTime(FItems[Index].Time);
-  end;
 
-  if Sel then begin
-    BackColor := Options.ColorSelected;
-  end;
+    RTL := GetItemRTL(Index);
+    if not (RTL = ((Canvas.TextFlags and ETO_RTLREADING) > 0)) then begin
+      if RTL then
+        Canvas.TextFlags := Canvas.TextFlags or ETO_RTLREADING else
+        Canvas.TextFlags := Canvas.TextFlags and not ETO_RTLREADING;
+    end;
 
-  //SendMessage(FRich.Handle,EM_SETBKGNDCOLOR,0,ColorToRGB(BackColor));
-
-  Canvas.Brush.Color := BackColor;
-  Canvas.FillRect(ItemRect);
-
-  InflateRect(ItemRect,-Padding,-Padding);
-
-  if FullHeader then begin
-
-    Dec(ItemRect.Top,Padding);
     IconOffset := 0;
     TopIconOffset := ((HeadRect.Bottom-HeadRect.Top)-16) div 2;
     if (FItems[Index].HasHeader) and (ShowHeaders) and (not ExpandHeaders) then begin
@@ -1654,8 +1608,7 @@ begin
         DrawIconEx(Canvas.Handle,HeadRect.Right-16,HeadRect.Top+TopIconOffset,
           hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL);
         Dec(HeadRect.Right,16+Padding);
-      end
-      else begin
+      end else begin
         DrawIconEx(Canvas.Handle,HeadRect.Left,HeadRect.Top+TopIconOffset,
           hppIcons[HPP_ICON_SESS_DIVIDER].Handle,16,16,0,0,DI_NORMAL);
         Inc(HeadRect.Left,16+Padding);
@@ -1676,8 +1629,7 @@ begin
         if RTL then begin
           DrawIconEx(Canvas.Handle,HeadRect.Right-16,HeadRect.Top+TopIconOffset,ic,16,16,0,0,DI_NORMAL);
           Dec(HeadRect.Right,16+Padding);
-        end
-        else begin
+        end else begin
           DrawIconEx(Canvas.Handle,HeadRect.Left,HeadRect.Top+TopIconOffset,ic,16,16,0,0,DI_NORMAL);
           Inc(HeadRect.Left,16+Padding);
         end;
@@ -1689,8 +1641,7 @@ begin
     if sel then Canvas.Font.Color := Options.ColorSelectedText;
     dtf := DT_NOPREFIX or DT_SINGLELINE or DT_VCENTER;
     if RTL then
-      dtf := dtf or DT_RTLREADING or DT_RIGHT
-    else
+      dtf := dtf or DT_RTLREADING or DT_RIGHT else
       dtf := dtf or DT_LEFT;
     Tnt_DrawTextW(Canvas.Handle,PWideChar(HeaderName),Length(HeaderName),HeadRect,dtf);
 
@@ -1700,36 +1651,41 @@ begin
     TimeOffset := WideCanvasTextWidth(Canvas,TimeStamp);
     dtf := DT_NOPREFIX or DT_SINGLELINE or DT_VCENTER;
     if RTL then
-      dtf := dtf or DT_RTLREADING or DT_LEFT
-    else
+      dtf := dtf or DT_RTLREADING or DT_LEFT else
       dtf := dtf or DT_RIGHT;
     Tnt_DrawTextW(Canvas.Handle,PWideChar(TimeStamp),Length(TimeStamp),HeadRect,dtf);
 
     if ShowBookmarks and (Sel or FItems[Index].Bookmarked) then begin
       IconOffset := TimeOffset + Padding;
       if FItems[Index].Bookmarked then
-        ic := hppIcons[HPP_ICON_BOOKMARK_ON].handle
-      else
+        ic := hppIcons[HPP_ICON_BOOKMARK_ON].handle else
         ic := hppIcons[HPP_ICON_BOOKMARK_OFF].handle;
       if RTL then
-        DrawIconEx(Canvas.Handle,HeadRect.Left+IconOffset,HeadRect.Top+TopIconOffset,ic,16,16,0,0,DI_NORMAL)
-      else
+        DrawIconEx(Canvas.Handle,HeadRect.Left+IconOffset,HeadRect.Top+TopIconOffset,ic,16,16,0,0,DI_NORMAL) else
         DrawIconEx(Canvas.Handle,HeadRect.Right-IconOffset-16,HeadRect.Top+TopIconOffset,ic,16,16,0,0,DI_NORMAL);
     end;
-
-    ItemRect.Top := HeadRect.Bottom + Padding - (Padding div 2);
   end;
 
-  ApplyItemToRich(Index);
-  RichBMP := FRichCache.GetItemRichBitmap(Index);
-  BitBlt(Canvas.Handle,ItemRect.Left,ItemRect.Top,RichBMP.Width,RichBMP.Height,
-    RichBMP.Canvas.Handle,0,0,SRCCOPY);
+  if DoRectsIntersect(ItemRect,ClipRect) then begin
+    {$IFDEF DEBUG}
+    OutputDebugString(PChar('Paint item body '+intToStr(Index)+' to screen'));
+    {$ENDIF}
+    ApplyItemToRich(Index);
+    RichBMP := FRichCache.GetItemRichBitmap(Index);
+    ItemClipRect := Bounds(ItemRect.Left,ItemRect.Top,RichBMP.Width,RichBMP.Height);
+    IntersectRect(ItemClipRect,ItemClipRect,ClipRect);
+    BitBlt(Canvas.Handle,
+      ItemClipRect.Left, ItemClipRect.Top,
+      ItemClipRect.Right-ItemClipRect.Left, ItemClipRect.Bottom-ItemClipRect.Top,
+      RichBMP.Canvas.Handle,
+      ItemClipRect.Left-ItemRect.Left, ItemClipRect.Top-ItemRect.Top,
+      SRCCOPY);
+  end;
 
   //if (Focused or WindowPrePainting) and (Index = Selected) then begin
   if (not FGridNotFocused or WindowPrePainting) and (Index = Selected) then begin
     DrawFocusRect(Canvas.Handle,OrgRect);
   end;
-
 end;
 
 procedure THistoryGrid.PrePaintWindow;
@@ -2113,14 +2069,10 @@ begin
   Options.GetItemOptions(FItems[Item].MessageType,textFont,backColor);
 
   if (IsSelected(Item)) and (not (RichEdit = FRichInline)) and UseSelection then begin
-    //textColor := ColorToRGB(Options.ColorSelectedText);
-    //backColor := ColorToRGB(Options.ColorSelected);
     textColor := Options.ColorSelectedText;
     backColor := Options.ColorSelected;
     NoDefaultColors := False;
   end else begin
-    //textColor := ColorToRGB(textFont.Color);
-    //backColor := ColorToRGB(backColor);
     textColor := textFont.Color;
     backColor := backColor;
     NoDefaultColors := True;
@@ -2146,8 +2098,6 @@ begin
     RTF := RTF + Format('\red%u\green%u\blue%u;',[backColor and $FF,(backColor shr 8) and $FF,(backColor shr 16) and $FF]);
     // add color table for BBCodes
     if Options.BBCodesEnabled and NoDefaultColors then RTF := RTF + rtf_ctable_text;
-    // hav probs with pasting in ms word with wring back color
-    //RTF := RTF + '}\li30\ri30\fi0\highlight1\cf0';
     RTF := RTF + '}\li30\ri30\fi0\cf0';
     if GetItemRTL(Item) then RTF := RTF + '\rtlpar\ltrch\rtlch '
                         else RTF := RTF + '\ltrpar\rtlch\ltrch ';
@@ -2233,10 +2183,7 @@ begin
 
   ht := GetHitTests(x,y);
   if (ghtLink in ht) then begin
-    if Assigned(FOnUrlPopup) then begin
-      Cursor := crDefault;
-      FOnUrlPopup(Self,Item,GetLinkAtPoint(x,y));
-    end;
+    URLClick(Item,GetLinkAtPoint(x,y),mbRight);
     exit;
   end;
 
@@ -2278,10 +2225,8 @@ begin
   end;
 
   if (ghtLink in ht) then begin
-    if Assigned(FOnUrlClick) then begin
-      Item := FindItemAt(x,y);
-      FOnUrlClick(Self,Item,GetLinkAtPoint(x,y));
-    end;
+    Item := FindItemAt(x,y);
+    URLClick(Item,GetLinkAtPoint(x,y),mbLeft);
     exit;
   end;
 
@@ -2303,10 +2248,8 @@ begin
   DownHitTests := [];
   WasDownOnGrid := False;
   if (ghtLink in ht) then begin
-    if Assigned(FOnUrlClick) then begin
-      Item := FindItemAt(x,y);
-      FOnUrlClick(Self,Item,GetLinkAtPoint(x,y));
-    end;
+    Item := FindItemAt(x,y);
+    URLClick(Item,GetLinkAtPoint(x,y),mbMiddle);
     exit;
   end;
 end;
@@ -2321,9 +2264,6 @@ end;
 procedure THistoryGrid.DoMouseMove(X, Y: Integer; Keys: TMouseMoveKeys);
 var
   Item: Integer;
-  //ht: TGridHitTests;
-  //NewCursor: TCursor;
-  //NewHint: WideString;
   SelectMove: Boolean;
 begin
   CheckBusy;
@@ -2353,20 +2293,6 @@ end;
 procedure THistoryGrid.WMLButtonDblClick(var Message: TWMLButtonDblClk);
 begin
   DoLButtonDblClick(Message.XPos,Message.YPos,TranslateKeys(Message.Keys));
-end;
-
-procedure THistoryGrid.CalcAllHeight;
-var
-  i: Integer;
-  ts: DWord;
-begin
-  ts := GetTickCount;
-  for i := 0 to Length(FItems) - 1 do
-  begin
-    LoadItem(i,True);
-  end;
-  ts := GetTickCount - ts;
-  MessageBox(Handle,PChar('Calculated '+IntToStr(Length(FItems))+' items, time taken: '+IntToStr(ts)+' ms'),'Info',0)
 end;
 
 function THistoryGrid.CalcItemHeight(Item: Integer): Integer;
@@ -2468,7 +2394,6 @@ end;
 function THistoryGrid.SendMsgFilterMessage(var Message: TMessage): Longint;
 var
   mf: TMsgFilter;
-  res: Longint;
 begin
   Result := 0;
   if FControlID <> 0 then begin
@@ -2508,7 +2433,7 @@ end;
 
 procedure THistoryGrid.DoKeyDown(var Key: Word; ShiftState: TShiftState);
 var
-  NextItem,i,Item: Integer;
+  NextItem,Item: Integer;
   r: TRect;
 begin
   if Count = 0 then exit;
@@ -2642,9 +2567,6 @@ begin
 end;
 
 procedure THistoryGrid.DoKeyUp(var Key: Word; ShiftState: TShiftState);
-var
-  NextItem,i,Item: Integer;
-  r: TRect;
 begin
   if Count = 0 then exit;
   if (ssAlt in ShiftState) or (ssCtrl in ShiftState) then exit;
@@ -2659,43 +2581,6 @@ begin
   end;
 end;
 
-procedure THistoryGrid.WMNotify(var Message: TWMNotify);
-var
-  link: TENLink;
-  AnsiUrl: String;
-  p: TPoint;
-  tr: TextRange;
-  OverInline: Boolean;
-  CurRich: THPPRichEdit;
-  Item: Integer;
-begin
-  {$IFDEF RENDER_RICH}
-  // ok, user either clicked or moved mouse over link
-  // if we are over inline richedit?
-  OverInline := (Message.NMHdr^.hwndFrom = FRichInline.Handle);
-
-  if Message.NMHdr^.code = EN_LINK then begin
-    link := TENLink(Pointer(Message.NMHdr)^);
-    if OverInline then begin
-      CurRich := FRichInline;
-      SetLength(AnsiUrl,link.chrg.cpMax-link.chrg.cpMin);
-      tr.chrg := link.chrg;
-      tr.lpstrText := @AnsiUrl[1];
-      CurRich.Perform(EM_GETTEXTRANGE,0,DWord(@tr));
-      if link.msg = WM_LBUTTONUP then begin
-        p := Mouse.CursorPos;
-        p := ScreenToClient(p);
-        if Assigned(FOnUrlClick) then begin
-          Item := FindItemAt(p.x,p.y);
-          FOnUrlClick(Self,Item, AnsiToWideString(AnsiUrl,Codepage));
-        end;
-      end;
-    end;
-  end;
-{$ENDIF}
-  inherited;
-end;
-
 procedure THistoryGrid.WMGetDlgCode(var Message: TWMGetDlgCode);
 type
   PWMMsgKey = ^TWMMsgKey;
@@ -2707,8 +2592,6 @@ type
     KeyData: Longint;
     Result: Longint;
   end;
-var
-  msg: PWMMsgKey;
 begin
   inherited;
   Message.Result := DLGC_WANTALLKEYS;
@@ -2956,9 +2839,7 @@ end;
 
 procedure THistoryGrid.EndUpdate;
 begin
-  if LockCount > 0 then begin
-    Dec(LockCount);
-  end;
+  if LockCount > 0 then Dec(LockCount);
   if LockCount > 0 then exit;
   try
     if guSize in GridUpdates then GridUpdateSize;
@@ -3051,71 +2932,72 @@ end;
 // Call it when you are sure that the point has a link,
 // if no link at a point, the result is ''
 // To know if there's a link, use GetHitTests and look for ghtLink
-function THistoryGrid.GetLinkAtPoint(X, Y: Integer): WideString;
+function THistoryGrid.GetLinkAtPoint(X, Y: Integer): AnsiString;
 var
   p: TPoint;
-  cp: DWord;
   cr: CHARRANGE;
   cf: CHARFORMAT2;
   res: DWord;
-  AnsiUrl: String;
   RichEditRect: TRect;
-  Item: Integer;
+  cp,max,Item: Integer;
 begin
   Result := '';
-
   Item := FindItemAt(x,y);
   if Item = -1 then exit;
   RichEditRect := GetRichEditRect(Item,True);
-  p := Point(x - RichEditRect.Left,y - RichEditRect.Top);
 
+  p := Point(x - RichEditRect.Left,y - RichEditRect.Top);
   ApplyItemToRich(Item);
+
   cp := FRich.Perform(EM_CHARFROMPOS,0,LPARAM(@p));
+  if cp = -1 then exit; // out of richedit area
   cr.cpMin := cp;
-  cr.cpMax := cp+1;
+  cr.cpMax := cp;
   FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
 
   ZeroMemory(@cf,SizeOf(cf));
   cf.cbSize := SizeOf(cf);
   cf.dwMask := CFM_LINK;
-
   res := FRich.Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
-  if res <> cf.dwMask then exit;
-
   // no link under point
-  if (cf.dwEffects and CFE_LINK) = 0 then exit;
+  if ((res and CFM_LINK) = 0) or
+     ((cf.dwEffects and CFE_LINK) = 0) then exit;
 
-  while True do begin
-    Inc(cr.cpMax);
+  while cr.cpMin > 0 do begin
+    Dec(cr.cpMin);
     FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
     cf.cbSize := SizeOf(cf);
     cf.dwMask := CFM_LINK;
     res := FRich.Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
-    if (res <> cf.dwMask) or ((res and CFM_LINK) = 0) then begin
-      Dec(cr.cpMax);
-      break;
-    end;
-  end;
-
-  while True do begin
-    if cr.cpMin > 0 then
-      Dec(cr.cpMin)
-    else break;
-    FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
-    cf.cbSize := SizeOf(cf);
-    cf.dwMask := CFM_LINK;
-    res := FRich.Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
-    if (res <> cf.dwMask) or ((res and CFM_LINK) = 0) then begin
+    if ((res and CFM_LINK) = 0) or ((cf.dwEffects and CFM_LINK) = 0) then begin
       Inc(cr.cpMin);
       break;
     end;
   end;
 
-  SetLength(AnsiUrl,cr.cpMax-cr.cpMin);
-  FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
-  res := FRich.Perform(EM_GETSELTEXT,0,LPARAM(@AnsiUrl[1]));
-  SetLength(AnsiUrl,res);
-  Result := AnsiToWideString(AnsiUrl,Codepage);
+  max := FRich.GetTextLength;
+  while cr.cpMax < max do begin
+    Inc(cr.cpMax);
+    FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
+    cf.cbSize := SizeOf(cf);
+    cf.dwMask := CFM_LINK;
+    res := FRich.Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
+    if ((res and CFM_LINK) = 0) or ((cf.dwEffects and CFM_LINK) = 0) then begin
+      Dec(cr.cpMax);
+      break;
+    end;
+  end;
+
+  Result := FRich.GetTextRangeA(cr.cpMin,cr.cpMax);
+
+  if (Length(Result)>10) and (Pos('HYPERLINK',Result)=1) then begin
+    cr.cpMin := PosEx('"',Result,10);
+    if cr.cpMin > 0 then Inc(cr.cpMin) else exit;
+    cr.cpMax := PosEx('"',Result,cr.cpMin);
+    if cr.cpMin = 0 then exit;
+    Result := Copy(Result,cr.cpMin,cr.cpMax-cr.cpMin);
+  end;
+
 end;
 
 const
@@ -3491,11 +3373,6 @@ begin
     OnDblClick(Self);
 end;
 
-procedure THistoryGrid.WMSysCommand(var Message: TWMSysCommand);
-begin
-  inherited;
-end;
-
 procedure THistoryGrid.DrawProgress;
 var
 r: TRect;
@@ -3633,8 +3510,8 @@ procedure THistoryGrid.WMCommand(var Message: TWMCommand);
 begin
   inherited;
   {$IFDEF RENDER_RICH}
-  if not (csDestroying in ComponentState) and
-    (Message.Ctl = FRichInline.Handle) then begin
+  if csDestroying in ComponentState then exit;
+  if Message.Ctl = FRichInline.Handle then begin
     case Message.NotifyCode of
       EN_SETFOCUS: begin
         if State <> gsInline then begin
@@ -3710,23 +3587,24 @@ begin
 
   SumHeight := -TopItemOffset;
   while (Offset < 0) and (idx <> -1) and (idx >=0) and (idx < Count) do begin
+    previdx := idx;
+    idx := GetUp(idx);
     if SumHeight <= Offset then begin
-      VertScrollBar.Position := GetIdx(idx);
-      if GetUp(idx) = -1 then
-        VertScrollBar.Position := 0;
+      if idx = -1 then
+        VertScrollBar.Position := 0 else
+        VertScrollBar.Position := GetIdx(previdx);
       TopItemOffset := Offset - SumHeight;
       if Update then
         SmoothScrollWindow(Handle,0,-Offset,nil,nil);
       break;
     end;
-    previdx := idx;
-    idx := GetUp(idx);
     if idx = -1 then begin
-      VertScrollBar.Position := GetIdx(previdx);
+      if previdx = first then
+        VertScrollBar.Position := 0 else
+        VertScrollBar.Position := GetIdx(previdx);
       TopItemOffset := 0;
       // to lazy to calculate proper offset
-      if Update then
-        Repaint;
+      if Update then Repaint;
       break;
     end;
     LoadItem(idx,True);
@@ -3837,8 +3715,7 @@ begin
     max := Length(FSelItems)-1;
     cur := 0;
 
-    s := Min(FSelItems[0],FSelItems[High(FSelItems)]);
-
+    s := Math.Min(FSelItems[0],FSelItems[High(FSelItems)]);
     e := Math.Max(FSelItems[0],FSelItems[High(FSelItems)]);
 
     nextitem := -1;
@@ -4030,9 +3907,15 @@ end;
 
 procedure THistoryGrid.WMMouseWheel(var Message: TWMMouseWheel);
 var
-  lines,code,count,i: Integer;
+  lines,code: Integer;
+  FWheelCurrTick: Cardinal;
 begin
-  if Mouse.WheelScrollLines < 0 then begin
+  if State = gsInline then begin
+    with TMessage(Message) do FRichInline.Perform(WM_MOUSEWHEEL,WParam,LParam);
+    exit;
+  end;
+  if (Cardinal(Message.WheelDelta) = WHEEL_PAGESCROLL) or
+     (Mouse.WheelScrollLines < 0) then begin
     lines := 1;
     if Message.WheelDelta < 0 then
       code := SB_PAGEDOWN else
@@ -4043,13 +3926,18 @@ begin
       code := SB_LINEDOWN else
       code := SB_LINEUP;
   end;
-  count := MulDiv(Message.WheelDelta,lines,WHEEL_DELTA);
-  if State = gsInline then begin
-    for i := 1 to abs(count) do
-      PostMessage(FRichInline.Handle,EM_SCROLL,code,0);
-  end else begin
-    for i := 1 to abs(count) do
-      PostMessage(Self.Handle,WM_VSCROLL,code,0);
+
+  // some kind of acceleraion. mb the right place is in WM_VSCROLL?
+  FWheelCurrTick := GetTickCount;
+  if FWheelCurrTick-FWheelLastTick < 10  then begin
+    lines := lines shl 1;
+  end;
+  FWheelLastTick := FWheelCurrTick;
+
+  FWheelAccumulator := FWheelAccumulator + Message.WheelDelta*lines;
+  while abs(FWheelAccumulator) >= WHEEL_DELTA do begin
+    FWheelAccumulator := abs(FWheelAccumulator) - WHEEL_DELTA;
+    PostMessage(Self.Handle,WM_VSCROLL,code,0);
   end;
 end;
 
@@ -4320,7 +4208,7 @@ var
   begin
     FRichSaveItem := THPPRichEdit.CreateParented(Handle);
     FRichSave := THPPRichEdit.CreateParented(Handle);
-    FRichSaveOLECB := TRichEditOleCallback.Create;
+    FRichSaveOLECB := TRichEditOleCallback.Create(FRichSave);
     FRichSave.Perform(EM_SETOLECALLBACK, 0, DWord(TRichEditOleCallback(FRichSaveOLECB) as IRichEditOleCallback));
   end;
 
@@ -4596,8 +4484,6 @@ begin
 end;
 
 procedure THistoryGrid.SetReversedHeader(const Value: Boolean);
-var
-  vis_idx: Integer;
 begin
   if FReversedHeader = Value then exit;
   FReversedHeader := Value;
@@ -4899,36 +4785,33 @@ var
     p: TPoint;
     cr: CHARRANGE;
     cf: CHARFORMAT2;
-    cp: DWord;
+    cp,sel: Integer;
     res: DWord;
-    AnsiUrl: String;
   begin
+    Result := False;
     p := Point(x - RichEditRect.Left,y - RichEditRect.Top);
-
     ApplyItemToRich(Item);
+
     cp := FRich.Perform(EM_CHARFROMPOS,0,LPARAM(@p));
+    if cp = -1 then exit; // out of richedit area
     cr.cpMin := cp;
-    cr.cpMax := cp+1;
+    cr.cpMax := cp;
     FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
 
     ZeroMemory(@cf,SizeOf(cf));
     cf.cbSize := SizeOf(cf);
     cf.dwMask := CFM_LINK;
-
     res := FRich.Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
-    if res <> cf.dwMask then exit;
-
-    Result := (cf.dwEffects and CFE_LINK) > 0;
+    // no link under point
+    Result := ((res and CFM_LINK) > 0) and ((cf.dwEffects and CFE_LINK) > 0);
   end;
 
 begin
   Result := [];
   FHintRect := Rect(0,0,0,0);
   Item := FindItemAt(X,Y);
-  if Item <> -1 then
-    Include(Result,ghtItem)
-  else
-    exit;
+  if Item = -1 then exit;
+  Include(Result,ghtItem);
 
   FullHeader := not (FGroupLinked and FItems[Item].LinkedToPrev);
   ItemRect := GetItemRect(Item);
@@ -5010,9 +4893,8 @@ begin
 
   if PtInRect(ItemRect,p) then begin
     Include(Result,ghtText);
-    if IsLinkAtPoint(ItemRect) then
-      Include(Result,ghtLink);
-      //FHintRect := Rect(0,0,0,0);
+    FHintRect := ItemRect;
+    if IsLinkAtPoint(ItemRect) then Include(Result,ghtLink);
   end;
 end;
 
@@ -5146,6 +5028,18 @@ procedure THistoryGrid.OnInlineOnMouseUp(Sender: TObject; Button: TMouseButton; 
 begin
   if (Button = mbRight) and Assigned(FOnInlinePopup) then
     FOnInlinePopup(Sender);
+end;
+
+procedure THistoryGrid.OnInlineOnURLClick(Sender: TObject; const URLText: String; Button: TMouseButton);
+var
+  p: TPoint;
+  Item: Integer;
+begin
+  if Button = mbLeft then begin
+    p := ScreenToClient(Mouse.CursorPos);
+    Item := FindItemAt(p.x,p.y);
+    URLClick(Item,URLText,Button);
+  end;
 end;
 
 function THistoryGrid.GetRichEditRect(Item: Integer; DontClipTop: Boolean): TRect;
@@ -5291,6 +5185,14 @@ begin
   if FContactName = Value then exit;
   FContactName := Value;
   Update;
+end;
+
+procedure THistoryGrid.URLClick(Item: Integer; const URLText: String; Button: TMouseButton);
+begin
+  Application.CancelHint;
+  Cursor := crDefault;
+  if Assigned(OnUrlClick) then
+    OnUrlClick(Self,Item,URLText,Button);
 end;
 
 { TGridOptions }
@@ -5708,7 +5610,6 @@ end;
 
 procedure TRichCache.ApplyItemToRich(Item: PRichItem);
 begin
-  //OutputDebugString(PChar(str));
   // force to send the size:
   FRichHeight := -1;
   //Item^.Rich.HandleNeeded;
@@ -5740,7 +5641,7 @@ begin
   FRichWidth := -1;
   FRichHeight := -1;
   Grid := AGrid;
-  // cache size:
+  // cache size
   SetLength(Items,20);
 
   RichEventMasks := ENM_LINK;
@@ -5812,9 +5713,9 @@ var
   Item: PRichItem;
 begin
   Item := RequestItem(GridItem);
+  Assert(Item <> nil);
   if not Item^.BitmapDrawn then
     PaintRichToBitmap(Item);
-  Assert(Item <> nil);
   Result := Item^.Bitmap;
 end;
 
@@ -5838,10 +5739,8 @@ end;
 
 procedure TRichCache.PaintRichToBitmap(Item: PRichItem);
 var
-  rc: TRect;
   BkColor: TCOLORREF;
   Range: TFormatRange;
-  //str: String;
 begin
   {$IFDEF DELPHI_9_UP}
   Item^.Bitmap.SetSize(Item^.Rich.Width,Item^.Height);
@@ -5849,33 +5748,26 @@ begin
   Item^.Bitmap.Width := Item^.Rich.Width;
   Item^.Bitmap.Height := Item^.Height;
   {$ENDIF}
-
-  //str := 'Painted bitmap ['+IntToStr(item.GridItem)+'] for rich "'+Copy(Item.Rich.Text,1,15)+'"';
-  //OutputDebugString(PChar(str));
-
-  rc := Rect(0,0,Item^.Bitmap.Width,Item^.Bitmap.Height);
-
   // because RichEdit sometimes paints smaller image
   // than it said when calculating height, we need
   // to fill the background
-  BkColor := SendMessage(Item^.Rich.Handle,EM_SETBKGNDCOLOR,0,0);
-  SendMessage(Item^.Rich.Handle,EM_SETBKGNDCOLOR,0,BkColor);
+  BkColor := Item^.Rich.Perform(EM_SETBKGNDCOLOR,0,0);
+  Item^.Rich.Perform(EM_SETBKGNDCOLOR,0,BkColor);
+  Item^.Bitmap.TransparentColor := BkColor;
   Item^.Bitmap.Canvas.Brush.Color := BkColor;
-  Item^.Bitmap.Canvas.FillRect(rc);
-
-  rc.Left := rc.left * 1440 div LogX;
-  rc.Top := rc.Top * 1440 div LogY;
-  rc.Right := rc.Right * 1440 div LogX;
-  rc.Bottom := rc.Bottom * 1440 div LogY;
-
-  Range.hdc := Item^.Bitmap.Canvas.Handle;
-  Range.hdcTarget := Item^.Bitmap.Canvas.Handle;
-  Range.rc := rc;
-  Range.rcPage := rc;
-  Range.chrg.cpMin := 0;
-  Range.chrg.cpMax := -1;
-
-  Item^.Rich.Perform(EM_FORMATRANGE, 1, Longint(@Range));
+  Item^.Bitmap.Canvas.FillRect(Item^.Bitmap.Canvas.ClipRect);
+  with Range do begin
+    hdc := Item^.Bitmap.Canvas.Handle;
+    hdcTarget := hdc;
+    rc := Rect(0,0,
+      MulDiv(Item^.Bitmap.Width,1440,LogX),
+      MulDiv(Item^.Bitmap.Height,1440,LogY));
+    rcPage := rc;
+    chrg.cpMin := 0;
+    chrg.cpMax := -1;
+  end;
+  SetBkMode(Range.hdcTarget,TRANSPARENT);
+  Item^.Rich.Perform(EM_FORMATRANGE, 1, LPARAM(@Range));
   Item^.BitmapDrawn := True;
 end;
 
@@ -5948,9 +5840,6 @@ var
 begin
   for i := 0 to Length(Items) - 1 do begin
     Items[i].Rich.ParentWindow := Grid.Handle;
-    //SendMessage(Items[i].Rich.Handle,EM_SETEVENTMASK,0,RichEventMasks);
-    //SendMessage(Items[i].Rich.Handle,EM_AUTOURLDETECT,1,0);
-    //SendMessage(Items[i].Rich.Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
     // make richedit transparent:
     exstyle := GetWindowLong(Items[i].Rich.Handle,GWL_EXSTYLE);
     exstyle := exstyle or WS_EX_TRANSPARENT;
@@ -5995,115 +5884,9 @@ begin
     end;
 end;
 
-procedure THPPRichedit.SetAutoKeyboard(Enabled: Boolean);
-var
-  re_options,new_options: DWord;
-begin
-  re_options := SendMessage(Handle,EM_GETLANGOPTIONS,0,0);
-  if Enabled then
-    new_options := re_options or IMF_AUTOKEYBOARD else
-    new_options := re_options and not IMF_AUTOKEYBOARD;
-  if re_options <> new_options then
-    SendMessage(Handle,EM_SETLANGOPTIONS,0,new_options);
-end;
-
-procedure THPPRichedit.WMSetFocus(var Message: TWMSetFocus);
-begin
-  SetAutoKeyboard(False);
-  inherited;
-end;
-
-procedure THPPRichedit.WMLangChange(var Message: TMessage);
-begin
-  SetAutoKeyboard(False);
-  Message.Result:=1;
-end;
-
-procedure THPPRichedit.CreateHandle;
-const
-  EM_SETEDITSTYLE = WM_USER + 204;
-  SES_EXTENDBACKCOLOR = 4;
-var
-  re_mask: cardinal;
-begin
-  inherited;
-  re_mask := SendMessage(Handle,EM_GETEVENTMASK,0,0);
-  SendMessage(Handle,EM_SETEVENTMASK,0,re_mask or ENM_LINK);
-  SendMessage(Handle,EM_AUTOURLDETECT,1,0);
-  SendMessage(Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
-  SendMessage(Handle,EM_SETEDITSTYLE,SES_EXTENDBACKCOLOR,SES_EXTENDBACKCOLOR);
-end;
-
-// Fix for VCL TRichEdit uses RichEdit 1.0 class, incompatible
-// with EM_REQUESTRESIZE message for some reasons
-type
-  TAccessCustomMemo = class(TCustomMemo);
-  InheritedCreateParams = procedure(var Params: TCreateParams) of object;
-procedure THPPRichedit.CreateParams(var Params: TCreateParams);
-const
-  RICHED10_DLL = 'RICHED32.DLL';
-  aHideScrollBars: array[Boolean] of DWORD = (ES_DISABLENOSCROLL, 0);
-  aHideSelections: array[Boolean] of DWORD = (ES_NOHIDESEL, 0);
-var
-  Method: TMethod;
-begin
-  if (not IsRichEdit20Available) and (FRichEdit10Module = 0) then begin
-    FRichEdit10Module := LoadLibrary(RICHED10_DLL);
-    if FRichEdit10Module <= HINSTANCE_ERROR then FRichEdit10Module := 0;
-  end;
-  Method.Code := @TAccessCustomMemo.CreateParams;
-  Method.Data := Self;
-  InheritedCreateParams(Method)(Params);
-  if IsRichEdit20Available then
-    CreateSubClass(Params, RICHEDIT_CLASSA)
-  else
-    CreateSubClass(Params, RICHEDIT_CLASS10A);
-  with Params do begin
-    Style := Style or
-             aHideScrollBars[HideScrollBars] or
-             aHideSelections[HideSelection];
-    if WordWrap then
-      Style := Params.Style and not WS_HSCROLL; // more compatible with RichEdit 1.0
-    // Fix for updating rich in event details form
-    WindowClass.style := WindowClass.style and not (CS_HREDRAW or CS_VREDRAW);
-  end;
-end;
-
-procedure THPPRichedit.WMCopy(var Message: TWMCopy);
-var
-  Text: WideString;
-begin
-  inherited;
-  // do not empty clip to not to loose rtf data
-  //EmptyClipboard();
-  Text := GetRichString(Handle,True);
-  CopyToClip(Text,Handle,FCodepage,False);
-end;
-
-procedure THPPRichedit.WMKeyDown(var Message: TWMKey);
-begin
-  if (KeyDataToShiftState(Message.KeyData) = [ssCtrl]) then
-    case Message.CharCode of
-      Ord('E'),Ord('J'):
-        Message.Result := 1;
-      Ord('C'),VK_INSERT: begin
-        PostMessage(Handle,WM_COPY,0,0);
-        Message.Result := 1;
-      end;
-    end;
-  if Message.Result = 1 then exit;
-  inherited;
-end;
-
 initialization
   Screen.Cursors[crHandPoint] := LoadCursor(0,IDC_HAND);
   if Screen.Cursors[crHandPoint] = 0 then
     Screen.Cursors[crHandPoint] := LoadCursor(hInstance,'CR_HAND');
-
-finalization
-  if FRichEdit10Module <> 0 then
-    FreeLibrary(FRichEdit10Module);
-  if FRichEdit20Module <> 0 then
-    FreeLibrary(FRichEdit20Module);
 
 end.
