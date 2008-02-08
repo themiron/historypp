@@ -923,7 +923,7 @@ begin
     FSubProtocol := newSubProtocol;
     Grid.ProfileName := GetContactDisplayName(0, FSubProtocol);
     Grid.ContactName := GetContactDisplayName(Grid.Contact,Grid.Protocol,True);
-    Grid.Update([guOptions]);
+    Grid.GridUpdate([guOptions]);
     Grid.EndUpdate;
     //Grid.Invalidate;
   end;
