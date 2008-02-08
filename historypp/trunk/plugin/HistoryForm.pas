@@ -443,6 +443,7 @@ type
     procedure Search(Next: Boolean; FromNext: Boolean = False);
 
     procedure ShowAllEvents;
+    procedure ShowItem(Value: Integer);
     procedure SetEventFilter(FilterIndex: Integer = -1; DelayApply: Boolean = false);
     procedure CreateEventsFilterMenu;
     procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED;
@@ -2409,6 +2410,12 @@ begin
   EndHotFilterTimer;
 end;
 
+procedure THistoryFrm.ShowItem(Value: Integer);
+begin
+  hg.MakeTopmost(Value);
+  hg.Selected := Value;
+end;
+
 procedure THistoryFrm.bnPassClick(Sender: TObject);
 begin
 if DigToBase(HashString(edPass.Text)) = GetPassword then
@@ -2674,8 +2681,8 @@ begin
   if Index = -1 then exit;
   if hg.State = gsInline then hg.CancelInline;
   Index := HistoryIndexToGrid(Index);
-  hg.MakeTopmost(Index);
-  hg.Selected := Index;
+  ShowItem(Index);
+
   //exit;
   // OXY: try to make selected item the topmost
   //while hg.GetFirstVisible <> Index do begin
@@ -3364,8 +3371,7 @@ begin
   //CopyToClip(w,Handle,UserCodepage);
   SetLength(Items,0);
   //Index := HistoryIndexToGrid(Index);
-  //hg.MakeTopmost(Index);
-  //hg.Selected := Index;
+  //ShowItem(Index);
   //exit;
   //Events := MakeSessionEvents();
 end;
@@ -3532,7 +3538,7 @@ begin
   Index := HistoryIndexToGrid(Index);
   hg.BeginUpdate;
   ShowAllEvents;
-  hg.Selected := Index;
+  ShowItem(Index);
   hg.EndUpdate;
 end;
 

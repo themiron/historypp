@@ -143,7 +143,7 @@ begin
   end;
   if index <> -1 then begin
     wHistory.ShowAllEvents;
-    wHistory.hg.Selected := index;
+    wHistory.ShowItem(index);
   end;
   if NewWindow then
     wHistory.Show else
