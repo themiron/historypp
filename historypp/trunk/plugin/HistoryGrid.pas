@@ -85,7 +85,7 @@ uses
   StrUtils, {$IFDEF COMPILER_10}WideStrUtils,{$ENDIF} TntWideStrUtils,
   StdCtrls, Math, mmsystem,
   hpp_global, hpp_contacts, hpp_itemprocess, hpp_events, hpp_eventfilters,
-  hpp_richedit,
+  hpp_richedit, hpp_olesmileys,
   Contnrs,
   VertSB,
   RichEdit, ShellAPI;
@@ -147,7 +147,7 @@ type
   TOnShowIcons = procedure;
   TOnTextFormatting = procedure(Value: Boolean);
 
-  TGridHitTest = (ghtItem, ghtHeader, ghtText, ghtLink,
+  TGridHitTest = (ghtItem, ghtHeader, ghtText, ghtLink, ghtUnknown,
                   ghtButton, ghtSession, ghtSessHideButton, ghtSessShowButton, ghtBookmark);
   TGridHitTests = set of TGridHitTest;
 
@@ -349,6 +349,7 @@ type
     function CalcItemHeight(GridItem: Integer): Integer;
     function GetItemRich(GridItem: Integer): THPPRichEdit;
     function GetItemRichBitmap(GridItem: Integer): TBitmap;
+    function GetItemByHandle(Handle: THandle): PRichItem;
   end;
 
   TGridUpdate = (guSize, guAllocate, guFilter, guOptions);
@@ -482,6 +483,7 @@ type
     //procedure OnRichResize(Sender: TObject; Rect: TRect);
     //procedure OnMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     {$ENDIF}
+    procedure WMNotify(var Message: TWMNotify); message WM_NOTIFY;
     procedure WMSetFocus(var Message: TWMSetFocus); message WM_SETFOCUS;
     procedure WMKillFocus(var Message: TWMKillFocus); message WM_KILLFOCUS;
     procedure WMGetDlgCode(var Message: TWMGetDlgCode); message WM_GETDLGCODE;
@@ -551,6 +553,7 @@ type
     function GetHitTests(X,Y: Integer): TGridHitTests;
     {$IFDEF RENDER_RICH}
     function GetLinkAtPoint(X,Y: Integer): AnsiString;
+    function GetHintAtPoint(X,Y: Integer; var ObjectHint: WideString; var ObjectRect: TRect): Boolean;
     function GetRichEditRect(Item: Integer; DontClipTop: Boolean = False): TRect;
     {$ENDIF}
     procedure SetRTLMode(const Value: TRTLMode);
@@ -1052,6 +1055,8 @@ end;
 procedure THistoryGrid.CMHintShow(var Message: TMessage);
 var
   Item: Integer;
+  tempHint: WideString;
+  tempRect: TRect;
 begin
   With TCMHintShow(Message).HintInfo^ do begin
     if ghtButton in HintHitTests then begin
@@ -1059,15 +1064,20 @@ begin
       if ghtBookmark in HintHitTests then begin
         Item := FindItemAt(CursorPos);
         if FItems[Item].Bookmarked then
-          Hint := TranslateWideW('Remove Bookmark')
-        else
+          Hint := TranslateWideW('Remove Bookmark') else
           Hint := TranslateWideW('Set Bookmark')
-      end
-      else if ghtSessHideButton in HintHitTests then
-        Hint := TranslateWideW('Hide headers')
-      else if ghtSessShowButton in HintHitTests then
+      end else
+      if ghtSessHideButton in HintHitTests then
+        Hint := TranslateWideW('Hide headers') else
+      if ghtSessShowButton in HintHitTests then
         Hint := TranslateWideW('Show headers');
-      Message.Result := 0
+      Message.Result := 0;
+    end else
+    if (ghtUnknown in HintHitTests) and
+       GetHintAtPoint(CursorPos.X,CursorPos.Y,tempHint,tempRect) then begin
+      Hint := tempHint;
+      CursorRect := tempRect;
+      Message.Result := 0;
     end else
       Message.Result := 1;
   end;
@@ -3000,6 +3010,81 @@ begin
 
 end;
 
+function THistoryGrid.GetHintAtPoint(X,Y: Integer; var ObjectHint: WideString; var ObjectRect: TRect): Boolean;
+var
+  p: TPoint;
+  RichEditRect: TRect;
+  cp,Item: Integer;
+  textDoc: ITextDocument;
+  textRange: ITextRange;
+  iObject: IUnknown;
+  iTooltipCtrl: ITooltipData;
+  size: TPoint;
+
+begin
+  ObjectHint := '';
+  Result := False;
+
+  Item := FindItemAt(x,y);
+  if Item = -1 then exit;
+  RichEditRect := GetRichEditRect(Item,True);
+  p := Point(x - RichEditRect.Left,y - RichEditRect.Top);
+  ApplyItemToRich(Item);
+
+  if FRich.Version < 30 then exit;  // TOM is supported from RE 3.0
+  if not Assigned(FRich.RichEditOle) then exit;
+
+  repeat
+    if FRich.RichEditOle.QueryInterface(IID_ITextDocument,textDoc) <> S_OK then break;
+    p := FRich.ClientToScreen(p);
+    textRange := textDoc.RangeFromPoint(p.X,p.Y);
+    if not Assigned(textRange) then break;
+    iObject := textRange.GetEmbeddedObject;
+    if not Assigned(iObject) then begin
+      cp := textRange.Start;
+      textRange.Start := cp-1;
+      textRange.End_ := cp;
+      iObject := textRange.GetEmbeddedObject;
+    end;
+    if not Assigned(iObject) then break;
+
+    if iObject.QueryInterface(IID_ITooltipData,iTooltipCtrl) = S_OK then
+      OleCheck(iTooltipCtrl.GetTooltip(ObjectHint))
+    else
+    if Supports(iObject,IID_IGifSmileyCtrl) then
+      ObjectHint := TranslateWideW('Running version of AniSmiley is not supported')
+    else
+    if Supports(iObject,IID_ISmileyAddSmiley) then
+      ObjectHint := TranslateWideW('Running version of SmileyAdd is not supported')
+    else
+    if Supports(iObject,IID_IEmoticonsImage) then
+      ObjectHint := TranslateWideW('Running version of Emoticons is not supported')
+    else
+      break;
+    if ObjectHint = '' then break;
+
+    textRange.GetPoint(tomStart+TA_TOP+TA_LEFT,size.X,size.Y);
+    size := FRich.ScreenToClient(size);
+    ObjectRect.TopLeft := size;
+
+    textRange.GetPoint(tomStart+TA_BOTTOM+TA_RIGHT,size.X,size.Y);
+    size := FRich.ScreenToClient(size);
+    ObjectRect.BottomRight := size;
+
+    OffsetRect(ObjectRect,RichEditRect.Left,RichEditRect.Top);
+    InflateRect(ObjectRect,1,1);
+
+    Result := PtInRect(ObjectRect,Point(X,Y));
+  until True;
+
+  if not Result then ObjectHint := '';
+
+  ReleaseObject(iTooltipCtrl);
+  ReleaseObject(iObject);
+  ReleaseObject(textRange);
+  ReleaseObject(TextDoc);
+end;
+
 const
   Substs: array[0..3] of array[0..1] of WideString = (
   ('\n',WideString(#13#10)),
@@ -3532,6 +3617,58 @@ begin
   end;
   {$ENDIF}
 end;
+
+procedure THistoryGrid.WMNotify(var Message: TWMNotify);
+var
+  nmh: PFVCNDATA_NMHDR;
+  RichItem: PRichItem;
+  reRect,smRect: TRect;
+begin
+  {$IFDEF RENDER_RICH}
+  if Message.NMHdr^.code = NM_FIREVIEWCHANGE then begin
+    if csDestroying in ComponentState then exit;
+    if Message.NMHdr^.hwndFrom = FRichInline.Handle then exit;
+    nmh := PFVCNDATA_NMHDR(Message.NMHdr);
+    if (nmh.bEvent = FVCN_PREFIRE) and (nmh.bAction = FVCA_DRAW) then begin
+      RichItem := FRichCache.GetItemByHandle(Message.NMHdr^.hwndFrom);
+      if Assigned(RichItem) then begin
+        nmh.bAction := FVCA_NONE;
+        if RichItem^.GridItem = -1 then exit;
+        if (not RichItem.BitmapDrawn) or (RichItem.Height = -1) or
+           (RichItem.GridItem = FItemInline) or
+           (not IsVisible(RichItem^.GridItem)) then begin
+          RichItem.BitmapDrawn := False;
+          exit;
+        end;
+        nmh.bAction := FVCA_SKIPDRAW;
+        if (State = gsIdle) or (State = gsInline) then begin
+          reRect := GetRichEditRect(RichItem.GridItem,True);
+          smRect := nmh.rcRect;
+          OffsetRect(smRect,reRect.Left,reRect.Top);
+          ClipRect := Canvas.ClipRect;
+          if DoRectsIntersect(smRect,ClipRect) then begin
+            nmh.bAction := FVCA_CUSTOMDRAW;
+            nmh.hDC := RichItem.Bitmap.Canvas.Handle;
+            nmh.clrBackground := RichItem.Bitmap.TransparentColor;
+            nmh.fTransparent := False;
+            nmh.lParam := LPARAM(PointToSmallPoint(reRect.TopLeft));
+          end;
+        end;
+      end;
+    end else
+    if (nmh.bEvent = FVCN_POSTFIRE) and (nmh.bAction = FVCA_CUSTOMDRAW) then begin
+      reRect.TopLeft := SmallPointToPoint(TSmallPoint(nmh.lParam));
+      smRect := nmh.rcRect;
+      OffsetRect(smRect,reRect.Left,reRect.Top);
+      IntersectRect(smRect,smRect,ClipRect);
+      if not IsRectEmpty(smRect) then
+        InvalidateRect(Handle,@smRect,False);
+    end;
+  end else
+  {$ENDIF}
+    inherited;
+end;
+
 
 procedure THistoryGrid.ScrollBy(DeltaX, DeltaY: Integer);
 begin
@@ -4894,7 +5031,9 @@ begin
   if PtInRect(ItemRect,p) then begin
     Include(Result,ghtText);
     FHintRect := ItemRect;
-    if IsLinkAtPoint(ItemRect) then Include(Result,ghtLink);
+    if IsLinkAtPoint(ItemRect) then
+      Include(Result,ghtLink) else
+      Include(Result,ghtUnknown);
   end;
 end;
 
@@ -5654,6 +5793,7 @@ begin
   for i := 0 to Length(Items) - 1 do begin
     New(RichItem);
     RichItem^.Bitmap := TBitmap.Create;
+    RichItem^.Bitmap.Canvas.Lock;
     RichItem^.Height := -1;
     RichItem^.GridItem := -1;
     RichItem^.Rich := THPPRichEdit.Create(nil);
@@ -5677,6 +5817,7 @@ var
   i: Integer;
 begin
   for i := 0 to Length(Items) - 1 do begin
+    Items[i]^.Bitmap.Canvas.Unlock;
     FreeAndNil(Items[i]^.Rich);
     FreeAndNil(Items[i]^.Bitmap);
     Dispose(Items[i]);
@@ -5717,6 +5858,18 @@ begin
   if not Item^.BitmapDrawn then
     PaintRichToBitmap(Item);
   Result := Item^.Bitmap;
+end;
+
+function TRichCache.GetItemByHandle(Handle: THandle): PRichItem;
+var
+  i: Integer;
+begin
+  Result := nil;
+  for i := 0 to Length(Items)-1 do
+    if Items[i]^.Rich.Handle = Handle then begin
+      Result := Items[i];
+      break;
+    end;
 end;
 
 procedure TRichCache.MoveToTop(Index: Integer);
