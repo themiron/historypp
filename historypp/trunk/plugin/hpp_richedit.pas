@@ -51,8 +51,7 @@ uses
   Windows, Messages, Classes, RichEdit, ActiveX,
   Controls, StdCtrls, ComCtrls, Forms,
   TntControls,
-  hpp_global,
-  m_api;
+  hpp_global;
 
 const
   IID_IOleObject: TGUID = '{00000112-0000-0000-C000-000000000046}';
@@ -943,7 +942,6 @@ type
   end;
 
   TURLClickEvent = procedure(Sender: TObject; const URLText: String; Button: TMouseButton) of object;
-  TViewChangeEvent = procedure(Sender: TObject; var FVC: TNMFireViewChange) of object;
 
   THppRichEdit = class(TCustomRichEdit)
   private
@@ -953,7 +951,6 @@ type
     FClickRange: TCharRange;
     FClickBtn: TMouseButton;
     FOnURLClick: TURLClickEvent;
-    FOnViewChange: TViewChangeEvent;
     FRichEditOleCallback: TRichEditOleCallback;
     FRichEditOle: IRichEditOle;
     procedure CNNotify(var Message: TWMNotify); message CN_NOTIFY;
@@ -966,7 +963,6 @@ type
     procedure SetAutoKeyboard(Enabled: Boolean);
     function GetUnicodeAPI: Boolean;
     procedure LinkNotify(Link: TENLink);
-    procedure ViewChangeNotify(var FVC: TNMFireViewChange);
     procedure CloseObjects;
     function UpdateHostNames: Boolean;
   protected
@@ -1052,7 +1048,6 @@ type
     property OnStartDock;
     property OnStartDrag;
     property OnURLClick: TURLClickEvent read FOnURLClick write FOnURLClick;
-    property OnViewChange: TViewChangeEvent read FOnViewChange write FOnViewChange;
   end;
 
   TImageDataObject = class(TInterfacedObject,IDataObject)
@@ -1675,16 +1670,10 @@ begin
   end;
 end;
 
-procedure THppRichedit.ViewChangeNotify(var FVC: TNMFireViewChange);
-begin
-  if Assigned(OnViewChange) then OnViewChange(Self,FVC);
-end;
-
 procedure THppRichedit.CNNotify(var Message: TWMNotify);
 begin
   case Message.NMHdr^.code of
     EN_LINK: LinkNotify(TENLINK(Pointer(Message.NMHdr)^));
-    NM_FIREVIEWCHANGE: ViewChangeNotify(TNMFireViewChange(Pointer(Message.NMHdr)^));
   else
     inherited;
   end;
