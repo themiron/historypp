@@ -403,6 +403,12 @@ Set Bookmark
 Hide headers
 [Show headers]
 Show headers
+[Running version of AniSmiley is not supported]
+Running version of AniSmiley is not supported
+[Running version of SmileyAdd is not supported]
+Running version of SmileyAdd is not supported
+[Running version of Emoticons is not supported]
+Running version of Emoticons is not supported
 
 ;; PassCheckForm.trans.txt file
 
