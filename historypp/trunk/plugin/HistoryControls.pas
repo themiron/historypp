@@ -75,6 +75,7 @@ type
     {$IFDEF COMPILER_7}
     procedure UpdateTracking;
     procedure WndProc(var Message: TMessage); override;
+    procedure UpdateInternalGlyphList; override;
     {$ENDIF}
   end;
 
@@ -122,7 +123,7 @@ procedure Register;
 
 implementation
 
-uses CommCtrl, {CommDlg,} Forms, Themes, UxTheme, TntSysUtils,
+uses CommCtrl, {CommDlg,} Forms, Themes, UxTheme, SysUtils, TntSysUtils,
   Graphics, TntGraphics;
 
 procedure Register;
@@ -275,6 +276,14 @@ type
   THackSpeedButton = THackSpeedButton_D6_D7_D9;
   {$ENDIF}
 
+type
+  EAbortPaint = class(EAbort);
+
+  THackTntSpeedButton = class(TSpeedButton)
+  protected
+    FPaintInherited: Boolean;
+  end;
+
 // hack to prepaint non transparent sppedbuttons with themed
 // parent control, such as doublebuffered toolbar.
 // VCL bug.
@@ -323,6 +332,18 @@ begin
   end;
 end;
 {$ENDIF}
+
+procedure THppSpeedButton.UpdateInternalGlyphList;
+begin
+  THackTntSpeedButton(Self).FPaintInherited := True;
+  try
+    Paint;
+  finally
+    THackTntSpeedButton(Self).FPaintInherited := False;
+  end;
+  Invalidate;
+  raise EAbortPaint.Create('');
+end;
 
 { THppButton }
 
