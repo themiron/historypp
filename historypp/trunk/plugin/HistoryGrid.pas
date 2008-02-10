@@ -1078,7 +1078,7 @@ begin
     end else
     if (ghtUnknown in HintHitTests) and
        GetHintAtPoint(CursorPos.X,CursorPos.Y,tempHint,tempRect) then begin
-      Hint := tempHint;
+      Hint := Tnt_WideStringReplace(tempHint,'|','¦',[rfReplaceAll]);
       CursorRect := tempRect;
       Message.Result := 0;
     end else
