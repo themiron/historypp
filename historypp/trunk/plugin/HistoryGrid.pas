@@ -2072,7 +2072,7 @@ var
   RTF,Text: String;
   UseTextFormatting,
   NoDefaultColors: Boolean;
-  cf: CharFormat2;
+  cf,cf2: CharFormat2;
 begin
   if RichEdit = nil then begin
     RichItem := FRichCache.RequestItem(Item);
@@ -2176,6 +2176,13 @@ begin
     if not NoDefaultColors then begin
       ZeroMemory(@cf,SizeOf(cf));
       cf.cbSize := SizeOf(cf);
+      cf.dwMask := CFM_LINK;
+      cf.dwEffects := CFE_LINK;
+      ZeroMemory(@cf2,SizeOf(cf2));
+      cf2.cbSize := SizeOf(cf2);
+      cf2.dwMask := CFM_LINK or CFM_REVISED;
+      cf2.dwEffects := CFE_REVISED;
+      RichEdit.ReplaceCharFormat(cf,cf2);
       cf.dwMask := CFM_COLOR;
       cf.crTextColor := textColor;
       RichEdit.Perform(EM_SETBKGNDCOLOR, 0, backColor);
@@ -2972,24 +2979,25 @@ begin
   cp := FRich.Perform(EM_CHARFROMPOS,0,LPARAM(@p));
   if cp = -1 then exit; // out of richedit area
   cr.cpMin := cp;
-  cr.cpMax := cp;
+  cr.cpMax := cp+1;
   FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
 
   ZeroMemory(@cf,SizeOf(cf));
   cf.cbSize := SizeOf(cf);
-  cf.dwMask := CFM_LINK;
+  cf.dwMask := CFM_LINK or CFM_REVISED;
   res := FRich.Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
   // no link under point
-  if ((res and CFM_LINK) = 0) or
-     ((cf.dwEffects and CFE_LINK) = 0) then exit;
+  if (((res and CFM_LINK) = 0) or ((cf.dwEffects and CFE_LINK) = 0)) and
+     (((res and CFM_REVISED) = 0) or ((cf.dwEffects and CFE_REVISED) = 0)) then exit;
 
   while cr.cpMin > 0 do begin
     Dec(cr.cpMin);
     FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
     cf.cbSize := SizeOf(cf);
-    cf.dwMask := CFM_LINK;
+    cf.dwMask := CFM_LINK or CFM_REVISED;
     res := FRich.Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
-    if ((res and CFM_LINK) = 0) or ((cf.dwEffects and CFM_LINK) = 0) then begin
+    if (((res and CFM_LINK) = 0) or ((cf.dwEffects and CFE_LINK) = 0)) and
+       (((res and CFM_REVISED) = 0) or ((cf.dwEffects and CFE_REVISED) = 0)) then begin
       Inc(cr.cpMin);
       break;
     end;
@@ -3000,9 +3008,10 @@ begin
     Inc(cr.cpMax);
     FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
     cf.cbSize := SizeOf(cf);
-    cf.dwMask := CFM_LINK;
+    cf.dwMask := CFM_LINK or CFM_REVISED;
     res := FRich.Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
-    if ((res and CFM_LINK) = 0) or ((cf.dwEffects and CFM_LINK) = 0) then begin
+    if (((res and CFM_LINK) = 0) or ((cf.dwEffects and CFE_LINK) = 0)) and
+       (((res and CFM_REVISED) = 0) or ((cf.dwEffects and CFE_REVISED) = 0)) then begin
       Dec(cr.cpMax);
       break;
     end;
@@ -4943,7 +4952,7 @@ var
     cp := FRich.Perform(EM_CHARFROMPOS,0,LPARAM(@p));
     if cp = -1 then exit; // out of richedit area
     cr.cpMin := cp;
-    cr.cpMax := cp;
+    cr.cpMax := cp+1;
     FRich.Perform(EM_EXSETSEL,0,LPARAM(@cr));
 
     ZeroMemory(@cf,SizeOf(cf));
@@ -4951,7 +4960,8 @@ var
     cf.dwMask := CFM_LINK;
     res := FRich.Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
     // no link under point
-    Result := ((res and CFM_LINK) > 0) and ((cf.dwEffects and CFE_LINK) > 0);
+    Result := (((res and CFM_LINK) > 0) and ((cf.dwEffects and CFE_LINK) > 0)) or
+              (((res and CFM_REVISED) > 0) and ((cf.dwEffects and CFE_REVISED) > 0));
   end;
 
 begin
