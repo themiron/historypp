@@ -30,6 +30,7 @@ requires
   TntUnicodeVcl_R70;
 
 contains
+  hpp_richedit in 'hpp_richedit.pas',
   HistoryGrid in 'HistoryGrid.pas',
   HistoryControls in 'HistoryControls.pas';
 

@@ -1538,9 +1538,8 @@ begin
              aHideScrollBars[HideScrollBars] or
              aHideSelections[HideSelection] and
              not aWordWrap[WordWrap]; // more compatible with RichEdit 1.0
-    // Fix for updating rich in event details form
-    WindowClass.style := WindowClass.style and
-             not (CS_HREDRAW or CS_VREDRAW);
+    // Fix for repaint richedit in event details form
+    WindowClass.style := WindowClass.style and (CS_HREDRAW or CS_VREDRAW);
   end;
 end;
 
