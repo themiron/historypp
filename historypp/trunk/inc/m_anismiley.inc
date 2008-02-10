@@ -6,7 +6,8 @@ const
     IASF_UNICODE = 1;
 
 type
-    INSERTANISMILEY = record
+    PINSERTANISMILEY = ^TINSERTANISMILEY;
+    TINSERTANISMILEY = record
         cbSize: Integer;
         hWnd: HWND;
         filename: TChar;
