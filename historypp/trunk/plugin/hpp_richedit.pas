@@ -977,6 +977,7 @@ type
     function GetTextRangeA(cpMin,cpMax: Integer): AnsiString;
     function GetTextRangeW(cpMin,cpMax: Integer): WideString;
     function GetTextLength: Integer;
+    procedure ReplaceCharFormat(const FromCF, ToCF: CHARFORMAT2);
     property Codepage: Cardinal read FCodepage write FCodepage default CP_ACP;
     property UnicodeAPI: Boolean read GetUnicodeAPI;
     property Version: Integer read FVersion;
@@ -1107,7 +1108,7 @@ procedure Register;
 
 implementation
 
-uses SysUtils;
+uses SysUtils, TntSysUtils;
 
 type
   EOleError = class(Exception);
@@ -1545,7 +1546,7 @@ end;
 
 procedure THppRichedit.CreateWindowHandle(const Params: TCreateParams);
 begin
-  if hppOSUnicode and (FVersion >= 20) then begin
+  if Win32PlatformIsUnicode and (FVersion >= 20) then begin
     if FVersion = 41 then
       CreateUnicodeHandle(Self, Params, MSFTEDIT_CLASS) else
       CreateUnicodeHandle(Self, Params, RICHEDIT_CLASS20W);
@@ -1577,6 +1578,27 @@ begin
     new_options := re_options and not IMF_AUTOKEYBOARD;
   if re_options <> new_options then
     SendMessage(Handle,EM_SETLANGOPTIONS,0,new_options);
+end;
+
+procedure THppRichedit.ReplaceCharFormat(const FromCF, ToCF: CHARFORMAT2);
+var
+  cp: Integer;
+  cr: CHARRANGE;
+  cf: CHARFORMAT2;
+  res: DWord;
+begin
+  ZeroMemory(@cf,SizeOf(cf));
+  cf.cbSize := SizeOf(cf);
+  for cp := 0 to GetTextLength-1 do begin
+    cr.cpMin := cp;
+    cr.cpMax := cp+1;
+    Perform(EM_EXSETSEL,0,LPARAM(@cr));
+    cf.dwMask := FromCF.dwMask;
+    res := Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
+    if ((res and FromCF.dwMask) = 0) or
+       ((cf.dwEffects and FromCF.dwEffects) = 0) then continue;
+    Perform(EM_SETCHARFORMAT,SCF_SELECTION,LPARAM(@ToCF));
+  end;
 end;
 
 function THppRichedit.GetUnicodeAPI: Boolean;
