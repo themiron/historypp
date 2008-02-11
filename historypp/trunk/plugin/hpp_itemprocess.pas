@@ -130,7 +130,7 @@ var
     {$ENDIF}
     ((prefix:(ansi:'[size=');   suffix:(ansi:']'); bbtype:bbSize;   rtf:'{\fs%u ';   html:'<font style="font-size:%spt">'; minRE: 10),
      (prefix:(ansi:'[/size]');  suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</font>')),
-    ((prefix:(ansi:'[img]');    suffix:(ansi:nil); bbtype:bbSimple; rtf:'[{\revised\ul1 '; html:'['; minRE: 20),
+    ((prefix:(ansi:'[img]');    suffix:(ansi:nil); bbtype:bbSimple; rtf:'[{\revised\cf1\ul '; html:'['; minRE: 20),
      (prefix:(ansi:'[/img]');   suffix:(ansi:nil); bbtype:bbSimple; rtf:'}]';        html:']'))
   );
 
