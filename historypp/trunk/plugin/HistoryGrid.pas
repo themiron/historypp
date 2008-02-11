@@ -796,7 +796,7 @@ uses
   ComObj;
 
 const
-  HtmlStop = [#0,#10,#13,'<','>',' '];
+  HtmlStop = [#0,#10,#13,'<','>','[',']',' ','''','"'];
 
 function UrlHighlightHtml(Text: String): String;
 var
@@ -2121,7 +2121,9 @@ begin
     RTF := RTF + Format('{\f0\fnil\fcharset%u %s}',[textFont.CharSet,textFont.Name]);
     RTF := RTF + '}{\colortbl';
     RTF := RTF + Format('\red%u\green%u\blue%u;',[textColor and $FF,(textColor shr 8) and $FF,(textColor shr 16) and $FF]);
-    RTF := RTF + Format('\red%u\green%u\blue%u;',[backColor and $FF,(backColor shr 8) and $FF,(backColor shr 16) and $FF]);
+    //RTF := RTF + Format('\red%u\green%u\blue%u;',[backColor and $FF,(backColor shr 8) and $FF,(backColor shr 16) and $FF]);
+    //default link color
+    RTF := RTF + '\red0\green0\blue255;';
     // add color table for BBCodes
     if Options.BBCodesEnabled and NoDefaultColors then RTF := RTF + rtf_ctable_text;
     RTF := RTF + '}\li30\ri30\fi0\cf0';

@@ -110,10 +110,9 @@ const
     (sz:'white';  col:$FFFFFF));
 
 const
-  bbCodesCount = {$IFDEF USE_URL_BBCODE}6{$ELSE}5{$ENDIF};
+  bbCodesCount = {$IFDEF USE_URL_BBCODE}7{$ELSE}6{$ENDIF};
 
 var
-
   bbCodes: array[0..bbCodesCount,bbStart..bbEnd] of TBBCodeInfo = (
     ((prefix:(ansi:'[b]');      suffix:(ansi:nil); bbtype:bbSimple; rtf:'{\b ';      html:'<b>';  minRE: 10),
      (prefix:(ansi:'[/b]');     suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</b>')),
@@ -130,7 +129,9 @@ var
      (prefix:(ansi:'[/url]');   suffix:(ansi:nil); bbtype:bbSimple; rtf:'}}}';      html:'</a>')),
     {$ENDIF}
     ((prefix:(ansi:'[size=');   suffix:(ansi:']'); bbtype:bbSize;   rtf:'{\fs%u ';   html:'<font style="font-size:%spt">'; minRE: 10),
-     (prefix:(ansi:'[/size]');  suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</font>'))
+     (prefix:(ansi:'[/size]');  suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</font>')),
+    ((prefix:(ansi:'[img]');    suffix:(ansi:nil); bbtype:bbSimple; rtf:'[{\revised\ul1 '; html:'['; minRE: 20),
+     (prefix:(ansi:'[/img]');   suffix:(ansi:nil); bbtype:bbSimple; rtf:'}]';        html:']'))
   );
 
 const
