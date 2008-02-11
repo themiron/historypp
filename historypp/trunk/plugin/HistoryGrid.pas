@@ -306,6 +306,7 @@ type
     property TextFormatting: Boolean read FTextFormatting write SetTextFormatting;
   end;
 
+  PRichItem = ^TRichItem;
   TRichItem = record
     Rich: THPPRichEdit;
     Bitmap: TBitmap;
@@ -313,7 +314,12 @@ type
     Height: Integer;
     GridItem: Integer;
   end;
-  PRichItem = ^TRichItem;
+
+  PLockedItem = ^TLockedItem;
+  TLockedItem = record
+    RichItem: PRichItem;
+    SaveRect: TRect;
+  end;
 
   TRichCache = class(TObject)
   private
@@ -322,6 +328,7 @@ type
     Grid: THistoryGrid;
     FRichWidth: Integer;
     FRichHeight: Integer;
+    FLockedList: TList;
 
     function FindGridItem(GridItem: Integer): Integer;
     procedure PaintRichToBitmap(Item: PRichItem);
@@ -350,6 +357,8 @@ type
     function GetItemRich(GridItem: Integer): THPPRichEdit;
     function GetItemRichBitmap(GridItem: Integer): TBitmap;
     function GetItemByHandle(Handle: THandle): PRichItem;
+    function LockItem(Item: PRichItem; SaveRect: TRect): PLockedItem;
+    function UnlockItem(LockedItem: PLockedItem): TRect;
   end;
 
   TGridUpdate = (guSize, guAllocate, guFilter, guOptions);
@@ -3651,10 +3660,11 @@ begin
     nmh := PFVCNDATA_NMHDR(Message.NMHdr);
     if (nmh.bEvent = FVCN_PREFIRE) and (nmh.bAction = FVCA_DRAW) then begin
       RichItem := FRichCache.GetItemByHandle(Message.NMHdr^.hwndFrom);
+      nmh.bAction := FVCA_NONE;
       if Assigned(RichItem) then begin
-        nmh.bAction := FVCA_NONE;
-        if RichItem^.GridItem = -1 then exit;
-        if (not RichItem.BitmapDrawn) or (RichItem.Height = -1) or
+        if RichItem.GridItem = -1 then exit;
+        if not RichItem.BitmapDrawn then exit;
+        if (LockCount > 0) or
            (RichItem.GridItem = FItemInline) or
            (not IsVisible(RichItem^.GridItem)) then begin
           RichItem.BitmapDrawn := False;
@@ -3671,15 +3681,13 @@ begin
             nmh.hDC := RichItem.Bitmap.Canvas.Handle;
             nmh.clrBackground := RichItem.Bitmap.TransparentColor;
             nmh.fTransparent := False;
-            nmh.lParam := LPARAM(PointToSmallPoint(reRect.TopLeft));
+            nmh.lParam := LPARAM(FRichCache.LockItem(RichItem,smRect));
           end;
         end;
       end;
     end else
     if (nmh.bEvent = FVCN_POSTFIRE) and (nmh.bAction = FVCA_CUSTOMDRAW) then begin
-      reRect.TopLeft := SmallPointToPoint(TSmallPoint(nmh.lParam));
-      smRect := nmh.rcRect;
-      OffsetRect(smRect,reRect.Left,reRect.Top);
+      smRect := FRichCache.UnlockItem(PLockedItem(nmh.lParam));
       IntersectRect(smRect,smRect,ClipRect);
       if not IsRectEmpty(smRect) then
         InvalidateRect(Handle,@smRect,False);
@@ -5811,10 +5819,11 @@ begin
   LogY := GetDeviceCaps(dc, LOGPIXELSY);
   ReleaseDC(0,dc);
 
+  FLockedList := TList.Create;
+
   for i := 0 to Length(Items) - 1 do begin
     New(RichItem);
     RichItem^.Bitmap := TBitmap.Create;
-    RichItem^.Bitmap.Canvas.Lock;
     RichItem^.Height := -1;
     RichItem^.GridItem := -1;
     RichItem^.Rich := THPPRichEdit.Create(nil);
@@ -5837,13 +5846,14 @@ destructor TRichCache.Destroy;
 var
   i: Integer;
 begin
+  for i := 0 to FLockedList.Count - 1 do
+    Dispose(PLockedItem(FLockedList.Items[i]));
+  FLockedList.Free;
   for i := 0 to Length(Items) - 1 do begin
-    Items[i]^.Bitmap.Canvas.Unlock;
     FreeAndNil(Items[i]^.Rich);
     FreeAndNil(Items[i]^.Bitmap);
     Dispose(Items[i]);
   end;
-  //SetLength(Items,0);
   Finalize(Items);
   inherited;
 end;
@@ -5886,11 +5896,42 @@ var
   i: Integer;
 begin
   Result := nil;
-  for i := 0 to Length(Items)-1 do
-    if Items[i]^.Rich.Handle = Handle then begin
+  for i := 0 to High(Items) do
+    if Items[i].Rich.Handle = Handle then begin
+      if Items[i].Height = -1 then break;
       Result := Items[i];
       break;
     end;
+end;
+
+function TRichCache.LockItem(Item: PRichItem; SaveRect: TRect): PLockedItem;
+var
+  LockedItem: PLockedItem;
+begin
+  Assert(Item <> nil);
+  try
+    New(LockedItem);
+  except
+    LockedItem := nil;
+  end;
+  if Assigned(LockedItem) then begin
+    Item.Bitmap.Canvas.Lock;
+    LockedItem.RichItem := Item;
+    LockedItem.SaveRect := SaveRect;
+    FLockedList.Add(LockedItem);
+  end;
+  Result := LockedItem;
+end;
+
+function TRichCache.UnlockItem(LockedItem: PLockedItem): TRect;
+begin
+  Result := Rect(0,0,0,0);
+  if not Assigned(LockedItem) then exit;
+  if not Assigned(LockedItem.RichItem) then exit;
+  LockedItem.RichItem.Bitmap.Canvas.Unlock;
+  FLockedList.Remove(LockedItem);
+  Result := LockedItem.SaveRect;
+  Dispose(LockedItem);
 end;
 
 procedure TRichCache.MoveToTop(Index: Integer);
@@ -5901,8 +5942,8 @@ begin
   Assert(Index < Length(Items));
   if Index = 0 then exit;
   item := Items[Index];
-  for i := Index downto 1 do
-    Items[i] := Items[i-1];
+  //for i := Index downto 1 do Items[i] := Items[i-1];
+  Move(Items[0],Items[1],Index*SizeOf(Items[0]));
   Items[0] := item;
 end;
 
@@ -5974,7 +6015,7 @@ procedure TRichCache.ResetAllItems;
 var
   i: Integer;
 begin
-  for i := 0 to Length(Items) - 1 do begin
+  for i := 0 to High(Items) do begin
     Items[i].Height := -1;
   end;
 end;
