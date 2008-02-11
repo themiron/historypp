@@ -2405,9 +2405,11 @@ begin
   // Filter property in SetEventFilter, one when reset hot filter
   // make Begin/EndUpdate support batch UpdateFilter requests
   // so we can make it run only one time on EndUpdate
+  hg.BeginUpdate;
   SetEventFilter(GetShowAllEventsIndex);
   edSearch.Text := '';
-  EndHotFilterTimer;
+  EndHotFilterTimer(True);
+  hg.EndUpdate;
 end;
 
 procedure THistoryFrm.ShowItem(Value: Integer);
@@ -2512,11 +2514,8 @@ begin
 
   CreateEventsFilterMenu;
   if hContact <> 0 then
-    SetEventFilter(0,true)                  // delay event filter applying till showing form
-  else
-    SetEventFilter(GetShowAllEventsIndex,true);  // applying immediately
-  //LoadToolbar;
-  //FillBookmarks;
+    SetEventFilter(0,true) else             // delay event filter applying till showing form
+    SetEventFilter(GetShowAllEventsIndex);  // applying immediately
 end;
 
 procedure THistoryFrm.PreLoadHistory;
@@ -2693,7 +2692,7 @@ begin
   {if Node = nil then begin
     StartTimestamp := 0;
     EndTimestamp := 0;
-    hg.UpdateFilter;
+    hg.GridUpdate([guFilter]);
     exit;
   end;
 
@@ -2704,7 +2703,7 @@ begin
   if DWord(Node.Data) <= Length(Sessions)-2 then begin
     EndTimestamp := Sessions[DWord(Node.Data)+1][1];
   end;
-  hg.UpdateFilter;}
+  hg.GridUpdate([guFilter]);}
 end;
 
 {procedure THistoryFrm.tvSessClick(Sender: TObject);
@@ -2953,7 +2952,6 @@ begin
 
   tbEventsFilter.Tag := fi;
   LoadEventFilterButton;
-  //tbEventsFilter.Repaint;
   mi := TTntMenuItem(Customize1.Parent);
   for i := 0 to mi.Count-1 do
     if mi[i].RadioItem then
@@ -3190,17 +3188,15 @@ procedure THistoryFrm.EndHotFilterTimer(DoClearFilter: Boolean = False);
 begin
   tiFilter.Enabled := False;
   if DoClearFilter then
-    HotFilterString := ''
-  else
+    HotFilterString := '' else
     HotFilterString := edSearch.Text;
-  hg.UpdateFilter;
+  hg.GridUpdate([guFilter]);
   if pbFilter.Tag <> 0 then begin
     pbFilter.Tag := 0;
     pbFilter.Repaint;
   end;
-  if hg.Selected = -1 then
-    edSearch.Color := $008080FF
-  else
+  if (not DoClearFilter) and (hg.Selected = -1) then
+    edSearch.Color := $008080FF else
     edSearch.Color := clWindow;
 end;
 

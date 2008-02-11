@@ -1597,7 +1597,7 @@ procedure TfmGlobalSearch.EndHotFilterTimer;
 begin
   tiFilter.Enabled := False;
   HotFilterString := edFilter.Text;
-  hg.UpdateFilter;
+  hg.GridUpdate([guFilter]);
   if pbFilter.Tag <> 0 then begin
     pbFilter.Tag := 0;
     pbFilter.Repaint;
