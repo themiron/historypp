@@ -2513,9 +2513,10 @@ begin
   end;
 
   CreateEventsFilterMenu;
-  if hContact <> 0 then
-    SetEventFilter(0,true) else             // delay event filter applying till showing form
-    SetEventFilter(GetShowAllEventsIndex);  // applying immediately
+  // delay event filter applying till showing form
+  if hContact = 0 then
+    SetEventFilter(GetShowAllEventsIndex,True) else
+    SetEventFilter(0,True);
 end;
 
 procedure THistoryFrm.PreLoadHistory;
