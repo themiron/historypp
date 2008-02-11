@@ -2376,7 +2376,7 @@ begin
   {$ENDIF}
   if (Filter = Value) or (Value = []) or (Value = [mtUnknown]) then exit;
   FFilter := Value;
-  UpdateFilter;
+  GridUpdate([guFilter]);
   if Assigned(FOnFilterChange) then FOnFilterChange(Self);
   {CheckBusy;
   SetLength(FSelItems,0);
@@ -2813,7 +2813,8 @@ begin
   // load it to make positioning correct
   LoadItem(Item,True);
   if not IsMatched(Item) then exit;
-  if Item = GetFirstVisible then begin
+  First := GetFirstVisible;
+  if Item = First then begin
     if FItems[Item].Height > ClientHeight then begin
       if BottomAlign or (TopItemOffset > FItems[Item].Height - ClientHeight) then begin
         TopItemOffset := FItems[Item].Height - ClientHeight;
@@ -2821,9 +2822,8 @@ begin
       ScrollGridBy(0,False);
     end else
       ScrollGridBy(-TopItemOffset,False);
-    exit;
-  end;
-  if GetIdx(Item) < GetIdx(GetFirstVisible) then
+  end else
+  if GetIdx(Item) < GetIdx(First) then
     SetSBPos(GetIdx(Item))
   else begin
     //if IsVisible(Item) then exit;
@@ -2880,6 +2880,7 @@ begin
   try
     if guSize in GridUpdates then GridUpdateSize;
     if guOptions in GridUpdates then DoOptionsChanged;
+    if guFilter in GridUpdates then UpdateFilter;
   finally
     GridUpdates := [];
   end;
@@ -4048,9 +4049,10 @@ begin
 
   FRichCache.WorkOutItemAdded(0);
 
-  for i := Length(FItems)-1 downto 1 do begin
-    FItems[i] := FItems[i-1];
-  end;
+  //for i := Length(FItems)-1 downto 1 do
+  //  FItems[i] := FItems[i-1];
+  Move(FItems[0],FItems[1],(Length(FItems)-1)*SizeOf(FItems[0]));
+  FillChar(FItems[0],SizeOf(FItems[0]),0);
 
   FItems[0].MessageType := [mtUnknown];
   FItems[0].Height := -1;
@@ -4059,9 +4061,8 @@ begin
   if Selected <> -1 then Inc(FSelected);
   // change inline edited item
   if ItemInline <> -1 then Inc(FItemInline);
-  for i := 0 to SelCount-1 do begin
+  for i := 0 to SelCount-1 do
     Inc(FSelItems[i]);
-  end;
   BarAdjusted := False;
   AdjustScrollBar;
   // or window in background isn't repainted. weired
@@ -4117,7 +4118,6 @@ begin
   // from main array
   SelIdx := -1;
   FRichCache.WorkOutItemDeleted(Item);
-  //if IsSelected(Item) then begin
   for i := 0 to SelCount-1 do begin
     if FSelItems[i] = Item then
       SelIdx := i
@@ -4125,7 +4125,6 @@ begin
     if FSelItems[i] > Item then
       Dec(FSelItems[i]);
   end;
-  //end;
 
   // delete item from main array
   //for i := Item to Length(FItems)-2 do
@@ -4907,12 +4906,9 @@ begin
           FSelected := GetDown(FSelected);
           if FSelected = -1 then
             FSelected := GetUp(FSelected);
-          // we have multiple selection sets
-          //Selected := FSelected;
-        end
-        else begin
-          FSelected := 0;
-          SetSBPos(GetIdx(0));
+        end else begin
+          //FSelected := 0;
+          //SetSBPos(GetIdx(FSelected));
           if Reversed then
             // we have multiple selection sets
             FSelected := GetPrev(-1)
