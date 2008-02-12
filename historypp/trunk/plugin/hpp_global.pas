@@ -306,7 +306,8 @@ var
   ch: Cardinal;
   ExtraBytesToWrite: Word;
 begin
-  if Source = nil then begin
+  {$Q-,R-}
+  if (Source = nil) or (SourceBytes <= 0) then begin
     Result := 0;
     Exit;
   end;
@@ -348,6 +349,7 @@ begin
   if count > MaxDestChars then count := MaxDestChars;
   Dest[count] := #0;
   Result := count+1;
+  {$Q+,R+}
 end;
 
 function AnsiToWideString(const S: AnsiString; CodePage: Cardinal; InLength: Integer = -1): WideString;
