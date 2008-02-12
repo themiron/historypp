@@ -365,7 +365,7 @@ begin
       ')';
 
   EText.Lines.BeginUpdate;
-  ParentForm.hg.ApplyItemToRich(FItem,EText,false,true);
+  ParentForm.hg.ApplyItemToRich(FItem,EText,True);
   EText.Brush.Style := bsClear;
   EText.SelStart := 0;
   EText.SelLength := 0;

@@ -133,11 +133,12 @@ type
   TOnChar = procedure(Sender: TObject; var Char: WideChar; Shift: TShiftState) of object;
   TOnRTLChange = procedure(Sender: TObject; BiDiMode: TBiDiMode) of object;
   TOnProcessInlineChange = procedure(Sender: TObject; Enabled: boolean) of object;
+  TOnOptionsChange = procedure(Sender: TObject) of object;
   TOnProcessRichText = procedure(Sender: TObject; Handle: THandle; Item: Integer) of object;
   TOnSearchItem = procedure(Sender: TObject; Item: Integer; ID: Integer; var Found: Boolean) of object;
   TOnSelectRequest = TNotifyEvent;
   TOnFilterChange = TNotifyEvent;
-  
+
   THistoryGrid = class;
 
   {IFDEF RENDER_RICH}
@@ -452,6 +453,8 @@ type
     FRTLMode: TRTLMode;
     FOnRTLChange: TOnRTLChange;
 
+    FOnOptionsChange: TOnOptionsChange;
+
     TopItemOffset: Integer;
     MaxSBPos: Integer;
     FShowHeaders: Boolean;
@@ -700,7 +703,7 @@ type
     function GetItemRTL(Item: Integer): Boolean;
 
     //procedure CopyToClipSelected(const Format: WideString; ACodepage: Cardinal = CP_ACP);
-    procedure ApplyItemToRich(Item: Integer; RichEdit: THPPRichEdit = nil; UseSelection: Boolean = True; ForceInline: Boolean = False);
+    procedure ApplyItemToRich(Item: Integer; RichEdit: THPPRichEdit = nil; ForceInline: Boolean = False);
 
     function FormatItem(Item: Integer; Format: WideString): WideString;
     function FormatItems(ItemList: array of Integer; Format: WideString): WideString;
@@ -738,6 +741,7 @@ type
     property OnInlineKeyUp: TKeyEvent read FOnInlineKeyUp write FOnInlineKeyUp;
     property OnInlinePopup: TOnPopup read FOnInlinePopup write FOnInlinePopup;
     property OnProcessInlineChange: TOnProcessInlineChange read FOnProcessInlineChange write FOnProcessInlineChange;
+    property OnOptionsChange: TOnOptionsChange read FOnOptionsChange write FOnOptionsChange;
     property OnChar: TOnChar read FOnChar write FOnChar;
     property OnState: TOnState read FOnState write FOnState;
     property OnSelect: TOnSelect read FOnSelect write FOnSelect;
@@ -2072,15 +2076,15 @@ begin
 end;
 
 {$IFDEF RENDER_RICH}
-procedure THistoryGrid.ApplyItemToRich(Item: Integer; RichEdit: THPPRichEdit = nil; UseSelection: Boolean = True; ForceInline: Boolean = False);
+procedure THistoryGrid.ApplyItemToRich(Item: Integer; RichEdit: THPPRichEdit = nil; ForceInline: Boolean = False);
 var
+  reItemInline: Boolean;
+  reItemSelected: Boolean;
+  reItemUseFormat: Boolean;
   textFont: TFont;
   textColor,backColor: TColor;
-  //tsColor: TColor;
   RichItem: PRichItem;
-  RTF,Text: String;
-  UseTextFormatting,
-  NoDefaultColors: Boolean;
+  RTF,Text: AnsiString;
   cf,cf2: CharFormat2;
 begin
   if RichEdit = nil then begin
@@ -2088,31 +2092,31 @@ begin
     FRich := RichItem^.Rich;
     FRichHeight := RichItem^.Height;
     exit;
-  end else if not (RichEdit = FRichInline) then
-    FRich := RichEdit;
+  end;
+
+  reItemInline := ForceInline or (RichEdit = FRichInline);
+  reItemSelected := (not reItemInline) and IsSelected(Item);
+  reItemUseFormat := not (reItemInline and (not Options.TextFormatting));
+
+  if not reItemInline then FRich := RichEdit;
 
   Options.GetItemOptions(FItems[Item].MessageType,textFont,backColor);
-
-  if (IsSelected(Item)) and (not (RichEdit = FRichInline)) and UseSelection then begin
+  if reItemSelected then begin
     textColor := Options.ColorSelectedText;
     backColor := Options.ColorSelected;
-    NoDefaultColors := False;
   end else begin
     textColor := textFont.Color;
     backColor := backColor;
-    NoDefaultColors := True;
   end;
 
-  UseTextFormatting := not (((State = gsInline) or ForceInline) and not Options.TextFormatting);
-
-  RichEdit.Clear;
   //RichEdit.Perform(WM_SETTEXT,0,0);
+  RichEdit.Clear;
 
   SetRichRTL(GetItemRTL(Item),RichEdit);
   // for use with WM_COPY
   RichEdit.Codepage := FItems[Item].Codepage;
 
-  if Options.RawRTFEnabled and UseTextFormatting and isRTF(FItems[Item].Text) then begin
+  if reItemUseFormat and Options.RawRTFEnabled and isRTF(FItems[Item].Text) then begin
     // stored text seems to be RTF
     RTF := WideToAnsiString(FItems[Item].Text,FItems[Item].Codepage)+#0
   end else begin
@@ -2121,11 +2125,9 @@ begin
     RTF := RTF + Format('{\f0\fnil\fcharset%u %s}',[textFont.CharSet,textFont.Name]);
     RTF := RTF + '}{\colortbl';
     RTF := RTF + Format('\red%u\green%u\blue%u;',[textColor and $FF,(textColor shr 8) and $FF,(textColor shr 16) and $FF]);
-    //RTF := RTF + Format('\red%u\green%u\blue%u;',[backColor and $FF,(backColor shr 8) and $FF,(backColor shr 16) and $FF]);
-    //default link color
-    RTF := RTF + '\red0\green0\blue255;';
+    RTF := RTF + Format('\red%u\green%u\blue%u;',[backColor and $FF,(backColor shr 8) and $FF,(backColor shr 16) and $FF]);
     // add color table for BBCodes
-    if Options.BBCodesEnabled and NoDefaultColors then RTF := RTF + rtf_ctable_text;
+    if Options.BBCodesEnabled and reItemUseFormat then RTF := RTF + rtf_ctable_text;
     RTF := RTF + '}\li30\ri30\fi0\cf0';
     if GetItemRTL(Item) then RTF := RTF + '\rtlpar\ltrch\rtlch '
                         else RTF := RTF + '\ltrpar\rtlch\ltrch ';
@@ -2137,12 +2139,11 @@ begin
        Integer(textFont.Size shl 1)]);
     Text := FormatString2RTF(FItems[Item].Text);
     {if FGroupLinked and FItems[Item].LinkedToPrev then
-      Text := FormatString2RTF(GetTime(FItems[Item].Time)+': '+FItems[Item].Text)
-    else
+      Text := FormatString2RTF(GetTime(FItems[Item].Time)+': '+FItems[Item].Text) else
       Text := FormatString2RTF(FItems[Item].Text);}
-    if Options.BBCodesEnabled and UseTextFormatting then
-      Text := DoSupportBBCodesRTF(Text,2,NoDefaultColors);
-    RTF := RTF + Text + '\par }'+#0;
+    if Options.BBCodesEnabled and reItemUseFormat then
+      Text := DoSupportBBCodesRTF(Text,2,not reItemSelected);
+    RTF := RTF + Text + '\par }';
   end;
 
   SetRichRTF(RichEdit.Handle,RTF,False,False,True);
@@ -2177,27 +2178,36 @@ begin
 
   RichEdit.Perform(EM_SETBKGNDCOLOR,0,backColor);
 
-  if UseTextFormatting and Assigned(FOnProcessRichText) then begin
+  if reItemUseFormat and Assigned(FOnProcessRichText) then begin
     try
       FOnProcessRichText(Self,RichEdit.Handle,Item);
     except
     end;
-    // do not allow changed back and color of selection
-    //if isSelected(item) and (State <> gsInline) and UseSelection then begin
-    if not NoDefaultColors then begin
+    if reItemSelected or reItemInline then begin
       ZeroMemory(@cf,SizeOf(cf));
       cf.cbSize := SizeOf(cf);
-      cf.dwMask := CFM_LINK;
-      cf.dwEffects := CFE_LINK;
       ZeroMemory(@cf2,SizeOf(cf2));
       cf2.cbSize := SizeOf(cf2);
-      cf2.dwMask := CFM_LINK or CFM_REVISED;
-      cf2.dwEffects := CFE_REVISED;
-      RichEdit.ReplaceCharFormat(cf,cf2);
-      cf.dwMask := CFM_COLOR;
-      cf.crTextColor := textColor;
-      RichEdit.Perform(EM_SETBKGNDCOLOR, 0, backColor);
-      RichEdit.Perform(EM_SETCHARFORMAT, SCF_ALL, LPARAM(@cf));
+      // do not allow change backcolor of selection
+      // change CFE_LINK to CFE_REVISED
+      if reItemSelected then begin
+        cf.dwMask := CFM_LINK;
+        cf.dwEffects := CFE_LINK;
+        cf2.dwMask := CFM_LINK or CFM_REVISED;
+        cf2.dwEffects := CFE_REVISED;
+        RichEdit.ReplaceCharFormat(cf,cf2);
+        cf.dwMask := CFM_COLOR;
+        cf.crTextColor := textColor;
+        RichEdit.Perform(EM_SETBKGNDCOLOR, 0, backColor);
+        RichEdit.Perform(EM_SETCHARFORMAT, SCF_ALL, LPARAM(@cf));
+      end else begin
+        // change CFE_REVISED to CFE_LINK
+        cf.dwMask := CFM_REVISED;
+        cf.dwEffects := CFE_REVISED;
+        cf2.dwMask := CFM_LINK or CFM_REVISED;
+        cf2.dwEffects := CFM_LINK;
+        RichEdit.ReplaceCharFormat(cf,cf2);
+      end;
     end;
   end;
 
@@ -4574,7 +4584,7 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     Text := Text + ' ['+GetTime(FItems[Item].Time)+']:';
     RTFStream := '{\rtf1\par\b1 '+FormatString2RTF(Text)+'\b0\par}';
     SetRichRTF(FRichSave.Handle,RTFStream,True,False,False);
-    ApplyItemToRich(Item,FRichSaveItem,False,False);
+    ApplyItemToRich(Item,FRichSaveItem,True);
     GetRichRTF(FRichSaveItem.Handle,RTFStream,False,False,False,False);
     SetRichRTF(FRichSave.Handle,RTFStream,True,False,False);
   end;
@@ -4772,6 +4782,8 @@ begin
   Inc(PHeaderHeight,Padding);
 
   SetRTLMode(RTLMode);
+  if Assigned(Self.FOnOptionsChange) then
+    FOnOptionsChange(Self);
 
   BarAdjusted := False;
   AdjustScrollBar;

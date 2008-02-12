@@ -338,6 +338,7 @@ type
     procedure OpenFileFolderClick(Sender: TObject);
     procedure BrowseReceivedFilesClick(Sender: TObject);
     procedure SpeakMessage1Click(Sender: TObject);
+    procedure hgOptionsChange(Sender: TObject);
   private
     DelayedFilter: TMessageTypes;
     StartTimestamp: DWord;
@@ -3730,6 +3731,12 @@ begin
     mesA := WideToAnsiString(mesW,UserCodepage);
     PluginLink.CallService(MS_SPEAK_SAY_A,hContact,LPARAM(PChar(mesA)));
   end;
+end;
+
+procedure THistoryFrm.hgOptionsChange(Sender: TObject);
+begin
+  if Assigned(EventDetailForm) then
+    TEventDetailsFrm(EventDetailForm).ResetItem;
 end;
 
 end.
