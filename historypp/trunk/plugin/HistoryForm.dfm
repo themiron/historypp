@@ -83,6 +83,7 @@ object HistoryFrm: THistoryFrm
         OnInlineKeyDown = hgInlineKeyDown
         OnInlinePopup = hgInlinePopup
         OnProcessInlineChange = hgProcessInlineChange
+        OnOptionsChange = hgOptionsChange
         OnChar = hgChar
         OnState = hgState
         OnSelect = hgSelect
