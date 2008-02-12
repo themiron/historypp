@@ -81,7 +81,7 @@ type
   end;
 
   TBBCodeClass = (bbStart,bbEnd);
-  TBBCodeType = (bbSimple, bbColor, bbSize, bbUrl);
+  TBBCodeType = (bbSimple, bbColor, bbSize, bbUrl, bbImage);
 
   TBBCodeString = record
     ansi: PAnsiChar;
@@ -130,7 +130,7 @@ var
     {$ENDIF}
     ((prefix:(ansi:'[size=');   suffix:(ansi:']'); bbtype:bbSize;   rtf:'{\fs%u ';   html:'<font style="font-size:%spt">'; minRE: 10),
      (prefix:(ansi:'[/size]');  suffix:(ansi:nil); bbtype:bbSimple; rtf:'}';         html:'</font>')),
-    ((prefix:(ansi:'[img]');    suffix:(ansi:nil); bbtype:bbSimple; rtf:'[{\revised\cf1\ul '; html:'['; minRE: 20),
+    ((prefix:(ansi:'[img]');    suffix:(ansi:nil); bbtype:bbImage;  rtf:'[{\revised\ul\cf%u '; html:'['; minRE: 20),
      (prefix:(ansi:'[/img]');   suffix:(ansi:nil); bbtype:bbSimple; rtf:'}]';        html:']'))
   );
 
@@ -223,9 +223,10 @@ begin
   strStart := StrPos(str,prefix);
   if strStart = nil then exit;
   strCode := strStart + StrLen(prefix);
-  if suffix = nil then
+  if suffix = nil then begin
+    lenCode := 0;
     strEnd := strCode
-  else begin
+  end else begin
     strEnd := StrPos(strCode,suffix);
     if strEnd = nil then exit;
     lenCode := strEnd - strCode;
@@ -316,10 +317,18 @@ begin
           {$IFDEF USE_URL_BBCODE}
           bbUrl: begin
             SetString(code,strCode,lenCode);
-            if doColorBBCodes then n := 1 else n := 0;
+            if doColorBBCodes then
+              n := StartColor+1 else //blue
+              n := 0;
             newCode := StrLFmt(fmt_buffer,MAX_FMTBUF,bbCodes[i,bbStart].rtf,[PChar(code),n]);
           end;
           {$ENDIF}
+          bbImage: begin
+            if doColorBBCodes then
+              n := StartColor+1 else //blue
+              n := 0;
+            newCode := StrLFmt(fmt_buffer,MAX_FMTBUF,bbCodes[i,bbStart].rtf,[n]);
+          end;
         end;
         bufEnd := StrReplace(strStart,newCode,bufEnd,strTrail);
         bufPos := strTrail;
@@ -391,7 +400,7 @@ end;
 function DoStripBBCodes(S: WideString): WideString;
 var
   WideStream: WideString;
-  i,spos,epos,cpos: integer;
+  i,spos,epos,cpos,slen: integer;
   trail: WideString;
   bbClass: TBBCodeClass;
 begin
@@ -404,9 +413,12 @@ begin
         spos := Pos(bbCodes[i,bbClass].prefix.wide,WideStream);
         if spos > 0 then begin
           cpos := spos+Length(bbCodes[i,bbClass].prefix.wide);
-          epos := PosEx(bbCodes[i,bbClass].suffix.wide,WideStream,cpos);
-          if epos > cpos then begin
-            cpos := epos+Length(bbCodes[i,bbClass].suffix.wide);
+          slen := Length(bbCodes[i,bbClass].suffix.wide);
+          if slen = 0 then
+            epos := cpos else
+            epos := PosEx(bbCodes[i,bbClass].suffix.wide,WideStream,cpos);
+          if epos > 0 then begin
+            cpos := epos+slen;
             trail := Copy(WideStream,cpos,Length(WideStream)-cpos+1);
             SetLength(WideStream,spos-1);
             WideStream := WideStream+trail;
