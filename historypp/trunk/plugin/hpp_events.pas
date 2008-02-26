@@ -156,6 +156,7 @@ function TextHasUrls(var Text: WideString): Boolean;
 function AllocateTextBuffer(len: integer): integer;
 procedure CleanupTextBuffer;
 procedure ShrinkTextBuffer;
+function Utf8ToWideChar(Dest: PWideChar; MaxDestChars: Integer; Source: PChar; SourceBytes: Integer; CodePage: Cardinal = CP_ACP): Integer;
 
 implementation
 
@@ -330,6 +331,58 @@ begin
     buflen := len;
   end;
   Result := len;
+end;
+
+function Utf8ToWideChar(Dest: PWideChar; MaxDestChars: Integer; Source: PChar; SourceBytes: Integer; CodePage: Cardinal = CP_ACP): Integer;
+const
+  MB_ERR_INVALID_CHARS = 8;
+var
+  Src,SrcEnd: PChar;
+  Dst,DstEnd: PWideChar;
+begin
+  if (Source = nil) or (SourceBytes <= 0) then begin
+    Result := 0;
+  end else
+  if (Dest = nil) or (MaxDestChars <= 0) then begin
+    Result := -1;
+  end else begin
+    Src := Source;
+    SrcEnd := Source + SourceBytes;
+    Dst := Dest;
+    DstEnd := Dst + MaxDestChars;
+    while (PChar(Src) < PChar(SrcEnd)) and (Dst < DstEnd) do begin
+      if (Byte(Src[0]) and $80) = 0 then begin
+        Dst[0] := WideChar(Src[0]);
+        Inc(Src);
+      end else
+      if (Byte(Src[0]) and $E0) = $E0 then begin
+        if Src+2 >= SrcEnd then break;
+        if (Src[1] = #0) or ((Byte(Src[1]) and $C0) <> $80) then break;
+        if (Src[2] = #0) or ((Byte(Src[2]) and $C0) <> $80) then break;
+        Dst[0] := WideChar(
+                    ((Byte(Src[0]) and $0F) shl 12) +
+                    ((Byte(Src[1]) and $3F) shl 6) +
+                    ((Byte(Src[2]) and $3F)));
+        Inc(Src,3);
+      end else
+      if (Byte(Src[0]) and $E0) = $C0 then begin
+        if Src+2 >= SrcEnd then break;
+        if (Src[1] = #0) or ((Byte(Src[1]) and $C0) <> $80) then break;
+        Dst[0] := WideChar(
+                    ((Byte(Src[0]) and $1F) shl 6) +
+                    ((Byte(Src[1]) and $3F)));
+        Inc(Src,2);
+      end else begin
+        if MultiByteToWideChar(CodePage,MB_ERR_INVALID_CHARS,
+                               Src,1,Dst,1) = 0 then Dec(Dst);
+        Inc(Src);
+      end;
+      Inc(Dst);
+    end;
+    Dst[0] := #0;
+    Inc(Dst);
+    Result := Dst-Dest;
+  end;
 end;
 
 function TextHasUrls(var Text: WideString): Boolean;
@@ -520,7 +573,7 @@ begin
   if msglen > EventInfo.cbBlob then msglen := EventInfo.cbBlob;
   if Boolean(EventInfo.flags and DBEF_UTF) then begin
     SetLength(hi.Text,msglen);
-    lenW := Utf8ToWideChar(PWideChar(hi.Text),msglen,msgA,msglen-1);
+    lenW := Utf8ToWideChar(PWideChar(hi.Text),msglen,msgA,msglen-1,hi.Codepage);
     if Integer(lenW) > 0 then
       SetLength(hi.Text,lenW-1) else
       hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen-1);
@@ -733,7 +786,7 @@ begin
   if msglen > EventInfo.cbBlob then msglen := EventInfo.cbBlob;
   if Boolean(EventInfo.flags and DBEF_UTF) then begin
     SetLength(hi.Text,msglen);
-    lenW := Utf8ToWideChar(PWideChar(hi.Text),msglen,msgA,msglen-1);
+    lenW := Utf8ToWideChar(PWideChar(hi.Text),msglen,msgA,msglen-1,hi.Codepage);
     if Integer(lenW) > 0 then
       SetLength(hi.Text,lenW-1) else
       hi.Text := AnsiToWideString(msgA,hi.Codepage,msglen-1);

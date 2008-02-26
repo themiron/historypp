@@ -1694,7 +1694,10 @@ end;
 procedure THppRichedit.CNNotify(var Message: TWMNotify);
 begin
   case Message.NMHdr^.code of
-    EN_LINK: LinkNotify(TENLINK(Pointer(Message.NMHdr)^));
+    EN_LINK: begin
+      LinkNotify(TENLINK(Pointer(Message.NMHdr)^));
+      Message.Result := 1;
+    end;
   else
     inherited;
   end;
