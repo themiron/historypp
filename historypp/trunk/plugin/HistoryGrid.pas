@@ -5127,6 +5127,9 @@ begin
   if State <> gsInline then exit;
   FRichInline.Hide;
   State := gsIdle;
+  FRichInline.Clear;
+  FRichInline.Top := -MaxInt;
+  FRichInline.Height := -1;
   FItemInline := -1;
   if DoSetFocus then Windows.SetFocus(Handle) ;
 end;
