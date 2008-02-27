@@ -366,7 +366,7 @@ begin
         Inc(Src,3);
       end else
       if (Byte(Src[0]) and $E0) = $C0 then begin
-        if Src+2 >= SrcEnd then break;
+        if Src+1 >= SrcEnd then break;
         if (Src[1] = #0) or ((Byte(Src[1]) and $C0) <> $80) then break;
         Dst[0] := WideChar(
                     ((Byte(Src[0]) and $1F) shl 6) +
@@ -374,7 +374,7 @@ begin
         Inc(Src,2);
       end else begin
         if MultiByteToWideChar(CodePage,MB_ERR_INVALID_CHARS,
-                               Src,1,Dst,1) = 0 then Dec(Dst);
+                               Src,1,Dst,1) = 0 then Dst[0] := '?';
         Inc(Src);
       end;
       Inc(Dst);
