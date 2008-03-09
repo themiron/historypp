@@ -1132,34 +1132,6 @@ begin
   RegisterComponents('History++', [THppRichedit]);
 end;
 
-function GetModuleVersionSpec(hModule: THandle): Integer;
-type
-  PDllVersionInfo = ^TDllVersionInfo;
-  TDllVersionInfo = packed record
-    cbSize: DWORD;
-    dwMajorVersion: DWORD;
-    dwMinorVersion: DWORD;
-    dwBuildNumber: DWORD;
-    dwPlatformID: DWORD;
-  end;
-var
-  DllGetVersionProc: function (Info: PDllVersionInfo): HRESULT; stdcall;
-  Info: TDllVersionInfo;
-begin
-  Result := -1;
-  if hModule = 0 then exit;
-  try
-    DllGetVersionProc := GetProcAddress(hModule, 'DllGetVersion');
-    if Assigned(DllGetVersionProc) then begin
-      ZeroMemory(@Info, SizeOf(Info));
-      Info.cbSize := SizeOf(Info);
-      if DllGetVersionProc(@Info) = 0 then
-        Result := Info.dwMajorVersion;
-    end;
-  except
-  end;
-end;
-
 function GetModuleVersionFile(hModule: THandle): Integer;
 var
   dwVersion: Cardinal;
@@ -1180,31 +1152,34 @@ const
   MSFTEDIT_DLL = 'MSFTEDIT.DLL';
 var
   hModule : THandle;
+  hVersion: Integer;
   emError : DWord;
 begin
   if FRichEditModule = 0 then begin
     FRichEditVersion := -1;
     emError := SetErrorMode(SEM_NOOPENFILEERRORBOX);
     try
-      hModule := LoadLibrary(RICHED20_DLL);
-      if hModule <= HINSTANCE_ERROR then hModule := 0;
-      FRichEditModule := hModule;
+      FRichEditModule := LoadLibrary(RICHED20_DLL);
+      if FRichEditModule <= HINSTANCE_ERROR then FRichEditModule := 0;
       if FRichEditModule <> 0 then
-        FRichEditVersion := GetModuleVersionSpec(FRichEditModule);
-      if FRichEditVersion <= 40 then begin
+        FRichEditVersion := GetModuleVersionFile(FRichEditModule);
+      repeat
+        if FRichEditVersion > 40 then break;
         hModule := LoadLibrary(MSFTEDIT_DLL);
         if hModule <= HINSTANCE_ERROR then hModule := 0;
         if hModule <> 0 then begin
-          if FRichEditModule <> 0 then
-            FreeLibrary(FRichEditModule);
-          FRichEditModule := hModule;
-          FRichEditVersion := GetModuleVersionSpec(hModule);
-        end else
-        if (FRichEditModule <> 0) and (FRichEditVersion < 0) then begin
-          FRichEditVersion := GetModuleVersionFile(FRichEditModule);
-          if FRichEditVersion = 0 then FRichEditVersion := 20;
+          hVersion := GetModuleVersionFile(hModule);
+          if hVersion > FRichEditVersion then begin
+            if FRichEditModule <> 0 then FreeLibrary(FRichEditModule);
+            FRichEditModule := hModule;
+            FRichEditVersion := hVersion;
+            break;
+          end;
+          FreeLibrary(hModule);
         end;
-      end;
+        if (FRichEditModule <> 0) and (FRichEditVersion = 0) then
+          FRichEditVersion := 20;
+      until True;
     finally
       SetErrorMode(emError);
     end;
@@ -1309,7 +1284,6 @@ begin
     if Unicode then format := format or SF_UNICODE;
   end else begin
     format := format or SF_RTF;
-
     if PlainRTF then format := format or SFF_PLAINRTF;
     //if Unicode then  format := format or SF_USECODEPAGE or (CP_UTF16 shl 16);
   end;
