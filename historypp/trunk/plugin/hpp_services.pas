@@ -56,11 +56,13 @@ uses
 
 
 var
-  hHppRichEditItemProcess,
   hAllHistoryRichEditProcess,
+  hHppShowHistory,
+  hHppEmptyHistory,
   hHppGetVersion,
   hHppShowGlobalSearch,
-  hHppOpenHistoryEvent: THandle;
+  hHppOpenHistoryEvent,
+  hHppRichEditItemProcess: THandle;
   HstWindowList:TList;
   PassFm: TfmPass;
   PassCheckFm: TfmPassCheck;
@@ -71,14 +73,16 @@ var
   procedure CloseGlobalSearchWindow;
   procedure CloseHistoryWindows;
   function FindContactWindow(hContact: THandle): THistoryFrm;
-  function OpenContactHistory(hContact: THandle; index: integer = -1): THistoryFrm;
+  function OpenContactHistory(hContact: THandle; Index: Integer = -1): THistoryFrm;
 
   function AllHistoryRichEditProcess(wParam, lParam: DWord): Integer; cdecl;
 
 implementation
 
 uses
-  GlobalSearch, hpp_global, hpp_itemprocess, hpp_forms;
+  SysUtils, GlobalSearch,
+  hpp_global, hpp_database, hpp_itemprocess, hpp_forms,
+  hpp_mescatcher, hpp_bookmarks;
 
 // our own processing of RichEdit for all history windows
 function AllHistoryRichEditProcess(wParam{hRichEdit}, lParam{PItemRenderDetails}: DWord): Integer; cdecl;
@@ -97,7 +101,7 @@ var
   i: Integer;
 begin
   try
-    for i := 0 to HstWindowList.Count-1 do
+    for i := HstWindowList.Count-1 downto 0 do
       THistoryFrm(HstWindowList[i]).Free;
   except
   end;
@@ -105,8 +109,10 @@ end;
 
 procedure CloseGlobalSearchWindow;
 begin
-  if Assigned(fmGlobalSearch) then begin
+  try
+  if Assigned(fmGlobalSearch) then
     fmGlobalSearch.Free;
+  except
   end;
 end;
 
@@ -118,17 +124,15 @@ begin
   for i := 0 to HstWindowList.Count-1 do begin
     if THistoryFrm(HstWindowList[i]).hContact = hContact then begin
       Result := THistoryFrm(HstWindowList[i]);
-      exit;
-      end;
+      break;
     end;
+  end;
 end;
 
-function OpenContactHistory(hContact: THandle; index: integer = -1): THistoryFrm;
+function OpenContactHistory(hContact: THandle; Index: Integer = -1): THistoryFrm;
 var
   wHistory: THistoryFrm;
-  //Lock: Boolean;
   NewWindow: Boolean;
-  //r: TRect;
 begin
   //check if window exists, otherwise create one
   wHistory := FindContactWindow(hContact);
@@ -141,7 +145,7 @@ begin
     wHistory.hContact := hContact;
     wHistory.Load;
   end;
-  if index <> -1 then begin
+  if Index <> -1 then begin
     wHistory.ShowAllEvents;
     wHistory.ShowItem(index);
   end;
@@ -153,7 +157,7 @@ end;
 
 // MS_HISTORY_SHOWCONTACTHISTORY service
 // show history called by miranda
-function OnHistoryShow(wParam{hContact},lParam{0}: DWord): Integer; cdecl;
+function HppShowHistory(wParam{hContact},lParam{0}: DWord): Integer; cdecl;
 begin
   OpenContactHistory(wParam);
   Result:=0;
@@ -187,30 +191,79 @@ var
   hDbEvent,item,sel: Integer;
   oep: TOpenEventParams;
 begin
-  oep := POpenEventParams(wParam)^;
+  if Assigned(POpenEventParams(wParam)) then begin
+    oep := POpenEventParams(wParam)^;
+    hDbEvent := PluginLink.CallService(MS_DB_EVENT_FINDLAST,oep.hContact,0);
+    item := 0;
+    sel := -1;
+    while (hDbEvent <> oep.hDBEvent) and (hDbEvent <> 0) do begin
+      hDbEvent := PluginLink.CallService(MS_DB_EVENT_FINDPREV,hDbEvent,0);
+      Inc(item);
+    end;
+    if hDbEvent = oep.hDBEvent then sel := item;
+    wHistory := OpenContactHistory(oep.hContact,sel);
+    if wHistory.PasswordMode then
+      if (oep.pPassword <> nil) and CheckPassword(oep.pPassword) then
+        wHistory.PasswordMode := False;
+    Result := DWORD(not wHistory.PasswordMode);
+  end else
+    Result := 0;
+end;
 
-  hDbEvent := PluginLink.CallService(MS_DB_EVENT_FINDLAST,oep.hContact,0);
-  item := 0;
-  sel := -1;
-  while (hDbEvent <> oep.hDBEvent) and (hDbEvent <> 0) do begin
-    hDbEvent:=PluginLink.CallService(MS_DB_EVENT_FINDPREV,hDbEvent,0);
-    inc(item);
+// MS_HPP_EMPTYHISTORY service
+// See m_historypp.inc for details
+function HppEmptyHistory(wParam{hContact},lParam{0}: DWord): Integer; cdecl;
+var
+  wHistory: THistoryFrm;
+  hDbEvent,prevhDbEvent: Integer;
+  PasswordMode: Boolean;
+  Count: Integer;
+begin
+  wHistory := FindContactWindow(wParam);
+  if Assigned(wHistory) then
+    PasswordMode := wHistory.PasswordMode else
+    PasswordMode := (not IsPasswordBlank(GetPassword)) and
+                    IsUserProtected(THandle(wParam));
+  if PasswordMode then begin
+    HppMessageBox(hppMainWindow,
+      TranslateWideW('History of this contact is password protected?'),
+      TranslateWideW('Empty History'),
+      MB_OK or MB_ICONEXCLAMATION);
+  end else begin
+    if Assigned(wHistory) then
+      Count := wHistory.HistoryLength else
+      Count := PluginLink.CallService(MS_DB_EVENT_GETCOUNT,THandle(wParam),0);
+    PasswordMode := (Count > 0) and
+      (IDYES <> HppMessageBox(hppMainWindow,WideFormat(
+        TranslateWideW('Do you really want to delete ALL items (%.0f) for this contact?')+#10#13+
+        #10#13+
+        TranslateWideW('Note: It can take several minutes for large history.'),[Count/1]),
+        TranslateWideW('Empty History'),
+        MB_YESNOCANCEL or MB_DEFBUTTON2 or MB_ICONEXCLAMATION));
   end;
-  if hDbEvent = oep.hDBEvent then sel := item;
-
-  wHistory := OpenContactHistory(oep.hContact,sel);
-
-  if wHistory.PasswordMode then
-    if (oep.pPassword <> nil) and CheckPassword(String(oep.pPassword)) then
-      wHistory.PasswordMode := False;
-
-  Result := DWord(not wHistory.PasswordMode);
+  if not PasswordMode then begin
+    if Assigned(wHistory) then begin
+      wHistory.EmptyHistory;
+    end else begin
+      BookmarkServer.Contacts[wParam].Clear;
+      hDbEvent := PluginLink.CallService(MS_DB_EVENT_FINDLAST,wParam,0);
+      SetSafetyMode(False);
+      while hDbEvent <> 0 do begin
+        prevhDbEvent := PluginLink.CallService(MS_DB_EVENT_FINDPREV,hDbEvent,0);
+        PluginLink.CallService(MS_DB_EVENT_DELETE,wParam,hDBEvent);
+        hDBEvent := prevhDbEvent;
+      end;
+      SetSafetyMode(True);
+    end;
+  end;
+  Result := DWORD(not PasswordMode);
 end;
 
 procedure hppRegisterServices;
 begin
   HstWindowList := TList.Create;
-  PluginLink.CreateServiceFunction(MS_HISTORY_SHOWCONTACTHISTORY,OnHistoryShow);
+  hHppShowHistory := PluginLink.CreateServiceFunction(MS_HISTORY_SHOWCONTACTHISTORY,HppShowHistory);
+  hHppEmptyHistory := PluginLink.CreateServiceFunction(MS_HPP_EMPTYHISTORY,HppEmptyHistory);
   hHppGetVersion := PluginLink.CreateServiceFunction(MS_HPP_GETVERSION,HppGetVersion);
   hHppShowGlobalSearch := PluginLink.CreateServiceFunction(MS_HPP_SHOWGLOBALSEARCH,HppShowGlobalSearch);
   hHppOpenHistoryEvent := PluginLink.CreateServiceFunction(MS_HPP_OPENHISTORYEVENT,HppOpenHistoryEvent);
@@ -220,14 +273,17 @@ end;
 
 procedure hppUnregisterServices;
 begin
+  CloseHistoryWindows;
+  CloseGlobalSearchWindow;
   PluginLink.UnhookEvent(hAllHistoryRichEditProcess);
+  PluginLink.DestroyServiceFunction(hHppShowHistory);
+  PluginLink.DestroyServiceFunction(hHppEmptyHistory);
   PluginLink.DestroyServiceFunction(hHppGetVersion);
   PluginLink.DestroyServiceFunction(hHppShowGlobalSearch);
   PluginLink.DestroyServiceFunction(hHppOpenHistoryEvent);
+  PluginLink.DestroyServiceFunction(hHppEmptyHistory);
   PluginLink.DestroyHookableEvent(hHppRichEditItemProcess);
-  CloseHistoryWindows;
   HstWindowList.Free;
-  CloseGlobalSearchWindow;
 end;
 
 end.

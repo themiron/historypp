@@ -146,14 +146,13 @@ const
   MS_HPP_SHOWGLOBALSEARCH = 'History++/ShowGlobalSearch';
 
   type
+    POpenEventParams = ^TOpenEventParams;
     TOpenEventParams = packed record
       cbSize: DWord;
       hContact: DWord;
       hDBEvent: DWord;
       pPassword: PChar;
     end;
-
-  POpenEventParams = ^TOpenEventParams;
 
 const
 
@@ -180,5 +179,13 @@ const
   // lParam - zero
   // Return - current version, via PLUGIN_MAKE_VERSION macro
   MS_HPP_GETVERSION = 'History++/GetVersion';
+
+  // MS_HPP_EMPTYHISTORY
+  // (supported from 1.5.0.118)
+  // Erases contact's history
+  // wParam - hContact
+  // lParam - zero
+  // Notes  - hContact can be NULL(0) to empty system history
+  MS_HPP_EMPTYHISTORY = 'History++/EmptyHistory';
 
 {$ENDIF}

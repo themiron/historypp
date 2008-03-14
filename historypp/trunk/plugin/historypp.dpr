@@ -83,7 +83,6 @@ uses
 type
   TMenuHandles = record
     Handle: THandle;
-    Count: integer;
     Name: String;
   end;
 
@@ -121,10 +120,21 @@ var
     MIID_LOGWINDOW,
     MIID_LAST);
 
-  MenuHandles: array[0..2] of TMenuHandles = (
-    (Handle:0; Count:-1; Name:'View &History'),
-    (Handle:0; Count:-1; Name:'&System History'),
-    (Handle:0; Count:-1; Name:'His&tory Search'));
+const
+  miContact  = 0;
+  miSystem   = 1;
+  miSearch   = 2;
+  miEmpty    = 3;
+  miSysEmpty = 4;
+
+var
+  MenuCount: Integer = -1;
+  MenuHandles: array[0..4] of TMenuHandles = (
+    (Handle:0; Name:'View &History'),
+    (Handle:0; Name:'&System History'),
+    (Handle:0; Name:'His&tory Search'),
+    (Handle:0; Name:'&Empty History'),
+    (Handle:0; Name:'&Empty System History'));
 
 var
   HookModulesLoad,
@@ -260,30 +270,43 @@ begin
 
   ZeroMemory(@menuitem,SizeOf(menuItem));
 
-  //create menu item in contact menu
+  //create contact item in contact menu
   menuitem.cbSize := SizeOf(menuItem);
-  menuitem.Position := 1000090000;
-  menuitem.flags := 0;
-  menuitem.pszName := PChar(MenuHandles[0].Name);
-  menuitem.pszService := MS_HISTORY_SHOWCONTACTHISTORY;
-  //menuitem.hIcon := HistoryIcon;
-  menuitem.hIcon := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
   menuitem.pszContactOwner := nil;    //all contacts
-  MenuHandles[0].Handle := PluginLink.CallService(MS_CLIST_ADDCONTACTMENUITEM,0,DWORD(@menuItem));
-  MenuHandles[0].Count := -1;
+  menuitem.flags := 0;
+  menuitem.Position := 1000090000;
+  menuitem.pszName := PChar(MenuHandles[miContact].Name);
+  menuitem.pszService := MS_HISTORY_SHOWCONTACTHISTORY;
+  menuitem.hIcon := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
+  MenuHandles[miContact].Handle := PluginLink.CallService(MS_CLIST_ADDCONTACTMENUITEM,0,DWORD(@menuItem));
+
+  //create empty item in contact menu
+  menuitem.Position := 1000090001;
+  menuitem.pszName := PChar(MenuHandles[miEmpty].Name);
+  menuitem.pszService := MS_HPP_EMPTYHISTORY;
+  menuitem.hIcon := hppIcons[HPP_ICON_TOOL_DELETEALL].handle;
+  MenuHandles[miEmpty].Handle := PluginLink.CallService(MS_CLIST_ADDCONTACTMENUITEM,0,DWORD(@menuItem));
+
   //create menu item in main menu for system history
   menuitem.Position:=500060000;
-  menuitem.pszName:=PChar(MenuHandles[1].Name);
-  MenuHandles[1].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWORD(@menuitem));
-  MenuHandles[1].Count := -1;
+  menuitem.pszName:=PChar(MenuHandles[miSystem].Name);
+  menuitem.pszService := MS_HISTORY_SHOWCONTACTHISTORY;
+  menuitem.hIcon := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
+  MenuHandles[miSystem].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWORD(@menuitem));
+
   //create menu item in main menu for history search
   menuitem.Position:=500060001;
+  menuitem.pszName:=PChar(MenuHandles[miSearch].Name);
   menuitem.pszService := MS_HPP_SHOWGLOBALSEARCH;
-  //menuitem.hIcon := GlobalSearchIcon;
   menuitem.hIcon := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
-  menuitem.pszName:=PChar(MenuHandles[2].Name);
-  MenuHandles[2].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWORD(@menuItem));
-  MenuHandles[2].Count := -1;
+  MenuHandles[miSearch].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWORD(@menuItem));
+
+  //create menu item in main menu for empty system history
+  menuitem.Position:=500060002;
+  menuitem.pszName:=PChar(MenuHandles[miSysEmpty].Name);
+  menuitem.pszService := MS_HPP_EMPTYHISTORY;
+  menuitem.hIcon := hppIcons[HPP_ICON_TOOL_DELETEALL].handle;
+  MenuHandles[miSysEmpty].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWORD(@menuItem));
 
   LoadGridOptions;
 
@@ -492,10 +515,13 @@ begin
   menuitem.cbSize := SizeOf(menuItem);
   menuitem.flags := CMIM_ICON;
   menuitem.hIcon := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
-  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0].Handle, DWORD(@menuItem));
-  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[1].Handle, DWORD(@menuItem));
+  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[miContact].Handle, DWORD(@menuItem));
+  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[miSystem].Handle, DWORD(@menuItem));
   menuitem.hIcon := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
-  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[2].Handle, DWORD(@menuItem));
+  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[miSearch].Handle, DWORD(@menuItem));
+  menuitem.hIcon := hppIcons[HPP_ICON_TOOL_DELETEALL].handle;
+  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[miEmpty].Handle, DWORD(@menuItem));
+  PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[miSysEmpty].Handle, DWORD(@menuItem));
 end;
 
 //the context menu for a contact is about to be built     v0.1.0.1+
@@ -505,22 +531,26 @@ end;
 //contact that has them
 function OnBuildContactMenu(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
 var
-  menuitem: TCLISTMENUITEM;
-  count: integer;
+  menuItem: TCLISTMENUITEM;
+  count: Integer;
+  res: Integer;
 begin
   Result := 0;
   count := PluginLink.CallService(MS_DB_EVENT_GETCOUNT,THandle(wParam),0);
-  if count <> MenuHandles[0].Count then begin
+  if count <> MenuCount then begin
     ZeroMemory(@menuitem,SizeOf(menuItem));
     menuitem.cbSize := SizeOf(menuItem);
     menuitem.flags := CMIM_FLAGS;
     if count = 0 then menuitem.flags := menuitem.flags or CMIF_GRAYED;
-    if ShowHistoryCount then begin
-      menuitem.flags := menuitem.flags or CMIM_NAME;
-      menuitem.pszName := PChar(Format('%s [%u]',[MenuHandles[0].Name,count]))
+    res := PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[miEmpty].Handle, DWORD(@menuItem));
+    if res = 0 then begin
+      if ShowHistoryCount then begin
+        menuitem.flags := menuitem.flags or CMIM_NAME;
+        menuitem.pszName := PChar(Format('%s [%u]',[MenuHandles[miContact].Name,count]))
+      end;
+      res := PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[miContact].Handle, DWORD(@menuItem));
     end;
-    if PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[0].Handle, DWORD(@menuItem)) = 0 then
-      MenuHandles[0].Count := count;
+    if res = 0 then MenuCount := count;
   end;
 end;
 
