@@ -72,13 +72,14 @@ type
     procedure SetBookmarkName(Index: THandle; const Value: WideString);
     procedure LoadBookmarks;
     procedure SaveBookmarks;
+    procedure DeleteBookmarks;
     function GetCount: Integer;
     function GetItems(Index: Integer): THandle;
     function GetNames(Index: Integer): WideString;
   public
     constructor Create(AContact: THandle);
     destructor Destroy; override;
-    procedure DeleteBookmarks;
+    procedure Clear;
     property Bookmarked[Index: THandle]: Boolean read GetBookmarked write SetBookmarked;
     property BookmarkName[Index: THandle]: WideString read GetBookmarkName write SetBookmarkName;
     property Items[Index: Integer]: THandle read GetItems;
@@ -131,7 +132,7 @@ type
   public
     constructor Create(AContact: TContactBookmarks);
     destructor Destroy; override;
-
+    function Clear: Integer;
     function AddEventData(var EventData: TEventData): Boolean;
     property HasItem[Index: THandle]: Boolean read GetHasItem; default;
   end;
@@ -354,8 +355,7 @@ var
   res: Boolean;
 begin
   if Value then
-    res := Bookmarks.AddItem(Index)
-  else
+    res := Bookmarks.AddItem(Index) else
     res := Bookmarks.RemoveItem(Index);
   if res then begin
     SaveBookmarks;
@@ -371,6 +371,13 @@ end;
 function TContactBookmarks.GetBookmarkName(Index: THandle): WideString;
 begin
   Result := Bookmarks.GetItemName(Index);
+end;
+
+procedure TContactBookmarks.Clear;
+begin
+  Bookmarks.Clear;
+  DeleteBookmarks;
+  //NotifyAllForms(HM_NOTF_BOOKMARKCHANGED,hContact,0);
 end;
 
 { TPseudoHash }
@@ -425,7 +432,7 @@ end;
 
 procedure TPseudoHash.InsertByIndex(Index: Integer; Key, Value: Cardinal);
 begin
-
+  //
 end;
 
 procedure TPseudoHash.RemoveByIndex(Index: Integer);
@@ -558,9 +565,18 @@ destructor TBookmarksHash.Destroy;
 var
   i: Integer;
 begin
+  Clear;
+  inherited;
+end;
+
+function TBookmarksHash.Clear: Integer;
+var
+  i: Integer;
+begin
   for i := 0 to Length(Table) - 1 do
     FreeMem(PEventData(Table[i].Value),SizeOf(TEventData));
-  inherited;
+  Result := Length(Table);
+  SetLength(Table,0);
 end;
 
 // currently finds events with similar timestamp ONLY
