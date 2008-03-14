@@ -129,9 +129,6 @@ You have entered the wrong password
 History++ Password Protection
 %d event
 %0.n events (%s)
-Do you really want to delete ALL items (%.0f) for this contact?
-Note: It can take several minutes for large history.
-Empty History
 Full History [%s] - [%s]
 Full History [%s] - [%s]
 Remove &Bookmark
