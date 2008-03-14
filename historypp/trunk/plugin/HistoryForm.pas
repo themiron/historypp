@@ -3161,7 +3161,7 @@ begin
   SetLength(History,HistoryLength);
 
   SetLength(Sessions,0);
-  BookmarkServer.Contacts[hContact].DeleteBookmarks;
+  BookmarkServer.Contacts[hContact].Clear;
   tvSess.Items.Clear;
   lvBook.Items.Clear;
 
@@ -3172,7 +3172,7 @@ begin
   finally
     FormState := gsIdle;
     SetSafetyMode(True);
-    end;
+  end;
 end;
 
 procedure THistoryFrm.EmptyHistory1Click(Sender: TObject);
