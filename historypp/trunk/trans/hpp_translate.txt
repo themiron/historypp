@@ -380,12 +380,6 @@ You have entered the wrong password
 %d event
 [%0.n events (%s)]
 %0.n events (%s)
-[Do you really want to delete ALL items (%.0f) for this contact?]
-Do you really want to delete ALL items (%.0f) for this contact?
-[Note: It can take several minutes for large history.]
-Note: It can take several minutes for large history.
-[Empty History]
-Empty History
 ;; Text from variables in ..\plugin\HistoryForm.pas:
 [Search Up (Ctrl+Up)]
 Search Up (Ctrl+Up)
@@ -536,3 +530,15 @@ No "%s" items
 Cannot load icon pack (%s) from:\r\n%s\r\nThis can cause no icons will be shown.
 [You are using old icon pack from:\r\n%s\r\nThis can cause missing icons, so update the icon pack.]
 You are using old icon pack from:\r\n%s\r\nThis can cause missing icons, so update the icon pack.
+
+;; hpp_services.trans.txt file
+
+;; Text found in ..\plugin\hpp_services.pas:
+[History of this contact is password protected?]
+History of this contact is password protected?
+[Empty History]
+Empty History
+[Do you really want to delete ALL items (%.0f) for this contact?]
+Do you really want to delete ALL items (%.0f) for this contact?
+[Note: It can take several minutes for large history.]
+Note: It can take several minutes for large history.
