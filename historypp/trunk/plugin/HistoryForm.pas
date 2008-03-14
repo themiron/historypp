@@ -3177,13 +3177,7 @@ end;
 
 procedure THistoryFrm.EmptyHistory1Click(Sender: TObject);
 begin
-  if HppMessageBox(Handle,WideFormat(
-    TranslateWideW('Do you really want to delete ALL items (%.0f) for this contact?')+#10#13+
-    ''+#10#13+
-    TranslateWideW('Note: It can take several minutes for large history.'),[hg.Count/1]),
-    TranslateWideW('Empty History'),
-    MB_YESNOCANCEL or MB_DEFBUTTON2 or MB_ICONEXCLAMATION) <> IDYES then exit;
-  EmptyHistory;
+  PluginLink.CallService(MS_HPP_EMPTYHISTORY,hContact,0);
 end;
 
 procedure THistoryFrm.EndHotFilterTimer(DoClearFilter: Boolean = False);
