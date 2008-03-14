@@ -5970,12 +5970,17 @@ var
   BkColor: TCOLORREF;
   Range: TFormatRange;
 begin
-  {$IFDEF DELPHI_9_UP}
-  Item^.Bitmap.SetSize(Item^.Rich.Width,Item^.Height);
-  {$ELSE}
-  Item^.Bitmap.Width := Item^.Rich.Width;
-  Item^.Bitmap.Height := Item^.Height;
-  {$ENDIF}
+  if (Item^.Bitmap.Width <> Item^.Rich.Width)
+  or (Item^.Bitmap.Height <> Item^.Height) then begin
+    // to prevent image copy
+    Item^.Bitmap.Assign(nil);
+    {$IFDEF DELPHI_9_UP}
+    Item^.Bitmap.SetSize(Item^.Rich.Width,Item^.Height);
+    {$ELSE}
+    Item^.Bitmap.Width := Item^.Rich.Width;
+    Item^.Bitmap.Height := Item^.Height;
+    {$ENDIF}
+  end;
   // because RichEdit sometimes paints smaller image
   // than it said when calculating height, we need
   // to fill the background
