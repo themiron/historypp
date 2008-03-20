@@ -27,7 +27,6 @@ object EventDetailsFrm: TEventDetailsFrm
     Height = 32
     Align = alBottom
     BevelOuter = bvNone
-    Caption = ' '
     TabOrder = 1
     object PrevBtn: THppSpeedButton
       Left = 0
@@ -54,7 +53,6 @@ object EventDetailsFrm: TEventDetailsFrm
       Height = 32
       Align = alRight
       BevelOuter = bvNone
-      Caption = ' '
       TabOrder = 0
       object bnReply: TTntButton
         Left = 4
