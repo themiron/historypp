@@ -82,7 +82,7 @@ function GetContactProto(hContact: THandle;
                          var SubProtocol: String): String;
 begin
   Result := PChar(PluginLink.CallService(MS_PROTO_GETCONTACTBASEPROTO,hContact,0));
-  if MetaContactsEnabled and (Result = 'MetaContacts') then begin
+  if MetaContactsEnabled and (Result = MetaContactsProto) then begin
     SubContact := CallService(MS_MC_GETMOSTONLINECONTACT,hContact,0);
     SubProtocol := PChar(CallService(MS_PROTO_GETCONTACTBASEPROTO,SubContact,0));
   end else begin

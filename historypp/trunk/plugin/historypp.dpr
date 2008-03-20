@@ -431,8 +431,9 @@ begin
   if (StrComp(cws.szModule,'CList') <> 0) and
      ((szProto = nil) or (StrComp(cws.szModule,szProto) <> 0)) then exit;
 
-  if (StrComp(cws.szModule,'MetaContacts') = 0) and
-     (StrComp(cws.szSetting,'Nick') = 0) then exit;
+  if MetaContactsEnabled and
+    (StrComp(cws.szModule,PChar(MetaContactsProto)) = 0) and
+    (StrComp(cws.szSetting,'Nick') = 0) then exit;
 
   // check for contact nick changed
   if (StrPos('MyHandle,Nick',cws.szSetting) <> nil) then
