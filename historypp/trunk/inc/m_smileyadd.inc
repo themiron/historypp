@@ -24,7 +24,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 const
 SAFLRE_INSERTEMF    = 2;        // insert smiley as EMF into RichEdit, otherwise bitmap inserted
                                 // this flag allows "true" transparency
+SAFLRE_OUTGOING     = 4;        // Parsing outgoing message
+SAFLRE_NOCUSTOM     = 8;        // Do not use custom smileys
+
 type
+  PSMADD_RICHEDIT = ^SMADD_RICHEDIT;
   SMADD_RICHEDIT = record
     cbSize: Integer;
     hwndRichEditControl: HWND;
@@ -32,6 +36,7 @@ type
     ProtocolName: PChar;
   end;
 
+  PSMADD_RICHEDIT2 = ^SMADD_RICHEDIT2;
   SMADD_RICHEDIT2 = record
     cbSize: Integer;
     hwndRichEditControl: HWND;
@@ -41,6 +46,7 @@ type
     disableRedraw: Boolean;
   end;
 
+  PSMADD_RICHEDIT3 = ^SMADD_RICHEDIT3;
   SMADD_RICHEDIT3 = record
     cbSize: Integer;
     hwndRichEditControl: HWND;
@@ -60,6 +66,7 @@ const
 MS_SMILEYADD_REPLACESMILEYS     = 'SmileyAdd/ReplaceSmileys';
 
 type
+  PSMADD_SHOWSEL3 = ^SMADD_SHOWSEL3;
   SMADD_SHOWSEL3 = record
     cbSize: Integer;            //size of the structure
     Protocolname: PChar;        //protocol to use... if you have defined a protocol, you can
@@ -89,6 +96,7 @@ const
 MS_SMILEYADD_SHOWSELECTION      = 'SmileyAdd/ShowSmileySelection';
 
 type
+  PSMADD_INFO2 = ^SMADD_INFO2;
   SMADD_INFO2 = record
     cbSize: Integer;            //size of the structure
     Protocolname: PChar;        //   "             "
@@ -117,9 +125,11 @@ ME_SMILEYADD_OPTIONSCHANGED      = 'SmileyAdd/OptionsChanged';
 
 SAFL_PATH     = 1;              // provide smiley file path, icon otherwise
 SAFL_UNICODE  = 2;              // string fields in OPTIONSDIALOGPAGE are WCHAR*
+SAFL_OUTGOING = 4;              // Parsing outgoing message
+SAFL_NOCUSTOM = 8;              // Do not use custom smileys
 
 type
-
+  PSMADD_BATCHPARSE2 = ^SMADD_BATCHPARSE2;
   SMADD_BATCHPARSE2 = record
     cbSize: Integer;            //size of the structure
     Protocolname: PChar;        //protocol to use... if you have defined a protocol, u can
@@ -138,6 +148,7 @@ type
     hContact: THandle;          //Contact handle
   end;
 
+  PSMADD_BATCHPARSERES = ^PSMADD_BATCHPARSERES;
   SMADD_BATCHPARSERES = record
     startChar: Cardinal;        //Starting smiley character
                                 //Because of iterative nature of the API caller should set this
@@ -145,7 +156,7 @@ type
     size: Cardinal;             //Number of characters in smiley (0 if not found)
                                 //Because of iterative nature of the API caller should set this
                                 //parameter to correct value
-    case integer of
+    case Integer of
       0: (filepath: TCHAR);
       1: (afilepath: PChar);
       2: (wfilepath: PWideChar);
@@ -168,6 +179,7 @@ MS_SMILEYADD_BATCHPARSE         = 'SmileyAdd/BatchParse';
 MS_SMILEYADD_BATCHFREE          = 'SmileyAdd/BatchFree';
 
 type
+  PSMADD_REGCAT = ^SMADD_REGCAT;
   SMADD_REGCAT = record
     cbSize: Integer;            //size of the structure
     name: PChar;                //smiley category name for reference
@@ -175,10 +187,27 @@ type
   end;
 
 const
-
 //Register smiley category
 //wParam = (WPARAM) 0; not used
 //lParam = (LPARAM) (SMADD_REGCAT*) &smgp;  //pointer to SMADD_REGCAT
 MS_SMILEYADD_REGISTERCATEGORY   = 'SmileyAdd/RegisterCategory';
+
+type
+  PSMADD_CONT = ^SMADD_CONT;
+  SMADD_CONT = record
+    cbSize: Integer;            //size of the structure
+    hContact: THandle;
+    type_: Integer;             // 0 - directory, 1 - file
+    case Integer of             // smiley category name for reference
+      0: (path: TCHAR);
+      1: (apath: PChar);
+      2: (wpath: PWideChar);
+  end;
+
+const
+//Loads all smileys for the contact
+//wParam = (WPARAM) 0; not used
+//lParam = (LPARAM) (SMADD_CONT*) &dir;  // pointer to directory to load smiley from
+MS_SMILEYADD_LOADCONTACTSMILEYS = 'SmileyAdd/LoadContactSmileys';
 
 {$ENDIF}
