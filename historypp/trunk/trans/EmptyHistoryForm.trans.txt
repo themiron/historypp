@@ -1,0 +1,10 @@
+;; Text found in ..\plugin\EmptyHistoryForm.dfm:
+Empty History
+Yes
+No
+Cancel
+Empty history of subcontacts also
+;; Text found in ..\plugin\EmptyHistoryForm.pas:
+History of this contact is password protected
+Do you really want to delete ALL items for this contact?
+Note: It can take several minutes for large histories

@@ -1,6 +1,0 @@
-;; Text found in ..\plugin\hpp_services.pas:
-History of this contact is password protected?
-Empty History
-Do you really want to delete ALL items (%.0f) for this contact?
-Note: It can take several minutes for large history.
-Empty History

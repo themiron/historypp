@@ -63,6 +63,27 @@ Buttons on &toolbar:
 [Event Filters]
 Event Filters
 
+;; EmptyHistoryForm.trans.txt file
+
+;; Text found in ..\plugin\EmptyHistoryForm.dfm:
+[Empty History]
+Empty History
+[Yes]
+Yes
+[No]
+No
+[Cancel]
+Cancel
+[Empty history of subcontacts also]
+Empty history of subcontacts also
+;; Text found in ..\plugin\EmptyHistoryForm.pas:
+[History of this contact is password protected]
+History of this contact is password protected
+[Do you really want to delete ALL items for this contact?]
+Do you really want to delete ALL items for this contact?
+[Note: It can take several minutes for large histories]
+Note: It can take several minutes for large histories
+
 ;; EventDetailForm.trans.txt file
 
 ;; Text found in ..\plugin\EventDetailForm.dfm:
@@ -413,8 +434,6 @@ Password Check
 Enter password
 [To access Password Protection options you need to enter password]
 To access Password Protection options you need to enter password
-[Cancel]
-Cancel
 ;; Text found in ..\plugin\PassCheckForm.pas:
 
 ;; PassForm.trans.txt file
@@ -530,15 +549,3 @@ No "%s" items
 Cannot load icon pack (%s) from:\r\n%s\r\nThis can cause no icons will be shown.
 [You are using old icon pack from:\r\n%s\r\nThis can cause missing icons, so update the icon pack.]
 You are using old icon pack from:\r\n%s\r\nThis can cause missing icons, so update the icon pack.
-
-;; hpp_services.trans.txt file
-
-;; Text found in ..\plugin\hpp_services.pas:
-[History of this contact is password protected?]
-History of this contact is password protected?
-[Empty History]
-Empty History
-[Do you really want to delete ALL items (%.0f) for this contact?]
-Do you really want to delete ALL items (%.0f) for this contact?
-[Note: It can take several minutes for large history.]
-Note: It can take several minutes for large history.
