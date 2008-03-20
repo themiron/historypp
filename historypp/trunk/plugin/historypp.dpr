@@ -57,6 +57,7 @@ uses
   VertSB in 'VertSB.pas',
   HistoryForm in 'HistoryForm.pas' {HistoryFrm},
   EventDetailForm in 'EventDetailForm.pas' {EventDetailsFrm},
+  EmptyHistoryForm in 'EmptyHistoryForm.pas' {EmptyHistoryFrm},
   PassForm in 'PassForm.pas' {fmPass},
   PassNewForm in 'PassNewForm.pas' {fmPassNew},
   PassCheckForm in 'PassCheckForm.pas' {fmPassCheck},

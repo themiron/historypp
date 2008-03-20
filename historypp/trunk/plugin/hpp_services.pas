@@ -49,11 +49,10 @@ unit hpp_services;
 interface
 
 uses
-  Classes, Windows,
+  Classes, Windows, Controls,
   m_globaldefs, m_api,
   hpp_options,
   HistoryForm, PassForm, PassCheckForm;
-
 
 var
   hAllHistoryRichEditProcess,
@@ -80,7 +79,7 @@ var
 implementation
 
 uses
-  SysUtils, GlobalSearch,
+  SysUtils, GlobalSearch, EmptyHistoryForm,
   hpp_global, hpp_database, hpp_itemprocess, hpp_forms,
   hpp_mescatcher, hpp_bookmarks;
 
@@ -220,43 +219,11 @@ var
   Count: Integer;
 begin
   wHistory := FindContactWindow(wParam);
-  if Assigned(wHistory) then
-    PasswordMode := wHistory.PasswordMode else
-    PasswordMode := (not IsPasswordBlank(GetPassword)) and
-                    IsUserProtected(THandle(wParam));
-  if PasswordMode then begin
-    HppMessageBox(hppMainWindow,
-      TranslateWideW('History of this contact is password protected?'),
-      TranslateWideW('Empty History'),
-      MB_OK or MB_ICONEXCLAMATION);
-  end else begin
-    if Assigned(wHistory) then
-      Count := wHistory.HistoryLength else
-      Count := PluginLink.CallService(MS_DB_EVENT_GETCOUNT,THandle(wParam),0);
-    PasswordMode := (Count > 0) and
-      (IDYES <> HppMessageBox(hppMainWindow,WideFormat(
-        TranslateWideW('Do you really want to delete ALL items (%.0f) for this contact?')+#10#13+
-        #10#13+
-        TranslateWideW('Note: It can take several minutes for large history.'),[Count/1]),
-        TranslateWideW('Empty History'),
-        MB_YESNOCANCEL or MB_DEFBUTTON2 or MB_ICONEXCLAMATION));
+  with TEmptyHistoryFrm.Create(wHistory) do begin
+    Contact := wParam;
+    Result := DWORD(ShowModal = mrYes);
+    Free;
   end;
-  if not PasswordMode then begin
-    if Assigned(wHistory) then begin
-      wHistory.EmptyHistory;
-    end else begin
-      BookmarkServer.Contacts[wParam].Clear;
-      hDbEvent := PluginLink.CallService(MS_DB_EVENT_FINDLAST,wParam,0);
-      SetSafetyMode(False);
-      while hDbEvent <> 0 do begin
-        prevhDbEvent := PluginLink.CallService(MS_DB_EVENT_FINDPREV,hDbEvent,0);
-        PluginLink.CallService(MS_DB_EVENT_DELETE,wParam,hDBEvent);
-        hDBEvent := prevhDbEvent;
-      end;
-      SetSafetyMode(True);
-    end;
-  end;
-  Result := DWORD(not PasswordMode);
 end;
 
 procedure hppRegisterServices;
