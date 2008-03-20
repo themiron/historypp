@@ -187,6 +187,7 @@ var
   SmileyAddEnabled: Boolean;
   MathModuleEnabled: Boolean;
   MetaContactsEnabled: Boolean;
+  MetaContactsProto: String;
   DatabaseNewAPI: Boolean;
   MeSpeakEnabled: Boolean;
   ShowHistoryCount: Boolean;
@@ -497,6 +498,7 @@ var
   //sarc: SMADD_REGCAT;
   i: integer;
   mt: TMessageType;
+  str: PChar;
 begin
   // Register in IcoLib
   IcoLibEnabled := Boolean(PluginLink.ServiceExists(MS_SKIN2_ADDICON));
@@ -562,6 +564,12 @@ begin
   MathModuleEnabled := Boolean(PluginLink.ServiceExists(MATH_RTF_REPLACE_FORMULAE));
   // Checking MetaContacts
   MetaContactsEnabled := Boolean(PluginLink.ServiceExists(MS_MC_GETMOSTONLINECONTACT));
+  if MetaContactsEnabled then begin
+    str := PChar(PluginLink.CallService(MS_MC_GETPROTOCOLNAME,0,0));
+    if Assigned(str) then
+      MetaContactsProto := AnsiString(str) else
+      MetaContactsEnabled := False;
+  end;
   // Checking MS_DB_EVENT_GETTEXT database service
   DatabaseNewAPI := Boolean(PluginLink.ServiceExists(MS_DB_EVENT_GETTEXT));
   // Checking presence of speech api
