@@ -1669,13 +1669,17 @@ begin
 end;
 
 procedure THistoryFrm.hgChar(Sender: TObject; var Char: WideChar; Shift: TShiftState);
+var
+  Mes: TWMKey;
 begin
-  edSearch.Text := Char;
-  if SearchMode = smNone then
-    SearchMode := smSearch;
+  if SearchMode = smNone then SearchMode := smSearch;
   edSearch.SetFocus;
   edSearch.SelStart := Length(edSearch.Text);
   edSearch.SelLength := 0;
+  //edSearch.Text := Char;
+  Mes.CharCode := Word(Char);
+  Mes.KeyData := ShiftStateToKeyData(Shift);
+  edSearch.Perform(WM_CHAR,TMessage(Mes).WParam,TMessage(Mes).LParam);
   Char := #0;
 end;
 
@@ -1877,8 +1881,9 @@ procedure THistoryFrm.hgKeyDown(Sender: TObject; var Key: Word; Shift: TShiftSta
 var
   pm: TPopupMenu;
 begin
-  if hg.State = gsInline then pm := pmInline
-  else pm := pmGrid;
+  if hg.State = gsInline then
+    pm := pmInline else
+    pm := pmGrid;
 
   if IsFormShortCut([pm],Key,Shift) then begin
     Key := 0;
@@ -2450,12 +2455,12 @@ procedure THistoryFrm.edSearchKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if SearchMode = smFilter then begin
-    if Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR, VK_END, VK_HOME] then begin
+    if Key in [VK_UP,VK_DOWN,VK_NEXT,VK_PRIOR,VK_END,VK_HOME] then begin
       SendMessage(hg.Handle,WM_KEYDOWN,Key,0);
       Key := 0;
     end;
   end else begin
-    if (Shift = []) and (Key in [VK_UP,VK_DOWN,VK_NEXT, VK_PRIOR, VK_END, VK_HOME]) then begin
+    if (Shift = []) and (Key in [VK_UP,VK_DOWN,VK_NEXT,VK_PRIOR,VK_END,VK_HOME]) then begin
       SendMessage(hg.Handle,WM_KEYDOWN,Key,0);
       Key := 0;
       exit;
