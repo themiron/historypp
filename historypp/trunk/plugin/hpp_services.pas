@@ -214,9 +214,6 @@ end;
 function HppEmptyHistory(wParam{hContact},lParam{0}: DWord): Integer; cdecl;
 var
   wHistory: THistoryFrm;
-  hDbEvent,prevhDbEvent: Integer;
-  PasswordMode: Boolean;
-  Count: Integer;
 begin
   wHistory := FindContactWindow(wParam);
   with TEmptyHistoryFrm.Create(wHistory) do begin
