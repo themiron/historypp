@@ -26,7 +26,7 @@ object fmGlobalSearch: TfmGlobalSearch
     Left = 0
     Top = 0
     Width = 551
-    Height = 498
+    Height = 493
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 2
@@ -34,7 +34,7 @@ object fmGlobalSearch: TfmGlobalSearch
     object spContacts: TTntSplitter
       Left = 157
       Top = 248
-      Height = 194
+      Height = 189
       ResizeStyle = rsUpdate
       Visible = False
     end
@@ -84,7 +84,7 @@ object fmGlobalSearch: TfmGlobalSearch
     end
     object paProgress: THppPanel
       Left = 2
-      Top = 442
+      Top = 437
       Width = 547
       Height = 54
       Align = alBottom
@@ -187,7 +187,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Left = 2
       Top = 248
       Width = 155
-      Height = 194
+      Height = 189
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 2
@@ -196,7 +196,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Left = 0
         Top = 0
         Width = 155
-        Height = 194
+        Height = 189
         Align = alClient
         Columns = <
           item
@@ -221,7 +221,7 @@ object fmGlobalSearch: TfmGlobalSearch
       Left = 160
       Top = 248
       Width = 389
-      Height = 194
+      Height = 189
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 4
@@ -229,7 +229,7 @@ object fmGlobalSearch: TfmGlobalSearch
         Left = 0
         Top = 0
         Width = 389
-        Height = 166
+        Height = 161
         VertScrollBar.Increment = 1
         ShowBottomAligned = False
         ShowBookmarks = True
@@ -256,6 +256,7 @@ object fmGlobalSearch: TfmGlobalSearch
         OnKeyUp = hgKeyUp
         OnInlineKeyDown = hgInlineKeyDown
         OnInlinePopup = hgInlinePopup
+        OnChar = hgChar
         OnState = hgState
         OnSelect = hgSelect
         OnRTLChange = hgRTLEnabled
@@ -276,7 +277,7 @@ object fmGlobalSearch: TfmGlobalSearch
       end
       object paFilter: THppPanel
         Left = 0
-        Top = 166
+        Top = 161
         Width = 389
         Height = 28
         Align = alBottom
@@ -310,6 +311,7 @@ object fmGlobalSearch: TfmGlobalSearch
           TabOrder = 0
           OnChange = edFilterChange
           OnKeyDown = edFilterKeyDown
+          OnKeyPress = edFilterKeyPress
           OnKeyUp = edFilterKeyUp
         end
       end
@@ -682,7 +684,7 @@ object fmGlobalSearch: TfmGlobalSearch
   end
   object sb: TTntStatusBar
     Left = 0
-    Top = 498
+    Top = 493
     Width = 551
     Height = 19
     Panels = <>
