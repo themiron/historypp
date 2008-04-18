@@ -280,6 +280,9 @@ type
     procedure sbEventsCloseClick(Sender: TObject);
     procedure lvContactsDblClick(Sender: TObject);
     procedure SpeakMessage1Click(Sender: TObject);
+    procedure hgChar(Sender: TObject; var Char: WideChar;
+      Shift: TShiftState);
+    procedure edFilterKeyPress(Sender: TObject; var Key: Char);
   private
     UsedPassword: String;
     UserMenu: hMenu;
@@ -700,7 +703,7 @@ procedure TfmGlobalSearch.edFilterKeyUp(Sender: TObject; var Key: Word;
 begin
   if Key = VK_RETURN then begin
     hg.SetFocus;
-    key := 0;
+    Key := 0;
   end;
 end;
 
@@ -2461,6 +2464,30 @@ begin
     mesA := WideToAnsiString(mesW,GetSearchItem(hg.Selected).Contact.Codepage);
     PluginLink.CallService(MS_SPEAK_SAY_A,hContact,LPARAM(PChar(mesA)));
   end;
+end;
+
+procedure TfmGlobalSearch.hgChar(Sender: TObject; var Char: WideChar;
+  Shift: TShiftState);
+var
+  Mes: TWMKey;
+begin
+  edFilter.SetFocus;
+  edFilter.SelStart := Length(edFilter.Text);
+  edFilter.SelLength := 0;
+  //edFilter.Text := Char;
+  Mes.CharCode := Word(Char);
+  Mes.KeyData := ShiftStateToKeyData(Shift);
+  edFilter.Perform(WM_CHAR,TMessage(Mes).WParam,TMessage(Mes).LParam);
+  Char := #0;
+end;
+
+procedure TfmGlobalSearch.edFilterKeyPress(Sender: TObject; var Key: Char);
+begin
+  // to prevent ** BLING ** when press Enter
+  // to prevent ** BLING ** when press Tab
+  // to prevent ** BLING ** when press Esc
+  if Ord(Key) in [VK_RETURN,VK_TAB,VK_ESCAPE] then
+    Key := #0;
 end;
 
 initialization
