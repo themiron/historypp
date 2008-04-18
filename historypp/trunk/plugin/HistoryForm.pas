@@ -2070,6 +2070,7 @@ begin
   if item <> -1 then begin
     hg.Selected := item;
     edSearch.Color := clWindow;
+    ShowNotFound := False;
   end else begin
     edSearch.Color := $008080FF;
     ShowEndOfPage := False;
@@ -2285,7 +2286,8 @@ begin
   tbSessions.Down := (hpSessions in Panel);
   tbBookmarks.Down := (hpBookmarks in Panel);
   hg.BeginUpdate;
-  if Visible then Lock := LockWindowUpdate(Handle);
+  Lock := Visible;
+  if Lock then Lock := LockWindowUpdate(Handle);
   try
     //if (FPanel = hpBookmarks) and paSess.Visible then
     //  paBook.Width := paSess.Width;
@@ -2304,7 +2306,7 @@ begin
     spBook.Top     := paSess.Top + paSess.Height + 1;
 
   finally
-    if Visible and Lock then LockWindowUpdate(0);
+    if Lock then LockWindowUpdate(0);
     hg.EndUpdate;
   end;
 end;
@@ -2358,7 +2360,8 @@ begin
 
   FSearchMode := Value;
 
-  if Visible then Lock := LockWindowUpdate(Handle);
+  Lock := Visible;
+  if Lock then Lock := LockWindowUpdate(Handle);
   try
     tbFilter.Down := (FSearchMode = smFilter);
     tbSearch.Down := (FSearchMode = smSearch);
@@ -2389,7 +2392,7 @@ begin
     if not NotFound then
       edSearch.Text := SaveStr;
   finally
-    if Visible and Lock then LockWindowUpdate(0);
+    if Lock then LockWindowUpdate(0);
   end;
 end;
 

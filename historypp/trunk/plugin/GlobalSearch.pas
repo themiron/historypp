@@ -288,7 +288,7 @@ type
     LastUpdateTime: Cardinal;
     HotString: WideString;
     hHookContactIconChanged: THandle;
-    FContactFilter: Integer;
+    FContactFilter: THandle;
     FFiltered: Boolean;
     IsSearching: Boolean;
     IsBookmarksMode: Boolean;
@@ -371,10 +371,10 @@ type
     procedure AlignControls(Control: TControl; var ARect: TRect); override;
 
     function GetSearchItem(GridIndex: Integer): TSearchItem;
-    function GetContactInfo(hContact: Integer): TContactInfo;
+    function GetContactInfo(hContact: THandle): TContactInfo;
 
     procedure DisableFilter;
-    procedure FilterOnContact(hContact: Integer);
+    procedure FilterOnContact(hContact: THandle);
 
     procedure LoadButtonIcons;
     procedure LoadContactsIcons;
@@ -480,8 +480,8 @@ begin
 end;
 
 procedure TfmGlobalSearch.SMFinished(var M: TMessage);
-var
-  sbt: WideString;
+//var
+//  sbt: WideString;
 begin
   stime := GetTickCount - SearchThread.SearchStart;
   AllContacts := SearchThread.AllContacts;
@@ -527,7 +527,7 @@ begin
 
   FreeMem(Buffer,SizeOf(Buffer^));
 
-  if (lvContacts.Items.Count = 0) or (Integer(lvContacts.Items.Item[lvContacts.Items.Count-1].Data) <> CurContact) then begin
+  if (lvContacts.Items.Count = 0) or (THandle(lvContacts.Items.Item[lvContacts.Items.Count-1].Data) <> CurContact) then begin
     if lvContacts.Items.Count = 0 then begin
       li := lvContacts.Items.Add;
       li.Caption := TranslateWideW('All Results');
@@ -748,13 +748,14 @@ procedure TfmGlobalSearch.ToggleAdvancedPanel(Show: Boolean);
 var
   Lock: Boolean;
 begin
-  if Visible then Lock := LockWindowUpdate(Handle);
+  Lock := Visible;
+  if Lock then Lock := LockWindowUpdate(Handle);
   try
     tbAdvanced.Down := Show;
     paAdvanced.Visible := Show and tbAdvanced.Enabled;
     OrganizePanels;
   finally
-    if Visible and Lock then LockWindowUpdate(0);
+    if Lock then LockWindowUpdate(0);
   end;
 end;
 
@@ -762,7 +763,8 @@ procedure TfmGlobalSearch.TogglePasswordPanel(Show: Boolean);
 var
   Lock: Boolean;
 begin
-  if Visible then Lock := LockWindowUpdate(Handle);
+  Lock := Visible;
+  if Lock then Lock := LockWindowUpdate(Handle);
   try
     if GetPassMode = PASSMODE_PROTALL then Show := True;
     tbPassword.Down := Show;
@@ -770,7 +772,7 @@ begin
     laPassNote.Caption := '';
     OrganizePanels;
   finally
-    if Visible and Lock then LockWindowUpdate(0);
+    if Lock then LockWindowUpdate(0);
   end;
 end;
 
@@ -778,14 +780,15 @@ procedure TfmGlobalSearch.ToggleRangePanel(Show: Boolean);
 var
   Lock: Boolean;
 begin
-  if Visible then Lock := LockWindowUpdate(Handle);
+  Lock := Visible;
+  if Lock then Lock := LockWindowUpdate(Handle);
   try
     tbRange.Down := Show;
     paRange.Visible := Show and tbRange.Enabled;
     edSearchChange(Self);
     OrganizePanels;
   finally
-    if Visible and Lock then LockWindowUpdate(0);
+    if Lock then LockWindowUpdate(0);
   end;
 end;
 
@@ -793,14 +796,15 @@ procedure TfmGlobalSearch.ToggleEventsPanel(Show: Boolean);
 var
   Lock: Boolean;
 begin
-  if Visible then Lock := LockWindowUpdate(Handle);
+  Lock := Visible;
+  if Lock then Lock := LockWindowUpdate(Handle);
   try
     tbEvents.Down := Show;
     paEvents.Visible := Show and tbEvents.Enabled;
     edSearchChange(Self);
     OrganizePanels;
   finally
-    if Visible and Lock then LockWindowUpdate(0);
+    if Lock then LockWindowUpdate(0);
   end;
 end;
 
@@ -902,7 +906,7 @@ begin
   hg.TxtSessions := TranslateWideW(hg.TxtSessions);
 end;
 
-procedure TfmGlobalSearch.FilterOnContact(hContact: Integer);
+procedure TfmGlobalSearch.FilterOnContact(hContact: THandle);
 var
   i: Integer;
 begin
@@ -1412,7 +1416,7 @@ end;
 procedure TfmGlobalSearch.lvContactsSelectItem(Sender: TObject; Item: TListItem;
   Selected: Boolean);
 var
-  hCont: Integer;
+  hCont: THandle;
   //i,Index: Integer;
 begin
   if not Selected then exit;
@@ -1747,7 +1751,7 @@ begin
     Result :=  History[FilterHistory[GridIndex]];
 end;
 
-function TfmGlobalSearch.GetContactInfo(hContact: Integer): TContactInfo;
+function TfmGlobalSearch.GetContactInfo(hContact: THandle): TContactInfo;
 var
   i: Integer;
 begin
@@ -1760,9 +1764,9 @@ begin
 end;
 
 procedure TfmGlobalSearch.HMContactDeleted(var M: TMessage);
-var
-  ci: TContactInfo;
-  i: Integer;
+//var
+  //ci: TContactInfo;
+  //i: Integer;
 begin
   {wParam - hContact; lParam - zero}
   // do here something because the contact is deleted
@@ -1824,7 +1828,7 @@ begin
   if hg.State = gsDelete then exit;
   //if WPARAM(message.wParam) <> hContact then exit;
   for i := 0 to hg.Count - 1 do
-    if GetSearchItem(i).hDBEvent = M.lParam then begin
+    if GetSearchItem(i).hDBEvent = THandle(M.lParam) then begin
       hg.Delete(i);
       hgState(hg,hg.State);
       exit;
@@ -1870,7 +1874,7 @@ var
 begin
   found := false;
   for i := 0 to hg.Count-1 do
-    if GetSearchItem(i).hDBEvent = M.lParam then begin
+    if GetSearchItem(i).hDBEvent = THandle(M.lParam) then begin
       hg.ResetItem(i);
       found := true;
       break;
@@ -2115,7 +2119,7 @@ end;
 procedure TfmGlobalSearch.hgSearchItem(Sender: TObject; Item, ID: Integer;
   var Found: Boolean);
 begin
-  Found := (ID = GetSearchItem(Item).hDBEvent);
+  Found := (THandle(ID) = GetSearchItem(Item).hDBEvent);
 end;
 
 procedure TfmGlobalSearch.hgSelect(Sender: TObject; Item, OldItem: Integer);
