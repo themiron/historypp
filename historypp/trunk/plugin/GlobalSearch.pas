@@ -2469,12 +2469,14 @@ end;
 procedure TfmGlobalSearch.hgChar(Sender: TObject; var Char: WideChar;
   Shift: TShiftState);
 var
-  Mes: TWMKey;
+  Mes: TWMChar;
 begin
   edFilter.SetFocus;
   edFilter.SelStart := Length(edFilter.Text);
   edFilter.SelLength := 0;
   //edFilter.Text := Char;
+  ZeroMemory(@Mes,SizeOf(Mes));
+  Mes.Msg := WM_CHAR;
   Mes.CharCode := Word(Char);
   Mes.KeyData := ShiftStateToKeyData(Shift);
   edFilter.Perform(WM_CHAR,TMessage(Mes).WParam,TMessage(Mes).LParam);
