@@ -1670,13 +1670,15 @@ end;
 
 procedure THistoryFrm.hgChar(Sender: TObject; var Char: WideChar; Shift: TShiftState);
 var
-  Mes: TWMKey;
+  Mes: TWMChar;
 begin
   if SearchMode = smNone then SearchMode := smSearch;
   edSearch.SetFocus;
   edSearch.SelStart := Length(edSearch.Text);
   edSearch.SelLength := 0;
   //edSearch.Text := Char;
+  ZeroMemory(@Mes,SizeOf(Mes));
+  Mes.Msg := WM_CHAR;
   Mes.CharCode := Word(Char);
   Mes.KeyData := ShiftStateToKeyData(Shift);
   edSearch.Perform(WM_CHAR,TMessage(Mes).WParam,TMessage(Mes).LParam);
