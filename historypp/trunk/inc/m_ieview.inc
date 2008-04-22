@@ -38,6 +38,7 @@ const
 
 //* IEView window type/mode */
   IEWM_TABSRMM        = 1;          // TabSRMM-compatible HTML builder
+  IEWM_HTML           = 2;          // HTML
   IEWM_SCRIVER        = 3;          // Scriver-compatible HTML builder
   IEWM_MUCC           = 4;          // MUCC group chats GUI
   IEWM_CHAT           = 5;          // chat.dll group chats GUI
@@ -62,11 +63,12 @@ type
 
 const
 
-  IEEDF_UNICODE       = 1;          // if set pszText is a pointer to wchar_t string instead of char string
-  IEEDF_UNICODE_TEXT  = 1;          // if set pszText is a pointer to wchar_t string instead of char string
-  IEEDF_UNICODE_NICK  = 2;          // if set pszNick is a pointer to wchar_t string instead of char string
-  IEEDF_UNICODE_TEXT2 = 4;          // if set pszText2 is a pointer to wchar_t string instead of char string
-                                    //* The following flags are valid only for message events (IEED_EVENT_MESSAGE) */
+  IEEDF_UNICODE       = $00000001;  // if set pszText is a pointer to wchar_t string instead of char string
+  IEEDF_UNICODE_TEXT  = $00000001;  // if set pszText is a pointer to wchar_t string instead of char string
+  IEEDF_UNICODE_NICK  = $00000002;  // if set pszNick is a pointer to wchar_t string instead of char string
+  IEEDF_UNICODE_TEXT2 = $00000004;  // if set pszText2 is a pointer to wchar_t string instead of char string
+
+//* The following flags are valid only for message events (IEED_EVENT_MESSAGE) */
   IEEDF_FORMAT_FONT   = $00000100;  // if set pszFont (font name) is valid and should be used
   IEEDF_FORMAT_SIZE   = $00000200;  // if set fontSize is valid and should be used
   IEEDF_FORMAT_COLOR  = $00000400;  // if set color is valid and should be used
@@ -89,6 +91,14 @@ const
   IEED_MUCC_EVENT_LEFT    = $0004;  // user left
   IEED_MUCC_EVENT_ERROR   = $0005;  // error
 
+//* MUCC-related dwData bit flags */
+  IEEDD_MUCC_SHOW_NICK       = $00000001;
+  IEEDD_MUCC_MSG_ON_NEW_LINE = $00000002;
+  IEEDD_MUCC_SHOW_DATE       = $00000010;
+  IEEDD_MUCC_SHOW_TIME       = $00000020;
+  IEEDD_MUCC_SECONDS         = $00000040;
+  IEEDD_MUCC_LONG_DATE       = $00000080;
+
   IEED_GC_EVENT_HIGHLIGHT    = $8000;
   IEED_GC_EVENT_MESSAGE      = $0001;
   IEED_GC_EVENT_TOPIC        = $0002;
@@ -102,6 +112,12 @@ const
   IEED_GC_EVENT_INFORMATION  = $000B;
   IEED_GC_EVENT_ADDSTATUS    = $000C;
   IEED_GC_EVENT_REMOVESTATUS = $000D;
+
+//* GC-related dwData bit flags */
+  IEEDD_GC_SHOW_NICK       = $00000001;
+  IEEDD_GC_SHOW_TIME       = $00000002;
+  IEEDD_GC_SHOW_ICON       = $00000004;
+  IEEDD_GC_MSG_ON_NEW_LINE = $00001000;
 
   IE_FONT_BOLD      = $000100;      // Bold font flag
   IE_FONT_ITALIC    = $000200;      // Italic font flag
@@ -186,8 +202,8 @@ type
 
 const
 
-  IEN_NAVIGATE          = 1;        // navigate to the given destination
-  IENF_UNICODE         = 1;        // if set urlW is used instead of urlW
+  IEN_NAVIGATE = 1;        // navigate to the given destination
+  IENF_UNICODE = 1;        // if set urlW is used instead of urlW
 
 type
 
@@ -201,4 +217,3 @@ type
   end;
 
 {$ENDIF}
-
