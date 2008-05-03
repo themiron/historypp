@@ -1,0 +1,4 @@
+;; Text found in ..\plugin\historypp.pas:
+History++ module could not be loaded, richedit 2.0+ module is missing.\nPress OK to continue loading Miranda.
+Global History Search
+History
