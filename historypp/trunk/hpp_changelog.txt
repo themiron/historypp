@@ -9,112 +9,150 @@ Changelog
 
 SVN Changelog: https://opensvn.csie.org/traccgi/historypp/log/?verbose=on
 
+1.5.1.1
+
++ Added animated smileys support (yeah, baby!)
++ Added smileys tooltip support
++ Added service and context menu item to empty contact and system history
++ Added module specific event description support
++ Added Find-as-you-type feature to History Search form
++ Added support of user's mouse settings (number of lines to scroll, etc)
++ Added mouse wheel scroll acceleration
++ Added "NoLogScrollBar" db setting (type:byte) to disable log vertical scrollbar
++ Added [size=xx][/size], [img][/img] bbcodes support
++ Added preliminary speaking support with winter speak, speak and meSpeak plugins
++ Added ability to use the newest richedit version from system available
+- Fixed applying options chaging
+- Fixed Delphi compiler error with disbaled "Assignable typed constants"
+- Fixes and optimizations to reduce compiler warring messages
+- Fixed special chars processing typed on history grid
+- Fixed old 1.4.3.å smileyadd issues
+- Fixed and optimized bbcodes parsing/stripping
+- Fixed crash of history with bookmarks on erasing from menu
+- Fixed context menu showing on pre-WinXP OS
+- Finally fixed issues with hints shadow under WinXP+
+- Fixed wrong event position on show in system history window
+- Fixed themed group & check boxes, radiobuttons painting
+- Fixed prev/next event navigation if there's another selected event in history form
+- Fixed save button wasn't disabled on empty filter selection
+- Fixed default format templates
+- Fixed close possible active ole objects on pseudo-edit mode cancel
+! Made color of selected link equal to selected text
+! Reworked rtf richedit render
+! Separated HistoryGrid component sources to D6, D7, D9 and BDS4 packages
+! Optimized history events painting
+! Optimized css font template
+! Improved support of MetaContacts
+! Improved utf8 support in message events
+! Massive code cleaning
+! Translation changed
+
 1.5.0.117
 
-Added SRMM dialog open on contact double-click in history search window
-Added url opening by middle-click in log/history/search windows
-Added EDIT control emulation to allow getting selected text from log/history
-Added ability to read module-specified database event types
-Added internal support for utf8 non-message events
-Improved short messages reading
-Redesigned options dialog
-Fixed * char in export filename
-Fixed tool buttons definitions
-Translation changes
++ Added SRMM dialog open on contact double-click in history search window
++ Added url opening by middle-click in log/history/search windows
++ Added EDIT control emulation to allow getting selected text from log/history
++ Added ability to read module-specified database event types
++ Added internal support for utf8 non-message events
+! Improved short messages reading
+! Redesigned options dialog
+- Fixed * char in export filename
+- Fixed tool buttons definitions
+! Translation changes
 
 1.5.0.116
 
 + Added workaround to avoid crashed with ANSI core
 + Added ESC key reflection to question dialogs
-+ Fixed crashes on empty history selection attempt
-+ Fixed showing (Unknown contact) instead of owner's nick in message log
-+ Fixed Ctrl+C, Del, Ctrl+S shortcuts greedy behavior in history and global search
+- Fixed crashes on empty history selection attempt
+- Fixed showing (Unknown contact) instead of owner's nick in message log
+- Fixed Ctrl+C, Del, Ctrl+S shortcuts greedy behavior in history and global search
 
 1.5.0.115
 
-Added ability to search history by message types
-Added ability to open file folder & received files folder from context menu
-Added ability to read UTF8 messages from 0.7.xx profile
-Added ability to read messages with MS_DB_EVENT_GETTEXT service
-Added ability to select all messages with Ctrl+A combo
-Added grid smooth scrolling by Ctrl+Up/Down combo
-Added Copy, Delete and Save tool buttons to history search form
-Added "Save selected" item to history search form context menu
-Added profile/contact nicks instant tracking
-Added smileypack changing on meta's subcontact switching
-Added ICQEVENTTYPE_IGNORECHECK_STATUS event support (from IcqOscarJ Plus Mod)
-Added ICQEVENTTYPE_CLIENT_CHANGE event support (from IcqOscarJ Plus Mod)
-Added ICQEVENTTYPE_CHECK_STATUS event support (from IcqOscarJ Plus Mod)
-Added UI to set custom event types
-Added WebPager and Email Express events customization
-Added ansi/unicode OS reflection in verison info
-Made HistoryPlusPlus module as known in dbeditor++
-Improved session loading
-Changed bookmark shortcut key to F9
-Enabled END and HOME buttons in search/filter edit field
-Reintroduced save button functionality in history window
-Mass improvements of customize filter form drawing
-Disabled grouping for bookmarked log events
-Hide hide toolbar completely if toolbar string is empty
-Fixed possible deadlocks on history close
-Fixed grid scrolling on event added in pseudo-edit mode
-Fixed export with multiple profile/contact names from history search form
-Fixed incorrect tool button hints in history search
-Fixed opening history search form as top-most window
-Fixed drawing glitches for buttons and check boxes
-Fixed blinking while switching from edits by tab key
-Fixed SMS, WebPager and Email Express events was treated as other
-Fixed unicode loss of history search substing while saving/reading
-Plugin API optimization
-Mass code cleanup
-Translation changes
-Other changes and fixes i don't remember
++ Added ability to search history by message types
++ Added ability to open file folder & received files folder from context menu
++ Added ability to read UTF8 messages from 0.7.xx profile
++ Added ability to read messages with MS_DB_EVENT_GETTEXT service
++ Added ability to select all messages with Ctrl+A combo
++ Added grid smooth scrolling by Ctrl+Up/Down combo
++ Added Copy, Delete and Save tool buttons to history search form
++ Added "Save selected" item to history search form context menu
++ Added profile/contact nicks instant tracking
++ Added smileypack changing on meta's subcontact switching
++ Added ICQEVENTTYPE_IGNORECHECK_STATUS event support (from IcqOscarJ Plus Mod)
++ Added ICQEVENTTYPE_CLIENT_CHANGE event support (from IcqOscarJ Plus Mod)
++ Added ICQEVENTTYPE_CHECK_STATUS event support (from IcqOscarJ Plus Mod)
++ Added UI to set custom event types
++ Added WebPager and Email Express events customization
++ Added ansi/unicode OS reflection in verison info
+! Made HistoryPlusPlus module as known in dbeditor++
+! Improved session loading
+! Changed bookmark shortcut key to F9
+! Enabled END and HOME buttons in search/filter edit field
+! Reintroduced save button functionality in history window
+! Mass improvements of customize filter form drawing
+! Disabled grouping for bookmarked log events
+! Hide hide toolbar completely if toolbar string is empty
+- Fixed possible deadlocks on history close
+- Fixed grid scrolling on event added in pseudo-edit mode
+- Fixed export with multiple profile/contact names from history search form
+- Fixed incorrect tool button hints in history search
+- Fixed opening history search form as top-most window
+- Fixed drawing glitches for buttons and check boxes
+- Fixed blinking while switching from edits by tab key
+- Fixed SMS, WebPager and Email Express events was treated as other
+- Fixed unicode loss of history search substing while saving/reading
+! Plugin API optimization
+! Mass code cleanup
+! Translation changes
+! Other changes and fixes i don't remember
 
 1.5.0.114
 
-Added UUID {B92282AC-686B-4541-A12D-6E9971A253B7} for 0.8.x.x compability
-Added UIHISTORY interface
-Added minimal miranda version 0.4.0.0 checking
-Added "NoLogBorder" db setting (type:byte) to disable log border
-Fixed exception on multiple "Show bookmarks" button toggling
-Fixed inverse order of exported messages from external log
-Fixed unicode latin-1 chars dependence from font charset
-Optimized plugin loading
++ Added UUID {B92282AC-686B-4541-A12D-6E9971A253B7} for 0.8.x.x compability
++ Added UIHISTORY interface
++ Added minimal miranda version 0.4.0.0 checking
++ Added "NoLogBorder" db setting (type:byte) to disable log border
++ Fixed exception on multiple "Show bookmarks" button toggling
+- Fixed inverse order of exported messages from external log
+- Fixed unicode latin-1 chars dependence from font charset
+! Optimized plugin loading
 
 1.5.0.113
 
-Added ability to set external log filter from context menu
-Added ability to save selected history from external log
-Added full list of bookmarks in global search window
-Added alpha build timestamp into plugin version info
-Added ability to display unknown codepages
-Added direction icon in event details form
-Added own icons for third-party supported events (Iconpack updated)
-Added icon pack checking
-Added FormatReplyQuotedText and FormatSelection templates customization
-Added ability to disable icon pack old/not found messages
-Added ability to log memory events (see IEVIEWEVENTDATA) to external log
-Introduced toolbar with whole dropdown buttons
-Redesigned conversation and bookmarks panels
-Reworked hint showing/hiding
-Moved main option page to Options/History. The old History++ entry is now gone
-Moved main icolib icons into the root History++ item
-Made forms doublebuffered to avoid flicking and speedup painting
-Improoved database reading in case of malformed/broken profile
-Fixed access violation crash on empty string copy to clipboard attempt
-Fixed crash if grid is shown while destroying
-Fixed non-message events with urls threated as url events
-Fixed error on filtered events delete in history search
-Fixed selected message state paint in pseudo-edit mode
-Fixed wrong prev/next item calculation in event details form after filter reapplying
-Fixed alpha-blending of "History Action" button icon
-Fixed negative windows postition saving/restoring
-Fixed contact submenu icons weren't drawn
-Fixed several visual unicode issues
-Fixed forms flicking on resize
-Reduced GDI objects usage
-Translation changes
-Other changes and fixes i don't remember
++ Added ability to set external log filter from context menu
++ Added ability to save selected history from external log
++ Added full list of bookmarks in global search window
++ Added alpha build timestamp into plugin version info
++ Added ability to display unknown codepages
++ Added direction icon in event details form
++ Added own icons for third-party supported events (Iconpack updated)
++ Added icon pack checking
++ Added FormatReplyQuotedText and FormatSelection templates customization
++ Added ability to disable icon pack old/not found messages
++ Added ability to log memory events (see IEVIEWEVENTDATA) to external log
+! Introduced toolbar with whole dropdown buttons
+! Redesigned conversation and bookmarks panels
+! Reworked hint showing/hiding
+! Moved main option page to Options/History. The old History++ entry is now gone
+! Moved main icolib icons into the root History++ item
+- Made forms doublebuffered to avoid flicking and speedup painting
+! Improoved database reading in case of malformed/broken profile
+- Fixed access violation crash on empty string copy to clipboard attempt
+- Fixed crash if grid is shown while destroying
+- Fixed non-message events with urls threated as url events
+- Fixed error on filtered events delete in history search
+- Fixed selected message state paint in pseudo-edit mode
+- Fixed wrong prev/next item calculation in event details form after filter reapplying
+- Fixed alpha-blending of "History Action" button icon
+- Fixed negative windows postition saving/restoring
+- Fixed contact submenu icons weren't drawn
+- Fixed several visual unicode issues
+- Fixed forms flicking on resize
+- Reduced GDI objects usage
+! Translation changes
+! Other changes and fixes i don't remember
 
 1.5.0.112 HappyNewYear build
 
