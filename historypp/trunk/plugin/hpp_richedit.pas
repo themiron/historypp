@@ -47,6 +47,8 @@ unit hpp_richedit;
 
 interface
 
+{.$DEFINE AllowMSFTEDIT}
+
 uses
   Windows, Messages, Classes, RichEdit, ActiveX,
   Controls, StdCtrls, ComCtrls, Forms,
@@ -1163,6 +1165,7 @@ begin
       if FRichEditModule <= HINSTANCE_ERROR then FRichEditModule := 0;
       if FRichEditModule <> 0 then
         FRichEditVersion := GetModuleVersionFile(FRichEditModule);
+      {$IFDEF AllowMSFTEDIT}
       repeat
         if FRichEditVersion > 40 then break;
         hModule := LoadLibrary(MSFTEDIT_DLL);
@@ -1177,9 +1180,10 @@ begin
           end;
           FreeLibrary(hModule);
         end;
-        if (FRichEditModule <> 0) and (FRichEditVersion = 0) then
-          FRichEditVersion := 20;
       until True;
+      {$ENDIF}
+      if (FRichEditModule <> 0) and (FRichEditVersion = 0) then
+        FRichEditVersion := 20;
     finally
       SetErrorMode(emError);
     end;
