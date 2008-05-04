@@ -30,7 +30,7 @@ const
   MS_HPP_EG_WINDOW         = 'History++/ExtGrid/NewWindow';
   MS_HPP_EG_EVENT	         = 'History++/ExtGrid/Event';
   MS_HPP_EG_NAVIGATE       = 'History++/ExtGrid/Navigate';
-  MS_HPP_EG_OPTIONSCHANGED = 'History++/ExtGrid/OptionsChanged';
+  ME_HPP_EG_OPTIONSCHANGED = 'History++/ExtGrid/OptionsChanged';
 
 var
   hExtWindowIE, hExtEventIE, hExtNavigateIE, hExtOptChangedIE: THandle;
@@ -38,8 +38,8 @@ var
   ImitateIEView: boolean;
   ExternalGrids: array of TExternalGrid;
 
-function FindExtGridByHandle(var Handle: HWND): TExternalGrid;
-function DeleteExtGridByHandle(var Handle: HWND): Boolean;
+function FindExtGridByHandle(var Handle: HWND; GridMode: TExGridMode): TExternalGrid;
+function DeleteExtGridByHandle(var Handle: HWND; GridMode: TExGridMode): Boolean;
 function DeleteExtGrids: Boolean;
 
 procedure RegisterExtGridServices;
@@ -90,13 +90,13 @@ begin
         {$IFDEF DEBUG}
         OutputDebugString('IEW_DESTROY');
         {$ENDIF}
-        DeleteExtGridByHandle(par.Hwnd);
+        DeleteExtGridByHandle(par.Hwnd,GridMode);
       end;
       IEW_SETPOS: begin
         {$IFDEF DEBUG}
         OutputDebugString('IEW_SETPOS');
         {$ENDIF}
-        ExtGrid := FindExtGridByHandle(par.Hwnd);
+        ExtGrid := FindExtGridByHandle(par.Hwnd,GridMode);
         if ExtGrid <> nil then
           ExtGrid.SetPosition(par.x,par.y,par.cx,par.cy);
       end;
@@ -104,7 +104,7 @@ begin
         {$IFDEF DEBUG}
         OutputDebugString('IEW_SCROLLBOTTOM');
         {$ENDIF}
-        ExtGrid := FindExtGridByHandle(par.Hwnd);
+        ExtGrid := FindExtGridByHandle(par.Hwnd,GridMode);
         if ExtGrid <> nil then
           ExtGrid.ScrollToBottom;
       end;
@@ -123,7 +123,7 @@ begin
   Result := _ExtWindow(wParam,lParam,gmIEView);
 end;
 
-function ExtEvent(wParam, lParam: DWord): Integer; cdecl;
+function _ExtEvent(wParam, lParam: DWord; GridMode: TExGridMode): Integer; cdecl;
 var
   event: PIEVIEWEVENT;
   customEvent: PIEVIEWEVENTDATA;
@@ -139,13 +139,12 @@ begin
     OutputDebugString('MS_IEVIEW_EVENT');
     {$ENDIF}
     event := PIEVIEWEVENT(lParam);
-    ExtGrid := FindExtGridByHandle(event.Hwnd);
+    ExtGrid := FindExtGridByHandle(event.Hwnd,GridMode);
     if ExtGrid = nil then exit;
     case event.iType of
       IEE_LOG_DB_EVENTS: begin
         if event.cbSize >= IEVIEWEVENT_SIZE_V2 then
-          UsedCodepage := event.Codepage
-        else
+          UsedCodepage := event.Codepage else
           UsedCodepage := CP_ACP;
         eventCount := event.Count;
         hDBNext := event.data.hDBEventFirst;
@@ -162,8 +161,7 @@ begin
       end;
       IEE_LOG_MEM_EVENTS: begin
         if event.cbSize >= IEVIEWEVENT_SIZE_V2 then
-          UsedCodepage := event.Codepage
-        else
+          UsedCodepage := event.Codepage else
           UsedCodepage := CP_ACP;
         eventCount := event.Count;
         customEvent := event.data.eventData;
@@ -195,9 +193,22 @@ begin
       IEE_GET_SELECTION: begin
         Result := integer(ExtGrid.GetSelection(boolean(event.dwFlags and IEEF_NO_UNICODE)));
       end;
+      IEE_SAVE_DOCUMENT: begin
+        Result := integer(True);
+      end;
     end;
   except
   end;
+end;
+
+function ExtEventNative(wParam, lParam: DWord): Integer; cdecl;
+begin
+  Result := _ExtEvent(wParam,lParam,gmNative);
+end;
+
+function ExtEventIEView(wParam, lParam: DWord): Integer; cdecl;
+begin
+  Result := _ExtEvent(wParam,lParam,gmIEView);
 end;
 
 function ExtNavigate(wParam, lParam: DWord): Integer; cdecl;
@@ -216,14 +227,14 @@ begin
   ImitateIEView := GetDBBool(hppDBName,'IEViewAPI',false);
   if ImitateIEView then begin
     hExtWindowIE := PluginLink.CreateServiceFunction(MS_IEVIEW_WINDOW,ExtWindowIEView);
-    hExtEventIE := PluginLink.CreateServiceFunction(MS_IEVIEW_EVENT,ExtEvent);
+    hExtEventIE := PluginLink.CreateServiceFunction(MS_IEVIEW_EVENT,ExtEventIEView);
     hExtNavigateIE := PluginLink.CreateServiceFunction(MS_IEVIEW_NAVIGATE,ExtNavigate);
     hExtOptChangedIE := PluginLink.CreateHookableEvent(ME_IEVIEW_OPTIONSCHANGED);
   end;
   hExtWindow := PluginLink.CreateServiceFunction(MS_HPP_EG_WINDOW,ExtWindowNative);
-  hExtEvent := PluginLink.CreateServiceFunction(MS_HPP_EG_EVENT,ExtEvent);
+  hExtEvent := PluginLink.CreateServiceFunction(MS_HPP_EG_EVENT,ExtEventNative);
   hExtNavigate := PluginLink.CreateServiceFunction(MS_HPP_EG_NAVIGATE,ExtNavigate);
-  hExtOptChanged := PluginLink.CreateHookableEvent(MS_HPP_EG_OPTIONSCHANGED);
+  hExtOptChanged := PluginLink.CreateHookableEvent(ME_HPP_EG_OPTIONSCHANGED);
 end;
 
 procedure UnregisterExtGridServices;
@@ -241,38 +252,46 @@ begin
   DeleteExtGrids;
 end;
 
-function FindExtGridByHandle(var Handle: HWND): TExternalGrid;
+function FindExtGridByHandle(var Handle: HWND; GridMode: TExGridMode): TExternalGrid;
 var
   i: Integer;
 begin
   Result := nil;
   for i := 0 to Length(ExternalGrids) - 1 do begin
-    if ExternalGrids[i].GridHandle = Handle then begin
+    if (ExternalGrids[i].GridHandle = Handle) and
+       (ExternalGrids[i].GridMode = GridMode) then begin
       Result := ExternalGrids[i];
       break;
     end;
   end;
 end;
 
-function DeleteExtGridByHandle(var Handle: HWND): Boolean;
+function DeleteExtGridByHandle(var Handle: HWND; GridMode: TExGridMode): Boolean;
 var
-  i,n: Integer;
+  i,found,last: Integer;
 begin
-  Result := False;
-  n := -1;
-  for i := 0 to Length(ExternalGrids) - 1 do begin
-    if ExternalGrids[i].GridHandle = Handle then begin
-      n := i;
+  Result := True;
+  found := -1;
+  last := High(ExternalGrids);
+  for i := 0 to last do begin
+    if (ExternalGrids[i].GridHandle = Handle) and
+       (ExternalGrids[i].GridMode = GridMode) then begin
+      try
+        ExternalGrids[i].Free;
+      except
+        Result := False;
+      end;
+      ExternalGrids[i] := nil;
+      found := i;
       break;
     end;
   end;
-  if n = -1 then exit;
-  ExternalGrids[n].Free;
-  for i := n to Length(ExternalGrids) - 2 do begin
-    ExternalGrids[i] := ExternalGrids[i+1];
+  if found > 0 then begin
+    for i := found to last-1 do
+      ExternalGrids[i] := ExternalGrids[i+1];
+    ExternalGrids[last] := nil;
+    SetLength(ExternalGrids,last);
   end;
-  SetLength(ExternalGrids,Length(ExternalGrids)-1);
-  Result := True;
 end;
 
 function DeleteExtGrids: Boolean;
@@ -280,12 +299,15 @@ var
   i: Integer;
 begin
   Result := True;
-  try
-    for i := 0 to Length(ExternalGrids) - 1 do
+  for i := 0 to High(ExternalGrids) do begin
+    try
       ExternalGrids[i].Free;
-  except
-    Result := False;
+    except
+      Result := False;
+    end;
+    ExternalGrids[i] := nil;
   end;
+  SetLength(ExternalGrids,0);
 end;
 
 
