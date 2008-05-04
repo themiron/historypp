@@ -156,7 +156,7 @@ set DCUDIR="tmp"
 : Q  Integer overflow checking
 : R- Range checking (NEED OFF?)
 : Y  Symbol reference info
-set COMPDIR=-$A4 -$D+ -$J+ -$L+ -$O+ -$Q+ -$R- -$Y+ -$W+
+set COMPDIR=-$A4 -$D+ -$J+ -$L+ -$O+ -$Q+ -$R- -$Y+ -$W+ -$C+
 if not "%ALPHA%"=="" set COMPDIR=%COMPDIR% -DALPHA
 if not "%NO_EG%"=="" set COMPDIR=%COMPDIR% -DNO_EXTERNALGRID
 
