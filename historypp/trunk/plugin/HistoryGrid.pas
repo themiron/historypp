@@ -5952,11 +5952,11 @@ var
   i: Integer;
   item: PRichItem;
 begin
-  Assert(Index < Length(Items));
   if Index = 0 then exit;
+  Assert(Index < Length(Items));
   item := Items[Index];
-  //for i := Index downto 1 do Items[i] := Items[i-1];
-  Move(Items[0],Items[1],Index*SizeOf(Items[0]));
+  for i := Index downto 1 do Items[i] := Items[i-1];
+  //Move(Items[0],Items[1],Index*SizeOf(Items[0]));
   Items[0] := item;
 end;
 
@@ -6025,8 +6025,8 @@ begin
     Result.Height := FRichHeight;
     Result.Rich.Height := FRichHeight;
     Result.BitmapDrawn := False;
+    MoveToTop(idx);
   end;
-  MoveToTop(idx);
 end;
 
 procedure TRichCache.ResetAllItems;
