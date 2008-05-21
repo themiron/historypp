@@ -266,8 +266,10 @@ begin
       TranslateWideW('Note: It can take several minutes for large histories');
   end;
   btYes.Visible := not FPasswordMode;
+  btYes.Default := not FPasswordMode;
   btNo.Visible := not FPasswordMode;
   btCancel.Visible := FPasswordMode;
+  btCancel.Default := FPasswordMode;
 end;
 
 procedure TEmptyHistoryFrm.EmptyHistory(hContact: THandle);

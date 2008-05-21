@@ -77,9 +77,9 @@ object EmptyHistoryFrm: TEmptyHistoryFrm
       Height = 25
       Cancel = True
       Caption = 'Cancel'
+      Default = True
       ModalResult = 2
       TabOrder = 2
-      OnClick = btYesClick
     end
   end
   object paContacts: THppPanel
