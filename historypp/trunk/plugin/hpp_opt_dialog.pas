@@ -175,8 +175,7 @@ begin
   Checked := GetChecked(IDC_GROUPLOGITEMS);
   if Checked <> GetDBBool(hppDBName,'GroupLogItems',false) then begin
     WriteDBBool(hppDBName,'GroupLogItems',Checked);
-    for i := 0 to Length(ExternalGrids)-1 do
-      ExternalGrids[i].GroupLinked := Checked;
+    ExternalGrids.GroupLinked := Checked;
   end;
 
   Checked := GetChecked(IDC_IEVIEWAPI);

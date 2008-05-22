@@ -232,8 +232,7 @@ begin
   // close themselves on the message, so we would have AVs if go from 0 to Count
 
   {$IFNDEF NO_EXTERNALGRID}
-  for i := Length(ExternalGrids)-1 downto 0 do
-    ExternalGrids[i].Perform(Msg,wParam,lParam);
+  ExternalGrids.Perform(Msg,wParam,lParam);
   {$ENDIF}
 
   for i := HstWindowList.Count - 1 downto 0 do begin
