@@ -56,6 +56,7 @@ type
     Items: array of TExtItem;
     Grid: THistoryGrid;
     FParentWindow: HWND;
+    FGridHandle: HWND;
     FSelection: Pointer;
     SavedLinkUrl: String;
     SavedFileDir: String;
@@ -227,6 +228,7 @@ constructor TExternalGrid.Create(AParentWindow: HWND; ControlID: Cardinal = 0);
 
 begin
   FParentWindow := AParentWindow;
+  FGridHandle := 0;
   WasKeyPressed := False;
   FGridMode := gmNative;
   FUseHistoryRTLMode := False;
@@ -357,7 +359,9 @@ end;
 
 function TExternalGrid.GetGridHandle: HWND;
 begin
-  Result := Grid.Handle;
+  if FGridHandle = 0 then
+    FGridHandle := Grid.Handle;
+  Result := FGridHandle;
 end;
 
 procedure TExternalGrid.BeginUpdate;
