@@ -358,8 +358,8 @@ type
     function GetItemRich(GridItem: Integer): THPPRichEdit;
     function GetItemRichBitmap(GridItem: Integer): TBitmap;
     function GetItemByHandle(Handle: THandle): PRichItem;
-    function LockItem(Item: PRichItem; SaveRect: TRect): PLockedItem;
-    function UnlockItem(LockedItem: PLockedItem): TRect;
+    function LockItem(Item: PRichItem; SaveRect: TRect): Integer;
+    function UnlockItem(Item: Integer): TRect;
   end;
 
   TGridUpdate = (guSize, guAllocate, guFilter, guOptions);
@@ -3694,13 +3694,13 @@ begin
             nmh.hDC := RichItem.Bitmap.Canvas.Handle;
             nmh.clrBackground := RichItem.Bitmap.TransparentColor;
             nmh.fTransparent := False;
-            nmh.lParam := LPARAM(FRichCache.LockItem(RichItem,smRect));
+            nmh.lParam := FRichCache.LockItem(RichItem,smRect);
           end;
         end;
       end;
     end else
     if (nmh.bEvent = FVCN_POSTFIRE) and (nmh.bAction = FVCA_CUSTOMDRAW) then begin
-      smRect := FRichCache.UnlockItem(PLockedItem(nmh.lParam));
+      smRect := FRichCache.UnlockItem(nmh.lParam);
       IntersectRect(smRect,smRect,ClipRect);
       if not IsRectEmpty(smRect) then
         InvalidateRect(Handle,@smRect,False);
@@ -5917,10 +5917,11 @@ begin
     end;
 end;
 
-function TRichCache.LockItem(Item: PRichItem; SaveRect: TRect): PLockedItem;
+function TRichCache.LockItem(Item: PRichItem; SaveRect: TRect): Integer;
 var
   LockedItem: PLockedItem;
 begin
+  Result := -1;
   Assert(Item <> nil);
   try
     New(LockedItem);
@@ -5931,20 +5932,23 @@ begin
     Item.Bitmap.Canvas.Lock;
     LockedItem.RichItem := Item;
     LockedItem.SaveRect := SaveRect;
-    FLockedList.Add(LockedItem);
+    Result := FLockedList.Add(LockedItem);
   end;
-  Result := LockedItem;
 end;
 
-function TRichCache.UnlockItem(LockedItem: PLockedItem): TRect;
+function TRichCache.UnlockItem(Item: Integer): TRect;
+var
+  LockedItem: PLockedItem;
 begin
   Result := Rect(0,0,0,0);
+  if Item = -1 then exit;
+  LockedItem := FLockedList.Items[Item];
   if not Assigned(LockedItem) then exit;
-  if not Assigned(LockedItem.RichItem) then exit;
-  LockedItem.RichItem.Bitmap.Canvas.Unlock;
-  FLockedList.Remove(LockedItem);
+  if Assigned(LockedItem.RichItem) then
+    LockedItem.RichItem.Bitmap.Canvas.Unlock;
   Result := LockedItem.SaveRect;
   Dispose(LockedItem);
+  FLockedList.Delete(Item);
 end;
 
 procedure TRichCache.MoveToTop(Index: Integer);
