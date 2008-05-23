@@ -1151,10 +1151,14 @@ end;
 function InitRichEditLibrary: Integer;
 const
   RICHED20_DLL = 'RICHED20.DLL';
+  {$IFDEF AllowMSFTEDIT}
   MSFTEDIT_DLL = 'MSFTEDIT.DLL';
+  {$ENDIF}
 var
+  {$IFDEF AllowMSFTEDIT}
   hModule : THandle;
   hVersion: Integer;
+  {$ENDIF}
   emError : DWord;
 begin
   if FRichEditModule = 0 then begin
@@ -1508,8 +1512,10 @@ begin
   Method.Data := Self;
   InheritedCreateParams(Method)(Params);
   if FVersion >= 20 then begin
+    {$IFDEF AllowMSFTEDIT}
     if FVersion = 41 then
       CreateSubClass(Params, MSFTEDIT_CLASS) else
+    {$ENDIF}
       CreateSubClass(Params, RICHEDIT_CLASS20A);
   end;
   with Params do begin
@@ -1518,15 +1524,18 @@ begin
              aHideSelections[HideSelection] and
              not aWordWrap[WordWrap]; // more compatible with RichEdit 1.0
     // Fix for repaint richedit in event details form
-    WindowClass.style := WindowClass.style and (CS_HREDRAW or CS_VREDRAW);
+    // used if class inherits from TCustomRichEdit
+    //WindowClass.style := WindowClass.style or (CS_HREDRAW or CS_VREDRAW);
   end;
 end;
 
 procedure THppRichedit.CreateWindowHandle(const Params: TCreateParams);
 begin
   if Win32PlatformIsUnicode and (FVersion >= 20) then begin
+    {$IFDEF AllowMSFTEDIT}
     if FVersion = 41 then
       CreateUnicodeHandle(Self, Params, MSFTEDIT_CLASS) else
+    {$ENDIF}
       CreateUnicodeHandle(Self, Params, RICHEDIT_CLASS20W);
   end else inherited;
   FUnicodeAPI := IsWindowUnicode(Handle);
@@ -1538,10 +1547,16 @@ const
   SES_EXTENDBACKCOLOR     = 4;
 begin
   inherited;
-  SendMessage(Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
-  SendMessage(Handle,EM_SETEDITSTYLE,SES_EXTENDBACKCOLOR,SES_EXTENDBACKCOLOR);
-  SendMessage(Handle,EM_AUTOURLDETECT,1,0);
-  SendMessage(Handle,EM_SETEVENTMASK,0,SendMessage(Handle,EM_GETEVENTMASK,0,0) or ENM_LINK);
+  //SendMessage(Handle,EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
+  Perform(EM_SETMARGINS,EC_LEFTMARGIN or EC_RIGHTMARGIN,0);
+  //SendMessage(Handle,EM_SETEDITSTYLE,SES_EXTENDBACKCOLOR,SES_EXTENDBACKCOLOR);
+  Perform(EM_SETEDITSTYLE,SES_EXTENDBACKCOLOR,SES_EXTENDBACKCOLOR);
+  //SendMessage(Handle,EM_SETOPTIONS,ECOOP_OR,ECO_AUTOWORDSELECTION);
+  Perform(EM_SETOPTIONS,ECOOP_OR,ECO_AUTOWORDSELECTION);
+  //SendMessage(Handle,EM_AUTOURLDETECT,1,0);
+  Perform(EM_AUTOURLDETECT,1,0);
+  //SendMessage(Handle,EM_SETEVENTMASK,0,SendMessage(Handle,EM_GETEVENTMASK,0,0) or ENM_LINK);
+  Perform(EM_SETEVENTMASK,0,perform(EM_GETEVENTMASK,0,0) or ENM_LINK);
   RichEdit_SetOleCallback(Handle, FRichEditOleCallback as IRichEditOleCallback);
   if RichEdit_GetOleInterface(Handle, FRichEditOle) then UpdateHostNames;
 end;
@@ -1550,12 +1565,14 @@ procedure THppRichedit.SetAutoKeyboard(Enabled: Boolean);
 var
   re_options,new_options: DWord;
 begin
-  re_options := SendMessage(Handle,EM_GETLANGOPTIONS,0,0);
+  //re_options := SendMessage(Handle,EM_GETLANGOPTIONS,0,0);
+  re_options := Perform(EM_GETLANGOPTIONS,0,0);
   if Enabled then
     new_options := re_options or IMF_AUTOKEYBOARD else
     new_options := re_options and not IMF_AUTOKEYBOARD;
   if re_options <> new_options then
-    SendMessage(Handle,EM_SETLANGOPTIONS,0,new_options);
+    //SendMessage(Handle,EM_SETLANGOPTIONS,0,new_options);
+    Perform(EM_SETLANGOPTIONS,0,new_options);
 end;
 
 procedure THppRichedit.ReplaceCharFormat(const FromCF, ToCF: CHARFORMAT2);
