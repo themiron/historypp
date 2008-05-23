@@ -6005,6 +6005,7 @@ begin
   end;
   SetBkMode(Range.hdcTarget,TRANSPARENT);
   Item^.Rich.Perform(EM_FORMATRANGE, 1, LPARAM(@Range));
+  Item^.Rich.Perform(EM_FORMATRANGE, 0, 0);
   Item^.BitmapDrawn := True;
 end;
 
