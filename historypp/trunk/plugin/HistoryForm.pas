@@ -1496,8 +1496,11 @@ begin
   //for p:=ItemIdx to HistoryLength-2 do
   //  History[p]:=history[p+1];
   Dec(HistoryLength);
-  if ItemIdx <> HistoryLength then
+  if ItemIdx <> HistoryLength then begin
     Move(History[ItemIdx+1],History[ItemIdx],(HistoryLength-ItemIdx)*SizeOf(History[0]));
+    // reset has_header and linked_to_pervous_messages fields
+    hg.ResetItem(HistoryIndexToGrid(ItemIdx));
+  end;
   SetLength(history,HistoryLength);
 end;
 
@@ -1581,6 +1584,7 @@ end;
 procedure THistoryFrm.hgItemData(Sender: TObject; Index: Integer; var Item: THistoryItem);
 var
   PrevTimestamp: DWord;
+  PrevMessageType: TMessageTypes;
   HistoryIndex: Integer;
 begin
   HistoryIndex := GridIndexToHistory(Index);
@@ -1594,13 +1598,15 @@ begin
   else begin
     if History[HistoryIndex-1] = 0 then
       LoadPendingHeaders(HistoryIndex-1,HistoryLength);
-    Item.HasHeader := IsEventInSession(Item.EventType);
-    if Item.HasHeader then begin
-      PrevTimestamp := GetEventTimestamp(History[HistoryIndex-1]);
+    PrevTimestamp := GetEventTimestamp(History[HistoryIndex-1]);
+    if IsEventInSession(Item.EventType) then
       Item.HasHeader := ((DWord(Item.Time) - PrevTimestamp) > SESSION_TIMEDIFF);
+    if not Item.Bookmarked then begin
+      PrevMessageType := hg.Items[HistoryIndexToGrid(HistoryIndex-1)].MessageType;
+      if Item.MessageType = PrevMessageType then
+        Item.LinkedToPrev := ((DWord(Item.Time) - PrevTimestamp) < 60);
     end;
   end;
-
 end;
 
 procedure THistoryFrm.hgTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
@@ -2001,9 +2007,9 @@ begin
   dt := TimestampToDateTime(ts);
   day.Text := FormatDateTime(HPP_SESS_DAYFORMAT,dt);
   // next item
-  Inc(ItemIdx);
-  if ItemIdx >= HistoryLength then exit;
-  hg.ResetItem(HistoryIndexToGrid(ItemIdx));
+  //Inc(ItemIdx);
+  //if ItemIdx >= HistoryLength then exit;
+  //hg.ResetItem(HistoryIndexToGrid(ItemIdx));
 end;
 
 procedure THistoryFrm.SaveasHTML2Click(Sender: TObject);
@@ -2535,6 +2541,7 @@ begin
   //LoadPosition;
   hg.ShowHeaders := (hContact <> 0);
   hg.ExpandHeaders := GetDBBool(hppDBName,'ExpandHeaders',False);
+  hg.GroupLinked := GetDBBool(hppDBName,'GroupHistoryItems',False);
   if hContact = 0 then begin
     tbUserDetails.Enabled := False;
     tbUserMenu.Enabled := False;
