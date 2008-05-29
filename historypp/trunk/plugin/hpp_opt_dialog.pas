@@ -34,11 +34,10 @@ const
 
   ID_APPEARANCE_GROUP = 100; // "Appearance options" group
   IDC_SHOWEVENTICONS  = 101; // "Show event icons" checkbox
-  IDC_RECENTONTOP     = 102; // "Recent events on top" checkbox
-  IDC_RTLDEFAULT      = 103; // "RTL by default" checkbox
-  IDC_OPENDETAILS     = 104; // "Open event details by Enter" checkbox
-  IDC_SHOWEVENTSCOUNT = 105; // "Show events count in menu" checkbox
-  IDC_SHOWAVATARS     = 106; // "Show avatars" checkbox
+  IDC_RTLDEFAULT      = 102; // "RTL by default" checkbox
+  IDC_OPENDETAILS     = 103; // "Open event details by Enter" checkbox
+  IDC_SHOWEVENTSCOUNT = 104; // "Show events count in menu" checkbox
+  IDC_SHOWAVATARS     = 105; // "Show avatars" checkbox
 
   ID_FORMATTING_GROUP = 200; // "Text formatting options" group
   IDC_BBCODE          = 201; // "Enable BBCodes" checkbox
@@ -51,8 +50,13 @@ const
   IDC_IEVIEWAPI       = 301; // "Imitate IEView API" checkbox
   IDC_GROUPLOGITEMS   = 302; // "Group messages" checkbox
   IDC_DISABLEBORDER   = 303; // "Disable border" checkbox
+  IDC_DISABLESCROLL   = 304; // "Disable scrollbar" checkbox
 
-  ID_NEEDOPTIONS_LINK = 250; // "Need more options?" hyperlink
+  ID_HISTORYVIEW_GROUP = 500;// "History view options" group
+  IDC_RECENTONTOP     = 501; // "Recent events on top" checkbox
+  IDC_GROUPHISTITEMS  = 502; // "Group messages" checkbox
+
+  ID_NEEDOPTIONS_LINK = 250; // "Visit Wiki page with additional hidden options" hyperlink
 
   ID_LOOK_GROUP       = 400;
   ID_LOOK_FONT1       = 401; // "To change fonts ..."
@@ -100,8 +104,7 @@ end;
 procedure SetChecked(idCtrl: Integer; Checked: Boolean);
 begin
   if Checked then
-    SendDlgItemMessage(hDlg,idCtrl,BM_SETCHECK,BST_CHECKED,0)
-  else
+    SendDlgItemMessage(hDlg,idCtrl,BM_SETCHECK,BST_CHECKED,0) else
     SendDlgItemMessage(hDlg,idCtrl,BM_SETCHECK,BST_UNCHECKED,0);
 end;
 
@@ -115,13 +118,9 @@ begin
   Result := True;
 
   if GetChecked(IDC_SHOWEVENTICONS) <> GridOptions.ShowIcons then exit;
-  if GetChecked(IDC_RECENTONTOP) <> GetDBBool(hppDBName,'SortOrder',false) then exit;
   if GetChecked(IDC_RTLDEFAULT) <> GridOptions.RTLEnabled then exit;
   if GetChecked(IDC_OPENDETAILS) <> GridOptions.OpenDetailsMode then exit;
-  {$IFNDEF NO_EXTERNALGRID}
-  if GetChecked(IDC_IEVIEWAPI) <> GetDBBool(hppDBName,'IEViewAPI',false) then exit;
-  if GetChecked(IDC_GROUPLOGITEMS) <> GetDBBool(hppDBName,'GroupLogItems',false) then exit;
-  {$ENDIF}
+  if GetChecked(IDC_SHOWEVENTSCOUNT) <> ShowHistoryCount then exit;
   //if GetChecked(IDC_SHOWAVATARS) <> GridOptions.ShowAvatars then exit;
 
   if GetChecked(IDC_BBCODE) <> GridOptions.BBCodesEnabled then exit;
@@ -132,20 +131,36 @@ begin
   if GetChecked(IDC_RAWRTF) <> GridOptions.RawRTFEnabled then exit;
   if GetChecked(IDC_AVATARSHISTORY) <> GridOptions.AvatarsHistoryEnabled then exit;
 
+  if GetChecked(IDC_RECENTONTOP) <> GetDBBool(hppDBName,'SortOrder',false) then exit;
+  if GetChecked(IDC_GROUPHISTITEMS) <> GetDBBool(hppDBName,'GroupHistoryItems',false) then exit;
+
+  {$IFNDEF NO_EXTERNALGRID}
+  if GetChecked(IDC_IEVIEWAPI) <> GetDBBool(hppDBName,'IEViewAPI',false) then exit;
+  if GetChecked(IDC_GROUPLOGITEMS) <> GetDBBool(hppDBName,'GroupLogItems',false) then exit;
+  if GetChecked(IDC_DISABLEBORDER) <> GetDBBool(hppDBName,'NoLogBorder',false) then exit;
+  if GetChecked(IDC_DISABLESCROLL) <> GetDBBool(hppDBName,'NoLogScrollBar',false) then exit;
+  {$ENDIF}
+
   Result := False;
 end;
 
 procedure SaveChangedOptions;
 var
+  ShowRestart: Boolean;
   Checked: Boolean;
   i: Integer;
 begin
+  ShowRestart := False;
   GridOptions.StartChange;
   try
     GridOptions.ShowIcons := GetChecked(IDC_SHOWEVENTICONS);
-    //GridOptions.RecentOnTop := GetChecked(IDC_RECENTONTOP);
     GridOptions.RTLEnabled := GetChecked(IDC_RTLDEFAULT);
     GridOptions.OpenDetailsMode := GetChecked(IDC_OPENDETAILS);
+
+    ShowHistoryCount := GetChecked(IDC_SHOWEVENTSCOUNT);
+    if ShowHistoryCount <> GetDBBool(hppDBName,'ShowHistoryCount',false) then
+      WriteDBBool(hppDBName,'ShowHistoryCount',ShowHistoryCount);
+
     //GridOptions.ShowAvatars := GetChecked(IDC_SHOWAVATARS);
 
     GridOptions.BBCodesEnabled := GetChecked(IDC_BBCODE);
@@ -171,53 +186,62 @@ begin
       fmGlobalSearch.SetRecentEventsPosition(Checked);
   end;
 
+  Checked := GetChecked(IDC_GROUPHISTITEMS);
+  if Checked <> GetDBBool(hppDBName,'GroupHistoryItems',false) then begin
+    WriteDBBool(hppDBName,'GroupHistoryItems',Checked);
+    for i := 0 to HstWindowList.Count - 1 do
+      THistoryFrm(HstWindowList[i]).hg.GroupLinked := Checked;
+  end;
+
   {$IFNDEF NO_EXTERNALGRID}
+  Checked := GetChecked(IDC_IEVIEWAPI);
+  if Checked <> GetDBBool(hppDBName,'IEViewAPI',false) then
+    WriteDBBool(hppDBName,'IEViewAPI',Checked);
+  ShowRestart := ShowRestart or (Checked <> ImitateIEView);
+
   Checked := GetChecked(IDC_GROUPLOGITEMS);
   if Checked <> GetDBBool(hppDBName,'GroupLogItems',false) then begin
     WriteDBBool(hppDBName,'GroupLogItems',Checked);
     ExternalGrids.GroupLinked := Checked;
   end;
 
-  Checked := GetChecked(IDC_IEVIEWAPI);
-  if Checked <> GetDBBool(hppDBName,'IEViewAPI',false) then
-    WriteDBBool(hppDBName,'IEViewAPI',Checked);
-  if Checked <> ImitateIEView then
-    ShowWindow(GetDlgItem(hDlg,ID_NEED_RESTART),SW_SHOW)
-  else
-    ShowWindow(GetDlgItem(hDlg,ID_NEED_RESTART),SW_HIDE);
+  Checked := GetChecked(IDC_DISABLEBORDER);
+  if Checked <> GetDBBool(hppDBName,'NoLogBorder',false) then
+    WriteDBBool(hppDBName,'NoLogBorder',Checked);
+  //ShowRestart := ShowRestart or (Checked <> DisableLogBorder);
+
+  Checked := GetChecked(IDC_DISABLESCROLL);
+  if Checked <> GetDBBool(hppDBName,'NoLogScrollBar',false) then
+    WriteDBBool(hppDBName,'NoLogScrollBar',Checked);
+  //ShowRestart := ShowRestart or (Checked <> DisableLogScrollbar);
   {$ENDIF}
+
+  if ShowRestart then
+    ShowWindow(GetDlgItem(hDlg,ID_NEED_RESTART),SW_SHOW) else
+    ShowWindow(GetDlgItem(hDlg,ID_NEED_RESTART),SW_HIDE);
 end;
 
 // WM_INITDIALOG message handler
 function InitDlg: Integer;
 begin
-  if FontServiceEnabled then begin
-    ShowWindow(GetDlgItem(hDlg,ID_LOOK_FONT_LINK),SW_HIDE);
-  end
+  if FontServiceEnabled then
+    ShowWindow(GetDlgItem(hDlg,ID_LOOK_FONT_LINK),SW_HIDE)
   else begin
     ShowWindow(GetDlgItem(hDlg,ID_LOOK_FONT2),SW_HIDE);
     ShowWindow(GetDlgItem(hDlg,ID_LOOK_FONT_ICON),SW_HIDE);
   end;
 
-  if IcoLibEnabled then begin
-    ShowWindow(GetDlgItem(hDlg,ID_LOOK_ICO_LINK),SW_HIDE);
-  end
+  if IcoLibEnabled then
+    ShowWindow(GetDlgItem(hDlg,ID_LOOK_ICO_LINK),SW_HIDE)
   else begin
     ShowWindow(GetDlgItem(hDlg,ID_LOOK_ICO2),SW_HIDE);
     ShowWindow(GetDlgItem(hDlg,ID_LOOK_ICO_ICON),SW_HIDE);
   end;
 
   SetChecked(IDC_SHOWEVENTICONS,GridOptions.ShowIcons);
-  SetChecked(IDC_RECENTONTOP,GetDBBool(hppDBName,'SortOrder',false));
   SetChecked(IDC_RTLDEFAULT,GridOptions.RTLEnabled);
   SetChecked(IDC_OPENDETAILS,GridOptions.OpenDetailsMode);
-  {$IFNDEF NO_EXTERNALGRID}
-  SetChecked(IDC_IEVIEWAPI,GetDBBool(hppDBName,'IEViewAPI',false));
-  SetChecked(IDC_GROUPLOGITEMS,GetDBBool(hppDBName,'GroupLogItems',false));
-  {$ELSE}
-  ShowWindow(GetDlgItem(hDlg,IDC_IEVIEWAPI),SW_HIDE);
-  ShowWindow(GetDlgItem(hDlg,IDC_GROUPLOGITEMS),SW_HIDE);
-  {$ENDIF}
+  SetChecked(IDC_SHOWEVENTSCOUNT,ShowHistoryCount);
   //SetChecked(IDC_SHOWAVATARS,GridOptions.ShowAvatars);
 
   SetChecked(IDC_BBCODE,GridOptions.BBCodesEnabled);
@@ -229,6 +253,21 @@ begin
     SetChecked(IDC_MATH,GridOptions.MathModuleEnabled);
   SetChecked(IDC_RAWRTF,GridOptions.RawRTFEnabled);
   SetChecked(IDC_AVATARSHISTORY,GridOptions.AvatarsHistoryEnabled);
+
+  SetChecked(IDC_RECENTONTOP,GetDBBool(hppDBName,'SortOrder',false));
+  SetChecked(IDC_GROUPHISTITEMS,GetDBBool(hppDBName,'GroupHistoryItems',false));
+
+  {$IFNDEF NO_EXTERNALGRID}
+  SetChecked(IDC_IEVIEWAPI,GetDBBool(hppDBName,'IEViewAPI',false));
+  SetChecked(IDC_GROUPLOGITEMS,GetDBBool(hppDBName,'GroupLogItems',false));
+  SetChecked(IDC_DISABLEBORDER,GetDBBool(hppDBName,'NoLogBorder',false));
+  SetChecked(IDC_DISABLESCROLL,GetDBBool(hppDBName,'NoLogScrollBar',false));
+  {$ELSE}
+  ShowWindow(GetDlgItem(hDlg,IDC_IEVIEWAPI),SW_HIDE);
+  ShowWindow(GetDlgItem(hDlg,IDC_GROUPLOGITEMS),SW_HIDE);
+  ShowWindow(GetDlgItem(hDlg,IDC_DISABLEBORDER),SW_HIDE);
+  ShowWindow(GetDlgItem(hDlg,IDC_DISABLESCROLL),SW_HIDE);
+  {$ENDIF}
 
   TranslateDialogDefault(hDlg);
   Result := 0;
