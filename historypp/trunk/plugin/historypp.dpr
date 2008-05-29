@@ -130,6 +130,7 @@ const
 
 var
   MenuCount: Integer = -1;
+  PrevShowHistoryCount: Boolean = False;
   MenuHandles: array[0..4] of TMenuHandles = (
     (Handle:0; Name:'View &History'),
     (Handle:0; Name:'&System History'),
@@ -420,10 +421,7 @@ begin
         GridOptions.ProfileName := GetDBWideStr(hppDBName,'ProfileName','')
       else
       if StrComp(cws.szSetting,'DateTimeFormat') = 0 then
-        GridOptions.DateTimeFormat := GetDBStr(hppDBName,'DateTimeFormat',DEFFORMAT_DATETIME)
-      else
-      if StrComp(cws.szSetting,'ShowHistoryCount') = 0 then
-        ShowHistoryCount := GetDBBool(hppDBName,'ShowHistoryCount',false);
+        GridOptions.DateTimeFormat := GetDBStr(hppDBName,'DateTimeFormat',DEFFORMAT_DATETIME);
     end;
     exit;
   end;
@@ -539,20 +537,24 @@ var
 begin
   Result := 0;
   count := PluginLink.CallService(MS_DB_EVENT_GETCOUNT,THandle(wParam),0);
-  if count <> MenuCount then begin
+  if (PrevShowHistoryCount xor ShowHistoryCount)
+  or (count <> MenuCount) then begin
     ZeroMemory(@menuitem,SizeOf(menuItem));
     menuitem.cbSize := SizeOf(menuItem);
     menuitem.flags := CMIM_FLAGS;
     if count = 0 then menuitem.flags := menuitem.flags or CMIF_GRAYED;
-    res := PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[miEmpty].Handle, DWORD(@menuItem));
-    if res = 0 then begin
-      if ShowHistoryCount then begin
-        menuitem.flags := menuitem.flags or CMIM_NAME;
-        menuitem.pszName := PChar(Format('%s [%u]',[MenuHandles[miContact].Name,count]))
-      end;
-      res := PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[miContact].Handle, DWORD(@menuItem));
+    PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[miEmpty].Handle, DWORD(@menuItem));
+    if ShowHistoryCount then begin
+      menuitem.flags := menuitem.flags or CMIM_NAME;
+      menuitem.pszName := PChar(Format('%s [%u]',[MenuHandles[miContact].Name,count]));
+    end else
+    if PrevShowHistoryCount then begin
+      menuitem.flags := menuitem.flags or CMIM_NAME;
+      menuitem.pszName := PChar(MenuHandles[miContact].Name);
     end;
+    res := PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[miContact].Handle, DWORD(@menuItem));
     if res = 0 then MenuCount := count;
+    PrevShowHistoryCount := ShowHistoryCount;
   end;
 end;
 
