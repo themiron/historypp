@@ -411,13 +411,15 @@ begin
   // load others
   GridOptions.ShowIcons := GetDBBool(hppDBName,'ShowIcons',True);
   GridOptions.RTLEnabled := GetContactRTLMode(0,'');  // we have no per-proto rtl setup ui, use global instead
-  GridOptions.OpenDetailsMode := GetDBBool(hppDBName,'OpenDetailsMode',False);
   //GridOptions.ShowAvatars := GetDBBool(hppDBName,'ShowAvatars',False);
+
   GridOptions.SmileysEnabled := GetDBBool(hppDBName,'Smileys',SmileyAddEnabled);
   GridOptions.BBCodesEnabled := GetDBBool(hppDBName,'BBCodes',True);
   GridOptions.MathModuleEnabled := GetDBBool(hppDBName,'MathModule',MathModuleEnabled);
   GridOptions.RawRTFEnabled := GetDBBool(hppDBName,'RawRTF',True);
   GridOptions.AvatarsHistoryEnabled := GetDBBool(hppDBName,'AvatarsHistory',True);
+
+  GridOptions.OpenDetailsMode := GetDBBool(hppDBName,'OpenDetailsMode',False);
 
   GridOptions.ClipCopyFormat := GetDBWideStr(hppDBName,'FormatCopy',DEFFORMAT_CLIPCOPY);
   GridOptions.ClipCopyTextFormat := GetDBWideStr(hppDBName,'FormatCopyText',DEFFORMAT_CLIPCOPYTEXT);
@@ -440,7 +442,6 @@ begin
   try
   WriteDBBool(hppDBName,'ShowIcons',GridOptions.ShowIcons);
   WriteDBBool(hppDBName,'RTL',GridOptions.RTLEnabled);
-  WriteDBBool(hppDBName,'OpenDetailsMode',GridOptions.OpenDetailsMode);
   //WriteDBBool(hppDBName,'ShowAvatars',GridOptions.ShowAvatars);
 
   WriteDBBool(hppDBName,'BBCodes',GridOptions.BBCodesEnabled);
@@ -448,6 +449,8 @@ begin
   WriteDBBool(hppDBName,'MathModule',GridOptions.MathModuleEnabled);
   WriteDBBool(hppDBName,'RawRTF',GridOptions.RawRTFEnabled);
   WriteDBBool(hppDBName,'AvatarsHistory',GridOptions.AvatarsHistoryEnabled);
+
+  WriteDBBool(hppDBName,'OpenDetailsMode',GridOptions.OpenDetailsMode);
 
   //WriteDBWideStr(hppDBName,'FormatCopy',GridOptions.ClipCopyFormat);
   //WriteDBWideStr(hppDBName,'FormatCopyText',GridOptions.ClipCopyTextFormat);
