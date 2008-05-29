@@ -400,8 +400,7 @@ begin
     Item.HasHeader := IsEventInSession(Item.EventType)
   else begin
     if Items[Index].Custom then
-      PrevTimestamp := Items[Index-1].CustomEvent.Time
-    else
+      PrevTimestamp := Items[Index-1].CustomEvent.Time else
       PrevTimestamp := GetEventTimestamp(Items[Index-1].hDBEvent);
     if IsEventInSession(Item.EventType) then
       Item.HasHeader := ((DWord(Item.Time) - PrevTimestamp) > SESSION_TIMEDIFF);
@@ -803,6 +802,7 @@ begin
     Finalize(Items[Index]);
     Move(Items[Index+1],Items[Index],(Length(Items)-Index-1)*SizeOf(Items[0]));
     ZeroMemory(@Items[High(Items)],SizeOf(Items[0]));
+    // reset has_header and linked_to_pervous_messages fields
     Grid.ResetItem(Index);
   end;
   SetLength(Items,Length(Items)-1);
