@@ -4468,13 +4468,19 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     mes_id,type_id: String;
     nick,mes,time: WideString;
     txt: String;
+    FullHeader: Boolean;
   begin
-    if mtIncoming in FItems[Item].MessageType then
-      nick := ContactName else
-      nick := ProfileName;
-    if Assigned(FGetNameData) then
-      FGetNameData(Self,Item,nick);
-    nick := nick + ':';
+    MesTypeToStyle(FItems[Item].MessageType,mes_id,type_id);
+    FullHeader := not (FGroupLinked and FItems[Item].LinkedToPrev);
+    if FullHeader then begin
+      time := GetTime(Items[Item].Time);
+      if mtIncoming in FItems[Item].MessageType then
+        nick := ContactName else
+        nick := ProfileName;
+      if Assigned(FGetNameData) then
+        FGetNameData(Self,Item,nick);
+      nick := nick + ':';
+    end;
     mes := FItems[Item].Text;
     if Options.RawRTFEnabled and IsRTF(FItems[Item].Text) then begin
       ApplyItemToRich(Item);
@@ -4491,16 +4497,16 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
       except
       end;
     end;
-    MesTypeToStyle(FItems[Item].MessageType,mes_id,type_id);
-    time := GetTime(Items[Item].Time);
     if ShowHeaders and FItems[Item].HasHeader then begin
       WriteString(Stream,'<div class=mes id=session>'+#13#10);
       WriteString(Stream,#9+'<div class=text>'+MakeTextHtmled(UTF8Encode(WideFormat(TxtSessions,[time])))+'</div>'+#13#10);
       WriteString(Stream,'</div>'+#13#10);
     end;
     WriteString(Stream,'<div class=mes id='+mes_id+'>'+#13#10);
-    WriteString(Stream,#9+'<div class=nick id='+type_id+'>'+MakeTextHtmled(UTF8Encode(nick))+'</div>'+#13#10);
-    WriteString(Stream,#9+'<div class=date id='+type_id+'>'+MakeTextHtmled(UTF8Encode(time))+'</div>'+#13#10);
+    if FullHeader then begin
+      WriteString(Stream,#9+'<div class=nick id='+type_id+'>'+MakeTextHtmled(UTF8Encode(nick))+'</div>'+#13#10);
+      WriteString(Stream,#9+'<div class=date id='+type_id+'>'+MakeTextHtmled(UTF8Encode(time))+'</div>'+#13#10);
+    end;
     WriteString(Stream,#9+'<div class=text>'+#13#10#9+txt+#13#10#9+'</div>'+#13#10);
     WriteString(Stream,'</div>'+#13#10);
   end;
@@ -4530,13 +4536,18 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
 
   procedure SaveUnicode;
   var
-    nick,mes,date: WideString;
+    nick,mes,time: WideString;
+    FullHeader: Boolean;
   begin
-    if mtIncoming in FItems[Item].MessageType then
-      nick := ContactName else
-      nick := ProfileName;
-    if Assigned(FGetNameData) then
-      FGetNameData(Self,Item,nick);
+    FullHeader := not (FGroupLinked and FItems[Item].LinkedToPrev);
+    if FullHeader then begin
+      time := GetTime(FItems[Item].Time);
+      if mtIncoming in FItems[Item].MessageType then
+        nick := ContactName else
+        nick := ProfileName;
+      if Assigned(FGetNameData) then
+        FGetNameData(Self,Item,nick);
+    end;
     mes := FItems[Item].Text;
     if Options.RawRTFEnabled and IsRTF(mes) then begin
       ApplyItemToRich(Item);
@@ -4544,21 +4555,26 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     end;
     if Options.BBCodesEnabled then
       mes := DoStripBBCodes(mes);
-    date := GetTime(FItems[Item].Time);
-    WriteWideString(Stream,WideFormat('[%s] %s:'#13#10,[date,nick]));
+    if FullHeader then
+      WriteWideString(Stream,WideFormat('[%s] %s:'#13#10,[time,nick]));
     WriteWideString(Stream,mes+#13#10+#13#10);
   end;
 
   procedure SaveText;
   var
-    date: String;
+    time: String;
     nick,mes: WideString;
+    FullHeader: Boolean;
   begin
-    if mtIncoming in FItems[Item].MessageType then
-      nick := ContactName else
-      nick := ProfileName;
-    if Assigned(FGetNameData) then
-      FGetNameData(Self,Item,nick);
+    FullHeader := not (FGroupLinked and FItems[Item].LinkedToPrev);
+    if FullHeader then begin
+      time := WideToAnsiString(GetTime(FItems[Item].Time),Codepage);
+      if mtIncoming in FItems[Item].MessageType then
+        nick := ContactName else
+        nick := ProfileName;
+      if Assigned(FGetNameData) then
+        FGetNameData(Self,Item,nick);
+    end;
     mes := FItems[Item].Text;
     if Options.RawRTFEnabled and IsRTF(mes) then begin
       ApplyItemToRich(Item);
@@ -4566,8 +4582,8 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     end;
     if Options.BBCodesEnabled then
       mes := DoStripBBCodes(mes);
-    date := WideToAnsiString(GetTime(FItems[Item].Time),Codepage);
-    WriteString(Stream,Format('[%s] %s:'#13#10,[date,WideToAnsiString(nick,Codepage)]));
+    if FullHeader then
+      WriteString(Stream,Format('[%s] %s:'#13#10,[time,WideToAnsiString(nick,Codepage)]));
     WriteString(Stream,WideToAnsiString(mes,Codepage)+#13#10+#13#10);
   end;
 
@@ -4575,15 +4591,19 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
   var
     RTFStream: String;
     Text: WideString;
+    FullHeader: Boolean;
   begin
-    if mtIncoming in FItems[Item].MessageType then
-      Text := ContactName else
-      Text := ProfileName;
-    if Assigned(FGetNameData) then
-      FGetNameData(Self,Item,Text);
-    Text := Text + ' ['+GetTime(FItems[Item].Time)+']:';
-    RTFStream := '{\rtf1\par\b1 '+FormatString2RTF(Text)+'\b0\par}';
-    SetRichRTF(FRichSave.Handle,RTFStream,True,False,False);
+    FullHeader := not (FGroupLinked and FItems[Item].LinkedToPrev);
+    if FullHeader then begin
+      if mtIncoming in FItems[Item].MessageType then
+        Text := ContactName else
+        Text := ProfileName;
+      if Assigned(FGetNameData) then
+        FGetNameData(Self,Item,Text);
+      Text := Text + ' ['+GetTime(FItems[Item].Time)+']:';
+      RTFStream := '{\rtf1\par\b1 '+FormatString2RTF(Text)+'\b0\par}';
+      SetRichRTF(FRichSave.Handle,RTFStream,True,False,False);
+    end;
     ApplyItemToRich(Item,FRichSaveItem,True);
     GetRichRTF(FRichSaveItem.Handle,RTFStream,False,False,False,False);
     SetRichRTF(FRichSave.Handle,RTFStream,True,False,False);
