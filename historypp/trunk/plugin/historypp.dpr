@@ -580,7 +580,7 @@ begin
     ZeroMemory(@menuitem,SizeOf(menuItem));
     menuitem.cbSize := SizeOf(menuItem);
     menuitem.flags := CMIM_FLAGS;
-    if count = 0 then menuitem.flags := menuitem.flags or CMIF_GRAYED;
+    if count = 0 then menuitem.flags := menuitem.flags or CMIF_HIDDEN;
     PluginLink.CallService(MS_CLIST_MODIFYMENUITEM, MenuHandles[miEmpty].Handle, DWORD(@menuItem));
     if ShowHistoryCount then begin
       menuitem.flags := menuitem.flags or CMIM_NAME;
