@@ -56,7 +56,7 @@ const
   IDC_RECENTONTOP     = 501; // "Recent events on top" checkbox
   IDC_GROUPHISTITEMS  = 502; // "Group messages" checkbox
 
-  ID_NEEDOPTIONS_LINK = 250; // "Visit Wiki page with additional hidden options" hyperlink
+  ID_NEEDOPTIONS_LINK = 250; // "Visit Wiki page for more options" hyperlink
 
   ID_LOOK_GROUP       = 400;
   ID_LOOK_FONT1       = 401; // "To change fonts ..."
