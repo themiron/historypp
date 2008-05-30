@@ -238,8 +238,46 @@ end;
 // unload
 function Unload:Integer; cdecl;
 begin
-  // why unload is never called????
   Result:=0;
+
+  // unhook events
+  PluginLink.UnhookEvent(hookOptInit);
+  PluginLink.UnhookEvent(HookPreshutdown);
+  PluginLink.UnhookEvent(HookModulesLoad);
+
+  PluginLink.UnhookEvent(HookEventAdded);
+  PluginLink.UnhookEvent(HookEventDeleted);
+  PluginLink.UnhookEvent(HookSettingsChanged);
+  PluginLink.UnhookEvent(HookIconChanged);
+  PluginLink.UnhookEvent(HookContactDelete);
+  PluginLink.UnhookEvent(HookBuildMenu);
+
+  if SmileyAddEnabled then
+    PluginLink.UnhookEvent(HookSmAddChanged);
+  if IcoLibEnabled then
+    PluginLink.UnhookEvent(HookIcon2Changed);
+  if FontServiceEnabled then
+    PluginLink.UnhookEvent(HookFSChanged);
+  if MetaContactsEnabled then
+    PluginLink.UnhookEvent(HookMetaDefaultChanged);
+
+  try
+    // destroy hidden main window
+    hppUnregisterMainWindow;
+    {$IFNDEF NO_EXTERNALGRID}
+    UnregisterExtGridServices;
+    {$ENDIF}
+    // unregistering events
+    hppUnregisterServices;
+    // unregister bookmarks
+    hppDeinitBookmarkServer;
+
+  except
+    on E: Exception do
+      HppMessageBox(hppMainWindow,
+        'Error while closing '+hppName+':'+#10#13+E.Message,
+        hppName+' Error',MB_OK or MB_ICONERROR);
+  end;
 end;
 
 // init plugin
@@ -596,44 +634,7 @@ end;
 function OnPreshutdown(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
 begin
   Result := 0;
-  try
-    NotifyAllForms(HM_MIEV_PRESHUTDOWN,0,0);
-    // unhook events
-    PluginLink.UnhookEvent(HookEventAdded);
-    PluginLink.UnhookEvent(HookEventDeleted);
-    PluginLink.UnhookEvent(HookPreshutdown);
-    PluginLink.UnhookEvent(HookModulesLoad);
-    PluginLink.UnhookEvent(hookOptInit);
-    PluginLink.UnhookEvent(HookSettingsChanged);
-    PluginLink.UnhookEvent(HookIconChanged);
-    PluginLink.UnhookEvent(HookContactDelete);
-    PluginLink.UnhookEvent(HookBuildMenu);
-
-    if SmileyAddEnabled then
-      PluginLink.UnhookEvent(HookSmAddChanged);
-    if IcoLibEnabled then
-      PluginLink.UnhookEvent(HookIcon2Changed);
-    if FontServiceEnabled then
-      PluginLink.UnhookEvent(HookFSChanged);
-    if MetaContactsEnabled then
-      PluginLink.UnhookEvent(HookMetaDefaultChanged);
-
-    // destroy hidden main window
-    hppUnregisterMainWindow;
-    // unregistering events
-    hppUnregisterServices;
-    {$IFNDEF NO_EXTERNALGRID}
-    UnregisterExtGridServices;
-    {$ENDIF}
-    // unregister bookmarks
-    hppDeinitBookmarkServer;
-
-  except
-    on E: Exception do
-      HppMessageBox(hppMainWindow,
-        'Error while closing '+hppName+':'+#10#13+E.Message,
-        hppName+' Error',MB_OK or MB_ICONERROR);
-  end;
+  NotifyAllForms(HM_MIEV_PRESHUTDOWN,0,0);
 end;
 
 exports
