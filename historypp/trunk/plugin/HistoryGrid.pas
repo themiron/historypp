@@ -402,7 +402,6 @@ type
     FOnProcessRichText: TOnProcessRichText;
     FItemDelete: TOnItemDelete;
     FState: TGridState;
-    FControlID: Cardinal;
     FHideSelection: Boolean;
     FGridNotFocused: Boolean;
 
@@ -470,7 +469,6 @@ type
     FGroupLinked: Boolean;
     FShowBottomAligned: Boolean;
     FOnSelectRequest: TOnSelectRequest;
-    FSavedKeyMessage: TWMKey;
     FBorderStyle: TBorderStyle;
 
     FWheelAccumulator: Integer;
@@ -528,8 +526,6 @@ type
     procedure WMGetText(var Message: TWMGetText); message WM_GETTEXT;
     procedure WMGetTextLength(var Message: TWMGetTextLength); message WM_GETTEXTLENGTH;
     procedure WMSetText(var Message: TWMSetText); message WM_SETTEXT;
-    procedure SetContolID(const Value: Cardinal);
-    function SendMsgFilterMessage(var Message: TMessage): Longint;
     function GetCount: Integer;
     procedure SetContact(const Value: Integer);
     procedure SetPadding(Value: Integer);
@@ -696,7 +692,6 @@ type
     property Codepage: Cardinal read FCodepage write SetCodepage;
     property Filter: TMessageTypes read FFilter write SetFilter;
 
-    property ControlID: Cardinal read FControlID write SetContolID;
     property SelectionString: WideString read GetSelectionString;
   published
     procedure SetRichRTL(RTL: Boolean; RichEdit: THPPRichEdit; ProcessTag: Boolean = True);
@@ -1026,8 +1021,6 @@ begin
 
   FHideSelection := False;
   FGridNotFocused := True;
-
-  FControlID := 0;
 
   FSelectionString := '';
   FSelectionStored := False;
@@ -2432,49 +2425,22 @@ begin
   Tnt_DrawTextW(Canvas.Handle, PWideChar(Text), Length(Text),r, DT_NOPREFIX or DT_CENTER);
 end;
 
-procedure THistoryGrid.SetContolID(const Value: Cardinal);
-begin
-  FControlID := Value;
-end;
-
-function THistoryGrid.SendMsgFilterMessage(var Message: TMessage): Longint;
-var
-  mf: TMsgFilter;
-begin
-  Result := 0;
-  if FControlID <> 0 then begin
-    mf.nmhdr.hwndFrom := WindowHandle;
-    mf.nmhdr.idFrom := FControlID;
-    mf.nmhdr.code := EN_MSGFILTER;
-    mf.msg := Message.Msg;
-    mf.wParam := Message.WParam;
-    mf.lParam := Message.LParam;
-    SendMessage(ParentWindow,WM_NOTIFY,FControlID,LPARAM(@mf));
-  end;
-end;
-
 procedure THistoryGrid.WMKeyDown(var Message: TWMKeyDown);
 begin
   DoKeyDown(Message.CharCode,KeyDataToShiftState(Message.KeyData));
   inherited;
-  FSavedKeyMessage := Message;
-  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
 end;
 
 procedure THistoryGrid.WMKeyUp(var Message: TWMKeyUp);
 begin
   DoKeyUp(Message.CharCode,KeyDataToShiftState(Message.KeyData));
   inherited;
-  if FSavedKeyMessage.CharCode = 0 then exit;
-  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
 end;
 
 procedure THistoryGrid.WMSysKeyUp(var Message: TWMSysKeyUp);
 begin
   DoKeyUp(Message.CharCode,KeyDataToShiftState(Message.KeyData));
   inherited;
-  if FSavedKeyMessage.CharCode = 0 then exit;
-  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
 end;
 
 procedure THistoryGrid.DoKeyDown(var Key: Word; ShiftState: TShiftState);
@@ -4026,8 +3992,6 @@ begin
   DoChar(Key,KeyDataToShiftState(Message.KeyData));
   SetWideCharForWMCharMsg(Message,Key);
   inherited;
-  if FSavedKeyMessage.CharCode = 0 then exit;
-  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
 end;
 
 const
@@ -5112,11 +5076,6 @@ begin
   //Dec(r.left,1);
   Inc(r.right,1);
 
-  FRichInline.Top := r.top;
-  FRichInline.Left := r.left;
-  FRichInline.Width := r.right - r.left;
-  FRichInline.Height := r.Bottom - r.top;
-
   // below is not optimal way to show rich edit
   // (ie me better show it after applying item),
   // but it's done because now when we have OnProcessItem
@@ -5133,11 +5092,12 @@ begin
   State := gsInline;
   FItemInline := Item;
   ApplyItemToRich(Item, FRichInline);
+
+  // set bounds after applying to avoid vertical scrollbar
+  FRichInline.SetBounds(r.left, r.top, r.right-r.left, r.bottom-r.top);
+  FRichInline.SelLength := 0;
   FRichInline.SelStart := 0;
-  //cr.cpMin := 0;
-  //cr.cpMax := 0;
-  //FRichInline.Perform(EM_EXSETSEL,0,LPARAM(@cr));
-  //FRichInline.Perform(EM_SCROLLCARET, 0, 0);
+
   FRichInline.Show;
   FRichInline.SetFocus;
 end;
