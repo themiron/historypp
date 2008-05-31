@@ -95,9 +95,9 @@ begin
           IEWM_HISTORY:
             ExtGrid.GroupLinked := False;
         end;
-        par.Hwnd := ExtGrid.GridHandle;
-        ExtGrid.SetPosition(par.x,par.y,par.cx,par.cy,False);
+        ExtGrid.SetPosition(par.x,par.y,par.cx,par.cy);
         ExternalGrids.Add(ExtGrid,GridMode);
+        par.Hwnd := ExtGrid.GridHandle;
       end;
       IEW_DESTROY: begin
         {$IFDEF DEBUG}
@@ -208,7 +208,7 @@ begin
         Result := integer(ExtGrid.GetSelection(boolean(event.dwFlags and IEEF_NO_UNICODE)));
       end;
       IEE_SAVE_DOCUMENT: begin
-        Result := integer(True);
+        ExtGrid.SaveSelected;
       end;
     end;
   //except
@@ -228,12 +228,12 @@ end;
 function ExtNavigate(wParam, lParam: DWord): Integer; cdecl;
 begin
   Result := 0;
-  try
+  //try
     {$IFDEF DEBUG}
     OutputDebugString('MS_IEVIEW_NAVIGATE');
     {$ENDIF}
-  except
-  end;
+  //except
+  //end;
 end;
 
 procedure RegisterExtGridServices;
