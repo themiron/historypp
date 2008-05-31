@@ -51,12 +51,35 @@ type
     CustomEvent: TExtCustomItem;
   end;
 
+  TOnDestroyWindow = procedure(Sender: TObject; Handle: HWND) of object;
+
+  TExtHistoryGrid = class(THistoryGrid)
+  private
+    FCachedHandle: HWND;
+    FControlID: Cardinal;
+    FSavedKeyMessage: TWMKey;
+    FOnDestroyWindow: TOnDestroyWindow;
+    procedure WMKeyDown(var Message: TWMKeyDown); message WM_KEYDOWN;
+    procedure WMKeyUp(var Message: TWMKeyUp); message WM_KEYUP;
+    procedure WMSysKeyUp(var Message: TWMSysKeyUp); message WM_SYSKEYUP;
+    procedure WMChar(var Message: TWMChar); message WM_CHAR;
+    procedure WMDestroy(var Message: TWMNCDestroy); message WM_DESTROY;
+    procedure WMNCDestroy(var Message: TWMNCDestroy); message WM_NCDESTROY;
+  protected
+    function GetCachedHandle: HWND;
+    function SendMsgFilterMessage(var Message: TMessage): Integer;
+  public
+    constructor Create(AOwner: TComponent); override;
+    property CachedHandle: HWND read GetCachedHandle;
+    property ControlID: Cardinal read FControlID write FControlID;
+    property OnDestroyWindow: TOnDestroyWindow read FOnDestroyWindow write FOnDestroyWindow;
+  end;
+
   TExternalGrid = class(TObject)
   private
     Items: array of TExtItem;
-    Grid: THistoryGrid;
+    Grid: TExtHistoryGrid;
     FParentWindow: HWND;
-    FGridHandle: HWND;
     FSelection: Pointer;
     SavedLinkUrl: String;
     SavedFileDir: String;
@@ -124,9 +147,10 @@ type
     destructor Destroy; override;
     procedure AddEvent(hContact, hDBEvent: Cardinal; Codepage: Integer; RTL: Boolean; DoScroll: Boolean);
     procedure AddCustomEvent(hContact: Cardinal; CustomItem: TExtCustomItem; Codepage: Integer; RTL: boolean; DoScroll: Boolean);
-    procedure SetPosition(x, y, cx, cy: Integer; Force: Boolean = True);
+    procedure SetPosition(x, y, cx, cy: Integer);
     procedure ScrollToBottom;
     function GetSelection(NoUnicode: Boolean): PChar;
+    procedure SaveSelected;
     procedure Clear;
     property ParentWindow: HWND read FParentWindow;
     property GridHandle: HWND read GetGridHandle;
@@ -150,6 +174,81 @@ type
 implementation
 
 uses hpp_options,hpp_sessionsthread;
+
+{ TExtHistoryGrid }
+
+constructor TExtHistoryGrid.Create(AOwner: TComponent);
+begin
+  FCachedHandle := 0;
+  FControlID := 0;
+  inherited;
+end;
+
+function TExtHistoryGrid.GetCachedHandle: HWND;
+begin
+  if (FCachedHandle = 0) or HandleAllocated then
+    Result := Handle else
+    Result := FCachedHandle;
+end;
+
+function TExtHistoryGrid.SendMsgFilterMessage(var Message: TMessage): Integer;
+var
+  mf: TMsgFilter;
+begin
+  Result := 0;
+  if FControlID <> 0 then begin
+    mf.nmhdr.hwndFrom := WindowHandle;
+    mf.nmhdr.idFrom := FControlID;
+    mf.nmhdr.code := EN_MSGFILTER;
+    mf.msg := Message.Msg;
+    mf.wParam := Message.WParam;
+    mf.lParam := Message.LParam;
+    Result := SendMessage(ParentWindow,WM_NOTIFY,FControlID,LPARAM(@mf));
+  end;
+end;
+
+procedure TExtHistoryGrid.WMKeyDown(var Message: TWMKeyDown);
+begin
+  inherited;
+  FSavedKeyMessage := Message;
+  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
+end;
+
+procedure TExtHistoryGrid.WMKeyUp(var Message: TWMKeyUp);
+begin
+  inherited;
+  if FSavedKeyMessage.CharCode = 0 then exit;
+  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
+end;
+
+procedure TExtHistoryGrid.WMSysKeyUp(var Message: TWMSysKeyUp);
+begin
+  inherited;
+  if FSavedKeyMessage.CharCode = 0 then exit;
+  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
+end;
+
+procedure TExtHistoryGrid.WMChar(var Message: TWMChar);
+begin
+  inherited;
+  if FSavedKeyMessage.CharCode = 0 then exit;
+  if Message.CharCode <> 0 then SendMsgFilterMessage(TMessage(Message))
+end;
+
+procedure TExtHistoryGrid.WMDestroy(var Message: TWMDestroy);
+begin
+  if not (csDestroyingHandle in ControlState) then
+    FCachedHandle := Handle;
+  inherited;
+end;
+
+procedure TExtHistoryGrid.WMNCDestroy(var Message: TWMNCDestroy);
+begin
+  inherited;
+  if not (csDestroyingHandle in ControlState) then
+    if Assigned(FOnDestroyWindow) then
+      FOnDestroyWindow(Self,FCachedHandle);
+end;
 
 { TExternalGrid }
 
@@ -228,7 +327,6 @@ constructor TExternalGrid.Create(AParentWindow: HWND; ControlID: Cardinal = 0);
 
 begin
   FParentWindow := AParentWindow;
-  FGridHandle := 0;
   WasKeyPressed := False;
   FGridMode := gmNative;
   FUseHistoryRTLMode := False;
@@ -239,7 +337,7 @@ begin
   FGridState := gsIdle;
   RecentFormat := sfHtml;
 
-  Grid := THistoryGrid.CreateParented(ParentWindow);
+  Grid := TExtHistoryGrid.CreateParented(ParentWindow);
 
   Grid.Reversed := False;
   Grid.ShowHeaders := True;
@@ -342,7 +440,7 @@ begin
 
   TranslateMenu(pmGrid.Items);
   TranslateMenu(pmLink.Items);
-  
+
   CreateEventsFilterMenu;
   //SetEventFilter(GetDBInt(hppDBName,'RecentLogFilter',GetShowAllEventsIndex));
   SetEventFilter(GetShowAllEventsIndex);
@@ -359,9 +457,7 @@ end;
 
 function TExternalGrid.GetGridHandle: HWND;
 begin
-  if FGridHandle = 0 then
-    FGridHandle := Grid.Handle;
-  Result := FGridHandle;
+  Result := Grid.CachedHandle;
 end;
 
 procedure TExternalGrid.BeginUpdate;
@@ -487,13 +583,13 @@ begin
   end;
 end;
 
-procedure TExternalGrid.SetPosition(x, y, cx, cy: Integer; Force: Boolean = True);
+procedure TExternalGrid.SetPosition(x, y, cx, cy: Integer);
 begin
   Grid.Left := x;
   Grid.Top := y;
   Grid.Width := cx;
   Grid.Height := cy;
-  if Force then
+  if Grid.HandleAllocated then
     SetWindowPos(Grid.Handle,0,x,y,cx,cy,SWP_SHOWWINDOW);
 end;
 
@@ -629,7 +725,7 @@ var
 begin
   GridSelected := (Grid.Selected <> -1);
   pmGrid.Items[0].Visible := GridSelected and (Grid.State = gsIdle) and not Items[Grid.Selected].Custom;
-  pmGrid.Items[1].Visible := MeSpeakEnabled; 
+  pmGrid.Items[1].Visible := MeSpeakEnabled;
   pmGrid.Items[3].Visible := GridSelected;
   pmGrid.Items[4].Visible := GridSelected;
   pmGrid.Items[5].Visible := GridSelected and (Grid.State = gsInline); // works even if not in pseudo-edit
@@ -958,6 +1054,11 @@ begin
   if SaveFormat <> sfAll then RecentFormat := SaveFormat;
   Grid.SaveSelected(SaveDialog.Files[0],SaveFormat);
   WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
+end;
+
+procedure TExternalGrid.SaveSelected;
+begin
+  OnSaveSelectedClick(Self);
 end;
 
 procedure TExternalGrid.GridXMLData(Sender: TObject; Index: Integer; var Item: TXMLItem);
