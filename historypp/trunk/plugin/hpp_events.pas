@@ -121,8 +121,10 @@ function TimestampToString(const Timestamp: DWord): WideString;
 function ReadEvent(hDBEvent: THandle; UseCP: Cardinal = CP_ACP): THistoryItem;
 function GetEventInfo(hDBEvent: DWord): TDBEventInfo;
 function GetEventTimestamp(hDBEvent: THandle): DWord;
+function GetEventMessageType(hDBEvent: THandle): TMessageTypes;
 function GetEventDateTime(hDBEvent: THandle): TDateTime;
 function GetEventRecord(const Hi: THistoryItem): PEventRecord;
+function GetMessageType(EventInfo: TDBEventInfo; var EventIndex: Integer): TMessageTypes;
 // global routines
 function GetEventCoreText(EventInfo: TDBEventInfo; var Hi: THistoryItem): Boolean;
 function GetEventModuleText(EventInfo: TDBEventInfo; var Hi: THistoryItem): Boolean;
@@ -218,6 +220,8 @@ var
   );
 
   ModuleEventRecords: array of TModuleEventRecord;
+  RecentEvent: THandle = 0;
+  RecentEventInfo: TDBEventInfo;
 
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;
 begin
@@ -243,14 +247,29 @@ begin
 end;
 
 function GetEventTimestamp(hDBEvent: THandle): DWord;
-var
-  Event: TDBEventInfo;
 begin
-  ZeroMemory(@Event,SizeOf(Event));
-  Event.cbSize:=SizeOf(Event);
-  Event.cbBlob := 0;
-  PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,LPARAM(@Event));
-  Result := Event.timestamp;
+  if RecentEvent <> hDBEvent then begin
+    ZeroMemory(@RecentEventInfo,SizeOf(RecentEventInfo));
+    RecentEventInfo.cbSize := SizeOf(RecentEventInfo);
+    RecentEventInfo.cbBlob := 0;
+    PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,LPARAM(@RecentEventInfo));
+    RecentEvent := hDBEvent;
+  end;
+  Result := RecentEventInfo.timestamp;
+end;
+
+function GetEventMessageType(hDBEvent: THandle): TMessageTypes;
+var
+  EventIndex: Integer;
+begin
+  if RecentEvent <> hDBEvent then begin
+    ZeroMemory(@RecentEventInfo,SizeOf(RecentEventInfo));
+    RecentEventInfo.cbSize := SizeOf(RecentEventInfo);
+    RecentEventInfo.cbBlob := 0;
+    PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,LPARAM(@RecentEventInfo));
+    RecentEvent := hDBEvent;
+  end;
+  Result := GetMessageType(RecentEventInfo,EventIndex);
 end;
 
 function GetEventDateTime(hDBEvent: THandle): TDateTime;
@@ -302,7 +321,8 @@ const
   SHRINK_TO_LEN  = 512;
 
 var
-  calls_count: Integer = 0;
+  // allocate some mem, so first ReadEvents would start faster
+  calls_count: Integer = SHRINK_ON_CALL + 1;
 
 procedure CleanupTextBuffer;
 begin
@@ -453,13 +473,29 @@ begin
     Result.cbBlob := 0;
 end;
 
+function GetMessageType(EventInfo: TDBEventInfo; var EventIndex: Integer): TMessageTypes;
+var
+  i: Integer;
+begin
+  EventIndex := 0;
+  for i := 1 to High(EventTable) do
+    if EventTable[i].EventType = EventInfo.EventType then begin
+      EventIndex := i;
+      break;
+    end;
+  Result := [EventTable[EventIndex].MessageType];
+  if (EventInfo.flags and DBEF_SENT) = 0 then
+    include(Result,mtIncoming) else
+    include(Result,mtOutgoing);
+end;
+
 // reads event from hDbEvent handle
 // reads all THistoryItem fields
 // *EXCEPT* Proto field. Fill it manually, plz
 function ReadEvent(hDBEvent: THandle; UseCP: Cardinal = CP_ACP): THistoryItem;
 var
   EventInfo: TDBEventInfo;
-  i,EventIndex: integer;
+  EventIndex: integer;
   Handled: Boolean;
 begin
   ZeroMemory(@Result,SizeOf(Result));
@@ -474,25 +510,19 @@ begin
     // enable autoRTL feature
     if Boolean(EventInfo.flags and DBEF_RTL) then
      Result.RTLMode := hppRTLEnable;
-    EventIndex := 0;
-    for i := 1 to High(EventTable) do
-      if EventTable[i].EventType = EventInfo.EventType then begin
-        EventIndex := i;
-        break;
-      end;
+    Result.MessageType := GetMessageType(EventInfo,EventIndex);
     Result.Codepage := UseCP;
-    Result.MessageType := [EventTable[EventIndex].MessageType];
     Handled := DatabaseNewAPI;
     //if Handled then Handled := GetEventCoreText(EventInfo,Result);
     if Handled then Handled := GetEventModuleText(EventInfo,Result);
     if not Handled then EventTable[EventIndex].TextFunction(EventInfo,Result);
-    if Result.MessageType = [mtMessage] then
-      if TextHasUrls(Result.Text) then Result.MessageType := [mtUrl];
-    if (EventInfo.flags and DBEF_SENT) = 0 then
-      include(Result.MessageType,mtIncoming) else
-      include(Result.MessageType,mtOutgoing);
     Result.Text := TntAdjustLineBreaks(Result.Text);
     Result.Text := TrimRight(Result.Text);
+    if mtMessage in Result.MessageType then
+      if TextHasUrls(Result.Text) then begin
+        exclude(Result.MessageType,mtMessage);
+        include(Result.MessageType,mtUrl);
+      end;
   finally
     if Assigned(EventInfo.pBlob) then FreeMem(EventInfo.pBlob);
   end;
@@ -946,10 +976,10 @@ begin
 end;
 
 initialization
-  // allocate some mem, so first ReadEvents would start faster
-  calls_count := SHRINK_ON_CALL + 1;
   ShrinkTextBuffer;
+
 finalization
   CleanupTextBuffer;
   SetLength(ModuleEventRecords,0);
+
 end.
