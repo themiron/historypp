@@ -73,7 +73,7 @@ unit RtlVclOptimize;
   { If NOLEADBYTES_HOOK is defined and SysLocal.LeadBytes is [], some ANSI
     functions are replaced by faster functions that ignore the LeadBytes. }
 
-{$DEFINE CACHE_WIDESTRINGS}
+{.$DEFINE CACHE_WIDESTRINGS}
   { If CACHE_WIDESTRINGS is defined all calls to SysFreeString are intercepted
     and the WideString is stored in a cache that can be used for a new WideString
     allocation of the same length. Every now and then a kind of Garbage Collector
