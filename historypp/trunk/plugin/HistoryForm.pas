@@ -1602,7 +1602,7 @@ begin
     if IsEventInSession(Item.EventType) then
       Item.HasHeader := ((DWord(Item.Time) - PrevTimestamp) > SESSION_TIMEDIFF);
     if not Item.Bookmarked then begin
-      PrevMessageType := hg.Items[HistoryIndexToGrid(HistoryIndex-1)].MessageType;
+      PrevMessageType := GetEventMessageType(History[HistoryIndex-1]);
       if Item.MessageType = PrevMessageType then
         Item.LinkedToPrev := ((DWord(Item.Time) - PrevTimestamp) < 60);
     end;
