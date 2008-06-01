@@ -291,7 +291,18 @@ type
         module: PChar;      // event module name
         eventType: WORD;    // event id, unique for this module
         descr: PChar;       // event type description (i.e. "File Transfer")
+        textService: PChar; // service name for MS_DB_EVENT_GETTEXT (0.8+, default Module+'/GetEventText'+EvtID)
+        iconService: PChar; // service name for MS_DB_EVENT_GETICON (0.8+, default Module+'/GetEventIcon'+EvtID)
+        eventIcon: hIcon;   // icolib handle to eventicon (0.8+, default 'eventicon_'+Module+EvtID)
+        flags: DWORD;       // flags, combination of the DETF_*
     end;
+
+const
+
+    DBEVENTTYPEDESCR_SIZE    = SizeOf(TDBEVENTTYPEDESCR);
+    DBEVENTTYPEDESCR_SIZE_V1 = $10;
+
+    DETF_HISTORY = 1;   // show event in history
 
 const
 
