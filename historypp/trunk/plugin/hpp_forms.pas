@@ -120,6 +120,8 @@ var
   i: integer;
   mes: TWMKey;
 begin
+  Result := False;
+  if Key = 0 then exit;
   if Key = VK_INSERT then begin
     if ShiftState = [ssCtrl] then begin
       Key := Ord('C')
@@ -128,7 +130,6 @@ begin
       Key := Ord('V'); ShiftState := [ssCtrl];
     end;
   end;
-  Result := False;
   mes.CharCode := Key;
   mes.KeyData := ShiftStateToKeyData(ShiftState);
   for i := 0 to High(List) do begin
