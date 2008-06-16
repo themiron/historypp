@@ -1110,7 +1110,7 @@ procedure Register;
 
 implementation
 
-uses SysUtils, TntSysUtils;
+uses Types, SysUtils, TntSysUtils;
 
 type
   EOleError = class(Exception);
