@@ -27,7 +27,7 @@ package HistGrid;
 requires
   vcl,
   vclx,
-  TntUnicodeVcl_R70;
+  TntUnicodeVcl_R60;
 
 contains
   hpp_richedit in 'hpp_richedit.pas',
