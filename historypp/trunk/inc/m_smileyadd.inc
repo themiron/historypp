@@ -148,7 +148,7 @@ type
     hContact: THandle;          //Contact handle
   end;
 
-  PSMADD_BATCHPARSERES = ^PSMADD_BATCHPARSERES;
+  PSMADD_BATCHPARSERES = ^SMADD_BATCHPARSERES;
   SMADD_BATCHPARSERES = record
     startChar: Cardinal;        //Starting smiley character
                                 //Because of iterative nature of the API caller should set this

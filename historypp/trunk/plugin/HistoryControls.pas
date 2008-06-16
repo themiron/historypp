@@ -255,7 +255,7 @@ end;
 
 type
 
-  THackSpeedButton_D6_D7_D9 = class(TGraphicControl)
+  THackSpeedButton_D6_D7_D9_D10 = class(TGraphicControl)
   protected
     FxxxxGroupIndex: Integer;
     FGlyph: Pointer;
@@ -273,7 +273,7 @@ type
   end;
 
   {$IFDEF COMPILER_6_UP} // verified against VCL source in Delphi 6 and BCB 6
-  THackSpeedButton = THackSpeedButton_D6_D7_D9;
+  THackSpeedButton = THackSpeedButton_D6_D7_D9_D10;
   {$ENDIF}
 
 type
@@ -331,8 +331,9 @@ begin
       UpdateTracking;
   end;
 end;
-{$ENDIF}
 
+// hack to avoid only first TntSpeedButton painted in Deplhi 7
+// on panels in case of full repainting panel
 procedure THppSpeedButton.UpdateInternalGlyphList;
 begin
   THackTntSpeedButton(Self).FPaintInherited := True;
@@ -344,6 +345,7 @@ begin
   Invalidate;
   raise EAbortPaint.Create('');
 end;
+{$ENDIF}
 
 { THppButton }
 
