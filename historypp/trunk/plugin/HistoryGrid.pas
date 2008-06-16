@@ -71,6 +71,8 @@
 
 unit HistoryGrid;
 
+{$I compilers.inc}
+
 interface
 
 {$DEFINE CUST_SB}
@@ -82,7 +84,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, ComCtrls, CommCtrl,
   TntSysUtils, TntWindows, TntControls, TntGraphics, {TntComCtrls,} Menus, TntMenus,
-  StrUtils, {$IFDEF COMPILER_10}WideStrUtils,{$ENDIF} TntWideStrUtils,
+  StrUtils, {$IFDEF COMPILER_9_UP}WideStrUtils,{$ENDIF} TntWideStrUtils,
   StdCtrls, Math, mmsystem,
   hpp_global, hpp_contacts, hpp_itemprocess, hpp_events, hpp_eventfilters,
   hpp_richedit, hpp_olesmileys,
@@ -2630,7 +2632,7 @@ begin
   if State = gsInline then
     Result := GetRichString(FRichInline.Handle,True)
   else
-  if Focused and (Selected <> -1) then begin
+  if Selected <> -1 then begin
     FSelectionString := FormatSelected(Options.SelectionFormat);
     FSelectionStored := True;
     Result := FSelectionString;
