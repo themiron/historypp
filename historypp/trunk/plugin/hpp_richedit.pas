@@ -1556,7 +1556,7 @@ begin
   //SendMessage(Handle,EM_AUTOURLDETECT,1,0);
   Perform(EM_AUTOURLDETECT,1,0);
   //SendMessage(Handle,EM_SETEVENTMASK,0,SendMessage(Handle,EM_GETEVENTMASK,0,0) or ENM_LINK);
-  Perform(EM_SETEVENTMASK,0,perform(EM_GETEVENTMASK,0,0) or ENM_LINK);
+  Perform(EM_SETEVENTMASK,0,Perform(EM_GETEVENTMASK,0,0) or ENM_LINK);
   RichEdit_SetOleCallback(Handle, FRichEditOleCallback as IRichEditOleCallback);
   if RichEdit_GetOleInterface(Handle, FRichEditOle) then UpdateHostNames;
 end;
@@ -1689,10 +1689,7 @@ end;
 procedure THppRichedit.CNNotify(var Message: TWMNotify);
 begin
   case Message.NMHdr^.code of
-    EN_LINK: begin
-      LinkNotify(TENLINK(Pointer(Message.NMHdr)^));
-      Message.Result := 1;
-    end;
+    EN_LINK: LinkNotify(TENLINK(Pointer(Message.NMHdr)^));
   else
     inherited;
   end;
