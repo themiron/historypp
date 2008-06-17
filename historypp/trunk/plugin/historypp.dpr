@@ -21,6 +21,11 @@
 
 library historypp;
 
+// use fast memory manager on pre-BDS2006
+{.$DEFINE USE_FASTMM}
+// report leaks on exit, also enables USE_FASTMM
+{.$DEFINE REPORT_LEAKS}
+
 {%ToDo 'historypp.todo'}
 {$R 'hpp_resource.res' 'hpp_resource.rc'}
 {$R 'hpp_res_ver.res' 'hpp_res_ver.rc'}
@@ -28,15 +33,20 @@ library historypp;
 
 {$I compilers.inc}
 
+{$IFDEF REPORT_LEAKS}
+  {$IFNDEF USE_FASTMM}
+    {$DEFINE USE_FASTMM}
+  {$ENDIF ~USE_FASTMM}
+{$ENDIF ~REPORT_LEAKS}
+{$IFDEF USE_FASTMM}
+  {$IFDEF DELPHI_10_UP}
+    {$UNDEF USE_FASTMM}
+  {$ENDIF ~DELPHI_10_UP}
+{$ENDIF ~USE_FASTMM}
+
 uses
-  {$IFDEF REPORT_LEAKS}
-  {$IFNDEF DELPHI_10_UP}
-  FastMM4,
-  {$ENDIF}
-  {$ENDIF}
-  {$IFDEF EUREKALOG}
-  ExceptionLog,
-  {$ENDIF}
+  {$IFDEF USE_FASTMM}FastMM4,{$ENDIF}
+  {$IFDEF EUREKALOG}ExceptionLog,{$ENDIF}
   RtlVclOptimize,
   Windows,
   SysUtils,
