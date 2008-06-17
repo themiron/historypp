@@ -979,7 +979,8 @@ type
     function GetTextRangeA(cpMin,cpMax: Integer): AnsiString;
     function GetTextRangeW(cpMin,cpMax: Integer): WideString;
     function GetTextLength: Integer;
-    procedure ReplaceCharFormat(const FromCF, ToCF: CHARFORMAT2);
+    procedure ReplaceCharFormatRange(const fromCF, toCF: CHARFORMAT2; idx, len: Integer);
+    procedure ReplaceCharFormat(const fromCF, toCF: CHARFORMAT2);
     property Codepage: Cardinal read FCodepage write FCodepage default CP_ACP;
     property UnicodeAPI: Boolean read GetUnicodeAPI;
     property Version: Integer read FVersion;
@@ -1575,25 +1576,44 @@ begin
     Perform(EM_SETLANGOPTIONS,0,new_options);
 end;
 
-procedure THppRichedit.ReplaceCharFormat(const FromCF, ToCF: CHARFORMAT2);
+procedure THppRichedit.ReplaceCharFormatRange(const fromCF, toCF: CHARFORMAT2; idx, len: Integer);
 var
-  cp: Integer;
   cr: CHARRANGE;
   cf: CHARFORMAT2;
+  loglen: Integer;
   res: DWord;
 begin
+  if len = 0 then exit;
+  cr.cpMin := idx;
+  cr.cpMax := idx+len;
+  Perform(EM_EXSETSEL,0,LPARAM(@cr));
   ZeroMemory(@cf,SizeOf(cf));
   cf.cbSize := SizeOf(cf);
-  for cp := 0 to GetTextLength-1 do begin
-    cr.cpMin := cp;
-    cr.cpMax := cp+1;
-    Perform(EM_EXSETSEL,0,LPARAM(@cr));
-    cf.dwMask := FromCF.dwMask;
-    res := Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
-    if ((res and FromCF.dwMask) = 0) or
-       ((cf.dwEffects and FromCF.dwEffects) = 0) then continue;
-    Perform(EM_SETCHARFORMAT,SCF_SELECTION,LPARAM(@ToCF));
-  end;
+  cf.dwMask := fromCF.dwMask;
+  res := Perform(EM_GETCHARFORMAT,SCF_SELECTION,LPARAM(@cf));
+  if (res and fromCF.dwMask) = 0 then begin
+    if len = 2 then begin
+      // wtf, msdn tells that cf will get the format of the first char,
+      // and then we have to select it, if format match or second, if not
+      // instead we got format of the last char... weired
+      if (cf.dwEffects and fromCF.dwEffects) = fromCF.dwEffects then
+        Inc(cr.cpMin) else
+        Dec(cr.cpMax);
+      Perform(EM_EXSETSEL,0,LPARAM(@cr));
+      Perform(EM_SETCHARFORMAT,SCF_SELECTION,LPARAM(@toCF));
+    end else begin
+      loglen := len div 2;
+      ReplaceCharFormatRange(fromCF,toCF,idx,loglen);
+      ReplaceCharFormatRange(fromCF,toCF,idx+loglen,len-loglen);
+    end;
+  end else
+  if (cf.dwEffects and fromCF.dwEffects) = fromCF.dwEffects then
+    Perform(EM_SETCHARFORMAT,SCF_SELECTION,LPARAM(@toCF));
+end;
+
+procedure THppRichedit.ReplaceCharFormat(const fromCF, toCF: CHARFORMAT2);
+begin
+  ReplaceCharFormatRange(fromCF,toCF,0,GetTextLength);
 end;
 
 function THppRichedit.GetUnicodeAPI: Boolean;
