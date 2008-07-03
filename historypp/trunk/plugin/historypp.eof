@@ -1,5 +1,6 @@
+<!-- EurekaLog First Line
 [Exception Log]
-EurekaLog Version=6014
+EurekaLog Version=6015
 Activate=1
 Activate Handle=0
 Save Log File=1
@@ -356,7 +357,7 @@ csoDoNotStoreProcNames=0
 boHandleSafeCallExceptions=0
 boCallRTLExceptionEvent=0
 boCatchHandledExceptions=0
-loCatchLeaks=1
+loCatchLeaks=0
 loGroupsSonLeaks=1
 loHideBorlandLeaks=1
 loFreeAllLeaks=1
@@ -498,5 +499,6 @@ mtException_AntiFreeze0="The application seems to be frozen."
 Count mtInvalidEmailMsg=1
 mtInvalidEmailMsg0="Invalid email."
 TextsCollection=
+EurekaLog Last Line -->
 
 
