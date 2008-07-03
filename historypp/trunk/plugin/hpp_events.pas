@@ -60,7 +60,6 @@ uses
   hpp_global, hpp_contacts, hpp_miranda_mmi;
 
 type
-
   TTextFunction = procedure(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 
   TEventTableItem = record
@@ -78,8 +77,26 @@ type
     iSkin: SmallInt;
   end;
 
-const
+  THppBuffer = class
+  private
+    FBuffer: Pointer;
+    FSize: Integer;
+    FCallCount: Integer;
+    FLock: TRTLCriticalSection;
+  protected
+    procedure Shrink;
+    procedure Clear;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    function Allocate(NewSize: Integer): Integer;
+    procedure Lock;
+    procedure Unlock;
+    property Buffer: Pointer read FBuffer;
+    property Size: Integer read FSize;
+  end;
 
+const
   EVENTTYPE_STATUSCHANGE        = 25368;  // from srmm's
   EVENTTYPE_SMTPSIMPLE          = 2350;   // from SMTP Simple
   EVENTTYPE_NICKNAMECHANGE      = 9001;   // from pescuma
@@ -155,9 +172,6 @@ procedure GetEventTextWATrackError(EventInfo: TDBEventInfo; var Hi: THistoryItem
 procedure GetEventTextForOther(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 // service routines
 function TextHasUrls(var Text: WideString): Boolean;
-function AllocateTextBuffer(len: integer): integer;
-procedure CleanupTextBuffer;
-procedure ShrinkTextBuffer;
 function Utf8ToWideChar(Dest: PWideChar; MaxDestChars: Integer; Source: PChar; SourceBytes: Integer; CodePage: Cardinal = CP_ACP): Integer;
 
 implementation
@@ -178,13 +192,11 @@ type
 // JclDateTime.pas is part of Project JEDI Code Library (JCL)
 // [http://www.delphi-jedi.org], [http://jcl.sourceforge.net]
 const
-
   // 1970-01-01T00:00:00 in TDateTime
   UnixTimeStart = 25569;
   SecondsPerDay = 60* 24 * 60;
 
 var
-
   EventTable: array[0..28] of TEventTableItem = (
     // must be the first item in array for unknown events
     (EventType: MaxWord; MessageType: mtOther; TextFunction: GetEventTextForOther),
@@ -219,9 +231,18 @@ var
     (EventType: EVENTTYPE_VOICE_CALL; MessageType: mtVoiceCall; TextFunction: GetEventTextForMessage)
   );
 
+var
   ModuleEventRecords: array of TModuleEventRecord;
   RecentEvent: THandle = 0;
   RecentEventInfo: TDBEventInfo;
+
+const
+  SHRINK_ON_CALL = 50;
+  SHRINK_TO_LEN  = 512;
+
+var
+  EventBuffer: THppBuffer;
+  TextBuffer: THppBuffer;
 
 function UnixTimeToDateTime(const UnixTime: DWord): TDateTime;
 begin
@@ -310,47 +331,6 @@ begin
   ModuleEventRecords[count].EventRecord := EventRecords[mtOther];
   ModuleEventRecords[count].EventRecord.Name := AnsiToWideString(etd.descr,CP_ACP);
   Result := @ModuleEventRecords[count].EventRecord;
-end;
-
-var
-  buffer: PChar = nil;
-  buflen: Integer = 0;
-
-const
-  SHRINK_ON_CALL = 50;
-  SHRINK_TO_LEN  = 512;
-
-var
-  // allocate some mem, so first ReadEvents would start faster
-  calls_count: Integer = SHRINK_ON_CALL + 1;
-
-procedure CleanupTextBuffer;
-begin
-  FreeMem(buffer,buflen);
-  buffer := nil;
-  buflen := 0;
-end;
-
-procedure ShrinkTextBuffer;
-begin
-  // shrink find_buf on every SHRINK_ON_CALL event, so it's not growing to infinity
-  if calls_count >= SHRINK_ON_CALL then begin
-    buflen := SHRINK_TO_LEN;
-    ReallocMem(buffer,buflen);
-    calls_count := 0;
-  end else
-    Inc(calls_count);
-end;
-
-function AllocateTextBuffer(len: integer): integer;
-begin
-  ShrinkTextBuffer;
-  if len > buflen then begin
-    len := ((len shr 4)+1) shl 4;
-    ReallocMem(buffer,len);
-    buflen := len;
-  end;
-  Result := len;
 end;
 
 function Utf8ToWideChar(Dest: PWideChar; MaxDestChars: Integer; Source: PChar; SourceBytes: Integer; CodePage: Cardinal = CP_ACP): Integer;
@@ -444,17 +424,18 @@ begin
   if not Assigned(WStrPos(PWideChar(Text),':/')) then exit;
 
   lenW := (len+1)*SizeOf(WideChar);
-  AllocateTextBuffer(lenW);
-  Move(Text[1],buffer^,lenW);
-  Tnt_CharLowerBuffW(PWideChar(buffer),len);
 
+  TextBuffer.Lock;
+  TextBuffer.Allocate(lenW);
+  Move(Text[1],TextBuffer.Buffer^,lenW);
+  Tnt_CharLowerBuffW(PWideChar(TextBuffer.Buffer),len);
   for i := 0 to High(protos) do begin
-    pPos := WStrPos(PWideChar(buffer),PWideChar(protos[i]));
+    pPos := WStrPos(PWideChar(TextBuffer.Buffer),PWideChar(protos[i]));
     if not Assigned(pPos) then continue;
-    Result :=
-      ((DWord(pPos)=DWord(buffer)) or not IsWideCharAlphaNumeric((pPos-1)^));
+    Result := ((DWord(pPos)=DWord(TextBuffer.Buffer)) or not IsWideCharAlphaNumeric((pPos-1)^));
     if Result then break;
   end;
+  TextBuffer.Unlock;
 end;
 
 function GetEventInfo(hDBEvent: DWord): TDBEventInfo;
@@ -464,8 +445,10 @@ begin
   ZeroMemory(@Result,SizeOf(Result));
   Result.cbSize := SizeOf(Result);
   BlobSize := PluginLink.CallService(MS_DB_EVENT_GETBLOBSIZE,hDBEvent,0);
-  if BlobSize > 0 then
-    GetMem(Result.pBlob,BlobSize) else
+  if BlobSize > 0 then begin
+    EventBuffer.Allocate(BlobSize);
+    Result.pBlob := EventBuffer.Buffer;
+  end else
     BlobSize := 0;
   Result.cbBlob := BlobSize;
   if PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,LPARAM(@Result)) = 0 then
@@ -500,6 +483,7 @@ var
 begin
   ZeroMemory(@Result,SizeOf(Result));
   Result.Height := -1;
+  EventBuffer.Lock;
   EventInfo := GetEventInfo(hDBEvent);
   try
     Result.Module := EventInfo.szModule;
@@ -524,7 +508,7 @@ begin
         include(Result.MessageType,mtUrl);
       end;
   finally
-    if Assigned(EventInfo.pBlob) then FreeMem(EventInfo.pBlob);
+    EventBuffer.Unlock;
   end;
 end;
 
@@ -553,11 +537,17 @@ var
    dbegt: TDBEVENTGETTEXT;
    msg: Pointer;
 begin
+  Result := False;
   dbegt.dbei := @EventInfo;
   dbegt.datatype := datatypes[hppCoreUnicode];
   dbegt.codepage := hi.Codepage;
-  msg := Pointer(PluginLink.CallService(MS_DB_EVENT_GETTEXT,0,LPARAM(@dbegt)));
-  Result := (msg <> nil);
+  msg := nil;
+  try
+    msg := Pointer(PluginLink.CallService(MS_DB_EVENT_GETTEXT,0,LPARAM(@dbegt)));
+    Result := Assigned(msg);
+  except
+    if Assigned(msg) then MirandaFree(msg);
+  end;
   if Result then begin
     if hppCoreUnicode then
       SetString(hi.Text,PWideChar(msg),WStrLen(PWideChar(msg))) else
@@ -567,27 +557,31 @@ begin
 end;
 
 function GetEventModuleText(EventInfo: TDBEventInfo; var Hi: THistoryItem): Boolean;
+const
+  datatypes: Array[False..True] of Integer = (DBVT_ASCIIZ,DBVT_WCHAR);
 var
    dbegt: TDBEVENTGETTEXT;
-   msgW: PWideChar;
+   msg: Pointer;
    szServiceName: array[0..99] of Char;
 begin
   Result := False;
   dbegt.dbei := @EventInfo;
-  dbegt.datatype := DBVT_WCHAR;
+  dbegt.datatype := datatypes[hppCoreUnicode];
   dbegt.codepage := hi.Codepage;
   StrFmt(szServiceName,'%s/GetEventText%u',[EventInfo.szModule,EventInfo.eventType]);
   if not Boolean(PluginLink.ServiceExists(szServiceName)) then exit;
+  msg := nil;
   try
-    msgW := PWideChar(PluginLink.CallService(szServiceName,0,LPARAM(@dbegt)));
+    msg := Pointer(PluginLink.CallService(szServiceName,0,LPARAM(@dbegt)));
+    Result := Assigned(msg);
   except
-    if Assigned(msgW) then MirandaFree(msgW);
-    exit;
+    if Assigned(msg) then MirandaFree(msg);
   end;
-  if Assigned(msgW) then begin
-    SetString(hi.Text,msgW,WStrLen(msgW));
-    MirandaFree(msgW);
-    Result := True;
+  if Result then begin
+    if hppCoreUnicode then
+      SetString(hi.Text,PWideChar(msg),WStrLen(PWideChar(msg))) else
+      hi.Text := AnsiToWideString(PChar(msg),hi.Codepage,StrLen(PChar(msg)));
+    MirandaFree(msg);
   end;
 end;
 
@@ -967,19 +961,81 @@ procedure GetEventTextForOther(EventInfo: TDBEventInfo; var Hi: THistoryItem);
 var
   cp: Cardinal;
 begin
-  AllocateTextBuffer(EventInfo.cbBlob+1);
-  StrLCopy(buffer,PChar(EventInfo.pBlob),EventInfo.cbBlob);
+  TextBuffer.Allocate(EventInfo.cbBlob+1);
+  StrLCopy(TextBuffer.Buffer,PChar(EventInfo.pBlob),EventInfo.cbBlob);
   if Boolean(EventInfo.flags and DBEF_UTF) then
     cp := CP_UTF8 else
     cp := hi.Codepage;
-  hi.Text := AnsiToWideString(buffer,cp);
+  hi.Text := AnsiToWideString(PChar(TextBuffer.Buffer),cp);
+end;
+
+{ THppBuffer }
+
+constructor THppBuffer.Create;
+begin
+  inherited;
+  FBuffer := nil;
+  FSize := 0;
+  FCallCount := SHRINK_ON_CALL+1;
+  InitializeCriticalSection(FLock);
+  Shrink;
+end;
+
+destructor THppBuffer.Destroy;
+begin
+  Clear;
+  DeleteCriticalSection(FLock);
+  inherited;
+end;
+
+function THppBuffer.Allocate(NewSize: Integer): Integer;
+begin
+  Shrink;
+  if NewSize > FSize then begin
+    FSize := ((NewSize shr 4)+1) shl 4;
+    ReallocMem(FBuffer,FSize);
+  end;
+  Result := FSize;
+end;
+
+procedure THppBuffer.Shrink;
+begin
+  // shrink buffer on every SHRINK_ON_CALL event,
+  // so it's not growing to infinity
+  if (FSize > SHRINK_TO_LEN) and
+     (FCallCount >= SHRINK_ON_CALL) then begin
+    FSize := SHRINK_TO_LEN;
+    ReallocMem(FBuffer,FSize);
+    FCallCount := 0;
+  end else
+    Inc(FCallCount);
+end;
+
+procedure THppBuffer.Clear;
+begin
+  FreeMem(FBuffer,FSize);
+  FBuffer := nil;
+  FSize := 0;
+  FCallCount := 0;
+end;
+
+procedure THppBuffer.Lock;
+begin
+  EnterCriticalSection(FLock);
+end;
+
+procedure THppBuffer.Unlock;
+begin
+  LeaveCriticalSection(FLock);
 end;
 
 initialization
-  ShrinkTextBuffer;
+  EventBuffer := THppBuffer.Create;
+  TextBuffer := THppBuffer.Create;
 
 finalization
-  CleanupTextBuffer;
+  EventBuffer.Destroy;
+  TextBuffer.Destroy;
   SetLength(ModuleEventRecords,0);
 
 end.
