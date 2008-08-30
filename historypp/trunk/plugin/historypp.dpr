@@ -22,7 +22,7 @@
 library historypp;
 
 // use fast memory manager on pre-BDS2006
-{.$DEFINE USE_FASTMM}
+{$DEFINE USE_FASTMM}
 // report leaks on exit, also enables USE_FASTMM
 {.$DEFINE REPORT_LEAKS}
 
