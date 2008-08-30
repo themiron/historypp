@@ -135,43 +135,11 @@ var
   );
 
 const
-  SHRINK_ON_CALL = 50;
-  SHRINK_TO_LEN  = 512;
   MAX_FMTBUF     = 4095;
 
 var
   i: integer;
-  buffer: PChar = nil;
-  buflen: Integer = 0;
-  calls_count: Integer = 0;
-
-procedure CleanupTextBuffer;
-begin
-  FreeMem(buffer,buflen);
-  buffer := nil;
-  buflen := 0;
-end;
-
-procedure ShrinkTextBuffer;
-begin
-  // shrink find_buf on every SHRINK_ON_CALL event, so it's not growing to infinity
-  if calls_count >= SHRINK_ON_CALL then begin
-    buflen := SHRINK_TO_LEN;
-    ReallocMem(buffer,buflen);
-    calls_count := 0;
-  end else
-    Inc(calls_count);
-end;
-
-function AllocateTextBuffer(len: Integer): Integer;
-begin
-  if len > buflen then begin
-    len := ((len shr 4)+1) shl 4;
-    ReallocMem(buffer,len);
-    buflen := len;
-  end;
-  Result := len;
-end;
+  TextBuffer: THppBuffer;
 
 function GetColorRTF(code: AnsiString; colcount: integer): integer;
 var
@@ -197,7 +165,7 @@ begin
   oldTrail := strTrail;
   strTrail := strStart+len;
   Result := strEnd+(strTrail-oldTrail);
-  AllocateTextBuffer((Result-buffer)+1);
+  TextBuffer.Allocate((Result-TextBuffer.Buffer)+1);
   StrMove(strTrail,oldTrail,strEnd-oldTrail+1);
   if len > 0 then
     StrMove(strStart,str,len);
@@ -213,7 +181,7 @@ begin
   end;
   len := StrLen(str);
   Result := strEnd+len;
-  AllocateTextBuffer((Result-buffer)+1);
+  TextBuffer.Allocate((Result-TextBuffer.Buffer)+1);
   StrMove(strEnd,str,len+1);
 end;
 
@@ -287,15 +255,15 @@ var
   fmt_buffer: array[0..MAX_FMTBUF] of Char;
   code: AnsiString;
 begin
-  ShrinkTextBuffer;
-  AllocateTextBuffer(Length(S)+1);
-  bufEnd := StrECopy(buffer,PChar(S));
+  TextBuffer.Lock;
+  TextBuffer.Allocate(Length(S)+1);
+  bufEnd := StrECopy(TextBuffer.Buffer,PChar(S));
   for i := 0 to High(bbCodes) do begin
     if hppRichEditVersion < bbCodes[i,bbStart].minRE then continue;
-    bufPos := buffer;
+    bufPos := TextBuffer.Buffer;
     repeat
       newCode := nil;
-      sfound := StrSearch(buffer,
+      sfound := StrSearch(TextBuffer.Buffer,
           bbCodes[i,bbStart].prefix.ansi,bbCodes[i,bbStart].suffix.ansi,
           strStart,strTrail,strCode,lenCode);
       if sfound then begin
@@ -348,7 +316,8 @@ begin
       until sfound or not efound;
     until not sfound;
   end;
-  SetString(Result,buffer,bufEnd-buffer);
+  SetString(Result,PChar(TextBuffer.Buffer),bufEnd-TextBuffer.Buffer);
+  TextBuffer.Unlock;
 end;
 
 function DoSupportBBCodesHTML(S: AnsiString): AnsiString;
@@ -360,13 +329,13 @@ var
   fmt_buffer: array[0..MAX_FMTBUF] of Char;
   code: AnsiString;
 begin
-  ShrinkTextBuffer;
-  AllocateTextBuffer(Length(S)+1);
-  bufEnd := StrECopy(buffer,PChar(S));
+  TextBuffer.Lock;
+  TextBuffer.Allocate(Length(S)+1);
+  bufEnd := StrECopy(TextBuffer.Buffer,PChar(S));
   for i := 0 to High(bbCodes) do begin
-    bufPos := buffer;
+    bufPos := TextBuffer.Buffer;
     repeat
-      sfound := StrSearch(buffer,
+      sfound := StrSearch(TextBuffer.Buffer,
           bbCodes[i,bbStart].prefix.ansi,bbCodes[i,bbStart].suffix.ansi,
           strStart,strTrail,strCode,lenCode);
       if sfound then begin
@@ -394,7 +363,8 @@ begin
       until sfound or not efound;
     until not sfound;
   end;
-  SetString(Result,buffer,bufEnd-buffer);
+  SetString(Result,PChar(TextBuffer.Buffer),bufEnd-TextBuffer.Buffer);
+  TextBuffer.Unlock;
 end;
 
 function DoStripBBCodes(S: WideString): WideString;
@@ -518,11 +488,9 @@ initialization
     bbCodes[i,bbEnd].prefix.wide := bbCodes[i,bbEnd].prefix.ansi;
     bbCodes[i,bbEnd].suffix.wide := bbCodes[i,bbEnd].suffix.ansi;
   end;
-  // allocate some mem, so first ReadEvents would start faster
-  calls_count := SHRINK_ON_CALL + 1;
-  ShrinkTextBuffer;
+  TextBuffer := THppBuffer.Create;
 
 finalization
-  CleanupTextBuffer;
+  TextBuffer.Destroy;
 
 end.
