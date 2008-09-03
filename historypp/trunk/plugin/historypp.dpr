@@ -21,6 +21,8 @@
 
 library historypp;
 
+{$IMAGEBASE $02630000}
+
 // use fast memory manager on pre-BDS2006
 {$DEFINE USE_FASTMM}
 // report leaks on exit, also enables USE_FASTMM
@@ -39,6 +41,8 @@ library historypp;
   {$ENDIF ~USE_FASTMM}
 {$ENDIF ~REPORT_LEAKS}
 {$IFDEF USE_FASTMM}
+  // handle > 2Gb adresses with fastmm
+  {$SetPEFlags $20}
   {$IFDEF DELPHI_10_UP}
     {$UNDEF USE_FASTMM}
   {$ENDIF ~DELPHI_10_UP}
