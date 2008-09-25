@@ -534,8 +534,8 @@ function GetEventCoreText(EventInfo: TDBEventInfo; var Hi: THistoryItem): Boolea
 const
   datatypes: Array[False..True] of Integer = (DBVT_ASCIIZ,DBVT_WCHAR);
 var
-   dbegt: TDBEVENTGETTEXT;
-   msg: Pointer;
+  dbegt: TDBEVENTGETTEXT;
+  msg: Pointer;
 begin
   Result := False;
   dbegt.dbei := @EventInfo;
@@ -559,17 +559,22 @@ end;
 function GetEventModuleText(EventInfo: TDBEventInfo; var Hi: THistoryItem): Boolean;
 const
   datatypes: Array[False..True] of Integer = (DBVT_ASCIIZ,DBVT_WCHAR);
+  maxServiceLength = 99;
 var
-   dbegt: TDBEVENTGETTEXT;
-   msg: Pointer;
-   szServiceName: array[0..99] of Char;
+  dbegt: TDBEVENTGETTEXT;
+  msg: Pointer;
+  szServiceName: array[0..maxServiceLength] of Char;
 begin
   Result := False;
   dbegt.dbei := @EventInfo;
   dbegt.datatype := datatypes[hppCoreUnicode];
   dbegt.codepage := hi.Codepage;
-  StrFmt(szServiceName,'%s/GetEventText%u',[EventInfo.szModule,EventInfo.eventType]);
-  if not Boolean(PluginLink.ServiceExists(szServiceName)) then exit;
+  try
+    StrLFmt(szServiceName,maxServiceLength,'%s/GetEventText%u',[EventInfo.szModule,EventInfo.eventType]);
+    Result := Boolean(PluginLink.ServiceExists(szServiceName));
+  except
+  end;
+  if not Result then exit;
   msg := nil;
   try
     msg := Pointer(PluginLink.CallService(szServiceName,0,LPARAM(@dbegt)));
