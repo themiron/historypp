@@ -1,7 +1,7 @@
 (*
     History++ plugin for Miranda IM: the free IM client for Microsoft* Windows*
 
-    Copyright (Ñ) 2006-2007 theMIROn, 2003-2006 Art Fedorov.
+    Copyright (Ñ) 2006-2008 theMIROn, 2003-2006 Art Fedorov.
     History+ parts (C) 2001 Christian Kastner
 
     This program is free software; you can redistribute it and/or modify
