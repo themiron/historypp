@@ -9,6 +9,29 @@ Changelog
 
 SVN Changelog: https://opensvn.csie.org/traccgi/historypp/log/?verbose=on
 
+1.5.1.2
+
++ Added ability to use more than 2Gb memory addresses if available
++ Added ability to save selected messages in IEView emulation mode
++ Added ability to group messages in history window
++ Added grouped messages support in html, rtf, txt export
++ Added new and hidden plugin options
+- Fixed possible crash on malformed events or events from too long module names
+- Fixed hand cursor over urls in pseudo edit mode and event details form
+- Fixed unexpected vertical scrollbar in pseudo-edit mode
+- Fixed 'out of memory' error on huge histories open
+- Fixed accidentally history erase even in case of dialog cancel
+- Fixed locking/unlocking event's bitmap with animated smiley objects
+! Redesigned options dialog
+! Made instant "show history count" options applying
+! Reintroduced auto-word-select on double click
+! Significantly optimized speed of long messages rendering
+! Optimized multithreaded event reading and bbcodes processing
+! Deprecated usage of msftedit.dll (richedit 4.1) due visual glitches
+! Improved external grid processing in native and IEView emulation mode
+! Imagebase set to 0x02630000
+! Minor code cleaning
+
 1.5.1.1
 
 + Added animated smileys support (yeah, baby!)
