@@ -276,6 +276,18 @@ Set the default options for FastMM here.
   {.$define UseOutputDebugString}
 {$endif}
 
+{History++ Options}
+  {$define AssumeMultiThreaded}
+  {$define NoDebugInfo}
+  {$define ASMVersion}
+  {$undef CheckHeapForCorruption}
+  {$undef FullDebugMode}
+  {$define EnableMemoryLeakReporting}
+    {$define HideExpectedLeaksRegisteredByPointer}
+    {$define ManualLeakReportingControl}
+  {$define EnableMMX}
+    {$undef ForceMMX}
+
 {--------------------Compilation Options For borlndmm.dll---------------------}
 {If you're compiling the replacement borlndmm.dll, set the defines below
  for the kind of dll you require.}
