@@ -172,8 +172,9 @@ const
     (Index: 1;  Filter:'HTML file'; DefaultExt:'*.html'; Owned:[]; OwnedIndex: -1),
     (Index: 2;  Filter:'XML file'; DefaultExt:'*.xml'; Owned:[]; OwnedIndex: -1),
     (Index: 3;  Filter:'RTF file'; DefaultExt:'*.rtf'; Owned:[]; OwnedIndex: -1),
-    (Index: 4;  Filter:'Unicode text file'; DefaultExt:'*.txt'; Owned:[sfUnicode,sfText]; OwnedIndex: 1),
-    (Index: 5;  Filter:'Text file'; DefaultExt:'*.txt'; Owned:[sfUnicode,sfText]; OwnedIndex: 2));
+    (Index: 4;  Filter:'mContacts files'; DefaultExt:'*.dat'; Owned:[]; OwnedIndex: -1),
+    (Index: 5;  Filter:'Unicode text file'; DefaultExt:'*.txt'; Owned:[sfUnicode,sfText]; OwnedIndex: 1),
+    (Index: 6;  Filter:'Text file'; DefaultExt:'*.txt'; Owned:[sfUnicode,sfText]; OwnedIndex: 2));
 
 var
   hppIntIcons: array[0..0] of ThppIntIconsRec = (

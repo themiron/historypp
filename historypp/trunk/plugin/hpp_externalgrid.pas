@@ -122,6 +122,7 @@ type
     procedure GridInlineKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure GridItemDelete(Sender: TObject; Index: Integer);
     procedure GridXMLData(Sender: TObject; Index: Integer; var Item: TXMLItem);
+    procedure GridMCData(Sender: TObject; Index: Integer; var Item: TMCItem; Stage: TSaveStage);
     procedure OnCopyClick(Sender: TObject);
     procedure OnCopyTextClick(Sender: TObject);
     procedure OnSelectAllClick(Sender: TObject);
@@ -379,6 +380,7 @@ begin
   Grid.OnInlineKeyDown := GridInlineKeyDown;
   Grid.OnItemDelete := GridItemDelete;
   Grid.OnXMLData := GridXMLData;
+  Grid.OnMCData := GridMCData;
 
   Grid.TxtFullLog := TranslateWideW(Grid.TxtFullLog{TRANSLATE-IGNORE});
   Grid.TxtGenHist1 := TranslateWideW(Grid.TxtGenHist1{TRANSLATE-IGNORE});
@@ -1120,6 +1122,49 @@ begin
     Item.ID := '&UNK;'
   else
     Item.ID := MakeTextXMLedA(Item.ID);
+end;
+
+procedure TExternalGrid.GridMCData(Sender: TObject; Index: Integer; var Item: TMCItem; Stage: TSaveStage);
+var
+  DBEventInfo: TDBEventInfo;
+  hDBEvent:DWord;
+  DataOffset: PChar;
+  TextUTF: AnsiString;
+begin
+  if Stage = ssInit then begin
+    Item.Size := 0;
+    if Items[Index].Custom then begin
+      ZeroMemory(@DBEventInfo,SizeOf(DBEventInfo));
+      DBEventInfo.cbSize := SizeOf(DBEventInfo);
+      DBEventInfo.timestamp := Items[Index].CustomEvent.Time;
+      DBEventInfo.flags := DBEF_READ or DBEF_UTF;
+      if Items[Index].CustomEvent.Sent then
+        DBEventInfo.flags := DBEventInfo.flags or DBEF_SENT;
+      DBEventInfo.eventType := EVENTTYPE_MESSAGE;
+      TextUTF := UTF8Encode(Items[Index].CustomEvent.Text)+#0;
+      DBEventInfo.cbBlob := Length(TextUTF)+1;
+      DBEventInfo.pBlob := Pointer(PChar(TextUTF));
+      Item.Size := DBEventInfo.cbSize + DBEventInfo.cbBlob;
+    end else begin
+      hDBEvent := Items[Index].hDBEvent;
+      if hDBEvent <> 0 then begin
+        DBEventInfo := GetEventInfo(hDBEvent);
+        DBEventInfo.szModule := nil;
+        DBEventInfo.flags := DBEventInfo.flags and not DBEF_FIRST;
+        Item.Size := DBEventInfo.cbSize + DBEventInfo.cbBlob;
+      end;
+    end;
+    if Item.Size > 0 then begin
+      GetMem(Item.Buffer,Item.Size);
+      DataOffset := PChar(Item.Buffer) + DBEventInfo.cbSize;
+      Move(DBEventInfo,Item.Buffer^,DBEventInfo.cbSize);
+      Move(DBEventInfo.pBlob^,DataOffset^,DBEventInfo.cbBlob);
+    end;
+  end else
+  if Stage = ssDone then begin
+    if Item.Size > 0 then
+      FreeMem(Item.Buffer,Item.Size);
+  end;
 end;
 
 procedure TExternalGrid.SetEventFilter(FilterIndex: Integer = -1);
