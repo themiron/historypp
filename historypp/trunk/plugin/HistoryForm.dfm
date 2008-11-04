@@ -88,6 +88,7 @@ object HistoryFrm: THistoryFrm
         OnState = hgState
         OnSelect = hgSelect
         OnXMLData = hgXMLData
+        OnMCData = hgMCData
         OnRTLChange = hgRTLEnabled
         OnUrlClick = hgUrlClick
         OnBookmarkClick = hgBookmarkClick
@@ -776,6 +777,10 @@ object HistoryFrm: THistoryFrm
     object SaveasRTF2: TTntMenuItem
       Caption = 'Export as &RTF...'
       OnClick = SaveasRTF2Click
+    end
+    object SaveasMContacts2: TTntMenuItem
+      Caption = 'Export as &mContacts...'
+      OnClick = SaveasMContacts2Click
     end
     object SaveasText2: TTntMenuItem
       Caption = 'Export as &Text...'

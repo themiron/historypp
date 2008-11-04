@@ -97,8 +97,9 @@ type
     name: WideString;
   end;
 
-  TSaveFormat = (sfAll,sfHTML,sfXML,sfRTF,sfUnicode,sfText);
+  TSaveFormat = (sfAll,sfHTML,sfXML,sfRTF,sfMContacts,sfUnicode,sfText);
   TSaveFormats = set of TSaveFormat;
+  TSaveStage = (ssInit,ssDone);
 
   TWideStrArray = array of WideString;
   TIntArray = array of Integer;

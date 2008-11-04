@@ -119,11 +119,17 @@ type
     ID: string;
   end;
 
+  TMCItem = record
+    Size: Integer;
+    Buffer: PByte;
+  end;
+
   TOnSelect = procedure(Sender: TObject; Item, OldItem: Integer) of object;
   TOnBookmarkClick = procedure(Sender: TObject; Item: Integer) of object;
   TGetItemData = procedure(Sender: TObject; Index: Integer; var Item: THistoryItem) of object;
   TGetNameData = procedure(Sender: TObject; Index: Integer; var Name: WideString) of object;
   TGetXMLData = procedure(Sender: TObject; Index: Integer; var Item: TXMLItem) of object;
+  TGetMCData = procedure(Sender: TObject; Index: Integer; var Item: TMCItem; Stage: TSaveStage) of object;
   TOnPopup = TNotifyEvent;
   TOnTranslateTime = procedure(Sender: TObject; Time: DWord; var Text: WideString) of object;
   TOnProgress = procedure(Sender: TObject; Position, Max: Integer) of object;
@@ -429,6 +435,7 @@ type
     FOnSelect: TOnSelect;
     FOnFilterChange: TOnFilterChange;
     FGetXMLData: TGetXMLData;
+    FGetMCData: TGetMCData;
     FOnItemFilter: TOnItemFilter;
     {$IFDEF CUST_SB}
       FVertScrollBar: TVertScrollBar;
@@ -743,6 +750,7 @@ type
     property OnState: TOnState read FOnState write FOnState;
     property OnSelect: TOnSelect read FOnSelect write FOnSelect;
     property OnXMLData: TGetXMLData read FGetXMLData write FGetXMLData;
+    property OnMCData: TGetMCData read FGetMCData write FGetMCData;
     property OnRTLChange: TOnRTLChange read FOnRTLChange write FOnRTLChange;
     {IFDEF RENDER_RICH}
     property OnUrlClick: TUrlClickItemEvent read FOnUrlClick write FOnUrlClick;
@@ -796,8 +804,22 @@ uses
   hpp_options, hpp_arrays, hpp_strparser,
   ComObj;
 
+type
+  TMCHeader = packed record
+    Signature: array[0..1] of Char;
+    Version: Integer;
+    DataSize: Integer;
+  end;
+
 const
   HtmlStop = [#0,#10,#13,'<','>','[',']',' ','''','"'];
+
+var
+  mcHeader: TMCHeader = (
+    Signature: 'HB';
+    Version: -1;
+    DataSize: 0;
+  );
 
 function UrlHighlightHtml(Text: String): String;
 var
@@ -4354,6 +4376,12 @@ var
     FRichSave.Perform(EM_SETOLECALLBACK, 0, DWord(TRichEditOleCallback(FRichSaveOLECB) as IRichEditOleCallback));
   end;
 
+  procedure SaveMContacts;
+  begin
+    mcHeader.DataSize := 0;
+    Stream.Write(mcHeader,SizeOf(mcHeader))
+  end;
+
 begin
   Proto :=  AnsiToWideString(Protocol,Codepage);
   ProfileId := AnsiToWideString(GetContactID(0,Protocol,False),Codepage);
@@ -4361,6 +4389,7 @@ begin
   case SaveFormat of
     sfHTML: SaveHTML;
     sfXML: SaveXML;
+    sfMContacts: SaveMContacts;
     sfRTF: SaveRTF;
     sfUnicode: SaveUnicode;
     sfText: SaveText;
@@ -4400,11 +4429,18 @@ procedure THistoryGrid.SaveEnd(Stream: TFileStream; SaveFormat: TSaveFormat);
     FRichSaveOLECB.Free;
   end;
 
+  procedure SaveMContacts;
+  begin
+    Stream.Seek(SizeOf(mcHeader)-SizeOf(mcHeader.DataSize),soFromBeginning);
+    Stream.Write(mcHeader.DataSize,SizeOf(mcHeader.DataSize));
+  end;
+
 begin
   case SaveFormat of
     sfHTML: SaveHTML;
     sfXML: SaveXML;
     sfRTF: SaveRTF;
+    sfMContacts: SaveMContacts;
     sfUnicode: SaveUnicode;
     sfText: SaveText;
   end;
@@ -4575,12 +4611,24 @@ procedure THistoryGrid.SaveItem(Stream: TFileStream; Item: Integer; SaveFormat: 
     SetRichRTF(FRichSave.Handle,RTFStream,True,False,False);
   end;
 
+  procedure SaveMContacts;
+  var
+    MCItem: TMCItem;
+  begin
+    if not Assigned(FGetMCData) then exit;
+    FGetMCData(Self,Item,MCItem,ssInit);
+    Stream.Write(MCItem.Buffer^,MCItem.Size);
+    FGetMCData(Self,Item,MCItem,ssDone);
+    Inc(mcHeader.DataSize,MCItem.Size);
+  end;
+
 begin
   LoadItem(Item,False);
   case SaveFormat of
     sfHTML: SaveHTML;
     sfXML: SaveXML;
     sfRTF: SaveRTF;
+    sfMContacts: SaveMContacts;
     sfUnicode: SaveUnicode;
     sfText: SaveText;
   end;

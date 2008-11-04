@@ -130,6 +130,7 @@ type
     edPass: TPasswordEdit;
     bnPass: TTntButton;
     pmHistory: TTntPopupMenu;
+    SaveasMContacts2: TTntMenuItem;
     SaveasRTF2: TTntMenuItem;
     SaveasXML2: TTntMenuItem;
     SaveasHTML2: TTntMenuItem;
@@ -222,6 +223,7 @@ type
     SpeakMessage1: TTntMenuItem;
     procedure tbHistoryClick(Sender: TObject);
     procedure SaveasText2Click(Sender: TObject);
+    procedure SaveasMContacts2Click(Sender: TObject);
     procedure SaveasRTF2Click(Sender: TObject);
     procedure SaveasXML2Click(Sender: TObject);
     procedure SaveasHTML2Click(Sender: TObject);
@@ -271,6 +273,7 @@ type
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure hgSelect(Sender: TObject; Item, OldItem: Integer);
     procedure hgXMLData(Sender: TObject; Index: Integer; var Item: TXMLItem);
+    procedure hgMCData(Sender: TObject; Index: Integer; var Item: TMCItem; Stage: TSaveStage);
     procedure OpenLinkClick(Sender: TObject);
     procedure OpenLinkNWClick(Sender: TObject);
     procedure CopyLinkClick(Sender: TObject);
@@ -552,7 +555,7 @@ begin
   FileName := tmp1;
 end;}
 
-function GetEventInfo(hDBEvent: DWord): TDBEVENTINFO;
+{function GetEventInfo(hDBEvent: DWord): TDBEVENTINFO;
 var
   BlobSize:Integer;
 begin
@@ -565,7 +568,7 @@ begin
   Result.cbBlob:=BlobSize;
 
   PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,Integer(@Result));
-end;
+end;}
 
 (*
 This function gets only name of the file
@@ -3328,6 +3331,21 @@ begin
   WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
 end;
 
+procedure THistoryFrm.SaveasMContacts2Click(Sender: TObject);
+var
+  t: String;
+begin
+  PrepareSaveDialog(SaveDialog,sfMContacts);
+  t := Translate('Full History [%s] - [%s]');
+  t := Format(t,[WideToAnsiString(hg.ProfileName,CP_ACP),WideToAnsiString(hg.ContactName,CP_ACP)]);
+  t := MakeFileName(t);
+  SaveDialog.FileName := t;
+  if not SaveDialog.Execute then exit;
+  hg.SaveAll(SaveDialog.Files[0],sfMContacts);
+  RecentFormat := sfMContacts;
+  WriteDBInt(hppDBName,'ExportFormat',Integer(RecentFormat));
+end;
+
 procedure THistoryFrm.tbHistorySearchClick(Sender: TObject);
 begin
   PluginLink.CallService(MS_HPP_SHOWGLOBALSEARCH,0,0);
@@ -3748,6 +3766,34 @@ procedure THistoryFrm.hgOptionsChange(Sender: TObject);
 begin
   if Assigned(EventDetailForm) then
     TEventDetailsFrm(EventDetailForm).ResetItem;
+end;
+
+procedure THistoryFrm.hgMCData(Sender: TObject; Index: Integer; var Item: TMCItem; Stage: TSaveStage);
+var
+  DBEventInfo: TDBEventInfo;
+  hDBEvent:DWord;
+  DataOffset: PChar;
+begin
+  if Stage = ssInit then begin
+    Item.Size := 0;
+    hDBEvent := History[GridIndexToHistory(Index)];
+    if hDBEvent <> 0 then begin
+      DBEventInfo := GetEventInfo(hDBEvent);
+      DBEventInfo.szModule := nil;
+      DBEventInfo.flags := DBEventInfo.flags and not DBEF_FIRST;
+      Item.Size := DBEventInfo.cbSize+DBEventInfo.cbBlob;
+    end;
+    if Item.Size > 0 then begin
+      GetMem(Item.Buffer,Item.Size);
+      DataOffset := PChar(Item.Buffer) + DBEventInfo.cbSize;
+      Move(DBEventInfo,Item.Buffer^,DBEventInfo.cbSize);
+      Move(DBEventInfo.pBlob^,DataOffset^,DBEventInfo.cbBlob);
+    end;
+  end else
+  if Stage = ssDone then begin
+    if Item.Size > 0 then
+      FreeMem(Item.Buffer,Item.Size);
+  end;
 end;
 
 end.
