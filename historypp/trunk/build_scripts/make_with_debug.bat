@@ -1,7 +1,7 @@
 @echo off
 
-set UPXLONGPATH="c:\program files\upx\upx.exe"
-set ZIPLONGPATH="c:\program files\7-zip\7z.exe"
+set UPXLONGPATH="%ProgramFiles%\upx\upx.exe"
+set ZIPLONGPATH="%ProgramFiles%\7-zip\7z.exe"
 set ALPHA=
 
 rem #
