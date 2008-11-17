@@ -1,10 +1,10 @@
 @echo off
 
-set D6LIB=c:\program files\borland\delphi6\lib
-set D7LIB=c:\program files\borland\delphi7\lib
-set D8LIB=c:\program files\borland\bds\2.0\lib
-set D2005LIB=c:\program files\borland\bds\3.0\lib
-set D2006LIB=c:\program files\borland\bds\4.0\lib
+set D6LIB=%ProgramFiles%\borland\delphi6\lib
+set D7LIB=%ProgramFiles%\borland\delphi7\lib
+set D8LIB=%ProgramFiles%\borland\bds\2.0\lib
+set D2005LIB=%ProgramFiles%\borland\bds\3.0\lib
+set D2006LIB=%ProgramFiles%\borland\bds\4.0\lib
 
 brcc32 > nul 2>&1
 if errorlevel 2 goto nobcc
