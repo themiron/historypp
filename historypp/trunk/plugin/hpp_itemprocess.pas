@@ -156,33 +156,44 @@ end;
 
 function StrReplace(strStart, str, strEnd: PChar; var strTrail: PChar): PChar;
 var
-  len: integer;
-  oldTrail: PChar;
+  len,delta: integer;
+  tmpStartPos,tmpEndPos,tmpTrailPos: Integer;
+  tmpStart,tmpEnd,tmpTrail: PChar;
 begin
   if str = nil then
     len := 0 else
     len := StrLen(str);
-  oldTrail := strTrail;
-  strTrail := strStart+len;
-  Result := strEnd+(strTrail-oldTrail);
-  TextBuffer.Allocate((Result-TextBuffer.Buffer)+1);
-  StrMove(strTrail,oldTrail,strEnd-oldTrail+1);
+  delta := len-(strTrail-strStart);
+  tmpStartPos := strStart-TextBuffer.Buffer;
+  tmpTrailPos := strTrail-TextBuffer.Buffer;
+  tmpEndPos := strEnd-TextBuffer.Buffer;
+  TextBuffer.Reallocate(tmpEndPos+delta+1);
+  tmpStart := PChar(TextBuffer.Buffer)+tmpStartPos;
+  tmpTrail := PChar(TextBuffer.Buffer)+tmpTrailPos;
+  tmpEnd := PChar(TextBuffer.Buffer)+tmpEndPos;
+  strTrail := tmpTrail+delta;
+  StrMove(strTrail,tmpTrail,tmpEnd-tmpTrail+1);
   if len > 0 then
-    StrMove(strStart,str,len);
+    StrMove(tmpStart,str,len);
+  Result := tmpEnd+delta;
 end;
 
 function StrAppend(str, strEnd: PChar): PChar;
 var
   len: integer;
+  tmpEndPos: integer;
+  tmpEnd: PChar;
 begin
   if str = nil then begin
     Result := strEnd;
     exit;
   end;
   len := StrLen(str);
-  Result := strEnd+len;
-  TextBuffer.Allocate((Result-TextBuffer.Buffer)+1);
-  StrMove(strEnd,str,len+1);
+  tmpEndPos := strEnd-TextBuffer.Buffer;
+  TextBuffer.Reallocate(tmpEndPos+len+1);
+  tmpEnd := PChar(TextBuffer.Buffer)+tmpEndPos;
+  StrMove(tmpEnd,str,len+1);
+  Result := tmpEnd+len;
 end;
 
 function StrSearch(str,prefix,suffix: PChar; var strStart,strEnd,strCode: PChar; var lenCode: integer): Boolean;
@@ -381,6 +392,7 @@ begin
         WideStream := Tnt_WideStringReplace(WideStream,bbCodes[i,bbClass].prefix.wide,'',[rfReplaceAll])
       else repeat
         spos := Pos(bbCodes[i,bbClass].prefix.wide,WideStream);
+        epos := 0;
         if spos > 0 then begin
           cpos := spos+Length(bbCodes[i,bbClass].prefix.wide);
           slen := Length(bbCodes[i,bbClass].suffix.wide);
