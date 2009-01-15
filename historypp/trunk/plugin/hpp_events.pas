@@ -89,6 +89,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    function Reallocate(NewSize: Integer): Integer;
     function Allocate(NewSize: Integer): Integer;
     procedure Lock;
     procedure Unlock;
@@ -993,14 +994,19 @@ begin
   inherited;
 end;
 
-function THppBuffer.Allocate(NewSize: Integer): Integer;
+function THppBuffer.Reallocate(NewSize: Integer): Integer;
 begin
-  Shrink;
   if NewSize > FSize then begin
     FSize := ((NewSize shr 4)+1) shl 4;
     ReallocMem(FBuffer,FSize);
   end;
   Result := FSize;
+end;
+
+function THppBuffer.Allocate(NewSize: Integer): Integer;
+begin
+  Shrink;
+  Result := Reallocate(NewSize);
 end;
 
 procedure THppBuffer.Shrink;
