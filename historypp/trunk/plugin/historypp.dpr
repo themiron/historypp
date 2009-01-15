@@ -385,16 +385,17 @@ begin
   // Register in updater
   if Boolean(PluginLink.ServiceExists(MS_UPDATE_REGISTER)) then begin
     ZeroMemory(@upd,SizeOf(upd));
-    upd.cpbVersion := SizeOf(upd);
+    upd.cbSize := SizeOf(upd);
     upd.szComponentName := hppShortName;
     upd.pbVersion := @hppVersionStr[1];
     upd.cpbVersion := Length(hppVersionStr);
-
+    // file listing section
+    //upd.szUpdateURL = UPDATER_AUTOREGISTER;
     upd.szUpdateURL := hppFLUpdateURL;
     upd.szVersionURL := hppFLVersionURL;
     upd.pbVersionPrefix := hppFLVersionPrefix;
     upd.cpbVersionPrefix := Length(hppFLVersionPrefix);
-
+    // alpha-beta section
     upd.szBetaUpdateURL := hppUpdateURL;
     upd.szBetaVersionURL := hppVersionURL;
     upd.pbBetaVersionPrefix := hppVersionPrefix;
