@@ -130,7 +130,7 @@ const
   hppFLVersionURL   = 'http://addons.miranda-im.org/details.php?action=viewfile&id=2995';
   hppFLVersionPrefix= '<span class="fileNameHeader">'+hppShortName+' ';
   hppUpdateURL      = 'http://themiron.miranda.im/historypp';
-  hppVersionURL     = 'http://themiron.miranda.im/testversion';
+  hppVersionURL     = 'http://themiron.miranda.im/version';
   hppVersionPrefix  = hppName+' version ';
 
   hppHomePageURL  = 'http://themiron.miranda.im/';
