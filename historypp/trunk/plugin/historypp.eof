@@ -1,5 +1,5 @@
 [Exception Log]
-EurekaLog Version=6017
+EurekaLog Version=6018
 Activate=1
 Activate Handle=0
 Save Log File=1
@@ -22,7 +22,7 @@ Output Path=
 Encrypt Password=
 AutoCloseDialogSecs=0
 WebSendMode=0
-SupportULR=http://themiron.mirandaim.ru
+SupportULR=http://themiron.miranda.im
 HTMLLayout Count=15
 HTMLLine0="%3Chtml%3E"
 HTMLLine1="  %3Chead%3E"
