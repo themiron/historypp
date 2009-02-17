@@ -1543,7 +1543,7 @@ begin
       if Integer(year.Data) <> YearOf(dt) then year := nil;
     end;
     if year = nil then begin
-      year := tvSess.Items.AddChild(nil,FormatDateTime(HPP_SESS_YEARFORMAT,dt));
+      year := tvSess.Items.AddChild(nil,WideFormatDateTime(HPP_SESS_YEARFORMAT,dt));
       year.Data := Pointer(YearOf(dt));
       year.ImageIndex := 5;
       //year.SelectedIndex := year.ImageIndex;
@@ -1554,7 +1554,7 @@ begin
       if Integer(month.Data) <> MonthOf(dt) then month := nil;
     end;
     if month = nil then begin
-      month := tvSess.Items.AddChild(year,FormatDateTime(HPP_SESS_MONTHFORMAT,dt));
+      month := tvSess.Items.AddChild(year,WideFormatDateTime(HPP_SESS_MONTHFORMAT,dt));
       month.Data := Pointer(MonthOf(dt));
       case MonthOf(dt) of
         12,1..2: month.ImageIndex := 3;
@@ -1564,7 +1564,7 @@ begin
       end;
       //month.SelectedIndex := month.ImageIndex;
     end;
-    day := tvSess.Items.AddChild(month,FormatDateTime(HPP_SESS_DAYFORMAT,dt));
+    day := tvSess.Items.AddChild(month,WideFormatDateTime(HPP_SESS_DAYFORMAT,dt));
     day.Data := Pointer(idx);
     day.ImageIndex := 0;
     //day.SelectedIndex := day.ImageIndex;
@@ -2008,7 +2008,7 @@ begin
   end;
   ts := Sessions[idx].TimestampFirst;
   dt := TimestampToDateTime(ts);
-  day.Text := FormatDateTime(HPP_SESS_DAYFORMAT,dt);
+  day.Text := WideFormatDateTime(HPP_SESS_DAYFORMAT,dt);
   // next item
   //Inc(ItemIdx);
   //if ItemIdx >= HistoryLength then exit;
@@ -2764,7 +2764,7 @@ begin
   count := Sessions[DWord(Node.Data)].ItemsCount;
 
   dt := TimestampToDateTime(Sessions[DWord(Node.Data)].TimestampFirst);
-  t := AnsiToWideString(FormatDateTime('[yyyy, mmmm, d]',dt),CP_ACP)+#13#10;
+  t := WideFormatDateTime('[yyyy, mmmm, d]',dt)+#13#10;
   if time/60 > 60 then
     timestr := WideFormat('%0.1n h',[time/(60*60)])
   else
@@ -3051,14 +3051,14 @@ begin
       ts := Sessions[i].TimestampFirst;
       dt := TimestampToDateTime(ts);
       if (PrevYearNode = nil) or (DWord(PrevYearNode.Data) <> YearOf(dt)) then begin
-        PrevYearNode := tvSess.Items.AddChild(nil,FormatDateTime(HPP_SESS_YEARFORMAT,dt));
+        PrevYearNode := tvSess.Items.AddChild(nil,WideFormatDateTime(HPP_SESS_YEARFORMAT,dt));
         PrevYearNode.Data := Pointer(YearOf(dt));
         PrevYearNode.ImageIndex := 5;
         //PrevYearNode.SelectedIndex := PrevYearNode.ImageIndex;
         PrevMonthNode := nil;
       end;
       if (PrevMonthNode = nil) or (DWord(PrevMonthNode.Data) <> MonthOf(dt)) then begin
-        PrevMonthNode := tvSess.Items.AddChild(PrevYearNode,FormatDateTime(HPP_SESS_MONTHFORMAT,dt));
+        PrevMonthNode := tvSess.Items.AddChild(PrevYearNode,WideFormatDateTime(HPP_SESS_MONTHFORMAT,dt));
         PrevMonthNode.Data := Pointer(MonthOf(dt));
         case MonthOf(dt) of
           12,1..2: PrevMonthNode.ImageIndex := 3;
@@ -3068,7 +3068,7 @@ begin
         end;
         //PrevMonthNode.SelectedIndex := PrevMonthNode.ImageIndex;
       end;
-      ti := tvSess.Items.AddChild(PrevMonthNode,FormatDateTime(HPP_SESS_DAYFORMAT,dt));
+      ti := tvSess.Items.AddChild(PrevMonthNode,WideFormatDateTime(HPP_SESS_DAYFORMAT,dt));
       ti.Data := Pointer(i);
       ti.ImageIndex := 0;
       //ti.SelectedIndex := ti.ImageIndex;
