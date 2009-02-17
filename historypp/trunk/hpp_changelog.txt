@@ -9,6 +9,14 @@ Changelog
 
 SVN Changelog: https://opensvn.csie.org/traccgi/historypp/log/?verbose=on
 
+1.5.1.3
+
++ Added mContacts export format
+- Fixed unicode formatted date & time
+- Fixed and improved bbcodes parsing
+! Made changelog avaliable at updater window
+! Changed project download site to http://themiron.miranda.im
+
 1.5.1.2
 
 + Added ability to use more than 2Gb memory addresses if available
