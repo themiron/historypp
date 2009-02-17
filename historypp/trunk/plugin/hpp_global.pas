@@ -236,6 +236,7 @@ var
 
 function AnsiToWideString(const S: AnsiString; CodePage: Cardinal; InLength: Integer = -1): WideString;
 function WideToAnsiString(const WS: WideString; CodePage: Cardinal; InLength: Integer = -1): AnsiString;
+function WideFormatDateTime(const Format: string; DateTime: TDateTime): WideString;
 function TranslateAnsiW(const S: AnsiString{TRANSLATE-IGNORE}): WideString;
 function TranslateWideW(const WS: WideString{TRANSLATE-IGNORE}): WideString;
 function MakeFileName(FileName: AnsiString): AnsiString;
@@ -320,6 +321,16 @@ begin
     Result := TranslateW(PWideChar(WS){TRANSLATE-IGNORE})
   else
     Result := AnsiToWideString(Translate(PChar(WideToAnsiString(WS,hppCodepage))),hppCodepage{TRANSLATE-IGNORE});
+end;
+
+// rudy but fast way to get the correct unicode string
+// TODO: implement own WideFormatDateTime function at API level 
+function WideFormatDateTime(const Format: string; DateTime: TDateTime): WideString;
+var
+  DefaultCodePage: Cardinal;
+begin
+  DefaultCodePage := LCIDToCodePage(SysLocale.DefaultLCID);
+  Result := AnsiToWideString(FormatDateTime(Format,DateTime),DefaultCodePage);
 end;
 
 (*

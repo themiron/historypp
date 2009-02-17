@@ -265,7 +265,7 @@ end;
 // custom grid options object and not the global one
 function TimestampToString(const Timestamp: DWord): WideString;
 begin
-  Result := FormatDateTime(GridOptions.DateTimeFormat,TimestampToDateTime(Timestamp));
+  Result := WideFormatDateTime(GridOptions.DateTimeFormat,TimestampToDateTime(Timestamp));
 end;
 
 function GetEventTimestamp(hDBEvent: THandle): DWord;
