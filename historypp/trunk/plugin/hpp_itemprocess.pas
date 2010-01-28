@@ -474,8 +474,12 @@ begin
   Result := 0;
   ird := Pointer(lParam);
   if ird.wEventType <> EVENTTYPE_AVATARCHANGE then exit;
-  if (ird.pExtended = nil) or (lstrlenA(ird.pExtended) = 0) then exit;
-  Link := hppProfileDir+'\'+ird.pExtended;
+  if (ird.pExtended = nil) or (lstrlenA(ird.pExtended) < 4) then exit;
+  if ((ird.pExtended[0] = '\') and (ird.pExtended[1] = '\')) or
+     ((ird.pExtended[0] in ['A'..'Z', 'a'..'z']) and
+      (ird.pExtended[1] = ':') and (ird.pExtended[2] = '\')) then
+    Link := ird.pExtended else
+    Link := hppProfileDir+'\'+ird.pExtended;
   hBmp := PluginLink.CallService(MS_UTILS_LOADBITMAP,0,Cardinal(@Link[1]));
   if hBmp <> 0 then begin
     cr.cpMin := SendMessage(wParam,WM_GETTEXTLENGTH,0,0);
