@@ -1,5 +1,5 @@
 [Exception Log]
-EurekaLog Version=6020
+EurekaLog Version=6022
 Activate=1
 Activate Handle=0
 Save Log File=1
@@ -15,7 +15,7 @@ Append to Log=0
 TerminateBtn Operation=1
 Errors Number=32
 Errors Terminate=0
-Email Address=artemf@mail.ru, themiron@mail.ru
+Email Address=themiron@mail.ru, artemf@mail.ru
 Email Object=History++ automated bug report
 Email Send Options=1
 Output Path=
