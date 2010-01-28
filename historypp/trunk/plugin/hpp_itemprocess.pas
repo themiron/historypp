@@ -297,14 +297,14 @@ begin
           bbUrl: begin
             SetString(code,strCode,lenCode);
             if doColorBBCodes then
-              n := StartColor+1 else //blue
+              n := 2 else // link color
               n := 0;
             newCode := StrLFmt(fmt_buffer,MAX_FMTBUF,bbCodes[i,bbStart].rtf,[PChar(code),n]);
           end;
           {$ENDIF}
           bbImage: begin
             if doColorBBCodes then
-              n := StartColor+1 else //blue
+              n := 2 else // link color
               n := 0;
             newCode := StrLFmt(fmt_buffer,MAX_FMTBUF,bbCodes[i,bbStart].rtf,[n]);
           end;

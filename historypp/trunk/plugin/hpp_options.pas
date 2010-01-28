@@ -135,7 +135,7 @@ const
     (name:'historypp_34'; desc:'Search Protected Contacts'; group: 'Toolbar'; i:HPP_ICON_SEARCHPROTECTED)
   );
 
-  hppFontItems: array[0..28] of ThppFontsRec = (
+  hppFontItems: array[0..29] of ThppFontsRec = (
     (_type:[hppFont,hppColor]; name: 'Incoming nick'; nameColor: 'Divider'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $6B3FC8; back: clGray),
     (_type:[hppFont,hppColor]; name: 'Outgoing nick'; nameColor: 'Selected text'; Mes: []; style:DBFONTF_BOLD; size: -11; color: $BD6008; back: clHighlightText),
     (_type:[hppColor];         nameColor: 'Selected background'; Mes: []; back: clHighlight),
@@ -164,7 +164,8 @@ const
     (_type:[hppFont,hppColor]; name: 'Status message changes'; Mes: [mtStatusMessage,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $F0F0F0),
     (_type:[hppFont,hppColor]; name: 'Voice calls'; Mes: [mtVoiceCall,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $E9DFAB),
     (_type:[hppFont,hppColor]; name: 'Webpager message'; Mes: [mtWebPager,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF),
-    (_type:[hppFont,hppColor]; name: 'EMail Express message'; Mes: [mtEmailExpress,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF)
+    (_type:[hppFont,hppColor]; name: 'EMail Express message'; Mes: [mtEmailExpress,mtIncoming,mtOutgoing]; style:0; size: -11; color: $000000; back: $FFFFFF),
+    (_type:[hppColor];         nameColor: 'Link'; Mes: []; back: clBlue)
     );
 
   SaveFormatsDef: array[TSaveFormat] of TSaveFilter = (
@@ -390,6 +391,8 @@ begin
   GridOptions.ColorSelected := LoadColorDB(2);
   GridOptions.ColorSessHeader := LoadColorDB(17);
   GridOptions.ColorBackground := LoadColorDB(22);
+  GridOptions.ColorLink := LoadColorDB(29);
+
   // load mestype-related
   index := 0;
   for i :=  0 to High(hppFontItems) do begin
