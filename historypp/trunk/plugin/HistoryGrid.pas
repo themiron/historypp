@@ -2218,15 +2218,6 @@ begin
       ZeroMemory(@cf2,SizeOf(cf2));
       cf2.cbSize := SizeOf(cf2);
       // do not allow change backcolor of selection
-      if reItemUseLinkColor then begin
-        // change CFE_REVISED to CFE_LINK and its color
-        cf.dwMask := CFM_LINK;
-        cf.dwEffects := CFE_LINK;
-        cf2.dwMask := CFM_LINK or CFM_REVISED or CFM_COLOR;
-        cf2.dwEffects := CFE_REVISED;
-        cf2.crTextColor := Options.ColorLink;
-        RichEdit.ReplaceCharFormat(cf,cf2);
-      end else
       if reItemSelected then begin
         // change CFE_LINK to CFE_REVISED
         cf.dwMask := CFM_LINK;
@@ -2238,12 +2229,21 @@ begin
         cf.crTextColor := textColor;
         RichEdit.Perform(EM_SETBKGNDCOLOR, 0, backColor);
         RichEdit.Perform(EM_SETCHARFORMAT, SCF_ALL, LPARAM(@cf));
-      end else begin
+      end else
+      if reItemInline then begin
         // change CFE_REVISED to CFE_LINK
         cf.dwMask := CFM_REVISED;
         cf.dwEffects := CFE_REVISED;
         cf2.dwMask := CFM_LINK or CFM_REVISED;
         cf2.dwEffects := CFM_LINK;
+        RichEdit.ReplaceCharFormat(cf,cf2);
+      end else begin
+        // change CFE_REVISED to CFE_LINK and its color
+        cf.dwMask := CFM_LINK;
+        cf.dwEffects := CFE_LINK;
+        cf2.dwMask := CFM_LINK or CFM_REVISED or CFM_COLOR;
+        cf2.dwEffects := CFE_REVISED;
+        cf2.crTextColor := Options.ColorLink;
         RichEdit.ReplaceCharFormat(cf,cf2);
       end;
     end;
