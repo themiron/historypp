@@ -117,7 +117,7 @@ Set the default options for FastMM here.
    stack for valid return addresses. Note that this is significantly slower
    than using the stack frame tracing method, but is usually more complete. Has
    no effect unless FullDebugMode is enabled}
-  {.$define RawStackTraces}
+  {$define RawStackTraces}
 
   {Set this option to check for user code that uses an interface of a freed
    object. Note that this will disable the checking of blocks modified after
@@ -149,6 +149,11 @@ Set the default options for FastMM here.
    care.}
   {.$define LoadDebugDLLDynamically}
 
+    {.$define DoNotInstallIfDLLMissing}
+    {If the FastMM_FullDebugMode.dll file is not available then FastMM will not
+     install itself. No effect unless FullDebugMode and LoadDebugDLLDynamically
+     are also defined.}
+
   {FastMM usually allocates large blocks from the topmost available address and
    medium and small blocks from the lowest available address (This reduces
    fragmentation somewhat). With this option set all blocks are always
@@ -156,6 +161,10 @@ Set the default options for FastMM here.
    address space and contains bad pointer arithmetic code, this option should
    help to catch those errors sooner.}
   {$define AlwaysAllocateTopDown}
+
+  {Disables the logging of memory dumps together with the other detail for
+   memory errors.}
+  {.$define DisableLoggingOfMemoryDumps}
 
 {---------------------------Memory Leak Reporting-----------------------------}
 
@@ -260,6 +269,13 @@ Set the default options for FastMM here.
  Otherwise the default Delphi memory manager will be used (which is equivalent
  to the non-FullDebugMode FastMM since Delphi 2006.)}
 {.$define FullDebugModeInIDE}
+
+{Combines the FullDebugMode, LoadDebugDLLDynamically and
+ DoNotInstallIfDLLMissing options. Consequently FastMM will only be installed
+ (In FullDebugMode) when the FastMM_FullDebugMode.dll file is available. This
+ is useful when the same executable will be distributed for both debugging as
+ well as deployment.}
+{.$define FullDebugModeWhenDLLAvailable}
 
 {Group the options you use for release and debug versions below}
 {$ifdef Release}
