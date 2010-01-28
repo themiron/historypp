@@ -178,6 +178,7 @@ type
     FColorSelected: TColor;
     FColorSessHeader: TColor;
     FColorBackground: TColor;
+    FColorLink: TColor;
 
     FFontProfile: TFont;
     FFontContact: TFont;
@@ -224,6 +225,7 @@ type
     procedure SetColorSelected(const Value: TColor);
     procedure SetColorSessHeader(const Value: TColor);
     procedure SetColorBackground(const Value: TColor);
+    procedure SetColorLink(const Value: TColor);
 
     procedure SetFontContact(const Value: TFont);
     procedure SetFontProfile(const Value: TFont);
@@ -287,6 +289,7 @@ type
     property ColorSelected: TColor read FColorSelected write SetColorSelected;
     property ColorSessHeader: TColor read FColorSessHeader write SetColorSessHeader;
     property ColorBackground: TColor read FColorBackground write SetColorBackground;
+    property ColorLink: TColor read FColorLink write SetColorLink;
 
     property FontProfile: TFont read FFontProfile write SetFontProfile;
     property FontContact: TFont read FFontContact write SetFontContact;
@@ -841,7 +844,7 @@ begin
       Inc(UrlEnd);
     end;
     if (UrlEnd-2-UrlCent > 0) and (UrlCent-UrlStart-1 > 0) then begin
-      UrlStr := '<a id=url href="'+Copy(Result,UrlStart,UrlEnd-UrlStart+1)+'">';
+      UrlStr := '<a class=url href="'+Copy(Result,UrlStart,UrlEnd-UrlStart+1)+'">';
       Insert(UrlStr,Result,UrlStart);
       Insert('</a>',Result,UrlEnd+Length(UrlStr)+1);
       UrlStr := StringReplace(UrlStr,'://','!//',[rfReplaceAll]);
@@ -2098,6 +2101,7 @@ var
   reItemInline: Boolean;
   reItemSelected: Boolean;
   reItemUseFormat: Boolean;
+  reItemUseLinkColor: Boolean;
   textFont: TFont;
   textColor,backColor: TColor;
   RichItem: PRichItem;
@@ -2114,6 +2118,7 @@ begin
   reItemInline := ForceInline or (RichEdit = FRichInline);
   reItemSelected := (not reItemInline) and IsSelected(Item);
   reItemUseFormat := not (reItemInline and (not Options.TextFormatting));
+  reItemUseLinkColor := not (Options.ColorLink = clBlue);
 
   if not reItemInline then FRich := RichEdit;
 
@@ -2141,10 +2146,17 @@ begin
     //RTF := Format('{\rtf1\ansi\ansicpg%u\deff0\deflang%u{\fonttbl ',[FItems[Item].Codepage,GetLCIDfromCodepage(CodePage)]);
     RTF := RTF + Format('{\f0\fnil\fcharset%u %s}',[textFont.CharSet,textFont.Name]);
     RTF := RTF + '}{\colortbl';
-    RTF := RTF + Format('\red%u\green%u\blue%u;',[textColor and $FF,(textColor shr 8) and $FF,(textColor shr 16) and $FF]);
-    RTF := RTF + Format('\red%u\green%u\blue%u;',[backColor and $FF,(backColor shr 8) and $FF,(backColor shr 16) and $FF]);
+    RTF := RTF + Format('\red%u\green%u\blue%u;',
+      [textColor and $FF,(textColor shr 8) and $FF,(textColor shr 16) and $FF]);
+    RTF := RTF + Format('\red%u\green%u\blue%u;',
+      [backColor and $FF,(backColor shr 8) and $FF,(backColor shr 16) and $FF]);
     // add color table for BBCodes
-    if Options.BBCodesEnabled and reItemUseFormat then RTF := RTF + rtf_ctable_text;
+    if Options.BBCodesEnabled then begin
+      // link color ro [url][/url], [img][/img]
+      RTF := RTF + Format('\red%u\green%u\blue%u;',
+        [Options.ColorLink and $FF,(Options.ColorLink shr 8) and $FF,(Options.ColorLink shr 16) and $FF]);
+      if reItemUseFormat then RTF := RTF + rtf_ctable_text;
+    end;
     RTF := RTF + '}\li30\ri30\fi0\cf0';
     if GetItemRTL(Item) then RTF := RTF + '\rtlpar\ltrch\rtlch '
                         else RTF := RTF + '\ltrpar\rtlch\ltrch ';
@@ -2159,7 +2171,7 @@ begin
       Text := FormatString2RTF(GetTime(FItems[Item].Time)+': '+FItems[Item].Text) else
       Text := FormatString2RTF(FItems[Item].Text);}
     if Options.BBCodesEnabled and reItemUseFormat then
-      Text := DoSupportBBCodesRTF(Text,2,not reItemSelected);
+      Text := DoSupportBBCodesRTF(Text,3,not reItemSelected);
     RTF := RTF + Text + '\par }';
   end;
 
@@ -2200,14 +2212,23 @@ begin
       FOnProcessRichText(Self,RichEdit.Handle,Item);
     except
     end;
-    if reItemSelected or reItemInline then begin
+    if reItemUseLinkColor or reItemSelected or reItemInline then begin
       ZeroMemory(@cf,SizeOf(cf));
       cf.cbSize := SizeOf(cf);
       ZeroMemory(@cf2,SizeOf(cf2));
       cf2.cbSize := SizeOf(cf2);
       // do not allow change backcolor of selection
-      // change CFE_LINK to CFE_REVISED
+      if reItemUseLinkColor then begin
+        // change CFE_REVISED to CFE_LINK and its color
+        cf.dwMask := CFM_LINK;
+        cf.dwEffects := CFE_LINK;
+        cf2.dwMask := CFM_LINK or CFM_REVISED or CFM_COLOR;
+        cf2.dwEffects := CFE_REVISED;
+        cf2.crTextColor := Options.ColorLink;
+        RichEdit.ReplaceCharFormat(cf,cf2);
+      end else
       if reItemSelected then begin
+        // change CFE_LINK to CFE_REVISED
         cf.dwMask := CFM_LINK;
         cf.dwEffects := CFE_LINK;
         cf2.dwMask := CFM_LINK or CFM_REVISED;
@@ -4316,6 +4337,7 @@ var
   WriteString(Stream,'.nick#out { '+FontToCss(Options.FontProfile)+' }'+#13#10);
   WriteString(Stream,'.date#inc { '+FontToCss(Options.FontIncomingTimestamp)+' }'+#13#10);
   WriteString(Stream,'.date#out { '+FontToCss(Options.FontOutgoingTimestamp)+' }'+#13#10);
+  WriteString(Stream,'.url { color: '+ColorToCss(Options.ColorLink)+'; }'+#13#10);
   for i := 0 to High(Options.ItemOptions) do
     WriteString(Stream,'.mes#event'+intToStr(i)+' { background-color: '+
       ColorToCss(Options.ItemOptions[i].textColor)+'; '+
@@ -5634,6 +5656,13 @@ procedure TGridOptions.SetColorBackground(const Value: TColor);
 begin
   if FColorBackground = Value then exit;
   FColorBackground := Value;
+  DoChange;
+end;
+
+procedure TGridOptions.SetColorLink(const Value: TColor);
+begin
+  if FColorLink = Value then exit;
+  FColorLink := Value;
   DoChange;
 end;
 
