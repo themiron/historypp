@@ -74,8 +74,8 @@ const
 const
   URL_FONTSERVICE = 'http://addons.miranda-im.org/details.php?action=viewfile&id=2065';
   URL_ICOLIB      = 'http://addons.miranda-im.org/details.php?action=viewfile&id=2700';
-  URL_EXPLAIN     = 'https://opensvn.csie.org/traccgi/historypp/trac.cgi/wiki/CustomizationSupport';
-  URL_NEEDOPTIONS = 'https://opensvn.csie.org/traccgi/historypp/trac.cgi/wiki/AdditionalOptions';
+  URL_EXPLAIN     = 'http://code.google.com/p/historypp/wiki/CustomizationSupport';
+  URL_NEEDOPTIONS = 'http://code.google.com/p/historypp/wiki/AdditionalOptions';
 
 function OptDialogProc(hwndDlg: HWND; uMsg: Integer;
   wParam: WPARAM; lParam: LPARAM): Integer; stdcall;
