@@ -98,6 +98,7 @@ const
     // Type of Event one of
     FVCN_PREFIRE  = 1;
     FVCN_POSTFIRE = 2;
+    FVCN_GETINFO  = 255;
 
     // Action of event are going to be done
     FVCA_NONE           = 0;
@@ -106,6 +107,7 @@ const
     FVCA_INVALIDATE     = 3;
     FVCA_SENDVIEWCHANGE = 4;
     FVCA_SKIPDRAW       = 5;
+    FVCA_INFO           = 255;
 
 type
     // Extended NMHDR structure for WM_NOTIFY
@@ -125,7 +127,6 @@ type
 const
     // Code of WM_NOTIFY message (code)
     NM_FIREVIEWCHANGE = NM_FIRST+1;
-
 
 implementation
 
