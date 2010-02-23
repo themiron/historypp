@@ -1,0 +1,9 @@
+#summary How to edit database settings
+= How to edit database settings =
+
+To edit database settings:
+ #. Download !DatabaseEditor plugin (from official [http://addons.miranda-im.org/details.php?action=viewfile&id=2957 addons site] or [http://etplanet.com/bio/miranda/archive/other/beta/dbeditorpp.dll here])
+ #. Open it, navigate to Current user -> !HistoryPlusPlus
+ #. Now you can change existing settings or add new ones.
+
+Read TextFormatting or AdditionalOptions to get the idea of what you might want to change.
