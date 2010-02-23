@@ -1,8 +1,0 @@
-We have errors!
-
-************ NOT TRANSLATED ***************
-Form properties not translated in .pas file
-See translate_guide.txt for what it can mean and how to fix it
-********************************************
-
-edSearch.Text

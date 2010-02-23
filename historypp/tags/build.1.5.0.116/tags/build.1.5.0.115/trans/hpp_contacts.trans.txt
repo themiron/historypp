@@ -1,2 +1,0 @@
-;; Text found in ..\plugin\hpp_contacts.pas:
-Server

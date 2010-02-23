@@ -1,5 +1,0 @@
-;; Text found in ..\plugin\historypp.pas:
-History++ module could not be loaded, riched20.dll is missing. Press Yes to continue loading Miranda.
-Information
-Global History Search
-History
