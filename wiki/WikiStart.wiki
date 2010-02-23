@@ -1,0 +1,36 @@
+#summary Welcome to History++ plugin for Miranda IM
+= Welcome to History++ plugin for Miranda IM =
+=== Getting started ===
+Have a question? [wiki:FrequentlyAskedQuestions Read the FAQ].
+<BR>
+Want an older version? Take a look in the [wiki:OlderVersions older versions archive].
+<BR>
+Need more control? Browse the list of our [wiki:AdditionalOptions hidden options].
+<BR>
+Visually impaired? Read [wiki:Accessibility accessibility section].
+
+[wiki:Download Download the plugin]
+
+See [/p/historypp/issues/list?can=2 all active tickets]
+
+=== About the plugin ===
+
+History++ is a very capable and fast history plugin for [http://www.miranda-im.org Miranda IM] client. It boasts:
+ * Advanced contact's history with 
+   * Find-as-you-type
+   * Customizible styles
+   * Instant filtering
+   * Export to html, xml, txt
+   * View all conversations with the contact in separate tree
+ * Very fast history search within all your contacts
+ * Full unicode support. No need for additional files or different plugin versions. It just works!
+ * It's *fast*! History++ is developed with speed in mind.
+ * It's *easy*! Despite having many features, we care much about interface simplicity and user satisfaction.
+ * Many other things I can't think of now.
+
+You can see project changes in [/p/historypp/source/list Source Changes] page<BR>
+File a new bug or enchancement with [/p/historypp/issues/entry New Issue]
+
+Enjoy your visit!<BR>
+_The History++ Team_<BR>
+IRC channel on irc.rusnet.ru [irc://irc.rusnet.ru:6669/mirandaim #mirandaim]
