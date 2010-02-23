@@ -3716,19 +3716,17 @@ begin
       if not IsRectEmpty(smRect) then
         InvalidateRect(Handle,@smRect,False);
     end else
-    if (nmh.bEvent = FVCN_GETINFO) then begin
+    if (nmh.bEvent = FVCN_GETINFO) and (nmh.bAction = FVCA_NONE) then begin
       RichItem := FRichCache.GetItemByHandle(Message.NMHdr^.hwndFrom);
-      nmh.bAction := FVCA_NONE;
-      if Assigned(RichItem) then begin
-        if (RichItem.GridItem = -1) or
-           (RichItem.GridItem = FItemInline) then exit;
-        if not RichItem.BitmapDrawn then exit;
-        //if (State = gsIdle) or (State = gsInline) then
-        nmh.bAction := FVCA_INFO;
-        nmh.rcRect := GetRichEditRect(RichItem.GridItem,True);
-        nmh.clrBackground := RichItem.Bitmap.TransparentColor;
-        nmh.fTransparent := False;
-      end;
+      if not Assigned(RichItem) then exit;
+      if (RichItem.GridItem = -1) or
+         (RichItem.GridItem = FItemInline) then exit;
+      if not RichItem.BitmapDrawn then exit;
+      //if (State = gsIdle) or (State = gsInline) then
+      nmh.bAction := FVCA_INFO;
+      nmh.rcRect := GetRichEditRect(RichItem.GridItem,True);
+      nmh.clrBackground := RichItem.Bitmap.TransparentColor;
+      nmh.fTransparent := False;
     end;
   end else
   {$ENDIF}
