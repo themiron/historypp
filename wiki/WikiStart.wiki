@@ -30,4 +30,4 @@ File a new bug or enchancement with [http://code.google.com/p/historypp/issues/e
 
 Enjoy your visit!<BR>
 _The History++ Team_<BR>
-IRC channel on irc.rusnet.ru [irc://irc.rusnet.ru:6669/mirandaim #mirandaim]
+IRC channel on irc.rusnet.ru <a href="irc://irc.rusnet.ru:6669/mirandaim">#mirandaim</a>
