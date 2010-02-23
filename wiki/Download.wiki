@@ -29,5 +29,5 @@ To download source code, either download *-src.zip archives or follow [http://co
  * [EurekaLog EurekaLog - Delphi and C++Builder Exception trapper]
  * [TntWare TntWare Delphi Unicode Controls]
 
-_Additional builds and information: http://themiron.miranda.im/ (mirror http://slav.pp.ru/historypp)_<BR>
+_Additional builds and information: http://themiron.miranda.im_<BR>
 _To download older versions, go to [OlderVersions older versions archive]_
