@@ -1,0 +1,7 @@
+#summary TntWare Delphi Unicode Controls
+= !TntWare Delphi Unicode Controls =
+
+!TntWare Delphi Unicode Controls are third party Delphi components, developed by [http://www.tntware.com/ministry/troyandtammy/ Troy and Tammy Wolbrink].[[BR]]
+They are used by History++ plugin to allow unicode capabilities of Windows NT/2000/XP/2003...
+
+More information could be found at [http://www.tntware.com/delphicontrols/unicode/ Delphi Unicode Controls Home]
