@@ -1,0 +1,56 @@
+#summary Date/Time Formatting
+= Date/Time Formatting =
+
+To change date/time representation in history grid.
+
+=== How to edit database ===
+
+See AdditionalOptions
+<br>
+You will have to add !DateTimeFormat string key.
+
+=== Simple examples ===
+
+January 2, 2006 3:05:44
+
+||!DateTimeFormat value||Result||Comment||
+||c||02/01/2006 3:05:44||Date and time format is default system format||
+||ddd, mmm d, yy||Mon, Jan 2, 06||||
+||dd/mm/yyyy hh:nn:ss||02/01/2006 03:05:44||||
+||dddd, d of mmmm, yyyy||Monday, 2 of January, 2006||||
+||hh:nn am/pm||03:05 am||am/pm translates time to 12-hour time||
+||h:n:s a/p||3:5:44 a||a/p translates time to 12-hour time||
+
+For explanation and full list of commands read Format section
+
+=== Format ===
+
+Here is the full list of variables with examples given for date and time: January 2, 2006 3:05:44
+
+||String||Meaning||Example||
+||y||Year last 2 digits||06||
+||yy||Year last 2 digits||06||
+||yyyy||Year as 4 digits||2006||
+||m||Month number, without leading zero||1||
+||mm||Month number with leading zero||01||
+||mmm||Short month name||Jan||
+||mmmm||Full month name||January||
+||d||Day number, without leading zero||2||
+||dd||Day number with leading zero||02||
+||ddd||Short day name||Mon||
+||dddd||Full day name||Monday||
+||ddddd||Date as short date format (system-dependent)||02/01/2006||
+||dddddd||Date as long date format (system-dependent)||02 January 2006||
+||h||Hour, without leading zero||3||
+||hh||Hour with leading zero||03||
+||n||Minute, without leading zero||5||
+||nn||Minute with leading zero||05||
+||s||Second, without leading zero||44||
+||ss||Second with leading zero||44||
+||z||Msec, without leading zero||21||
+||zzz||MSec as 3 digits||021||
+||am/pm||Sets hour to 12-hour time and writes am or pm||am|| 
+||a/p||Sets hour to 12-hour time and writes a or p||a|| 
+||t||Short time format (system-dependent)||3:05||
+||tt||Long time format (system-dependent)||3:05:44||
+||c||Short date format + long time format (system-dependent)||02/01/2006 3:05:44||
