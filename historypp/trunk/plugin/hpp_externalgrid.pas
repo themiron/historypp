@@ -571,6 +571,8 @@ begin
   ItemRenderDetails.dwEventTime := Grid.Items[Item].Time;
   ItemRenderDetails.wEventType := Grid.Items[Item].EventType;
   ItemRenderDetails.IsEventSent := (mtOutgoing in Grid.Items[Item].MessageType);
+  if Handle = Grid.InlineRichEdit.Handle then
+    ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_INLINE;
   if Grid.IsSelected(Item) then
     ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_SELECTED;
   ItemRenderDetails.bHistoryWindow := IRDHW_EXTERNALGRID;
