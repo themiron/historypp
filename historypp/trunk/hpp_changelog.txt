@@ -9,6 +9,13 @@ Changelog
 
 SVN Changelog: http://code.google.com/p/historypp/source/list
 
+1.5.1.4
++ Added xJuick plugin by xa0c
++ Added ability to specify link (url) color
+- Fixed avatar change events support
+- Fixed history++ process text event from external grid
+! Changed svn and wiki to http://historypp.googlecode.com
+
 1.5.1.3
 
 + Added mContacts export format
