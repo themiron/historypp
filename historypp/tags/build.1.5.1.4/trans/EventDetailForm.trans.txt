@@ -1,0 +1,28 @@
+;; Text found in ..\plugin\EventDetailForm.dfm:
+Event Details
+Prevous message
+Prev
+Next message
+Next
+Reply &Quoted
+&Close
+Event Info
+Type:
+Date/Time:
+From:
+To:
+Show sender information
+Show receiver information
+Message direction
+&Browse Received Files
+&Open file folder
+&Copy Filename
+Open in &new window
+&Open in existing window
+&Copy Link
+&Copy
+Copy All
+Select &All
+Text Formatting
+Send &Message
+&Reply Quoted
