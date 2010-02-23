@@ -1,0 +1,28 @@
+#summary Additional Options
+= Additional Options =
+
+There are additional options in History++ which are hidden in miranda database. To edit them you will need !DatabaseEditor plugin. 
+
+=== How to edit database ===
+
+Read the article on [HowToEditDatabase how to edit database settings]
+
+=== Options ===
+
+You may need to create these values yourself.
+
+_Note: You might need to restart Miranda for changes to take effect. However, we are proud that most of the changes (if not all) are instantaneous._
+
+||Key||Type||Values||Description||
+||!DateTimeFormat||String||see DateTimeFormatting<BR>_Default: 'c'_||Tells how to format displayed date-time info. Used in history grids and in Event Details dialog ||
+||!FormatCopy||String||see TextFormatting||The template which controls the Copy (Ctrl+C) command||
+||!FormatCopyText||String||see TextFormatting||The template which controls the Copy Text (Ctrl+T) command||
+||!FormatReplyQuoted||String||see TextFormatting||The template which controls the Reply Quoted command||
+||!FormatReplyQuotedText||String||see TextFormatting||The template which controls the Reply Quoted command from pseudo-edit mode||
+||!FormatSelection||String||see TextFormatting||The template using for events (or selected text in pseudo-edit mode) formatting  to return to API query||
+||!ProfileName||String||Preferred nick<BR>_Default: empty, use protocol-based profile names_||Nickname which overrides protocol-based profile names.<BR>Used in history, search, message log and export, but not in Event Details window ||
+||!CheckIconPack||Byte||0 -- disable<BR>1 -- enable (default)||Perform icon pack presence and version check on startup. Checks could't be disabled if there's no !IcoLib (external or build-in) installed||
+||!NoLogBorder||Byte||0 -- show (default)<BR>1 -- hide||Show or hide history border in message log window||
+||!NoLogScrollBar||Byte||0 -- show (default)<BR>1 -- hide||Show or hide vertical scroll bar in in message log window||
+
+You might also want to [FrequentlyAskedQuestions read the FAQ] for other tips & tricks
