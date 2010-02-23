@@ -1,0 +1,4 @@
+;; Text found in ..\plugin\hpp_options.pas:
+Cannot load icon pack (%s) from:\r\n%s\r\nThis can cause no icons will be shown.
+You are using old icon pack from:\r\n%s\r\nThis can cause missing icons, so update the icon pack.
+Events

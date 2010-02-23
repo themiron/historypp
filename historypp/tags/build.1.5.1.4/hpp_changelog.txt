@@ -1,0 +1,572 @@
+History++ plugin for Miranda IM
+Easy, fast and feature complete history viewer
+
+Project: http://themiron.miranda.im/
+SVN: http://wl500g.googlecode.com/svn/
+Wiki: http://code.google.com/p/historypp/
+
+Changelog
+
+SVN Changelog: http://code.google.com/p/historypp/source/list
+
+1.5.1.4
++ Added xJuick plugin by xa0c
++ Added ability to specify link (url) color
+- Fixed avatar change events support
+- Fixed history++ process text event from external grid
+! Changed svn and wiki to http://historypp.googlecode.com
+
+1.5.1.3
+
++ Added mContacts export format
+- Fixed unicode formatted date & time
+- Fixed and improved bbcodes parsing
+! Made changelog avaliable at updater window
+! Changed project download site to http://themiron.miranda.im
+
+1.5.1.2
+
++ Added ability to use more than 2Gb memory addresses if available
++ Added ability to save selected messages in IEView emulation mode
++ Added ability to group messages in history window
++ Added grouped messages support in html, rtf, txt export
++ Added new and hidden plugin options
+- Fixed possible crash on malformed events or events from too long module names
+- Fixed hand cursor over urls in pseudo edit mode and event details form
+- Fixed unexpected vertical scrollbar in pseudo-edit mode
+- Fixed 'out of memory' error on huge histories open
+- Fixed accidentally history erase even in case of dialog cancel
+- Fixed locking/unlocking event's bitmap with animated smiley objects
+! Redesigned options dialog
+! Made instant "show history count" options applying
+! Reintroduced auto-word-select on double click
+! Significantly optimized speed of long messages rendering
+! Optimized multithreaded event reading and bbcodes processing
+! Deprecated usage of msftedit.dll (richedit 4.1) due visual glitches
+! Improved external grid processing in native and IEView emulation mode
+! Imagebase set to 0x02630000
+! Minor code cleaning
+
+1.5.1.1
+
++ Added animated smileys support (yeah, baby!)
++ Added smileys tooltip support
++ Added service and context menu item to empty contact and system history
++ Added module specific event description support
++ Added Find-as-you-type feature to History Search form
++ Added support of user's mouse settings (number of lines to scroll, etc)
++ Added mouse wheel scroll acceleration
++ Added "NoLogScrollBar" db setting (type:byte) to disable log vertical scrollbar
++ Added [size=xx][/size], [img][/img] bbcodes support
++ Added preliminary speaking support with winter speak, speak and meSpeak plugins
++ Added ability to use the newest richedit version from system available
+- Fixed applying options chaging
+- Fixed Delphi compiler error with disbaled "Assignable typed constants"
+- Fixes and optimizations to reduce compiler warring messages
+- Fixed special chars processing typed on history grid
+- Fixed old 1.4.3.å smileyadd issues
+- Fixed and optimized bbcodes parsing/stripping
+- Fixed crash of history with bookmarks on erasing from menu
+- Fixed context menu showing on pre-WinXP OS
+- Finally fixed issues with hints shadow under WinXP+
+- Fixed wrong event position on show in system history window
+- Fixed themed group & check boxes, radiobuttons painting
+- Fixed prev/next event navigation if there's another selected event in history form
+- Fixed save button wasn't disabled on empty filter selection
+- Fixed default format templates
+- Fixed close possible active ole objects on pseudo-edit mode cancel
+! Made color of selected link equal to selected text
+! Reworked rtf richedit render
+! Separated HistoryGrid component sources to D6, D7, D9 and BDS4 packages
+! Optimized history events painting
+! Optimized css font template
+! Improved support of MetaContacts
+! Improved utf8 support in message events
+! Massive code cleaning
+! Translation changed
+
+1.5.0.117
+
++ Added SRMM dialog open on contact double-click in history search window
++ Added url opening by middle-click in log/history/search windows
++ Added EDIT control emulation to allow getting selected text from log/history
++ Added ability to read module-specified database event types
++ Added internal support for utf8 non-message events
+! Improved short messages reading
+! Redesigned options dialog
+- Fixed * char in export filename
+- Fixed tool buttons definitions
+! Translation changes
+
+1.5.0.116
+
++ Added workaround to avoid crashed with ANSI core
++ Added ESC key reflection to question dialogs
+- Fixed crashes on empty history selection attempt
+- Fixed showing (Unknown contact) instead of owner's nick in message log
+- Fixed Ctrl+C, Del, Ctrl+S shortcuts greedy behavior in history and global search
+
+1.5.0.115
+
++ Added ability to search history by message types
++ Added ability to open file folder & received files folder from context menu
++ Added ability to read UTF8 messages from 0.7.xx profile
++ Added ability to read messages with MS_DB_EVENT_GETTEXT service
++ Added ability to select all messages with Ctrl+A combo
++ Added grid smooth scrolling by Ctrl+Up/Down combo
++ Added Copy, Delete and Save tool buttons to history search form
++ Added "Save selected" item to history search form context menu
++ Added profile/contact nicks instant tracking
++ Added smileypack changing on meta's subcontact switching
++ Added ICQEVENTTYPE_IGNORECHECK_STATUS event support (from IcqOscarJ Plus Mod)
++ Added ICQEVENTTYPE_CLIENT_CHANGE event support (from IcqOscarJ Plus Mod)
++ Added ICQEVENTTYPE_CHECK_STATUS event support (from IcqOscarJ Plus Mod)
++ Added UI to set custom event types
++ Added WebPager and Email Express events customization
++ Added ansi/unicode OS reflection in verison info
+! Made HistoryPlusPlus module as known in dbeditor++
+! Improved session loading
+! Changed bookmark shortcut key to F9
+! Enabled END and HOME buttons in search/filter edit field
+! Reintroduced save button functionality in history window
+! Mass improvements of customize filter form drawing
+! Disabled grouping for bookmarked log events
+! Hide hide toolbar completely if toolbar string is empty
+- Fixed possible deadlocks on history close
+- Fixed grid scrolling on event added in pseudo-edit mode
+- Fixed export with multiple profile/contact names from history search form
+- Fixed incorrect tool button hints in history search
+- Fixed opening history search form as top-most window
+- Fixed drawing glitches for buttons and check boxes
+- Fixed blinking while switching from edits by tab key
+- Fixed SMS, WebPager and Email Express events was treated as other
+- Fixed unicode loss of history search substing while saving/reading
+! Plugin API optimization
+! Mass code cleanup
+! Translation changes
+! Other changes and fixes i don't remember
+
+1.5.0.114
+
++ Added UUID {B92282AC-686B-4541-A12D-6E9971A253B7} for 0.8.x.x compability
++ Added UIHISTORY interface
++ Added minimal miranda version 0.4.0.0 checking
++ Added "NoLogBorder" db setting (type:byte) to disable log border
++ Fixed exception on multiple "Show bookmarks" button toggling
+- Fixed inverse order of exported messages from external log
+- Fixed unicode latin-1 chars dependence from font charset
+! Optimized plugin loading
+
+1.5.0.113
+
++ Added ability to set external log filter from context menu
++ Added ability to save selected history from external log
++ Added full list of bookmarks in global search window
++ Added alpha build timestamp into plugin version info
++ Added ability to display unknown codepages
++ Added direction icon in event details form
++ Added own icons for third-party supported events (Iconpack updated)
++ Added icon pack checking
++ Added FormatReplyQuotedText and FormatSelection templates customization
++ Added ability to disable icon pack old/not found messages
++ Added ability to log memory events (see IEVIEWEVENTDATA) to external log
+! Introduced toolbar with whole dropdown buttons
+! Redesigned conversation and bookmarks panels
+! Reworked hint showing/hiding
+! Moved main option page to Options/History. The old History++ entry is now gone
+! Moved main icolib icons into the root History++ item
+- Made forms doublebuffered to avoid flicking and speedup painting
+! Improoved database reading in case of malformed/broken profile
+- Fixed access violation crash on empty string copy to clipboard attempt
+- Fixed crash if grid is shown while destroying
+- Fixed non-message events with urls threated as url events
+- Fixed error on filtered events delete in history search
+- Fixed selected message state paint in pseudo-edit mode
+- Fixed wrong prev/next item calculation in event details form after filter reapplying
+- Fixed alpha-blending of "History Action" button icon
+- Fixed negative windows postition saving/restoring
+- Fixed contact submenu icons weren't drawn
+- Fixed several visual unicode issues
+- Fixed forms flicking on resize
+- Reduced GDI objects usage
+! Translation changes
+! Other changes and fixes i don't remember
+
+1.5.0.112 HappyNewYear build
+
++ Added session dividers to external grid
++ Added support for hidden DateTimeFormat db option
++ Added conversation divider to html export
++ Added Ctrl+PageUp and Ctrl+PageDown shortcuts scrolling
++ Added 32bit icon frames for MS Vista compability
++ Added url menu items to context menu of event detail form
++ Added own draw of history action button with dropdown icon
++ Forced ascending order of copying items
++ Fixed plaining RTF messages in html,xml and txt export
++ Fixed transparent text color if incorrect color bbcode was used
++ Fixed chars containing timestamps export
++ Fixed current day range saving in history search
++ Fixed hint showing/hiding
++ Finally fixed wrong window size restoring with WindowBlinds is in use
++ Finally fixed instant xp theme and system color change applying
++ Made unicode grid's hints
++ Made Grid single bordered
++ Made url open in new window on click
++ Made text formatting change on-the-fly in all open histories with state saving
++ Removed buggy open link hint
++ Escape key closes search/filter instead of form close
++ Separated status changes and status message changes events
++ Some code optimizations
++ Translation changes
+
+1.5.0.111
+
++ Richedit 2.0 is required and used instead of richedit 1.0
++ Added ability to turn on history count in contact context menu
++ Added ability to force profile name
++ Added down arrow icon on history actions toolbutton
++ Fixed hint cancel to avoid shadow glitches on WinXP
++ Fixed wrong locale id in clipboard on unsupported system codepage
++ Fixed change avatar event handling due richedit 2.0 changes
++ Fixed grid repainting on reallocate (mainly in History Search)
++ Fixed minimal size set of history search window
++ Fixed RTF messages couldn't be copied
++ Changed project download site to http://themiron.mirandaim.ru
+
+1.5.0.110
+
++ Added ability to use plugin as log renderer with tabSRMM
++ Added ability to imitate IEView API
++ Added accessibility menu accessed with F10 key
++ Added RTF messages support (for possible future use with official icq clients)
++ Added support for WATrack's events with filtering and customization
++ Added ability to change radio buttons	by keyboard
++ Added ability to change grid's messages font and background color
++ Added ability to highlight urls, buttons when window is unfocused
++ Added font settings for incoming and outgoing timestamps
++ Added ability to display avatar changes as pictures
++ Added ability to single word delete with Ctrl+Backspace combo in edit controls
++ Added fast BBCodes parsing directly in rtf stream
++ Added working MathModule support
++ Added ability to turn off text formatting in event details and pseudo-edit mode
++ Append View History item with count of events in contact menu
++ Made context menu popup with Shift+F10 combo and applications key
++ Made event info form icons changeable via IcoLib
++ Fasted up to 40x times Empty History for large histories
++ Fixes and huge optimizations in XML export
++ Fixed RTLed events was always read from profile as LTRed
++ Fixed keyboard language switching in pseudo-edit and event details form
++ Fixed forms close while in pseudo-edit state
++ Fixed history and global search windows could be closed while grid is busy
++ Fixed using unicode part of message in case of double-byte char sets
++ Fixed with wrong locale was used with ansi text in clipboard
++ Fixed text corruption while getting it from richedit with objects inserted (like smileys)
++ Fixed selected item didn't always become visible while scrolling down with key_down
++ Finally fixed double url-opening issues
++ Fixed global search timer showing wrong time on multicore (and multiprocessor?) systems
++ Reworked plugin shortcuts
++ Redesigned event details form
++ Redesigned global search UI and added history search within date range
++ Other minor fixed and internal changes
+
+1.5.0.109
+
++ Added possibility to rename bookmarks from context menu
++ Added possibility to delete events in the global search with DEL key
++ Added quotation support with nConvers(++) plugin
+! Close button default is default now in Event details form
+- first event wasn't selected when history was opened with empty filter
+- Fixed blink sound on Enter, Tab and Esc keys pressing
+- Fixed abnormal hot search stopping on Enter key press
+- Disable processing key shortcut wasn't working in pseudo-edit mode
+- Fixed wrong text selection after Disable processing toggling
+- Fixed unicode quotation with various *SRMMs
+! Changed options dialog entry to be root entry (Options: Plugins/History++ =>  Options: History)
+! Translation changes
+
+1.5.0.108
+
++ Added back event filter and bookmarks in system history
++ Added "All except system" to default event filters
++ Added event details form snapping support with MagneticWindows plug-in
++ Added multi-monitor support
++ Added support for system icq auth and broadcast events (thnx Bio)
++ Changed event filtering system not to ignore system, web-pager and email-express events
++ Changed changelog link
++ Changed password protect icon (thnx faith_healer)
++ Made plug-in archive more updater compatible, sorted by folders
++ Made filter reset to "Show all events" on bookmark select
++ Made system history's bookmarks panel open status separately stored
++ Made filter applying after form show to get filtering visible in case of rare filter
++ Moved History++ item to "History" group in options dialog
++ Attempt to fix click on url will result in hand point cursor afterwards issue
++ Completely rewrote getting contact's id to not to use built-in miranda services
++ Fixed duplicated name of status change event
++ Fixed event details form wasn't save own position by click on Close button
++ Fixed unwanted form restoring from maximized position on reopen
++ Fixed cursor moved to the end of message issue in pseudo-edit mode
++ Fixed bug with not all of event types was shown in history search form while searching
++ Fixed no event_type number was shown in event details for other (unknown) events
++ Fixed Webpager and Email Express events support
++ Fixed avatar link url making from local path for avatar change events
++ Disabled MathModule support option untill it will be implemented
++ Translation changes
+
+1.5.0.107
++ Added snapping support with MagneticWindows plug-in
++ Added status changes event support from prescuma
++ Made new session starting only with messages, files, urls, contacts and email
++ Made headers showing only of session-starting events
++ Unified events naming
++ Fixed events info handling in event detail form
++ Changed default filter list due support of new events
++ Code cleaning and small optimizations
++ Translation changes
+
+1.5.0.106
++ Added option to set opening event details by doubleclick & enter
++ Added Avatar changes event parsing with showing avatar path as clickable link
++ Added Avatar changes event customizing and filtering
++ Slightly changed event types names
++ Fixed showing event info in Event details form for new events
++ Translation changes
+
+1.5.0.105
++ Added support for updating from File Listing
+
+1.5.0.104
++ Added ability for windows to save normal/maximized state
++ Added saving/restoring position of event details form
++ added toggling item processing in pseudo-edit mode from context menu
++ Added possibility to use own reply quoted template from database
++ Added filter clearing on filter/search toggle
++ Added Profile & Contact IDs in header of export formats
++ Added proto string to export headers
++ Added dimming history menu contact item if there is no events in history
++ Added bookmarks renaming
++ Added saving bookmark panel open status and width
++ Added event filter and customization for "nick name change" event
++ Completely rewritten event reading routines to avoid possible crashes on broken profile
++ Optimized iconpack loading, all icons in one pass
++ Improved vertical header alignment in events headers (nicks, icons, timestamps)
++ Fixed regression - session headers showing in system history
++ Hide sessions, bookmarks and event filters buttons from system history
++ Disabled bookmarks in grid for system history
++ Showing side panel in system history is blocked
++ Fixed bottom align of the last message on history open
++ Fixed richedit flickering in pseudo-edit mode
++ Fixed possible range check error
++ Fixed updating customize toolbar form icons when icons were changed
++ Fixed doublesized smileys in history
++ Fixed repainting on bookmarking long messages
++ Fixed double click on bookmark icon processing visual glitch
++ Fixed unicode translation of event filters names
++ Fixed memory and GDI leaks
++ Code cleanup, minor fixes, optimizations and plug-in loading speeding up
++ Translation changes
+
+1.5.0.103
+Major changes:
++ Added toolbar with customization
++ Added event filter customization
++ Added event bookmarks
++ Added support for external iconpacks
++ Reworked text filter and search interface
++ Improved BiDi interface
++ Added copy text & copy templates limited support.
+  (read here: https://opensvn.csie.org/traccgi/historypp/trac.cgi/wiki/TextFormatting)
++ Finished conversation log
++ Numerous fixes and small features
+Full changelog http://slav.pp.ru/miranda/historypp-1.5.0.103-changelog-full.txt
+
+1.5.0.102
+Major changes:
++ Fixed 217 Runtime error on miranda shutdown
++ Added smileys, bbcodes and other rich-processing support in event details
++ Made all forms fully unicode
++ Improoved conversation log processing
++ Added support for building debug builds
++ Fixed several memory leaks
+
+1.5.0.101
+Major changes:
++ Added first prewiev of conversation log
++ Fixed visual artefacts caused by smooth scrolling
++ Added smileys, bbcodes and other rich-processing support in global history search
++ Added history items caching to speed up drawing
++ Made faster scrolling by mouse
++ Added per-contact RTL support in global history search
++ Fixed global search translation
+
+1.5.0.100 
+Major changes:
++ Unicode-aware controls in history and global search windows
++ Added global search window translation
++ Introduced a bit better almost smooth scrolling
++ Introduced conversation log in history window
++ Added per-contact rtl and codepage support in global search
++ Fixed bugs with ansi-copying to clipboard
+Knownbugs:
+- Visual artifacts, like doubling pixel line while up-scrolling
+- Conversations wouldn't be filtered, just positioning on the first message in the conversations
+
+1.5.0.99
++ Added "Status Changes" filter
++ Added BBCodes in html export support, if enabled in options
++ Added url highlighting in html export based on options
++ Fixed header and footer unicode processing while export
++ Added checking for correct unicode message's part,
+  should fix issues with metacontects and status change
++ Fixed rare range error on context menu popup (i hope)
++ Added biderectional history read prefetching
++ Implemented instant history event positioning
++ Some changes in event translating templates
++ System font is used as default in all forms
++ Used standart password control, shows CAPS warring on xp
++ Added possibility to change menu items icons toogether with forms icons (IcoLib module needed)
++ Fixed PageUp positioning bug
++ Added support for filter messages that ain't selected
++ Added on-the-fly text filter in history search window
++ Fixed wrong contact status icons show issue
++ Added correct external message deleting procession
++ Added status bar refreshing while searching
++ Added simple context menu in history search window
++ Per-contact codepage and RTL settings now stored in proto folder
++ Changes codepage for "status change" event ansi translation to langpak_cp (core 4.3.0 required)
++ Other fixes and addons...
+
+1.5.0.98
++ Fixed runtime error while scrolling and saving history
++ Search button now is disabled when no search text is typed
+
+1.5.0.97
++ Added unicode-aware find dialog, when it supported by os
++ Added find by unicode chars typing with history window opened
++ Reintroduce global history search (yeah, Oxygen is back :)
++ Added contact list in global history search
++ Added "All Results" item in contact list
++ Fixed grid up-down flickering while scrolling by mouse if filter applied
++ Fixed crash after closing search window, if search is in process
++ Added filter reset if history opened from global history search
++ Faster history event positioning if history was opened from global history search
++ Code cleaning and other small bugfixes
+
+1.5.0.96
++ Fixed ugly green color of selected text with no fontservice plugin installed
++ Added per-contact codepage setting for ansi-conversion, default = system
++ Added 'Status change' event
++ AuthRequest and Added events are moved into one 'System message'
++ Translation of some events and ansi niks are based on langpack codepage
++ Other small bugfixes
+
+1.5.0.95
++ Fixed issue with events in system history can't be deleted
++ Added scrolling long message text by mousewheel in pseudo-edit mode
++ Added scrollbars in pseudo-edit mode
++ Added BBCodes parsing b,i,u,s,color=red,blue,green,magenta,cyan,yellow,black,white (thnx nullbie)
++ Other small bugfixes
+
+1.5.0.94
++ Added standart context menu in pseudo-edit mode
++ Added posibility to send message from context menu
++ Added posibility to open user details from context menu
++ Faster history window showing on first open
++ Added possibility to highlight messages with urls as "URL Messages" items
++ Added per-contact BiDi mode settings
++ Fixed issue when per-contact password wasn't checked
+
+1.5.0.93
++ Fallback to ansi filenames, should fix file creation issues
++ Fixed history windows visual refreshing while exporting
++ Fixed issue when URL was opened when clicking outside its submenu (thnx BiO)
+
+1.5.0.92
++ Removed whole history load on start coused by empty filter applying
++ Fixed event height sizing issue again.
++ Fixed rare bug with mouse move proccession on url
+
+1.5.0.91
++ Forced updater module to use beta versions of history++
++ Added unicode export to html, xml (utf-8) and txt formats (both)
++ Added RTL exporting to html format
++ Fixed last event height sizing on history load
++ Added possibility to switch on/off smileys replacement
++ Fixed cursor dissapearing issue in find dialog and srmms
++ Added some visual RTL improvements
++ Some improvements in file operations while exporting
++ Added using protocol-based ID, and protocol name, if no nick was set
+  (Fixed issues with weather, yahoo protocols)
++ History drawing optimization and code cleaning
+
+1.5.0.90
++ Added Updater support
++ Fully RTL support history window
++ Added possibility to change RTL/LTR on the fly :)
++ Added possibility to switch on/off url's underline
++ Added back possibility to show/hide event icons
++ Added unicode operation with clipboard, when possible
++ Switched event details to unicode
++ Some improvements in file operations while exporting
++ Removed hardcoded protocol-based id processing
++ Other small bugfixes
+
+1.5.0.89
++ Fixed "Cannot creat file" issue, i hope
++ Fixed nicks processing if ansi core is used
++ Improved utf-8 handling in "You were added events"
++ Added control options back again
++ Fixed unicode nick wasn't showed issue in password form
++ Fixed crash on system history open
++ Some code cleaning
+
+1.5.0.88
++ Huge DB reading optimization, should much be more faster on load
++ Fixed ansi messages and nicks processing, that was broken since 1.5.0.83
++ Fixed broken protocol-based smiley support
++ Added utf-8 handling in "You were added events"
++ Other small bugfixes
+
+1.5.0.87
++ Fixed crash on startup without fontservice plugin
++ Some DB reading optimization
+
+1.5.0.86
++ Fixed typos in font settings applying, now it works.
+
+1.5.0.85
++ Unicode fully supported on unicode os and with unicode clist.
+  If you have non unicode clist, you'll get ansi contacts.
+  If you have non unicode os, you'll get ansi history as well and contacts.
++ Added default font and color settings in case of fontservice not in use.
++ Fixed urls exporting in html
+
+1.5.0.84 (private build)
++ Fixed item height sizing, if you have visual glitches on Win98, try to
+  update your richedit http://www.amlpages.hotmail.ru/Source/riched30.zip
++ Fixed background colors not applying in fontservice
++ Fixed unknown events unicode support
++ Fixed SMS events unicode support
++ Code cleaning & optimisation
++ Other small bugfixes
+
+1.5.0.83 (private build)
++ Partial unicode support (on unicode os and core)
++ Remove options form, Fontservice module needed instead
++ Added possibility to change forms icons (IcoLib module needed)
+
+1.5.0.82
++ Some visual bugs from 81 build fixed 
++ Added urls export in html as normal links
+
+1.5.0.81
++ Fixed unknown events handle/show/export issues 
++ Default icon for unknown events added
+
+1.5.0.80 
++ Smiles support (SmileyAdd module needed) 
++ Fixed crash in contacts events handling 
++ Added contacts evets filter 
++ Fixed copying to clipboard (no unicode at all) 
++ No global history search, use Find A Message instead
+
+Maintained 2006-2009 theMIROn, 2003-2006 Art Fedorov. History+ parts c 2001 Christian Kastner

@@ -1,0 +1,8 @@
+;; Text found in ..\plugin\HistoryGrid.pas:
+Remove Bookmark
+Set Bookmark
+Hide headers
+Show headers
+Running version of AniSmiley is not supported
+Running version of SmileyAdd is not supported
+Running version of Emoticons is not supported
