@@ -37,13 +37,13 @@ Since 15.05.2007 we have Professional !EurekaLog licence, so just download more 
 
 === After installing History++, default history viewer is shown ===
 
-Read question 1, "Plugin doesn't load". If it doesn't help, file a [/traccgi/historypp/trac.cgi/newticket new ticket].
+Read question 1, "Plugin doesn't load". If it doesn't help, submit a [http://code.google.com/p/historypp/issues/entry new issue].
 
 === Help! I've lost password to my history! ===
 If you've lost your password, do the following:
- 1. Read [HowToEditDatabase how to edit database]
- 2. In !DatabaseEditor navigate to Current user -> !HistoryPlusPlus
- 3. Delete record "Password"
+ #. Read [HowToEditDatabase how to edit database]
+ #. In !DatabaseEditor navigate to Current user -> !HistoryPlusPlus
+ #. Delete record "Password"
 Now your password is blank and you can open any
 contact's history.
 
@@ -95,5 +95,5 @@ History++ does not keep history itself. Instead, Miranda IM manages history keep
 
 === Where History++ saves chat history? ===
 
-History++ does not save history. Instead, database driver saves history (generally in miranda profile).
+History++ does not save history. Instead, database driver saves history (generally in miranda profile).<BR>
 See Also: [http://www.tonarticles.com Article Directory], [http://www.verizonenv.com Verizon Wireless - LG enV3 Touch], [http://www.egscript.info Scripts and programming]
