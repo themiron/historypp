@@ -24,7 +24,7 @@ Default format settings as of 01 Jan 2007:
  * !FormatReplyQuotedText: _{{{%quot_selmes%\n}}}_
  * !FormatSelection: _{{{%selmes%\n}}}_
 
-Additionally, you can look at the source for default formats. Look in [/traccgi/historypp/trac.cgi/browser/historypp/trunk/plugin/hpp_options.pas#L65 hpp_options.pas], search for DEFFORMAT_CLIPCOPY constants.
+Additionally, you can look at the source for default formats. Look in [http://code.google.com/p/historypp/source/browse/historypp/trunk/plugin/hpp_options.pas#93 hpp_options.pas], search for DEFFORMAT_CLIPCOPY constants.
 
 To restore default format for particular setting, just delete it from database and restart miranda.
 
