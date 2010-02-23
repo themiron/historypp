@@ -18,16 +18,16 @@ Permanent links:
 
 Debug build contains additional debug information and functionality, useful in case of crashes, errors, etc.<BR>
 Please, read [FrequentlyAskedQuestions FAQ] before about 30 days limitation of !EurekaLog add-in tool, used in debug builds.<BR>
-To download debug build, download *-dbg.zip archives
+To download debug build, download {{{*}}}-dbg.zip archives
 
 === Source ===
 
-To download source code, either download *-src.zip archives or follow [http://code.google.com/p/historypp/source/checkout Source Checkout] instructions
+To download source code, either download {{{*}}}-src.zip archives or follow [http://code.google.com/p/historypp/source/checkout Source Checkout] instructions
 
 === Used software links ===
 
  * [EurekaLog EurekaLog - Delphi and C++Builder Exception trapper]
  * [TntWare TntWare Delphi Unicode Controls]
 
-_Additional builds and information: http://themiron.miranda.im_<BR>
+_Additional builds and information: http://themiron.miranda.im _<BR>
 _To download older versions, go to [OlderVersions older versions archive]_
