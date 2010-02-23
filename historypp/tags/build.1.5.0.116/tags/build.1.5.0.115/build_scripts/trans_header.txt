@@ -1,8 +1,0 @@
-;;
-;; History++ plugin translation
-;; Part of {[VER]} distribution
-;; 
-;; Project: http://themiron.mirandaim.ru/
-;; SVN: http://opensvn.csie.org/historypp/
-;; Trac: https://opensvn.csie.org/traccgi/historypp/trac.cgi/
-;; 

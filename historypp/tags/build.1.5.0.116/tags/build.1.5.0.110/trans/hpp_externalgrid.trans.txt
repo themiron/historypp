@@ -1,7 +1,0 @@
-;; Text found in ..\plugin\hpp_externalgrid.pas:
-Remove &Bookmark
-Set &Bookmark
-Do you really want to delete selected items (%.0f)?
-Delete Selected
-Do you really want to delete selected item?
-Delete
