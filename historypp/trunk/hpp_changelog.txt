@@ -569,4 +569,4 @@ Knownbugs:
 + Fixed copying to clipboard (no unicode at all) 
 + No global history search, use Find A Message instead
 
-Maintained 2006-2009 theMIROn, 2003-2006 Art Fedorov. History+ parts c 2001 Christian Kastner
+Maintained 2006-2011 theMIROn, 2003-2006 Art Fedorov. History+ parts c 2001 Christian Kastner
