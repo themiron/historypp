@@ -81,7 +81,7 @@ type
     Grid: TExtHistoryGrid;
     FParentWindow: HWND;
     FSelection: Pointer;
-    SavedLinkUrl: String;
+    SavedLinkUrl: WideString;
     SavedFileDir: String;
     pmGrid: TTntPopupMenu;
     pmLink: TTntPopupMenu;
