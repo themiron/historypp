@@ -281,7 +281,7 @@ type
     procedure edPassKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure edPassKeyPress(Sender: TObject; var Key: Char);
     procedure CopyText1Click(Sender: TObject);
-    procedure hgUrlClick(Sender: TObject; Item: Integer; URLText: String; Button: TMouseButton);
+    procedure hgUrlClick(Sender: TObject; Item: Integer; URLText: WideString; Button: TMouseButton);
     procedure hgProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
     procedure hgSearchItem(Sender: TObject; Item, ID: Integer; var Found: Boolean);
     procedure hgKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -349,7 +349,7 @@ type
     FhContact,FhSubContact: THandle;
     FProtocol,FSubProtocol: String;
     FPasswordMode: Boolean;
-    SavedLinkUrl: String;
+    SavedLinkUrl: WideString;
     SavedFileDir: String;
     HotFilterString: WideString;
     FormState: TGridState;
@@ -2274,21 +2274,21 @@ end;
 procedure THistoryFrm.OpenLinkClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(False),LPARAM(@SavedLinkUrl[1]));
+  OpenUrl(SavedLinkUrl,False);
   SavedLinkUrl := '';
 end;
 
 procedure THistoryFrm.OpenLinkNWClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@SavedLinkUrl[1]));
+  OpenUrl(SavedLinkUrl,True);
   SavedLinkUrl := '';
 end;
 
 procedure THistoryFrm.CopyLinkClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Handle,CP_ACP);
+  CopyToClip(SavedLinkUrl,Handle,CP_ACP);
   SavedLinkUrl := '';
 end;
 
@@ -2841,11 +2841,11 @@ begin
   end;
 end;
 
-procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; URLText: String; Button: TMouseButton);
+procedure THistoryFrm.hgUrlClick(Sender: TObject; Item: Integer; URLText: WideString; Button: TMouseButton);
 begin
   if URLText = '' then exit;
   if (Button = mbLeft) or (Button = mbMiddle) then
-    PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@URLText[1]))
+    OpenUrl(URLText,True)
   else begin
     SavedLinkUrl := URLText;
     pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
@@ -2918,6 +2918,7 @@ function THistoryFrm.IsFileEvent(Index: Integer): Boolean;
 begin
   Result := (Index <> -1) and (mtFile in hg.Items[Index].MessageType);
   if Result then begin
+    // Auto CP_ACP usage
     SavedLinkUrl := ExtractFileName(hg.Items[Index].Extended);
     SavedFileDir := ExtractFileDir(hg.Items[Index].Extended);
   end;
