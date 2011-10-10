@@ -844,7 +844,7 @@ type
     procedure AddTab(tbPos: Single; tbAlign: Integer; tbLeader: Integer); dispid 1063;
     procedure ClearAllTabs; dispid 1064;
     procedure DeleteTab(tbPos: Single); dispid 1065;
-    procedure GetTab(iTab: Integer; out ptbPos: Single; out ptbAlign: Integer; 
+    procedure GetTab(iTab: Integer; out ptbPos: Single; out ptbAlign: Integer;
                      out ptbLeader: Integer); dispid 1072;
   end;
 
@@ -943,7 +943,7 @@ type
     function RangeFromPoint(x: Integer; y: Integer): ITextRange; dispid 16;
   end;
 
-  TURLClickEvent = procedure(Sender: TObject; const URLText: String; Button: TMouseButton) of object;
+  TURLClickEvent = procedure(Sender: TObject; const URLText: WideString; Button: TMouseButton) of object;
 
   THppRichEdit = class(TCustomRichEdit)
   private
@@ -971,13 +971,13 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
     procedure CreateWindowHandle(const Params: TCreateParams); override;
     procedure CreateWnd; override;
-    procedure URLClick(const URLText: String; Button: TMouseButton); dynamic;
+    procedure URLClick(const URLText: WideString; Button: TMouseButton); dynamic;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure Clear; override;
-    function GetTextRangeA(cpMin,cpMax: Integer): AnsiString;
-    function GetTextRangeW(cpMin,cpMax: Integer): WideString;
+    //function GetTextRangeA(cpMin,cpMax: Integer): AnsiString;
+    function GetTextRange(cpMin,cpMax: Integer): WideString;
     function GetTextLength: Integer;
     procedure ReplaceCharFormatRange(const fromCF, toCF: CHARFORMAT2; idx, len: Integer);
     procedure ReplaceCharFormat(const fromCF, toCF: CHARFORMAT2);
@@ -1622,6 +1622,7 @@ begin
   Result := FUnicodeAPI;
 end;
 
+(*
 function THppRichedit.GetTextRangeA(cpMin,cpMax: Integer): AnsiString;
 var
   WideText: WideString;
@@ -1640,8 +1641,9 @@ begin
   if UnicodeAPI then
     Result := WideToAnsiString(WideText,Codepage);
 end;
+*)
 
-function THppRichedit.GetTextRangeW(cpMin,cpMax: Integer): WideString;
+function THppRichedit.GetTextRange(cpMin,cpMax: Integer): WideString;
 var
   AnsiText: WideString;
   tr: TextRange;
@@ -1673,9 +1675,10 @@ begin
   Result := Perform(EM_GETTEXTLENGTHEX, WPARAM(@gtxl), 0);
 end;
 
-procedure THppRichedit.URLClick(const URLText: String; Button: TMouseButton);
+procedure THppRichedit.URLClick(const URLText: WideString; Button: TMouseButton);
 begin
-  if Assigned(OnURLClick) then OnURLClick(Self, URLText, Button);
+  if Assigned(OnURLClick) then
+    OnURLClick(Self, URLText, Button);
 end;
 
 procedure THppRichedit.LinkNotify(Link: TENLink);
@@ -1688,7 +1691,7 @@ begin
     WM_RBUTTONUP: begin
       if (FClickBtn = mbRight) and
          (FClickRange.cpMin = Link.chrg.cpMin) and (FClickRange.cpMax = Link.chrg.cpMax) then
-        URLClick(GetTextRangeA(Link.chrg.cpMin, Link.chrg.cpMax), mbRight);
+        URLClick(GetTextRange(Link.chrg.cpMin, Link.chrg.cpMax), mbRight);
       FClickRange.cpMin := -1;
       FClickRange.cpMax := -1;
     end;
@@ -1699,7 +1702,7 @@ begin
     WM_LBUTTONUP: begin
       if (FClickBtn = mbLeft) and
          (FClickRange.cpMin = Link.chrg.cpMin) and (FClickRange.cpMax = Link.chrg.cpMax) then
-        URLClick(GetTextRangeA(Link.chrg.cpMin, Link.chrg.cpMax), mbLeft);
+        URLClick(GetTextRange(Link.chrg.cpMin, Link.chrg.cpMax), mbLeft);
       FClickRange.cpMin := -1;
       FClickRange.cpMax := -1;
     end;

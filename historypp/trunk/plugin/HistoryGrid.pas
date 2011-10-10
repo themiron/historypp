@@ -151,7 +151,7 @@ type
 
   {IFDEF RENDER_RICH}
   TUrlClickItemEvent = procedure(Sender: TObject; Item: Integer;
-                                 Url: String; Button: TMouseButton) of object;
+                                 Url: WideString; Button: TMouseButton) of object;
   {ENDIF}
   TOnShowIcons = procedure;
   TOnTextFormatting = procedure(Value: Boolean);
@@ -572,7 +572,7 @@ type
     {$ENDIF}
     function GetHitTests(X,Y: Integer): TGridHitTests;
     {$IFDEF RENDER_RICH}
-    function GetLinkAtPoint(X,Y: Integer): AnsiString;
+    function GetLinkAtPoint(X,Y: Integer): WideString;
     function GetHintAtPoint(X,Y: Integer; var ObjectHint: WideString; var ObjectRect: TRect): Boolean;
     function GetRichEditRect(Item: Integer; DontClipTop: Boolean = False): TRect;
     {$ENDIF}
@@ -597,7 +597,7 @@ type
     procedure OnInlineOnKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure OnInlineOnMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure OnInlineOnMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure OnInlineOnURLClick(Sender: TObject; const URLText: String; Button: TMouseButton);
+    procedure OnInlineOnURLClick(Sender: TObject; const URLText: WideString; Button: TMouseButton);
 
     function GetProfileName: WideString;
     procedure SetProfileName(const Value: WideString);
@@ -638,7 +638,7 @@ type
 
     procedure GridUpdateSize;
     function GetSelectionString: WideString;
-    procedure URLClick(Item: Integer; const URLText: String; Button: TMouseButton); dynamic;
+    procedure URLClick(Item: Integer; const URLText: WideString; Button: TMouseButton); dynamic;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -2992,7 +2992,7 @@ end;
 // Call it when you are sure that the point has a link,
 // if no link at a point, the result is ''
 // To know if there's a link, use GetHitTests and look for ghtLink
-function THistoryGrid.GetLinkAtPoint(X, Y: Integer): AnsiString;
+function THistoryGrid.GetLinkAtPoint(X, Y: Integer): WideString;
 var
   p: TPoint;
   cr: CHARRANGE;
@@ -3050,7 +3050,7 @@ begin
     end;
   end;
 
-  Result := FRich.GetTextRangeA(cr.cpMin,cr.cpMax);
+  Result := FRich.GetTextRange(cr.cpMin,cr.cpMax);
 
   if (Length(Result)>10) and (Pos('HYPERLINK',Result)=1) then begin
     cr.cpMin := PosEx('"',Result,10);
@@ -5028,7 +5028,7 @@ var
     p: TPoint;
     cr: CHARRANGE;
     cf: CHARFORMAT2;
-    cp,sel: Integer;
+    cp: Integer;
     res: DWord;
   begin
     Result := False;
@@ -5275,7 +5275,7 @@ begin
     FOnInlinePopup(Sender);
 end;
 
-procedure THistoryGrid.OnInlineOnURLClick(Sender: TObject; const URLText: String; Button: TMouseButton);
+procedure THistoryGrid.OnInlineOnURLClick(Sender: TObject; const URLText: WideString; Button: TMouseButton);
 var
   p: TPoint;
   Item: Integer;
@@ -5432,7 +5432,7 @@ begin
   Update;
 end;
 
-procedure THistoryGrid.URLClick(Item: Integer; const URLText: String; Button: TMouseButton);
+procedure THistoryGrid.URLClick(Item: Integer; const URLText: WideString; Button: TMouseButton);
 begin
   Application.CancelHint;
   Cursor := crDefault;
