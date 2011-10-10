@@ -106,6 +106,11 @@ type
 
   TSendMethod = (smSend,smPost);
 
+  TUrlProto = record
+    proto: PWideChar;
+    idn: Boolean;
+  end;
+
 const
 
   hppName       = 'History++';
@@ -219,6 +224,25 @@ const
 
   SkinIconsCount             = 4;
 
+const
+  UrlPrefix: array[0..1] of WideString = (
+    'www.',
+    'ftp.');
+  UrlProto: array[0..12] of TUrlProto = (
+    (Proto: 'http:/';     Idn: True;),
+    (Proto: 'ftp:/';      Idn: True;),
+    (Proto: 'file:/';     Idn: False;),
+    (Proto: 'mailto:/';   Idn: False;),
+    (Proto: 'https:/';    Idn: True;),
+    (Proto: 'gopher:/';   Idn: False;),
+    (Proto: 'nntp:/';     Idn: False;),
+    (Proto: 'prospero:/'; Idn: False;),
+    (Proto: 'telnet:/';   Idn: False;),
+    (Proto: 'news:/';     Idn: False;),
+    (Proto: 'wais:/';     Idn: False;),
+    (Proto: 'outlook:/';  Idn: False;),
+    (Proto: 'callto:/';   Idn: False;));
+
 var
   hppVersionStr: String;
   //hppVersionPrefix: String;
@@ -242,35 +266,111 @@ function TranslateWideW(const WS: WideString{TRANSLATE-IGNORE}): WideString;
 function MakeFileName(FileName: AnsiString): AnsiString;
 function GetLCIDfromCodepage(Codepage: Cardinal): LCID;
 procedure CopyToClip(WideStr: WideString; Handle: Hwnd; CodePage: Cardinal = CP_ACP; Clear: Boolean = True);
+function QuoteURL(const URLText: WideString): AnsiString;
+function EncodeURL(const Src: WideString; var Dst: WideString): Boolean;
+procedure OpenUrl(URLText: WideString; NewWindow: Boolean);
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
-function URLEncode(const ASrc: string): string;
-function MakeTextXMLedA(Text: String): String;
+function MakeTextXMLedA(Text: AnsiString): AnsiString;
 function MakeTextXMLedW(Text: WideString): WideString;
 function FormatCString(Text: WideString): WideString;
 function PassMessage(Handle: THandle; Message: DWord; wParam: WPARAM; lParam: LPARAM; Method: TSendMethod = smSend): Boolean;
 
 implementation
 
-uses TntSystem,TntSysUtils;
+uses TntSystem, TntSysUtils, StrUtils,
+  {$IFDEF COMPILER_10}WideStrUtils,{$ENDIF} TntWideStrUtils,
+  hpp_puny;
 
-function URLEncode(const ASrc: string): string;
-const
-  UnsafeChars = ['*', '#', '%', '<', '>', '+', ' '];  {do not localize}
+function QuoteURL(const URLText: WideString): AnsiString;
 var
   i: Integer;
+  code: Byte;
+  URLTextA: AnsiString;
 begin
-  Result := '';    {Do not Localize}
-  for i := 1 to Length(ASrc) do begin
-    //if (ASrc[i] in UnsafeChars) or (ASrc[i] >= #$80) or (ASrc[1] < #32) then begin
-    if (ASrc[i] in UnsafeChars) or (ASrc[1] < #32) then begin
-      Result := Result + '%' + IntToHex(Ord(ASrc[i]), 2);  {do not localize}
-    end else if ASrc[i] = '\' then begin
-      Result := Result + '/';
-    end else begin
-      Result := Result + ASrc[i];
-    end;
+  Result := '';
+  URLTextA := UTF8Encode(URLText);
+  for i := 1 to Length(URLTextA) do begin
+    code := Ord(URLTextA[i]);
+    if (code <= 32) or (code >= 127) then
+      Result := Result + '%' + IntToHex(code, 2) else
+      Result := Result + URLTextA[i];
   end;
 end;
+
+function EncodeURL(const Src: WideString; var Dst: WideString): Boolean;
+var
+  Puny: TPunyClass;
+  Start, ProtoEnd, i: Integer;
+  HostStart, HostEnd: Integer;
+  HostStr, EncodedStr: WideString;
+begin
+  // [scheme://*][user:password@]host[:port][/path]
+  // [mailto:]userinfo@host
+  // \\host\path
+  Result := False;
+
+  for i := 0 to High(UrlPrefix) do begin
+    HostStart := Pos(UrlPrefix[i], Src);
+    if (HostStart = 1) then
+      break;
+  end;
+  if HostStart = 0 then begin
+    Start := Pos(':/', Src);
+    if Start > 0 then begin
+      ProtoEnd := Start + 2;
+      for i := 0 to High(UrlProto) do begin
+        if not UrlProto[i].Idn then
+          continue;
+        Start := Pos(UrlProto[i].Proto, Src);
+        if (Start > 0) and (Start + Length(UrlProto[i].Proto) = ProtoEnd) then begin
+          HostStart := ProtoEnd;
+          break;
+        end;
+      end;
+    end;
+  end;
+  if HostStart = 0 then
+    exit;
+
+  for HostStart := HostStart to Length(Src) do
+    if Src[HostStart] <> '/' then
+      break;
+  for HostEnd := HostStart to Length(Src) do
+    if Src[HostEnd] = '/' then
+      break;
+  for i := HostStart to HostEnd - 1 do
+    if Src[i] = '@' then begin
+      HostStart := i + 1;
+      break;
+    end;
+  for i := HostStart to HostEnd - 1 do
+    if Src[i] = ':' then begin
+      HostEnd := i;
+      break;
+    end;
+
+  Dst := Copy(Src, 1, HostStart - 1);
+
+  Puny := TPunyClass.Create;
+  for i := HostStart to HostEnd do begin
+    if (i < HostEnd) and (Src[i] <> '.') then
+      continue;
+    HostStr := Copy(Src, HostStart, i - HostStart);
+    EncodedStr := Puny.Encode(HostStr);
+    if WideSameStr(HostStr, EncodedStr) then
+      Dst := Dst + HostStr else
+      Dst := Dst + 'xn--' + EncodedStr;
+    if i < HostEnd then
+      Dst := Dst + '.';
+    HostStart := i + 1;
+  end;
+  Puny.Free;
+
+  Dst := Dst + Copy(Src, HostEnd, Length(Src) - HostEnd + 1);
+  Result := True;
+end;
+
+
 
 function AnsiToWideString(const S: AnsiString; CodePage: Cardinal; InLength: Integer = -1): WideString;
 var
@@ -324,7 +424,7 @@ begin
 end;
 
 // rudy but fast way to get the correct unicode string
-// TODO: implement own WideFormatDateTime function at API level 
+// TODO: implement own WideFormatDateTime function at API level
 function WideFormatDateTime(const Format: string; DateTime: TDateTime): WideString;
 var
   DefaultCodePage: Cardinal;
@@ -432,6 +532,20 @@ begin
   finally
     CloseClipBoard;
   end;
+end;
+
+procedure OpenUrl(URLText: WideString; NewWindow: Boolean);
+var
+  URLTextW: WideString;
+  URLTextA: AnsiString;
+begin
+  if EncodeURL(URLText, URLTextW) then begin
+    URLTextA := WideToAnsiString(URLTextW, CP_ACP);
+    if not WideSameStr(URLTextW, AnsiToWideString(URLTextA, CP_ACP)) then
+      URLTextA := QuoteURL(URLTextW);
+  end else
+    URLTextA := WideToAnsiString(URLText, CP_ACP);
+  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(NewWindow),LPARAM(@URLTextA[1]));
 end;
 
 function HppMessageBox(Handle: THandle; const Text: WideString; const Caption: WideString; Flags: Integer): Integer;
