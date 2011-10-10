@@ -387,38 +387,21 @@ begin
 end;
 
 function TextHasUrls(var Text: WideString): Boolean;
-const
-  prefix: array[0..1] of WideString = ('www.','ftp.');
-  protos: array[0..12] of WideString = (
-    'http:/',
-    'ftp:/',
-    'file:/',
-    'mailto:/',
-    'https:/',
-    'gopher:/',
-    'nntp:/',
-    'prospero:/',
-    'telnet:/',
-    'news:/',
-    'wais:/',
-    'outlook:/',
-    'callto:/');
 var
   i,len,lenW: Integer;
   pText,pPos: PWideChar;
-
 begin
   Result := False;
   len := Length(Text);
   if len=0 then exit;
 
   pText := PWideChar(Text);
-  for i := 0 to High(prefix) do begin
-    pPos := WStrPos(pText,PWideChar(prefix[i]));
+  for i := 0 to High(UrlPrefix) do begin
+    pPos := WStrPos(pText,PWideChar(UrlPrefix[i]));
     if not Assigned(pPos) then continue;
     Result :=
       ((DWord(pPos)=DWord(pText)) or not IsWideCharAlphaNumeric((pPos-1)^)) and
-      IsWideCharAlphaNumeric((pPos+Length(prefix[i]))^);
+      IsWideCharAlphaNumeric((pPos+Length(UrlPrefix[i]))^);
     if Result then exit;
   end;
 
@@ -430,8 +413,8 @@ begin
   TextBuffer.Allocate(lenW);
   Move(Text[1],TextBuffer.Buffer^,lenW);
   Tnt_CharLowerBuffW(PWideChar(TextBuffer.Buffer),len);
-  for i := 0 to High(protos) do begin
-    pPos := WStrPos(PWideChar(TextBuffer.Buffer),PWideChar(protos[i]));
+  for i := 0 to High(UrlProto) do begin
+    pPos := WStrPos(PWideChar(TextBuffer.Buffer),PWideChar(UrlProto[i].proto));
     if not Assigned(pPos) then continue;
     Result := ((DWord(pPos)=DWord(TextBuffer.Buffer)) or not IsWideCharAlphaNumeric((pPos-1)^));
     if Result then break;
