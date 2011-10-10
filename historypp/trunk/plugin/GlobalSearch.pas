@@ -237,7 +237,7 @@ type
     procedure hgProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
     procedure FormShow(Sender: TObject);
     procedure hgKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure hgUrlClick(Sender: TObject; Item: Integer; URLText: String; Button: TMouseButton);
+    procedure hgUrlClick(Sender: TObject; Item: Integer; URLText: WideString; Button: TMouseButton);
     procedure edPassKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure hgSelect(Sender: TObject; Item, OldItem: Integer);
@@ -305,7 +305,7 @@ type
     AllContacts: Integer;
     HotFilterString: WideString;
     FormState: TGridState;
-    SavedLinkUrl: String;
+    SavedLinkUrl: WideString;
     SavedFileDir: String;
 
     procedure WMGetMinMaxInfo(var Message: TWMGetMinMaxInfo); message WM_GETMINMAXINFO;
@@ -1942,11 +1942,11 @@ begin
  // Name := Name + ' [' + BookmarkServer[si.Contact.Handle].BookmarkName[si.hDBEvent] + ']';
 end;
 
-procedure TfmGlobalSearch.hgUrlClick(Sender: TObject; Item: Integer; URLText: String; Button: TMouseButton);
+procedure TfmGlobalSearch.hgUrlClick(Sender: TObject; Item: Integer; URLText: WideString; Button: TMouseButton);
 begin
   if URLText = '' then exit;
   if (Button = mbLeft) or (Button = mbMiddle) then
-    PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@URLText[1]))
+    OpenUrl(URLText,True)
   else begin
     SavedLinkUrl := URLText;
     pmLink.Popup(Mouse.CursorPos.x,Mouse.CursorPos.y);
@@ -2344,21 +2344,21 @@ end;
 procedure TfmGlobalSearch.OpenLinkClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(False),LPARAM(@SavedLinkUrl[1]));
+  OpenUrl(SavedLinkUrl,False);
   SavedLinkUrl := '';
 end;
 
 procedure TfmGlobalSearch.OpenLinkNWClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@SavedLinkUrl[1]));
+  OpenUrl(SavedLinkUrl,True);
   SavedLinkUrl := '';
 end;
 
 procedure TfmGlobalSearch.CopyLinkClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Handle,CP_ACP);
+  CopyToClip(SavedLinkUrl,Handle,CP_ACP);
   SavedLinkUrl := '';
 end;
 

@@ -112,7 +112,7 @@ type
     procedure GridTranslateTime(Sender: TObject; Time: Cardinal; var Text: WideString);
     procedure GridNameData(Sender: TObject; Index: Integer; var Name: WideString);
     procedure GridProcessRichText(Sender: TObject; Handle: Cardinal; Item: Integer);
-    procedure GridUrlClick(Sender: TObject; Item: Integer; URLText: AnsiString; Button: TMouseButton);
+    procedure GridUrlClick(Sender: TObject; Item: Integer; URLText: WideString; Button: TMouseButton);
     procedure GridBookmarkClick(Sender: TObject; Item: Integer);
     procedure GridSelectRequest(Sender: TObject);
     procedure GridDblClick(Sender: TObject);
@@ -629,11 +629,11 @@ begin
   //Grid.Repaint;
 end;
 
-procedure TExternalGrid.GridUrlClick(Sender: TObject; Item: Integer; URLText: AnsiString; Button: TMouseButton);
+procedure TExternalGrid.GridUrlClick(Sender: TObject; Item: Integer; URLText: WideString; Button: TMouseButton);
 begin
   if URLText= '' then exit;
   if (Button = mbLeft) or (Button = mbMiddle) then
-    PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@URLText[1]))
+    OpenUrl(URLText,True)
   else
   if Button = mbRight then begin
     SavedLinkUrl := URLText;
@@ -718,6 +718,7 @@ function TExternalGrid.IsFileEvent(Index: Integer): Boolean;
 begin
   Result := (Index <> -1) and (mtFile in Grid.Items[Index].MessageType);
   if Result then begin
+    // Auto CP_ACP usage
     SavedLinkUrl := ExtractFileName(Grid.Items[Index].Extended);
     SavedFileDir := ExtractFileDir(Grid.Items[Index].Extended);
   end;
@@ -888,7 +889,7 @@ end;
 procedure TExternalGrid.OnOpenLinkClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(False),LPARAM(@SavedLinkUrl[1]));
+  OpenUrl(SavedLinkUrl,False);
   SavedLinkUrl := '';
 end;
 
@@ -912,14 +913,14 @@ end;
 procedure TExternalGrid.OnOpenLinkNWClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@SavedLinkUrl[1]));
+  OpenUrl(SavedLinkUrl,True);
   SavedLinkUrl := '';
 end;
 
 procedure TExternalGrid.OnCopyLinkClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Grid.Handle,CP_ACP);
+  CopyToClip(SavedLinkUrl,Grid.Handle,CP_ACP);
   SavedLinkUrl := '';
 end;
 
