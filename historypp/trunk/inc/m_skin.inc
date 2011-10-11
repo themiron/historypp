@@ -36,9 +36,45 @@ const
     SKINICON_OTHER_MIRANDA		= 200;
     SKINICON_OTHER_EXIT			= 201;
     SKINICON_OTHER_SHOWHIDE		= 202;
-    SKINICON_OTHER_GROUPOPEN    = 203; // v0.1.1.0+
-    SKINICON_OTHER_GROUPSHUT    = 205; // v0.1.1.0+
-    SKINICON_OTHER_USERONLINE   = 204; // v0.1.0.1+
+    SKINICON_OTHER_GROUPOPEN		= 203;     //v0.1.1.0+
+    SKINICON_OTHER_USERONLINE		= 204;     //v0.1.0.1+
+    SKINICON_OTHER_GROUPSHUT		= 205;     //v0.1.1.0+
+    SKINICON_OTHER_CONNECTING		= 206;     //v0.1.0.1+
+    SKINICON_OTHER_ADDCONTACT		= 207;     //v0.7.0.2+
+    SKINICON_OTHER_USERDETAILS		= 208;     //v0.7.0.2+
+    SKINICON_OTHER_HISTORY		= 209;     //v0.7.0.2+
+    SKINICON_OTHER_DOWNARROW		= 210;     //v0.7.0.2+
+    SKINICON_OTHER_FINDUSER		= 211;     //v0.7.0.2+
+    SKINICON_OTHER_OPTIONS		= 212;     //v0.7.0.2+
+    SKINICON_OTHER_SENDEMAIL		= 213;     //v0.7.0.2+
+    SKINICON_OTHER_DELETE		= 214;     //v0.7.0.2+
+    SKINICON_OTHER_RENAME		= 215;     //v0.7.0.2+
+    SKINICON_OTHER_SMS			= 216;     //v0.7.0.2+
+    SKINICON_OTHER_SEARCHALL		= 217;     //v0.7.0.2+
+    SKINICON_OTHER_TICK			= 218;     //v0.7.0.2+
+    SKINICON_OTHER_NOTICK		= 219;     //v0.7.0.2+
+    SKINICON_OTHER_HELP			= 220;     //v0.7.0.2+
+    SKINICON_OTHER_MIRANDAWEB		= 221;     //v0.7.0.2+
+    SKINICON_OTHER_TYPING		= 222;     //v0.7.0.2+
+    SKINICON_OTHER_SMALLDOT		= 223;     //v0.7.0.2+
+    SKINICON_OTHER_FILLEDBLOB		= 224;     //v0.7.0.2+
+    SKINICON_OTHER_EMPTYBLOB		= 225;     //v0.7.0.2+
+    SKINICON_OTHER_UNICODE		= 226;     //v0.7.0.19+
+    SKINICON_OTHER_ANSI			= 227;     //v0.7.0.19+
+    SKINICON_OTHER_LOADED		= 228;     //v0.7.0.19+
+    SKINICON_OTHER_NOTLOADED		= 229;     //v0.7.0.19+
+    SKINICON_OTHER_UNDO			= 230;     //v0.8.0.4+
+    SKINICON_OTHER_WINDOW		= 231;     //v0.8.0.4+
+    SKINICON_OTHER_WINDOWS		= 232;     //v0.8.0.4+
+    SKINICON_OTHER_ACCMGR		= 233;     //v0.8.0.4+
+    SKINICON_OTHER_MAINMENU		= 234;     //v0.8.0.12+
+    SKINICON_OTHER_STATUS		= 235;     //v0.8.0.12+
+    SKINICON_CHAT_JOIN			= 236;     //v0.8.0.27+
+    SKINICON_CHAT_LEAVE			= 237;     //v0.8.0.27+
+    SKINICON_OTHER_STATUS_LOCKED	= 238;    //v0.8.0.28+
+    SKINICON_OTHER_GROUP		= 239;     //v0.8.0.29+
+    SKINICON_OTHER_ON			= 240;     //v0.9.0.9+
+    SKINICON_OTHER_OFF			= 241;     //v0.9.0.9+
 
     // menu icons are owned by the module that uses them so are not and should not
     // be skinnable. Except exit and show/hide
@@ -91,6 +127,7 @@ const
                  'all protocols' status icon
     }
     MS_SKIN_LOADPROTOICON       = 'Skin/Icons/LoadProto';
+    MS_SKIN_LOADPROTOICONBIG    = 'Skin/Icons/LoadProtoBig';
 
     {
         wParam : 0
