@@ -603,12 +603,36 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
         Result := PluginLink^.CallService(MS_SKIN_LOADICON, id, 0);
     end;
 
+    function LoadSkinnedIconHandle(id: int): THandle;
+    {$ifdef FPC}
+    inline;
+    {$endif}
+    begin
+        Result := PluginLink^.CallService(MS_SKIN_LOADICON, id, 1);
+    end;
+
+    function LoadSkinnedIconBig(id: int): THandle;
+    {$ifdef FPC}
+    inline;
+    {$endif}
+    begin
+        Result := PluginLink^.CallService(MS_SKIN_LOADICON, id, 2);
+    end;
+
     function LoadSkinnedProtoIcon(const szProto: PChar; status: int): THandle;
     {$ifdef FPC}
     inline;
     {$endif}
     begin
         Result := PluginLink^.CallService(MS_SKIN_LOADPROTOICON, wParam(szProto), status);
+    end;
+
+    function LoadSkinnedProtoIconBig(const szProto: PChar; status: int): THandle;
+    {$ifdef FPC}
+    inline;
+    {$endif}
+    begin
+        Result := PluginLink^.CallService(MS_SKIN_LOADPROTOICONBIG, wParam(szProto), status);
     end;
 
     function SkinAddNewSound(const name, description, defaultFile: PChar): int;
