@@ -127,13 +127,13 @@ type
     procedure ETextMouseMove(Sender: TObject; Shift: TShiftState; X,Y: Integer);
     procedure BrowseReceivedFilesClick(Sender: TObject);
     procedure OpenFileFolderClick(Sender: TObject);
-    procedure ETextURLClick(Sender: TObject; const URLText: String; Button: TMouseButton);
+    procedure ETextURLClick(Sender: TObject; const URLText: WideString; Button: TMouseButton);
   private
     FParentForm: THistoryFrm;
     FItem: Integer;
     FRichHeight: Integer;
     FOverURL: Boolean;
-    SavedLinkUrl: String;
+    SavedLinkUrl: WideString;
     FOverFile: Boolean;
     SavedFileDir: String;
     hSubContactFrom,hSubContactTo: THandle;
@@ -607,21 +607,21 @@ end;
 procedure TEventDetailsFrm.OpenLinkNWClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(True),LPARAM(@SavedLinkUrl[1]));
+  OpenUrl(SavedLinkUrl,True);
   SavedLinkUrl := '';
 end;
 
 procedure TEventDetailsFrm.OpenLinkClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  PluginLink.CallService(MS_UTILS_OPENURL,WPARAM(False),LPARAM(@SavedLinkUrl[1]));
+  OpenUrl(SavedLinkUrl,False);
   SavedLinkUrl := '';
 end;
 
 procedure TEventDetailsFrm.CopyLinkClick(Sender: TObject);
 begin
   if SavedLinkUrl = '' then exit;
-  CopyToClip(AnsiToWideString(SavedLinkUrl,CP_ACP),Handle,CP_ACP);
+  CopyToClip(SavedLinkUrl,CP_ACP);
   SavedLinkUrl := '';
 end;
 
@@ -649,6 +649,7 @@ begin
   Result := Assigned(FParentForm) and
             (mtFile in FParentForm.hg.Items[FItem].MessageType);
   if Result then begin
+    // Auto CP_ACP usage
     SavedLinkUrl := ExtractFileName(FParentForm.hg.Items[FItem].Extended);
     SavedFileDir := ExtractFileDir(FParentForm.hg.Items[FItem].Extended);
   end;
@@ -669,7 +670,7 @@ begin
   ShellExecute(0,'open',Path,nil,nil,SW_SHOW);
 end;
 
-procedure TEventDetailsFrm.ETextURLClick(Sender: TObject; const URLText: String; Button: TMouseButton);
+procedure TEventDetailsFrm.ETextURLClick(Sender: TObject; const URLText: WideString; Button: TMouseButton);
 begin
   SavedLinkUrl := URLText;
   case Button of
