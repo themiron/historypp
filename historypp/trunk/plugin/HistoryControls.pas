@@ -27,8 +27,9 @@ interface
 
 uses
   Windows, Messages, Classes, TntWindows,
-  Controls, StdCtrls, ComCtrls, ExtCtrls, Buttons, {Dialogs,}
-  TntControls, TntStdCtrls, TntComCtrls, TntExtCtrls, TntButtons;
+  Controls, StdCtrls, ComCtrls, ExtCtrls, Buttons, {Dialogs,} Graphics,
+  TntControls, TntStdCtrls, TntComCtrls, TntExtCtrls, TntButtons, TntGraphics,
+  TntForms;
 
 type
 
@@ -106,6 +107,23 @@ type
     procedure Paint; override;
   end;
 
+  THppForm = class(TTntForm)
+  private
+    FIconBig: TIcon;
+    function IsIconBigStored: Boolean;
+    procedure IconChanged(Sender: TObject);
+    procedure SetIcons(hIcon: HICON; hIconBig: HICON);
+    procedure SetIconBig(Value: TIcon);
+    procedure CMIconChanged(var Message: TMessage); message CM_ICONCHANGED;
+  protected
+    procedure CreateWnd; override;
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+  published
+    property IconBig: TIcon read FIconBig write SetIconBig stored IsIconBigStored;
+  end;
+
   { //Saved for probably future use
   THppSaveDialog = class(TSaveDialog)
   private
@@ -123,8 +141,7 @@ procedure Register;
 
 implementation
 
-uses CommCtrl, {CommDlg,} Forms, Themes, UxTheme, SysUtils, TntSysUtils,
-  Graphics, TntGraphics;
+uses CommCtrl, {CommDlg,} Forms, Themes, UxTheme, SysUtils, TntSysUtils;
 
 procedure Register;
 begin
@@ -138,6 +155,7 @@ begin
   RegisterComponents('History++', [THppRadioButton]);
   RegisterComponents('History++', [THppCheckBox]);
   RegisterComponents('History++', [THppGroupBox]);
+  RegisterComponents('History++', [THppForm]);
   {RegisterComponents('History++', [THppSaveDialog]);}
 end;
 
@@ -500,6 +518,67 @@ begin
     PaintGroupBox;
   end else
     inherited;
+end;
+
+{ THppForm }
+
+function THppForm.IsIconBigStored: Boolean;
+begin
+  Result := not IsControl and (FIconBig.Handle <> 0);
+end;
+
+procedure THppForm.SetIcons(hIcon: HICON; hIconBig: HICON);
+begin
+  if NewStyleControls then begin
+    if HandleAllocated and (BorderStyle <> bsDialog) then begin
+        SendMessage(Handle, WM_SETICON, ICON_SMALL, hIcon);
+        SendMessage(Handle, WM_SETICON, ICON_BIG, hIconBig);
+    end;
+  end else
+    if IsIconic(Handle) then Invalidate;
+end;
+
+procedure THppForm.IconChanged(Sender: TObject);
+begin
+  if FIconBig.Handle = 0 then
+    SetIcons(0, Icon.Handle) else
+    SetIcons(Icon.Handle, FIconBig.Handle);
+end;
+
+procedure THppForm.SetIconBig(Value: TIcon);
+begin
+  FIconBig.Assign(Value);
+end;
+
+procedure THppForm.CMIconChanged(var Message: TMessage);
+begin
+  if (Icon.Handle = 0) or (FIconBig.Handle = 0) then
+    IconChanged(nil);
+end;
+
+procedure THppForm.CreateWnd;
+begin
+  inherited CreateWnd;
+  if NewStyleControls then
+    if BorderStyle <> bsDialog then
+      IconChanged(nil) else
+      SetIcons(0, 0);
+end;
+
+constructor THppForm.Create(AOwner: TComponent);
+begin
+  FIconBig := TIcon.Create;
+  FIconBig.Width := GetSystemMetrics(SM_CXICON);
+  FIconBig.Height := GetSystemMetrics(SM_CYICON);
+  FIconBig.OnChange := IconChanged;
+  inherited Create(AOwner);
+  Icon.OnChange := IconChanged;
+end;
+
+destructor THppForm.Destroy;
+begin
+  inherited Destroy;
+  FIconBig.Free;
 end;
 
 { THppSaveDialog }
