@@ -6,12 +6,23 @@ type
     PSKINICONDESC = ^TSKINICONDESC;
     TSKINICONDESC = record
         cbSize: int;
-        pszSection: PChar;		//section name used to group icons
+        pszSection: PChar;		    //section name used to group icons
         pszDescription: PChar;		//description for options dialog
-        pszName: PChar;			//name to refer to icon when playing and in db
+        pszName: PChar;			      //name to refer to icon when playing and in db
         pszDefaultFile: PChar;		//default icon file to use
-        iDefaultIndex: int;
+        iDefaultIndex: int;		    // index of icon in default file
+        hDefaultIcon: HICON;		  // handle to default icon
+        cx,cy: int;			          // dimensions of icon (if 0 then standard size icon (big and small options available)
+        flags: int;			          // combination of SIDF_*
     end;
+
+const
+
+    SIDF_SORTED       = $01;		  // Icons in section are sorted by name
+    SIDF_UNICODE      = $100;		  // Section and Description are in UCS-2
+    SIDF_PATH_UNICODE = $200;		  // Default File is in UCS-2
+    SIDF_ALL_UNICODE  = SIDF_PATH_UNICODE or SIDF_UNICODE;
+
 
 const
 
@@ -25,6 +36,8 @@ const
     MS_SKIN2_ADDICON = 'Skin2/Icons/AddIcon';
 //
 //  Retrieve HICON with name specified in lParam
+//  wParam = (WPARAM)0 - small 1 - big
+//  lParam = (LPARAM)(char*)pszName
 //  Returned HICON SHOULDN'T be destroyed, it managed by IcoLib
 //
     MS_SKIN2_GETICON = 'Skin2/Icons/GetIcon';
