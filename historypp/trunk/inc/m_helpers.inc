@@ -587,7 +587,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
     function LoadSkinnedIcon(id: int): THandle;
 
+    function LoadSkinnedIconHandle(id: int): THandle;
+
+    function LoadSkinnedIconBig(id: int): THandle;
+
     function LoadSkinnedProtoIcon(const szProto: PChar; status: int): THandle;
+
+    function LoadSkinnedProtoIconBig(const szProto: PChar; status: int): THandle;
 
     function SkinAddNewSound(const name, description, defaultFile: PChar): int;
 
