@@ -27,11 +27,13 @@ package HistGrid;
 requires
   vcl,
   vclx,
+  designide,
   TntUnicodeVcl_R60;
 
 contains
   hpp_richedit in 'hpp_richedit.pas',
   HistoryGrid in 'HistoryGrid.pas',
-  HistoryControls in 'HistoryControls.pas';
+  HistoryControls in 'HistoryControls.pas',
+  HistoryControls_Design in 'HistoryControls_Design.pas';
 
 end.
