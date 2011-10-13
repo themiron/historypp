@@ -137,27 +137,9 @@ type
   end;
   }
 
-procedure Register;
-
 implementation
 
 uses CommCtrl, {CommDlg,} Forms, Themes, UxTheme, SysUtils, TntSysUtils;
-
-procedure Register;
-begin
-  RegisterComponents('History++', [TPasswordEdit]);
-  RegisterComponents('History++', [THppEdit]);
-  RegisterComponents('History++', [THppPanel]);
-  RegisterComponents('History++', [THppToolBar]);
-  RegisterComponents('History++', [THppToolButton]);
-  RegisterComponents('History++', [THppSpeedButton]);
-  RegisterComponents('History++', [THppButton]);
-  RegisterComponents('History++', [THppRadioButton]);
-  RegisterComponents('History++', [THppCheckBox]);
-  RegisterComponents('History++', [THppGroupBox]);
-  RegisterComponents('History++', [THppForm]);
-  {RegisterComponents('History++', [THppSaveDialog]);}
-end;
 
 procedure TPasswordEdit.CreateParams(var Params: TCreateParams);
 begin
@@ -524,7 +506,7 @@ end;
 
 function THppForm.IsIconBigStored: Boolean;
 begin
-  Result := not IsControl and (FIconBig.Handle <> 0);
+  Result := (not IsControl) and (FIconBig.Handle <> 0);
 end;
 
 procedure THppForm.SetIcons(hIcon: HICON; hIconBig: HICON);
