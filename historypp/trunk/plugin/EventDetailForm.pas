@@ -63,7 +63,7 @@ uses
 
 type
 
-  TEventDetailsFrm = class(TTntForm)
+  TEventDetailsFrm = class(THppForm)
     paBottom: THppPanel;
     Panel3: THppPanel;
     paInfo: THppPanel;
