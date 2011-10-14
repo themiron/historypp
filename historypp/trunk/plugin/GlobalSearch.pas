@@ -85,7 +85,7 @@ type
     Contact: TContactInfo;
   end;
 
-  TfmGlobalSearch = class(TTntForm)
+  TfmGlobalSearch = class(THppForm)
     paClient: THppPanel;
     paSearch: THppPanel;
     laSearch: TTntLabel;

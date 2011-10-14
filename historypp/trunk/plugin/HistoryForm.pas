@@ -82,7 +82,7 @@ type
   THistoryPanel = (hpSessions, hpBookmarks);
   THistoryPanels = set of THistoryPanel;
 
-  THistoryFrm = class(TTntForm)
+  THistoryFrm = class(THppForm)
     SaveDialog: TSaveDialog;
     pmGrid: TTntPopupMenu;
     paClient: THppPanel;
