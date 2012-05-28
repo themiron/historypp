@@ -1,0 +1,17 @@
+hpp_bookmarks. AddKey,GetKey etc - Cardinal for hDBEvent
+
+*AllowMSFTEDIT hpp_richedit - RichEdit50
+THEME_7_UP
+DEBUG - debug string output
+*CUST_SB historygrid
+*PAGE_SIZE(Cust_SB) historygrid
+*RENDER_RICH historygrid
+ALPHA hpp_global
+*USE_URL_BBCODE itemprocess
+*USE_CUSTOMIDLEHOOK hpp_mescatcher
+
+NO_EXTERNALGRID dpr hpp_forms opt_dialog
+*SMARTSEARCH hpp_searchthread
+
+
+
