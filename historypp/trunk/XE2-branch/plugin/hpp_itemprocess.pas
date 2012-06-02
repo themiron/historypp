@@ -65,8 +65,8 @@ var
   function DoSupportBBCodesRTF(S: AnsiString; StartColor: integer; doColorBBCodes: boolean): AnsiString;
   function DoStripBBCodes(S: String): String;
 
-  function DoSupportSmileys(wParam:WPARAM; lParam: LPARAM): Integer;
-  function DoSupportMathModule(wParam:WPARAM; lParam: LPARAM): Integer;
+  function DoSupportSmileys(awParam:WPARAM; alParam: LPARAM): Integer;
+  function DoSupportMathModule(awParam:WPARAM; alParam: LPARAM): Integer;
   function DoSupportAvatarHistory(awParam:WPARAM; alParam: LPARAM): Integer;
 
 implementation
@@ -442,34 +442,34 @@ begin
   Result := WideStream;
 end;
 
-function DoSupportSmileys(wParam{hRichEdit}:WPARAM; lParam{PItemRenderDetails}: LPARAM): Integer;
+function DoSupportSmileys(awParam{hRichEdit}:WPARAM; alParam{PItemRenderDetails}: LPARAM): Integer;
 const
   mesSent: Array[False..True] of Integer = (0,SAFLRE_OUTGOING);
 var
   sare: SMADD_RICHEDIT3;
   ird: PItemRenderDetails;
 begin
-  ird := Pointer(lParam);
+  ird := Pointer(alParam);
   sare.cbSize := SizeOf(sare);
-  sare.hwndRichEditControl := wParam;
+  sare.hwndRichEditControl := awParam;
   sare.rangeToReplace := nil;
   sare.ProtocolName := ird^.pProto;
   //sare.flags := SAFLRE_INSERTEMF + mesSent[ird^.IsEventSent];
   sare.flags := mesSent[ird^.IsEventSent];
   sare.disableRedraw := True;
   sare.hContact := ird^.hContact;
-  PluginLink.CallService(MS_SMILEYADD_REPLACESMILEYS,0,DWord(@sare));
+  PluginLink.CallService(MS_SMILEYADD_REPLACESMILEYS,0,LPARAM(@sare));
   Result := 0;
 end;
 
-function DoSupportMathModule(wParam{hRichEdit}:WPARAM; lParam{PItemRenderDetails}: LPARAM): Integer;
+function DoSupportMathModule(awParam{hRichEdit}:WPARAM; alParam{PItemRenderDetails}: LPARAM): Integer;
 var
   mrei: TMathRicheditInfo;
 begin
-  mrei.hwndRichEditControl := wParam;
+  mrei.hwndRichEditControl := awParam;
   mrei.sel := nil;
   mrei.disableredraw := integer(false);
-  Result := PluginLink.CallService(MATH_RTF_REPLACE_FORMULAE,0,DWord(@mrei));
+  Result := PluginLink.CallService(MATH_RTF_REPLACE_FORMULAE,0,LPARAM(@mrei));
 end;
 
 (*

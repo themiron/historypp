@@ -258,7 +258,7 @@ end;
 // Miranda timestamp to TDateTime
 function TimestampToDateTime(const Timestamp: DWord): TDateTime;
 begin
-  Result := UnixTimeToDateTime(PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOLOCAL,Timestamp,0));
+  Result := UnixTimeToDateTime(PluginLink.CallService(MS_DB_TIME_TIMESTAMPTOLOCAL,WPARAM(Timestamp),0));
 end;
 
 // should probably add function param to use

@@ -574,7 +574,7 @@ end;
   GetMem(Result.pBlob,BlobSize);
   Result.cbBlob:=BlobSize;
 
-  PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,Integer(@Result));
+  PluginLink.CallService(MS_DB_EVENT_GET,hDBEvent,LPARAM(@Result));
   end; }
 
 (*
@@ -1855,14 +1855,14 @@ end;
 procedure THistoryFrm.hgItemDelete(Sender: TObject; Index: Integer);
 var
   idx: Integer;
-  hDBEvent: DWord;
+  hDBEvent: THANDLE;
 begin
   if Index = -1 then
   begin // routine is called from DeleteAll
     if FormState = gsDelete then
     begin // probably unnecessary considering prev check
       hDBEvent := PluginLink.CallService(MS_DB_EVENT_FINDFIRST, hContact, 0);
-      PluginLink.CallService(MS_DB_EVENT_DELETE, hContact, lParam(hDBEvent));
+      PluginLink.CallService(MS_DB_EVENT_DELETE, hContact, hDBEvent);
     end;
   end
   else

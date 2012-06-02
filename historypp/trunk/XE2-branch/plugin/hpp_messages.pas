@@ -72,7 +72,7 @@ end;
 
 {function ForwardMessage(Text: AnsiString): Boolean;
 begin
-  Result := (PluginLink.CallService(MS_MSG_FORWARDMESSAGE,0,Integer(PAnsiChar(Text)))=0);
+  Result := (PluginLink.CallService(MS_MSG_FORWARDMESSAGE,0,LPARAM(PAnsiChar(Text)))=0);
 end;}
 
 end.

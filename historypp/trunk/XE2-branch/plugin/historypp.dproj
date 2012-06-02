@@ -8,7 +8,7 @@
 			<AppType>Library</AppType>
 			<FrameworkType>VCL</FrameworkType>
 			<ProjectVersion>13.4</ProjectVersion>
-			<Platform Condition="'$(Platform)'==''">Win64</Platform>
+			<Platform Condition="'$(Platform)'==''">Win32</Platform>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
 			<Base>true</Base>
@@ -96,7 +96,6 @@
 		<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
 			<DCC_WriteableConstants>true</DCC_WriteableConstants>
 			<Debugger_CWD>C:\temp\IM</Debugger_CWD>
-			<DCC_ExeOutput>D:\Dropbox\IM\Plugins\</DCC_ExeOutput>
 			<Debugger_HostApplication>D:\Dropbox\IM\miranda32.exe</Debugger_HostApplication>
 			<Debugger_RunParams>alex</Debugger_RunParams>
 			<DCC_UNIT_DEPRECATED>false</DCC_UNIT_DEPRECATED>

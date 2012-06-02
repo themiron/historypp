@@ -226,7 +226,7 @@ begin
   fid.deffontsettings.size   := hppFontItems[Order].size;
   fid.deffontsettings.style  := hppFontItems[Order].style;
   fid.deffontsettings.colour := ColorToRGB(hppFontItems[Order].color);
-  PluginLink.CallService(MS_FONT_REGISTER,integer(@fid),0);
+  PluginLink.CallService(MS_FONT_REGISTER,WPARAM(@fid),0);
 end;
 
 procedure RegisterColor(Name:PAnsiChar; Order:integer; defColor:TColor);
@@ -240,7 +240,7 @@ begin
   lstrcpya(cid.name,Name);
   lstrcpya(cid.setting,PAnsiChar('Color'+AnsiString(intToStr(Order))));
   cid.defcolour := ColorToRGB(defColor);
-  PluginLink.CallService(MS_COLOUR_REGISTER,integer(@cid),0);
+  PluginLink.CallService(MS_COLOUR_REGISTER,WPARAM(@cid),0);
 end;
 
 procedure OnShowIcons;
@@ -355,7 +355,7 @@ const
   size: Integer = -11;
 var
   fid: FontID;
-  lf: TLogFont;
+  lf: TLogFontA;
   col: TColor;
   fs: TFontStyles;
 begin
@@ -364,8 +364,8 @@ begin
     fid.cbSize := sizeof(fid);
     fid.group := hppName;
     lstrcpya(fid.name, Translate(hppFontItems[Order].name) { TRANSLATE-IGNORE } );
-    col := PluginLink.CallService(MS_FONT_GET, Integer(@fid), Integer(@lf));
-    F.handle := CreateFontIndirect(lf);
+    col := PluginLink.CallService(MS_FONT_GET, WPARAM(@fid), LPARAM(@lf));
+    F.handle := CreateFontIndirectA(lf);
     F.color := col;
   end
   else

@@ -150,16 +150,16 @@ var
   HookMetaDefaultChanged,
   HookPreshutdown: THandle;
 
-function OnModulesLoad(wParam:WPARAM; lParam:LPARAM):int; cdecl; forward;
+function OnModulesLoad(awParam:WPARAM; alParam:LPARAM):int; cdecl; forward;
 function OnSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnSmAddSettingsChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnIconChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnIcon2Changed(awParam: WPARAM; alParam: LPARAM): Integer; cdecl; forward;
-function OnOptInit(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
+function OnOptInit(awParam: WPARAM; alParam: LPARAM): Integer; cdecl; forward;
 function OnContactChanged(wParam: wParam; lParam: LPARAM): Integer; cdecl; forward;
 function OnContactDelete(wParam: wParam; lParam: LPARAM): Integer; cdecl; forward;
 function OnFSChanged(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
-function OnTTBLoaded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
+function OnTTBLoaded(awParam: WPARAM; alParam: LPARAM): Integer; cdecl; forward;
 function OnBuildContactMenu(awParam: WPARAM; alParam: LPARAM): Integer; cdecl; forward;
 function OnEventAdded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
 function OnEventDeleted(wParam: WPARAM; lParam: LPARAM): Integer; cdecl; forward;
@@ -282,7 +282,7 @@ begin
 end;
 
 // init plugin
-function OnModulesLoad(wParam{0}:WPARAM; lParam{0}:LPARAM):integer; cdecl;
+function OnModulesLoad(awParam{0}:WPARAM; alParam{0}:LPARAM):integer; cdecl;
 var
   i: integer;
   menuitem:TCLISTMENUITEM;
@@ -318,35 +318,35 @@ begin
   menuitem.pszName := PAnsiChar(MenuHandles[miContact].Name);
   menuitem.pszService := MS_HISTORY_SHOWCONTACTHISTORY;
   menuitem.hIcon := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
-  MenuHandles[miContact].Handle := PluginLink.CallService(MS_CLIST_ADDCONTACTMENUITEM,0,DWORD(@menuItem));
+  MenuHandles[miContact].Handle := PluginLink.CallService(MS_CLIST_ADDCONTACTMENUITEM,0,LPARAM(@menuItem));
 
   //create empty item in contact menu
   menuitem.Position := 1000090001;
   menuitem.pszName := PAnsiChar(MenuHandles[miEmpty].Name);
   menuitem.pszService := MS_HPP_EMPTYHISTORY;
   menuitem.hIcon := hppIcons[HPP_ICON_TOOL_DELETEALL].handle;
-  MenuHandles[miEmpty].Handle := PluginLink.CallService(MS_CLIST_ADDCONTACTMENUITEM,0,DWORD(@menuItem));
+  MenuHandles[miEmpty].Handle := PluginLink.CallService(MS_CLIST_ADDCONTACTMENUITEM,0,LPARAM(@menuItem));
 
   //create menu item in main menu for system history
   menuitem.Position:=500060000;
   menuitem.pszName:=PAnsiChar(MenuHandles[miSystem].Name);
   menuitem.pszService := MS_HISTORY_SHOWCONTACTHISTORY;
   menuitem.hIcon := hppIcons[HPP_ICON_CONTACTHISTORY].handle;
-  MenuHandles[miSystem].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWORD(@menuitem));
+  MenuHandles[miSystem].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,LPARAM(@menuitem));
 
   //create menu item in main menu for history search
   menuitem.Position:=500060001;
   menuitem.pszName:=PAnsiChar(MenuHandles[miSearch].Name);
   menuitem.pszService := MS_HPP_SHOWGLOBALSEARCH;
   menuitem.hIcon := hppIcons[HPP_ICON_GLOBALSEARCH].handle;
-  MenuHandles[miSearch].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWORD(@menuItem));
+  MenuHandles[miSearch].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,LPARAM(@menuItem));
 
   //create menu item in main menu for empty system history
   menuitem.Position:=500060002;
   menuitem.pszName:=PAnsiChar(MenuHandles[miSysEmpty].Name);
   menuitem.pszService := MS_HPP_EMPTYHISTORY;
   menuitem.hIcon := hppIcons[HPP_ICON_TOOL_DELETEALL].handle;
-  MenuHandles[miSysEmpty].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,DWORD(@menuItem));
+  MenuHandles[miSysEmpty].Handle := PluginLink.CallService(MS_CLIST_ADDMAINMENUITEM,0,LPARAM(@menuItem));
 
   LoadGridOptions;
 
@@ -384,11 +384,11 @@ begin
     upd.pbBetaVersionPrefix := hppVersionPrefix;
     upd.cpbBetaVersionPrefix := Length(hppVersionPrefix);
     upd.szBetaChangelogURL := hppChangelogURL;
-    PluginLink.CallService(MS_UPDATE_REGISTER, 0, DWORD(@upd));
+    PluginLink.CallService(MS_UPDATE_REGISTER, 0, LPARAM(@upd));
   end;
 
   // Register in dbeditor
-  PluginLink.CallService(MS_DBEDIT_REGISTERSINGLEMODULE, DWORD(PAnsiChar(hppDBName)), 0);
+  PluginLink.CallService(MS_DBEDIT_REGISTERSINGLEMODULE, WPARAM(PAnsiChar(hppDBName)), 0);
 
   // return successfully
   Result:=0;
@@ -396,7 +396,7 @@ end;
 
 // Called when the toolbar services are available
 // wParam = lParam = 0
-function OnTTBLoaded(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
+function OnTTBLoaded(awParam: WPARAM; alParam: LPARAM): Integer; cdecl;
 var
   ttb: TTBButtonV2;
 begin
@@ -414,7 +414,7 @@ begin
     ttb.name := PAnsiChar(Translate('Global History Search'));
     ttb.tooltipUp := ttb.name;
     ttb.tooltipDn := ttb.name;
-    PluginLink.CallService(MS_TTB_ADDBUTTON,integer(@ttb), 0);
+    PluginLink.CallService(MS_TTB_ADDBUTTON,WPARAM(@ttb), 0);
     PluginLink.UnhookEvent(HookTTBLoaded);
   end;
   Result := 0;
@@ -512,7 +512,7 @@ begin
   NotifyAllForms(HM_MIEV_CONTACTDELETED,wParam,lParam);
 end;
 
-function OnOptInit(wParam: WPARAM; lParam: LPARAM): Integer; cdecl;
+function OnOptInit(awParam: WPARAM; alParam: LPARAM): Integer; cdecl;
 var
   odp: TOPTIONSDIALOGPAGE;
 begin
@@ -525,7 +525,7 @@ begin
   odp.pszGroup.a := nil;
   odp.pfnDlgProc := @OptDialogProc;
   odp.flags := ODPF_BOLDGROUPS;
-  PluginLink.CallService(MS_OPT_ADDPAGE,wParam,DWORD(@odp));
+  PluginLink.CallService(MS_OPT_ADDPAGE,awParam,LPARAM(@odp));
   Result:=0;
 end;
 

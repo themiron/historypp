@@ -332,7 +332,7 @@ begin
   cws.szModule:=PAnsiChar(Module);
   cws.szSetting:=PAnsiChar(Param);
   cws.pValue:=@dbv;
-  if PluginLink^.CallService(MS_DB_CONTACT_GETSETTING,hContact,DWord(@cws))<>0 then
+  if PluginLink^.CallService(MS_DB_CONTACT_GETSETTING,hContact,LPARAM(@cws))<>0 then
     Result:=default
   else
     Result:=dbv.dval;

@@ -184,7 +184,7 @@ begin
       ZeroMemory(@Event, SizeOf(Event));
       Event.cbSize := SizeOf(Event);
       Event.cbBlob := 0;
-      PluginLink.CallService(MS_DB_EVENT_GET, hDBEvent, Integer(@Event));
+      PluginLink.CallService(MS_DB_EVENT_GET, hDBEvent, LPARAM(@Event));
       CurTime := Event.Timestamp;
       if PrevTime = 0 then
       begin
