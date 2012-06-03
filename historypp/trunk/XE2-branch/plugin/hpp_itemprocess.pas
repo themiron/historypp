@@ -519,7 +519,7 @@ begin
   begin
     cr.cpMin := SendMessage(awParam, WM_GETTEXTLENGTH, 0, 0);
     cr.cpMax := cr.cpMin;
-    SendMessage(awParam, EM_EXSETSEL, 0, integer(@cr));
+    SendMessage(awParam, EM_EXSETSEL, 0, LPARAM(@cr));
     SetRichRTF(awParam, crlf, true, false, true);
     RichEdit_InsertBitmap(awParam, hBmp, Cardinal(-1));
   end;

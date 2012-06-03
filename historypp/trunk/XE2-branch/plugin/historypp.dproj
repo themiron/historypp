@@ -89,7 +89,7 @@
 			<DCC_UNIT_DEPRECATED>false</DCC_UNIT_DEPRECATED>
 			<DCC_SYMBOL_DEPRECATED>false</DCC_SYMBOL_DEPRECATED>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-			<DCC_UnitSearchPath>D:\Dropbox\src\!aliens\HPP-XE\inc;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+			<DCC_UnitSearchPath>..\inc;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 			<VerInfo_Locale>1033</VerInfo_Locale>
 			<Manifest_File>None</Manifest_File>
 		</PropertyGroup>
@@ -102,7 +102,7 @@
 			<DCC_SYMBOL_PLATFORM>false</DCC_SYMBOL_PLATFORM>
 			<DCC_SYMBOL_DEPRECATED>false</DCC_SYMBOL_DEPRECATED>
 			<DCC_UNIT_PLATFORM>false</DCC_UNIT_PLATFORM>
-			<DCC_UnitSearchPath>D:\Dropbox\src\!aliens\HPP-XE\inc;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+			<DCC_UnitSearchPath>..\inc;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 			<VerInfo_Locale>1033</VerInfo_Locale>
 			<Manifest_File>None</Manifest_File>
@@ -119,14 +119,13 @@
 			<DCC_DebugInformation>true</DCC_DebugInformation>
 			<DCC_LocalDebugSymbols>true</DCC_LocalDebugSymbols>
 			<Debugger_CWD>C:\temp\IM</Debugger_CWD>
-			<DCC_ExeOutput>D:\Dropbox\IM\Plugins\</DCC_ExeOutput>
 			<Debugger_HostApplication>D:\Dropbox\IM\miranda32.exe</Debugger_HostApplication>
 			<Debugger_RunParams>alex</Debugger_RunParams>
 			<DCC_UNIT_DEPRECATED>false</DCC_UNIT_DEPRECATED>
 			<DCC_SYMBOL_PLATFORM>false</DCC_SYMBOL_PLATFORM>
 			<DCC_SYMBOL_DEPRECATED>false</DCC_SYMBOL_DEPRECATED>
 			<DCC_UNIT_PLATFORM>false</DCC_UNIT_PLATFORM>
-			<DCC_UnitSearchPath>D:\Dropbox\src\!aliens\HPP-XE\inc;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+			<DCC_UnitSearchPath>..\inc;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 			<VerInfo_Locale>1033</VerInfo_Locale>
 			<Manifest_File>None</Manifest_File>

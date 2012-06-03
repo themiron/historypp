@@ -206,8 +206,7 @@ begin
     ItemRenderDetails.bHistoryWindow := IRDHW_GLOBALHISTORY
   else
     ItemRenderDetails.bHistoryWindow := IRDHW_CONTACTHISTORY;
-  PluginLink.NotifyEventHooks(hHppRichEditItemProcess, EText.Handle,
-    Integer(@ItemRenderDetails));
+  PluginLink.NotifyEventHooks(hHppRichEditItemProcess, EText.Handle, LPARAM(@ItemRenderDetails));
 end;
 
 procedure TEventDetailsFrm.EFromMoreClick(Sender: TObject);
@@ -237,7 +236,7 @@ begin
 
   with Sender as TWinControl do
   begin
-    if Perform(CM_CHILDKEY, Key, Integer(Sender)) <> 0 then
+    if Perform(CM_CHILDKEY, Key, LPARAM(Sender)) <> 0 then
       Exit;
     Mask := 0;
     case Key of

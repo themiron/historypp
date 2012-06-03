@@ -228,7 +228,7 @@ begin
   with TEmptyHistoryFrm.Create(wHistory) do
   begin
     Contact := wParam;
-    Result := DWORD(ShowModal = mrYes);
+    Result := int_ptr(ShowModal = mrYes);
     Free;
   end;
 end;

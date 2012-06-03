@@ -49,7 +49,7 @@ unit hpp_bookmarks;
 
 interface
 
-uses m_globaldefs, m_api, hpp_jclSysUtils, SysUtils;
+uses windows, m_globaldefs, m_api, hpp_jclSysUtils, SysUtils;
 
 type
   TEventData = record
@@ -91,7 +91,7 @@ type
   PContactBookmarks = ^TContactBookmarks;
 
   TPseudoHashEntry = record
-    Key: Cardinal;
+    Key: uint_ptr;
     Value: pointer;
   end;
   PPseudoHashEntry = ^TPseudoHashEntry;
@@ -102,9 +102,9 @@ type
     procedure RemoveByIndex(Index: Integer);
 //    procedure InsertByIndex(Index: Integer; Key:Cardinal;Value: pointer);
   protected
-    function AddKey(Key:Cardinal; Value: pointer): Boolean;
-    function GetKey(Key: Cardinal; var Value: pointer): Boolean;
-    function RemoveKey(Key: Cardinal): Boolean;
+    function AddKey(Key:uint_ptr; Value: pointer): Boolean;
+    function GetKey(Key:uint_ptr; var Value: pointer): Boolean;
+    function RemoveKey(Key: uint_ptr): Boolean;
   public
     destructor Destroy; override;
   end;
@@ -162,7 +162,7 @@ procedure hppDeinitBookmarkServer;
 
 implementation
 
-uses windows,hpp_events, hpp_contacts, hpp_global, Checksum, hpp_database, hpp_forms;
+uses hpp_events, hpp_contacts, hpp_global, Checksum, hpp_database, hpp_forms;
 
 procedure hppInitBookmarkServer;
 begin
@@ -315,10 +315,10 @@ begin
     if rec_size < SizeOf(TEventData) then
       raise EAbort.Create('Bookmark size is too small');
     Count := (mem_len - SizeOf(Word)) div rec_size;
-    mem := pointer(DWord(mem_org) + SizeOf(Word));
+    mem := pointer(uint_ptr(mem_org) + SizeOf(Word));
     for i := 0 to Count - 1 do
     begin
-      ed := PEventData(Integer(mem) + i * rec_size);
+      ed := PEventData(int_ptr(mem) + i * rec_size);
       if not Bookmarks.AddEventData(ed^) then
         AllOk := false;
     end;
@@ -347,7 +347,7 @@ begin
     for i := 0 to High(Bookmarks.Table) do
     begin
       src := PEventData(Bookmarks.Table[i].Value);
-      dst := PEventData(Integer(mem) + SizeOf(Word) + i * SizeOf(TEventData));
+      dst := PEventData(int_ptr(mem) + SizeOf(Word) + i * SizeOf(TEventData));
       Move(src^, dst^, SizeOf(src^));
     end;
     WriteDBBlob(hContact, hppDBName, 'Bookmarks', mem, mem_len);
@@ -393,7 +393,7 @@ end;
 
 { TPseudoHash }
 
-function TPseudoHash.AddKey(Key:Cardinal; Value: pointer): Boolean;
+function TPseudoHash.AddKey(Key:uint_ptr; Value: pointer): Boolean;
 var
   Nearest: Integer;
   ph: TPseudoHashEntry;
@@ -427,7 +427,7 @@ begin
   inherited;
 end;
 
-function TPseudoHash.GetKey(Key: Cardinal; var Value: pointer): Boolean;
+function TPseudoHash.GetKey(Key: uint_ptr; var Value: pointer): Boolean;
 var
   ph: TPseudoHashEntry;
   res: Integer;
@@ -456,7 +456,7 @@ begin
   SetLength(Table,Length(Table)-1);
 end;
 
-function TPseudoHash.RemoveKey(Key: Cardinal): Boolean;
+function TPseudoHash.RemoveKey(Key: uint_ptr): Boolean;
 var
   idx: Integer;
   ph: TPseudoHashEntry;
@@ -671,7 +671,7 @@ var
   val: Pointer;
 begin
   Result := False;
-  if GetKey(Cardinal(Index),val) then
+  if GetKey(uint_ptr(Index),val) then
     Result := True;
 end;
 
@@ -680,9 +680,9 @@ var
   ped: PEventData;
 begin
   Result := false;
-  if GetKey(Cardinal(hDBEvent), pointer(ped)) then
+  if GetKey(uint_ptr(hDBEvent), pointer(ped)) then
   begin
-    RemoveKey(Cardinal(hDBEvent));
+    RemoveKey(uint_ptr(hDBEvent));
     FreeMem(ped, SizeOf(ped^));
     RemoveItemName(hDBEvent);
     Result := True;

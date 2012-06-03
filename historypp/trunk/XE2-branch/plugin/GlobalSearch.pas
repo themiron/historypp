@@ -1344,7 +1344,7 @@ begin
     ((GlyphHeight - 16) div 2), hppIcons[HPP_ICON_DROPDOWNARROW].Handle, 16, 16, 0,
     tbEventsFilter.Glyph.Canvas.Brush.Handle, DI_NORMAL);
   DrawState(tbEventsFilter.Glyph.Canvas.Handle, 0, nil,
-    Integer(hppIcons[HPP_ICON_DROPDOWNARROW].Handle), 0, sz.cx + tbEventsFilter.Spacing +
+    hppIcons[HPP_ICON_DROPDOWNARROW].Handle, 0, sz.cx + tbEventsFilter.Spacing +
     GlyphWidth, ((GlyphHeight - 16) div 2), 0, 0, DST_ICON or DSS_DISABLED);
 
   PaintRect := Rect(0, ((GlyphHeight - sz.cy) div 2), GlyphWidth - 16 - tbEventsFilter.Spacing,
@@ -1483,7 +1483,7 @@ begin
     exit;
 
   { Index := -1;
-    hCont := Integer(Item.Data);
+    hCont := THANDLE(Item.Data);
     for i := 0 to Length(History) - 1 do
     if History[i].hContact = hCont then begin
     Index := i;
@@ -1502,7 +1502,7 @@ begin
     DisableFilter
   else
   begin
-    hCont := Integer(Item.Data);
+    hCont := THANDLE(Item.Data);
     FilterOnContact(hCont);
   end;
 end;
@@ -1749,7 +1749,7 @@ begin
 
   ItemRenderDetails.bHistoryWindow := IRDHW_GLOBALSEARCH;
 
-  PluginLink.NotifyEventHooks(hHppRichEditItemProcess, Handle, Integer(@ItemRenderDetails));
+  PluginLink.NotifyEventHooks(hHppRichEditItemProcess, Handle, LPARAM(@ItemRenderDetails));
 end;
 
 procedure TfmGlobalSearch.hgTranslateTime(Sender: TObject; Time: Cardinal; var Text: String);
@@ -1964,7 +1964,7 @@ end;
 procedure TfmGlobalSearch.mmHideMenuClick(Sender: TObject);
 begin
   WriteDBBool(hppDBName, 'Accessability', False);
-  NotifyAllForms(HM_NOTF_ACCCHANGED, DWord(False), 0);
+  NotifyAllForms(HM_NOTF_ACCCHANGED, WPARAM(False), 0);
 end;
 
 procedure TfmGlobalSearch.HMAccChanged(var M: TMessage);
@@ -2193,7 +2193,7 @@ begin
   if (Key = VK_F10) and (Shift = []) then
   begin
     WriteDBBool(hppDBName, 'Accessability', True);
-    NotifyAllForms(HM_NOTF_ACCCHANGED, DWord(True), 0);
+    NotifyAllForms(HM_NOTF_ACCCHANGED, WPARAM(True), 0);
     Key := 0;
     exit;
   end;

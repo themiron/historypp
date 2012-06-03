@@ -279,9 +279,9 @@ begin
     begin
       li := lvCList.Items[i];
       if li.Checked then
-        DBWriteContactSettingByte(Integer(li.Data), hppDBName, 'PasswordProtect', 1)
+        DBWriteContactSettingByte(THANDLE(li.Data), hppDBName, 'PasswordProtect', 1)
       else
-        DBDeleteContactSetting(Integer(li.Data), hppDBName, 'PasswordProtect');
+        DBDeleteContactSetting(THANDLE(li.Data), hppDBName, 'PasswordProtect');
     end;
   end;
 
@@ -317,7 +317,7 @@ var
 begin
   with Sender as TWinControl do
   begin
-    if Perform(CM_CHILDKEY, Key, Integer(Sender)) <> 0 then
+    if Perform(CM_CHILDKEY, Key, LPARAM(Sender)) <> 0 then
       Exit;
     Mask := 0;
     case Key of

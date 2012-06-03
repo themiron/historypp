@@ -656,7 +656,8 @@ begin
     smSend: SendMessage(Handle,Message,wParam,lParam);
     smPost: begin
       Tries := 5;
-      while (Tries > 0) and not PostMessage(Handle,Message,wParam,lParam) do begin
+      while (Tries > 0) and not PostMessage(Handle,Message,wParam,lParam) do
+      begin
         Dec(Tries);
         Sleep(5);
       end;

@@ -160,7 +160,7 @@ type
     property GridMode: TExGridMode read FGridMode write FGridMode;
     property UseHistoryRTLMode: Boolean read FUseHistoryRTLMode write SetUseHistoryRTLMode;
     property UseHistoryCodepage: Boolean read FUseHistoryCodepage write SetUseHistoryCodepage;
-    function Perform(Msg: Cardinal; WParam, LParam: Longint): Longint;
+    function Perform(Msg: Cardinal; WParam:WPARAM; LParam: LPARAM): LRESULT;
     procedure HMBookmarkChanged(var M: TMessage); message HM_NOTF_BOOKMARKCHANGED;
     // procedure HMIcons2Changed(var M: TMessage); message HM_NOTF_ICONS2CHANGED;
     procedure HMFiltersChanged(var M: TMessage); message HM_NOTF_FILTERSCHANGED;
@@ -264,7 +264,7 @@ end;
 
 { TExternalGrid }
 
-function TExternalGrid.Perform(Msg: Cardinal; WParam, LParam: Longint): Longint;
+function TExternalGrid.Perform(Msg: Cardinal; WParam:WPARAM; LParam: LPARAM): LRESULT;
 var
   M: TMessage;
 begin
@@ -617,8 +617,7 @@ begin
   if Grid.IsSelected(Item) then
     ItemRenderDetails.dwFlags := ItemRenderDetails.dwFlags or IRDF_SELECTED;
   ItemRenderDetails.bHistoryWindow := IRDHW_EXTERNALGRID;
-  PluginLink.NotifyEventHooks(hHppRichEditItemProcess, WParam(Handle),
-    LParam(@ItemRenderDetails));
+  PluginLink.NotifyEventHooks(hHppRichEditItemProcess, WParam(Handle), LParam(@ItemRenderDetails));
 end;
 
 procedure TExternalGrid.ScrollToBottom;

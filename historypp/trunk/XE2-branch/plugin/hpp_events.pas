@@ -689,9 +689,9 @@ var
   Nick,Name,Email,Reason: AnsiString;
   NickW,ReasonW,ReasonUTF,ReasonACP: String;
 begin
-  // blob is: uin(DWORD), hContact(DWORD), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ)
+  // blob is: uin(DWORD), hContact(THANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ)
   uin := PDWord(EventInfo.pBlob)^;
-  hContact := PInt_ptr(int_ptr(Pointer(EventInfo.pBlob)) + SizeOf(Integer))^;
+  hContact := PInt_ptr(int_ptr(Pointer(EventInfo.pBlob)) + SizeOf(dword))^;
   BytePos := SizeOf(dword) + SizeOf(THandle); // !!
   // read nick
   ReadStringTillZeroA(Pointer(EventInfo.pBlob), EventInfo.cbBlob, Nick, BytePos);
@@ -732,9 +732,9 @@ var
   Nick,Name,Email: AnsiString;
   NickW: String;
 begin
-  // blob is: uin(DWORD), hContact(DWORD), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ)
+  // blob is: uin(DWORD), hContact(THANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ)
   uin := PDWord(EventInfo.pBlob)^;
-  hContact := PInt_ptr(int_ptr(Pointer(EventInfo.pBlob)) + SizeOf(Integer))^;
+  hContact := PInt_ptr(int_ptr(Pointer(EventInfo.pBlob)) + SizeOf(dword))^;
   BytePos := SizeOf(dword) + SizeOf(THandle); // !!
   // read nick
   ReadStringTillZeroA(Pointer(EventInfo.pBlob), EventInfo.cbBlob, Nick, BytePos);

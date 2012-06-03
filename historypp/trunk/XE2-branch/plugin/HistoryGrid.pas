@@ -5194,8 +5194,7 @@ begin
   Update;
 end;
 
-procedure THistoryGrid.SetRichRTL(RTL: Boolean; RichEdit: THPPRichEdit;
-  ProcessTag: Boolean = True);
+procedure THistoryGrid.SetRichRTL(RTL: Boolean; RichEdit: THPPRichEdit; ProcessTag: Boolean = True);
 var
   pf: PARAFORMAT2;
   ExStyle: DWord;
@@ -5286,10 +5285,10 @@ begin
     // redundant, we do it PaintItem
     // Canvas.TextFlags := Canvas.TextFlags and not ETO_RTLREADING;
     end; }
-  // SendMessage(FRich.Handle,EM_SETPARAFORMAT,0,Integer(@pf));
-  // SendMessage(FRichInline.Handle,EM_SETPARAFORMAT,0,Integer(@pf));
-  // FRich.Perform(EM_SETPARAFORMAT,0,Integer(@pf));
-  // FRichInline.Perform(EM_SETPARAFORMAT,0,Integer(@pf));
+  // SendMessage(FRich.Handle,EM_SETPARAFORMAT,0,LPARAM(@pf));
+  // SendMessage(FRichInline.Handle,EM_SETPARAFORMAT,0,LPARAM(@pf));
+  // FRich.Perform(EM_SETPARAFORMAT,0,LPARAM(@pf));
+  // FRichInline.Perform(EM_SETPARAFORMAT,0,LPARAM(@pf));
 
   Canvas.Font := Options.FontProfile;             ph := Canvas.TextExtent('Wy').cY;
   Canvas.Font := Options.FontContact;             Ch := Canvas.TextExtent('Wy').cY;
@@ -5877,7 +5876,7 @@ begin
   FBorderStyle := Value;
   if HandleAllocated then
   begin
-    Style := DWord(GetWindowLong(Handle, GWL_STYLE)) and WS_BORDER;
+    Style   := DWord(GetWindowLong(Handle, GWL_STYLE)) and WS_BORDER;
     ExStyle := DWord(GetWindowLong(Handle, GWL_EXSTYLE)) and not WS_EX_CLIENTEDGE;
     if Ctl3D and NewStyleControls and (FBorderStyle = bsSingle) then
     begin
@@ -5909,7 +5908,7 @@ var
 begin
   if HandleAllocated then
   begin
-    Style := DWord(GetWindowLong(Handle, GWL_STYLE)) and WS_BORDER;
+    Style   := DWord(GetWindowLong(Handle, GWL_STYLE)) and WS_BORDER;
     ExStyle := DWord(GetWindowLong(Handle, GWL_EXSTYLE)) and not WS_EX_CLIENTEDGE;
     if Ctl3D and NewStyleControls and (FBorderStyle = bsSingle) then
     begin
@@ -6115,8 +6114,7 @@ begin
   Result := i;
 end;
 
-function TGridOptions.GetItemOptions(Mes: TMessageTypes; out textFont: TFont;
-  out textColor: TColor): Integer;
+function TGridOptions.GetItemOptions(Mes: TMessageTypes; out textFont: TFont; out textColor: TColor): Integer;
 var
   i: Integer;
 begin

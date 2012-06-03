@@ -1305,7 +1305,7 @@ begin
           menuitem.OnClick := Toolbar.Buttons[i].OnClick
         else
         begin
-          menuitem.Tag := Integer(Pointer(pm));
+          menuitem.Tag := uint_ptr(Pointer(pm));
         end;
         menuitem.Caption := wstr;
         menuitem.ShortCut := TextToShortCut(Toolbar.Buttons[i].HelpKeyword);
@@ -1458,7 +1458,7 @@ begin
     ((GlyphHeight - 16) div 2), hppIcons[HPP_ICON_DROPDOWNARROW].Handle, 16, 16, 0,
     tbEventsFilter.Glyph.Canvas.Brush.Handle, DI_NORMAL);
   DrawState(tbEventsFilter.Glyph.Canvas.Handle, 0, nil,
-    Integer(hppIcons[HPP_ICON_DROPDOWNARROW].Handle), 0, sz.cx + tbEventsFilter.Spacing +
+    hppIcons[HPP_ICON_DROPDOWNARROW].Handle, 0, sz.cx + tbEventsFilter.Spacing +
     GlyphWidth, ((GlyphHeight - 16) div 2), 0, 0, DST_ICON or DSS_DISABLED);
 
   tbEventsFilter.Glyph.Canvas.Brush.Style := bsClear;
@@ -1623,7 +1623,7 @@ begin
       year := tvSess.Items.GetFirstNode;
       while year.getNextSibling <> nil do
         year := year.getNextSibling;
-      if Integer(year.Data) <> YearOf(dt) then
+      if int_ptr(year.Data) <> YearOf(dt) then
         year := nil;
     end;
     if year = nil then
@@ -1637,7 +1637,7 @@ begin
     if year.GetLastChild <> nil then
     begin
       month := year.GetLastChild;
-      if Integer(month.Data) <> MonthOf(dt) then
+      if int_ptr(month.Data) <> MonthOf(dt) then
         month := nil;
     end;
     if month = nil then
@@ -1956,7 +1956,7 @@ end;
 procedure THistoryFrm.mmHideMenuClick(Sender: TObject);
 begin
   WriteDBBool(hppDBName, 'Accessability', False);
-  NotifyAllForms(HM_NOTF_ACCCHANGED, DWord(False), 0);
+  NotifyAllForms(HM_NOTF_ACCCHANGED, WPARAM(False), 0);
 end;
 
 procedure THistoryFrm.tbCopyClick(Sender: TObject);
@@ -2106,7 +2106,7 @@ begin
   year := tvSess.Items.GetFirstNode;
   while year <> nil do
   begin
-    if Integer(year.Data) = YearOf(dt) then
+    if int_ptr(year.Data) = YearOf(dt) then
       break;
     year := year.getNextSibling;
   end;
@@ -2115,7 +2115,7 @@ begin
   month := year.getFirstChild;
   while month <> nil do
   begin
-    if Integer(month.Data) = MonthOf(dt) then
+    if int_ptr(month.Data) = MonthOf(dt) then
       break;
     month := month.getNextSibling;
   end;
@@ -2124,7 +2124,7 @@ begin
   day := month.getFirstChild;
   while day <> nil do
   begin
-    if Integer(day.Data) = idx then
+    if int_ptr(day.Data) = idx then
       break;
     day := day.getNextSibling;
   end;
@@ -2901,7 +2901,7 @@ begin
       Exit;
   end;
 
-  Event := Sessions[DWord(Node.Data)].hDBEventFirst;
+  Event := Sessions[uint_ptr(Node.Data)].hDBEventFirst;
   Index := -1;
   // looks like history starts to load from end?
   // well, of course, we load from the last event!
@@ -2938,10 +2938,10 @@ begin
 
     if Node.Level <> 2 then exit;
 
-    StartTimestamp := Sessions[DWord(Node.Data)][1];
+    StartTimestamp := Sessions[uint_ptr(Node.Data)][1];
     EndTimestamp := 0;
-    if DWord(Node.Data) <= Length(Sessions)-2 then begin
-    EndTimestamp := Sessions[DWord(Node.Data)+1][1];
+    if uint_ptr(Node.Data) <= Length(Sessions)-2 then begin
+    EndTimestamp := Sessions[uint_ptr(Node.Data)+1][1];
     end;
     hg.GridUpdate([guFilter]); }
 end;
@@ -2970,20 +2970,23 @@ begin
     tvSess.ShowHint := False;
     Exit;
   end;
-  if tvSess.Tag <> Integer(Node.Data) + 1 then
+  if uint_ptr(tvSess.Tag) <> (uint_ptr(Node.Data) + 1) then
   begin
     Application.CancelHint;
     tvSess.ShowHint := False;
-    tvSess.Tag := Integer(Node.Data) + 1;
+    tvSess.Tag := uint_ptr(Node.Data) + 1;
     // +1 because we have tag = 0 by default, and it will not catch first session then
   end;
   // else
   // exit; // we are already showing the hint for this node
 
-  Time := Sessions[DWord(Node.Data)].TimestampLast - Sessions[DWord(Node.Data)].TimestampFirst;
-  count := Sessions[DWord(Node.Data)].ItemsCount;
+  with Sessions[uint_ptr(Node.Data)] do
+  begin
+    Time  := TimestampLast - TimestampFirst;
+    count := ItemsCount;
+    dt    := TimestampToDateTime(TimestampFirst);
+  end;
 
-  dt := TimestampToDateTime(Sessions[DWord(Node.Data)].TimestampFirst);
   t := FormatDateTime('[yyyy, mmmm, d]', dt) + #13#10;
   if Time / 60 > 60 then
     timestr := Format('%0.1n h', [Time / (60 * 60)])
@@ -3115,8 +3118,7 @@ begin
     ItemRenderDetails.bHistoryWindow := IRDHW_GLOBALHISTORY
   else
     ItemRenderDetails.bHistoryWindow := IRDHW_CONTACTHISTORY;
-  PluginLink.NotifyEventHooks(hHppRichEditItemProcess, wParam(Handle),
-    lParam(@ItemRenderDetails));
+  PluginLink.NotifyEventHooks(hHppRichEditItemProcess, wParam(Handle), lParam(@ItemRenderDetails));
 end;
 
 procedure THistoryFrm.hgSearchItem(Sender: TObject; Item, ID: Integer; var Found: Boolean);
@@ -3304,7 +3306,7 @@ begin
     begin
       ts := Sessions[i].TimestampFirst;
       dt := TimestampToDateTime(ts);
-      if (PrevYearNode = nil) or (DWord(PrevYearNode.Data) <> YearOf(dt)) then
+      if (PrevYearNode = nil) or (uint_ptr(PrevYearNode.Data) <> YearOf(dt)) then
       begin
         PrevYearNode := tvSess.Items.AddChild(nil, FormatDateTime(HPP_SESS_YEARFORMAT, dt));
         PrevYearNode.Data := Pointer(YearOf(dt));
@@ -3312,7 +3314,7 @@ begin
         // PrevYearNode.SelectedIndex := PrevYearNode.ImageIndex;
         PrevMonthNode := nil;
       end;
-      if (PrevMonthNode = nil) or (DWord(PrevMonthNode.Data) <> MonthOf(dt)) then
+      if (PrevMonthNode = nil) or (uint_ptr(PrevMonthNode.Data) <> MonthOf(dt)) then
       begin
         PrevMonthNode := tvSess.Items.AddChild(PrevYearNode,
           FormatDateTime(HPP_SESS_MONTHFORMAT, dt));
@@ -3635,8 +3637,8 @@ var
       Exit;
     if Node.Level = 2 then
     begin
-      First := Sessions[DWord(Node.Data)].hDBEventFirst;
-      Last := Sessions[DWord(Node.Data)].hDBEventLast;
+      First := Sessions[uint_ptr(Node.Data)].hDBEventFirst;
+      Last  := Sessions[uint_ptr(Node.Data)].hDBEventLast;
       fFirst := -1;
       fLast := -1;
       for i := HistoryLength - 1 downto 0 do
