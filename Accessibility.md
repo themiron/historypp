@@ -1,0 +1,5 @@
+# Accessibility #
+
+We know that visually impaired people can struggle with the History++ plugin because our toolbar is not accessible. We have a solution for this issue. In history window press F10 and main menu will appear with toolbar buttons duplicated in the menu. Once you toggle the menu, it will always be present in all history windows that have toolbar.
+
+If you want to disable the menu, you can hide it from the menu itself any time.

@@ -1,0 +1,15 @@
+# Archive of older versions #
+
+Older versions archive:
+
+http://artfedorov.ru/miranda/historypp/archive/
+
+Available versions:
+  * 1.0.1 (binary only)
+  * 1.1 (with source)
+  * 1.2 (with source)
+  * 1.3 (with source)
+  * 1.3.1 (with source)
+  * 1.4 (with source)
+
+_To download current version, go [here](Download.md)_

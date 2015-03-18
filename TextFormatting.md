@@ -1,0 +1,134 @@
+# Text Formatting #
+
+To change text which is copied to clipboard, currently you have to manually edit database.
+
+### How to edit database ###
+
+Read the article on [how to edit database settings](HowToEditDatabase.md).
+
+You will want to add the the string setting with the following name:
+  * FormatCopy -- to format text which is copied to clipboard on "Copy" command
+  * FormatCopyText -- to format text which is copied to clipboard on "Copy Text" command
+  * FormatReplyQuoted -- to format text which is copied to `*`srmm message area on "Reply Quoted" command
+  * FormatReplyQuotedText -- to format selected text which is copied to `*`srmm message area on "Reply Quoted" command
+  * FormatSelection -- to format selected messages or text via external log API query
+
+### Default format settings ###
+
+Default format settings as of 01 Jan 2007:
+
+  * FormatCopy: _`%nick%, %smart_datetime%:\n%mes%\n`_
+  * FormatCopyText: _`%mes%\n`_
+  * FormatReplyQuoted: _`%nick%, %smart_datetime%:\n%quot_mes%\n`_
+  * FormatReplyQuotedText: _`%quot_selmes%\n`_
+  * FormatSelection: _`%selmes%\n`_
+
+Additionally, you can look at the source for default formats. Look in [hpp\_options.pas](http://code.google.com/p/historypp/source/browse/historypp/trunk/plugin/hpp_options.pas#93), search for DEFFORMAT\_CLIPCOPY constants.
+
+To restore default format for particular setting, just delete it from database and restart miranda.
+
+### Formatting variables ###
+  * `\n` -- new line
+  * `\t` -- tab
+  * `\\` -- backslash (if you need to output backslash, instead of "Me\You" write "Me\\You")
+  * `\%` -- percent sign (if you need to output percent sign, instead of "Me%You" write "Me\%You")
+  * `%nick%` -- default contact's nickname text
+  * `%from_nick%` -- nick of the sender
+  * `%to_nick%` -- nick of the reciever
+  * `%mes%` -- plain message text
+  * `%adj_mes%` -- message adjusted to fit in 72 symbols
+  * `%quot_mes%` -- the same as `%adj_mes%`, but every line is prefixed with "> "
+  * `%selmes%` -- the same as `%mes%` or selected text in pseudo-edit mode
+  * `%adj_selmes%` -- the same as `%adj_mes%` or applied to selected text in pseudo-edit mode
+  * `%quot_selmes%` -- the same as `%quot_mes%` or applied to selected text in pseudo-edit mode
+  * `%datetime%` -- date and time of the event
+  * `%smart_datetime%` -- works for only for several messages. Outputs full date & time only for messages with unique date. For other events outputs only time.
+  * `%date%` -- date of the event
+  * `%time%` -- time of the event
+
+### Single event examples ###
+
+Event:
+
+_SomeContact, 21.01.2006 18:34_
+
+
+&lt;BR&gt;
+
+
+_Hello, how are you? I haven't seen you for a long time. I've got fantastic new gadget I want to tell you about. Please, drop me a line._
+
+Format: _`%nick% - [%datetime%]:\n%mes%`_
+```
+SomeContact - [21.01.2006 18:34]:
+Hello, how are you? I haven't seen you for a long time. I've got fantastic new gadget I want to tell you about. Please, drop me a line.
+```
+
+Format: _`%nick%, %time%\n%quot_mes%`_
+```
+SomeContact, 18:34
+> Hello, how are you? I haven't seen you for a long time. I've got fantastic 
+> new gadget I want to tell you about. Please, drop me a line.
+```
+
+### Multiple events examples ###
+
+Events:
+
+_Mario, 21.01.2006 18:34: Hi!_
+
+
+&lt;BR&gt;
+
+
+_You, 21.01.2006 18:35: Hi!_
+
+
+&lt;BR&gt;
+
+
+_Mario, 21.01.2006 18:36: Bye then_
+
+
+&lt;BR&gt;
+
+
+_You, 22.01.2006 12:11: Hi again! Where have you been?_
+
+
+&lt;BR&gt;
+
+
+_Mario, 22.01.2006 12:12: Oh, don't ask_
+
+Format: _`%nick%, %smart_datetime%: %quot_mes%`_
+```
+Mario, 21.01.2006 18:34: > Hi!
+You, 18:35: > Hi!
+Mario, 18:36: > Bye then
+You, 22.01.2006 12:11: > Hi again! Where have you been?
+Mario, 12:12: > Oh, don't ask
+```
+
+Format: _`%from_nick%\\%to_nick% [%smart_datetime%]: %mes%\n-----\n`_
+```
+Mario\You [21.01.2006 18:34]: Hi!
+-----
+You\Mario [18:35]: Hi!
+-----
+Mario\You [18:36]: Bye then
+-----
+You\Mario [22.01.2006 12:11]: Hi again! Where have you been?
+-----
+Mario\You [12:12]: Oh, don't ask
+-----
+```
+
+Format: _`%nick%\t[%time%]\t%mes%`_
+```
+Mario	[18:34]	Hi!
+You	[18:35]	Hi!
+Mario	[18:36]	Bye then
+You	[12:11]	Hi again! Where have you been?
+Mario	[12:12]	Oh, don't ask
+```
